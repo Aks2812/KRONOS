@@ -54,6 +54,18 @@ MANIFEST_DICT = {
             "com.kronos.cybergym.*",  # the lab's mobile bundle id
             "localhost*",
             "127.0.0.1*",
+            # API_ENDPOINT node ids are full URLs (scheme included) — a
+            # bare "localhost*"/"127.0.0.1*" glob never matches
+            # "http://localhost:8091..." (fnmatch has no substring
+            # matching; it requires the target to START with the
+            # pattern's literal prefix). Found empirically running
+            # SPEC_BRIEF3's validation pass against this lab: without
+            # these, every API_ENDPOINT candidate was (correctly, given
+            # the manifest as it stood) scope-gated out, so chain 1 was
+            # never attempted at all. Not a scope_guard bug — the guard
+            # did exactly what a manifest missing these globs says to do.
+            "http://localhost*",
+            "http://127.0.0.1*",
             "kronos-cybergym-*",  # bucket-name-shaped CLOUD_RESOURCE ids
             "arn:aws:s3:::kronos-cybergym-*",  # ARN-shaped CLOUD_RESOURCE ids
         ],
