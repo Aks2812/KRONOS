@@ -54,19 +54,27 @@ Early development. Build order:
 
 | Component | Status |
 |-----------|--------|
-| Graph core + validation lifecycle (`SPEC.md`) | **In progress** |
+| Graph core + validation lifecycle (`SPEC.md`) | **Done** — see [`src/kronos/README.md`](./src/kronos/README.md) |
 | Seeded cross-domain test range | Planned |
 | Mobile static ingestion (MobSF) | Planned |
 
+Autonomous build decisions for the graph core are recorded in
+[`DECISIONS.md`](./DECISIONS.md).
+
 ## Build
 
-The current build spec is in [`SPEC.md`](./SPEC.md). Graph core is pure Python
-(Kùzu + pytest), no external tooling required.
+The current build spec is in [`SPEC.md`](./SPEC.md). The graph core is pure
+Python (Kùzu + pytest), no external tooling required.
 
 ```bash
-pip install kuzu pytest
-pytest
+pip install -r requirements.txt
+python3 -m pytest -v
 ```
+
+(Use `python3 -m pytest`, not a bare `pytest` — on some setups the `pytest`
+CLI resolves to a tool-installed virtualenv without this project's
+dependencies. `python3 -m pytest` always runs against the interpreter that
+has them. See `DECISIONS.md`.)
 
 ## Benchmark — CyberGym v1.0
 
