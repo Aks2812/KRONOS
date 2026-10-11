@@ -58,7 +58,7 @@ CREATE NODE TABLE IF NOT EXISTS MOBILE_APP(
 );
 CREATE NODE TABLE IF NOT EXISTS MOBILE_COMPONENT(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    component_type STRING, name STRING,
+    component_type STRING, name STRING, exported BOOLEAN DEFAULT false,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS SECRET(
@@ -166,7 +166,7 @@ NODE_PROPS_ALWAYS: dict[str, set[str]] = {
     "PARAMETER": {"source", "name", "param_type"},
     "API_ENDPOINT": {"source", "url", "method"},
     "MOBILE_APP": {"source", "bundle_id", "platform"},
-    "MOBILE_COMPONENT": {"source", "component_type", "name"},
+    "MOBILE_COMPONENT": {"source", "component_type", "name", "exported"},
     "SECRET": {"source", "value_ref", "kind"},
     "IDENTITY": {"source", "name", "provider"},
     "CLOUD_RESOURCE": {"source", "resource_type", "provider"},
@@ -215,7 +215,7 @@ NODE_COLUMNS: dict[str, set[str]] = {
     "PARAMETER": {"id", "in_scope", "created_at", "source", "name", "param_type"},
     "API_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
     "MOBILE_APP": {"id", "in_scope", "created_at", "source", "bundle_id", "platform"},
-    "MOBILE_COMPONENT": {"id", "in_scope", "created_at", "source", "component_type", "name"},
+    "MOBILE_COMPONENT": {"id", "in_scope", "created_at", "source", "component_type", "name", "exported"},
     "SECRET": {"id", "in_scope", "created_at", "source", "value_ref", "kind", "status", "confidence", "scope_note"},
     "IDENTITY": {"id", "in_scope", "created_at", "source", "name", "provider"},
     "CLOUD_RESOURCE": {"id", "in_scope", "created_at", "source", "resource_type", "provider"},
