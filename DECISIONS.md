@@ -673,3 +673,121 @@ engine, so the X-score's meaning stays honest.
   rather than inventing a new one — same reasoning as Brief #2 (no
   third-party base, fully reproducible, no mystery blob), and consistency
   with the established pattern.
+
+## Brief #3: Secret Validation (extracted -> validated -> reachable)
+
+### FORK 1 — resolved: CyberGym enrichment is harness glue, not KRONOS logic
+
+**FORK:** Brief #3 assumes the graph already has complete candidate
+targets (full endpoint URLs, `CLOUD_RESOURCE` bucket nodes, reconstructed
+split secrets, a cloud-vs-api kind distinction) after mobile ingestion.
+Reading the actual code, it doesn't: `light_extractors.py` never reads
+`assets/`, never captures a bare path or a bucket-shaped resource name,
+never reconstructs a split secret, and tags every secret's `kind` as
+`"api_key"`/`"api_key_obfuscated"` regardless of shape.
+
+**OPTIONS presented:**
+1. CyberGym-side enrichment script — keep `src/kronos/validate/` fully
+   generic (dispatch by decoded-value shape, discover candidates from
+   edges any ingester writes), add a small e2e proof script under
+   `cybergym/` that completes the graph for this one fixture via the
+   same scope-gated `apply_upserts()` path, then hands it to the real
+   validator.
+2. Extend Brief #2's extractor itself (read `assets/`, broaden regex,
+   add shape-based kind classification) — reusable, but touches a
+   previously-merged, reviewed brief and risks overfitting its regex to
+   this fixture's exact resource-naming scheme.
+3. Accept partial coverage and report honestly — build against what
+   Brief #2 produces today, unmodified; the e2e run may land under 3/3.
+
+**RESOLUTION (user-selected): Option 1, with a hard guardrail added by
+the user before building:** the enrichment step may ONLY add target
+nodes/edges and reconstruct secrets per `ground_truth.yaml`'s
+documented method. It may NEVER pre-set, hint, or shortcut a secret
+toward `validated`/`reachable` — every secret it writes is created at
+`status="extracted"`, exactly what any ingester's initial value always
+is, and the real validation pass (`kronos.validate.run_validation_pass`,
+the exact same generic function any other engagement would use) is what
+actually advances it. `cybergym/kronos_validation_run.py`'s
+`_assert_enrichment_did_not_shortcut_anyone` enforces this mechanically,
+not just by convention — it checks every enrichment-created secret is
+still `"extracted"` right after enrichment and before the validation
+call runs, so a future regression here fails loudly instead of quietly
+producing a lying X-score.
+
+**Two additional, independently-discovered Brief #2 gaps, same
+resolution applied without re-asking (same class of allowance, found
+empirically running the real e2e proof, not anticipated in the
+original FORK):**
+- `kronos_chain2_creds_enc`'s resource name contains `"creds"`, not
+  `"credential"` — `light_extractors._SECRET_NAME_RE` doesn't match the
+  abbreviation, so chain 2's secret was never captured as a `SECRET`
+  node at all (Brief #2 ingestion silently missed it, not a crash).
+  Enrichment decodes it the same documented way (base64) ground_truth
+  already specifies.
+- `scope_manifest.yaml`'s `"localhost*"`/`"127.0.0.1*"` globs never
+  match an `API_ENDPOINT` node id, which is always a full URL with
+  scheme (`"http://localhost:8091"`) — `fnmatch` has no substring
+  matching, only a literal-prefix match. Without `"http://localhost*"`/
+  `"http://127.0.0.1*"` added to the manifest (re-signed with the
+  existing key, re-verified via `kronos.manifest.load_and_verify`),
+  chain 1's every candidate was *correctly* scope-gated out by a
+  manifest that simply never declared its own API tier's URL scheme in
+  scope — not a `scope_guard` bug.
+
+### Build-time decisions (below the escalation bar — logged, not asked)
+
+- **Validator dispatch is keyed by decoded secret-VALUE shape, never by
+  the stored `SECRET.kind` column.** Brief #2 never distinguishes a
+  cloud-credential pair from a bearer token in `kind`
+  (`classify_validator_kind` in `src/kronos/validate/registry.py`): a
+  `left:right` split where the left side is >=8 chars and the right is
+  >=6 chars classifies as `"cloud_credential_pair"`; anything else
+  non-empty is `"api_token"`; empty is `"unknown"` (no validator, stays
+  `extracted`, never guessed live).
+- **`find_candidate_targets_for_secret` returns EVERY `CLOUD_RESOURCE`
+  node in the engagement, unfiltered by any edge** — there is no
+  schema-legal edge type connecting a mobile app/secret to a cloud
+  resource before it's proven live (`authenticates_to` is the
+  validator's own OUTPUT, not a valid input here), and trying every
+  known cloud resource is exactly what proves a credential's real
+  (possibly over-broad) privilege — CyberGym's chain 3 authenticating to
+  two buckets is the proof this design exists to make possible, not an
+  accident of a looser filter.
+- **The runner must filter candidates to the target TYPE the dispatched
+  validator expects before calling it** — caught running the real e2e
+  proof: an `api_token`-classified secret was being attempted against
+  `CLOUD_RESOURCE` candidates too (since candidate discovery returns
+  both kinds for every secret) and crashed on the wrong calling
+  convention. Fixed in `runner.py`; regression test added
+  (`test_api_token_secret_never_dispatched_to_the_cloud_validator_even_with_cloud_candidates`).
+- **`registry.get_validator` does a late (call-time) attribute lookup
+  on each validator module rather than binding a dict of function
+  references once at import time** — purely so tests can
+  `@patch("kronos.validate.http_validator.validate_api_token")` /
+  `cloud_validator.validate_cloud_credential` directly and have the
+  runner actually observe the patch; no behavioral difference otherwise.
+- **`http_hints` (per-endpoint `{"method":..., "header_name":...}`
+  overrides) is a plain parameter on `run_validation_pass`, not
+  anything stored on the graph.** CyberGym's chain 1 needs a
+  non-standard header (`X-Cybergym-Key`) and `POST`, which
+  `API_ENDPOINT`'s locked schema has no column for; the caller (the
+  CyberGym e2e script, which knows this from the fixture's own
+  documentation) supplies it explicitly, same category of
+  "operator-supplied recon knowledge" as knowing which header a real
+  target expects from reading its client integration code.
+- **The HTTP validator's default (no explicit `header_name`) tries
+  `Authorization: Bearer <value>` then `X-Api-Key: <value>`, first 2xx
+  wins** — a small, bounded, documented set of conventional
+  credential-transmission methods, not an open-ended guess; any
+  transport error counts as not-live, never a crash.
+- **`run_validation_pass` snapshots every `"extracted"` SECRET once at
+  pass start**, not re-queried per candidate — a secret that reaches
+  `reachable` partway through the loop still has its *remaining*
+  candidates tried, which is what lets chain 3 prove authenticating to
+  BOTH buckets in one pass rather than stopping at the first success.
+- **Added `boto3==1.43.111` to root `requirements.txt`/`pyproject.toml`**
+  — it's now a real `src/kronos/validate/cloud_validator.py` dependency,
+  not just `cybergym/`'s own (it was already in the shared `.venv` from
+  Brief #0.5's cybergym-only install, but the KRONOS package's own
+  declared dependencies hadn't caught up).
