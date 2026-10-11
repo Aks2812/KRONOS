@@ -60,9 +60,21 @@ def ingest_reference_mobile_secret(bundle_id: str = "com.kronos.demo") -> list[N
 
 
 def ingest(raw_tool_output: Any, tool_name: str, engagement: "EngagementGraph") -> list[NodeUpsert | EdgeUpsert]:
-    """Dispatch by `tool_name`. Only "reference" is implemented."""
+    """Dispatch by `tool_name`.
+
+    "reference": the Brief #1 worked example, ignores `raw_tool_output`.
+    "mobile_static" (Brief #2): `raw_tool_output` is an APK path
+    (str | Path); runs the real mobile static-analysis ingester.
+    """
     if tool_name == "reference":
         return ingest_reference_mobile_secret()
+    if tool_name == "mobile_static":
+        # Local import: kronos.ingest.mobile.parser imports NodeUpsert/
+        # EdgeUpsert from this module, so a top-level import here would be
+        # circular.
+        from kronos.ingest.mobile.parser import ingest_mobile_static
+
+        return ingest_mobile_static(raw_tool_output, engagement)
     raise NotImplementedError(f"parser for tool_name={tool_name!r} not implemented; real parsers are a later brief")
 
 
