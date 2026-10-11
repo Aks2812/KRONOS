@@ -10,3 +10,8 @@ discovers candidates from edges any ingester already writes (`leaks`,
 """
 
 from __future__ import annotations
+
+from kronos.validate.runner import ValidationAttempt, run_validation_pass
+from kronos.validate.types import CandidateTarget, ValidationOutcome
+
+__all__ = ["run_validation_pass", "ValidationAttempt", "CandidateTarget", "ValidationOutcome"]

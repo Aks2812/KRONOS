@@ -15,9 +15,6 @@ from __future__ import annotations
 
 from typing import Callable, Literal
 
-from kronos.validate.cloud_validator import validate_cloud_credential
-from kronos.validate.http_validator import validate_api_token
-
 ValidatorKind = Literal["cloud_credential_pair", "api_token", "unknown"]
 
 # A real AWS-style access-key:secret-key pair: both sides non-trivial, the
@@ -37,11 +34,18 @@ def classify_validator_kind(decoded_value: str) -> ValidatorKind:
     return "api_token"
 
 
-VALIDATORS: dict[ValidatorKind, Callable[..., object]] = {
-    "api_token": validate_api_token,
-    "cloud_credential_pair": validate_cloud_credential,
-}
-
-
 def get_validator(kind: ValidatorKind) -> Callable[..., object] | None:
-    return VALIDATORS.get(kind)
+    """Resolved by a late (call-time) import of each validator module's
+    own attribute — not a dict of references captured once at import —
+    so tests can patch `kronos.validate.http_validator.validate_api_token`
+    / `kronos.validate.cloud_validator.validate_cloud_credential` directly
+    and have the runner actually observe the patch."""
+    if kind == "api_token":
+        from kronos.validate import http_validator
+
+        return http_validator.validate_api_token
+    if kind == "cloud_credential_pair":
+        from kronos.validate import cloud_validator
+
+        return cloud_validator.validate_cloud_credential
+    return None
