@@ -43,3 +43,11 @@ def manifest_factory(signing_keypair):
         return sign_manifest(data, priv)
 
     return _make
+
+
+@pytest.fixture
+def engagement_graph(tmp_path, manifest_factory, signing_keypair):
+    from kronos.graph import EngagementGraph
+
+    _, pub = signing_keypair
+    return EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)

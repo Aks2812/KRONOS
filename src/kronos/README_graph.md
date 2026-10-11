@@ -12,14 +12,16 @@ other module in this package uses to touch that DB.
 `id` (primary key), `in_scope`, `created_at`, `source` plus its own
 props. Two types are **not** scope targets and skip `in_scope`/`source`:
 
-- `ENGAGEMENT` — represents the engagement itself, always `in_scope=True`.
+- `ENGAGEMENT` — represents the engagement itself. It keeps an `in_scope`
+  *column* (for schema uniformity) but `upsert_node` always hardcodes it
+  `True` rather than asking `ScopeGuard`.
 - `EVIDENCE` — an artifact attached to a finding/secret, never an action
-  target in its own right, always `in_scope=True`.
+  target in its own right. It has **no** `in_scope` column at all;
+  `upsert_node` skips that `SET` clause entirely for this type.
 
-Why hardcode `True` for these two instead of asking `ScopeGuard`: they
-don't correspond to a network/app target a glob or CIDR pattern could
-ever match meaningfully, and giving them a real scope check would just be
-theater — see `DECISIONS.md`.
+Why not ask `ScopeGuard` for either: neither corresponds to a network/app
+target a glob or CIDR pattern could ever match meaningfully, and giving
+them a real scope check would just be theater — see `DECISIONS.md`.
 
 ## Edge tables
 

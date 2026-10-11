@@ -17,11 +17,18 @@ from kronos.manifest import ScopeManifest, load_and_verify
 from kronos.schema import init_db
 from kronos.scope_guard import ScopeGuard
 
-# Node types that are not themselves scope targets: their in_scope is a
-# fixed constant rather than something scope_guard decides (see
-# DECISIONS.md). ENGAGEMENT represents the engagement itself; EVIDENCE is
-# an artifact attached to a finding/secret, never a target.
-_ALWAYS_IN_SCOPE_TYPES = {"ENGAGEMENT", "EVIDENCE"}
+# ENGAGEMENT is not a scope target: it represents the engagement itself,
+# so its in_scope column (schema.py gives it one) is always hardcoded
+# True rather than something scope_guard decides (see DECISIONS.md).
+_ALWAYS_IN_SCOPE_TYPES = {"ENGAGEMENT"}
+
+# EVIDENCE has no in_scope column at all (schema.py) — it's an artifact
+# attached to a finding/secret, never an action target in its own right.
+_NO_IN_SCOPE_COLUMN_TYPES = {"EVIDENCE"}
+
+# Node types whose schema includes a `confidence` column (SECRET, FINDING)
+# — see the sentinel-default note in upsert_node below.
+_CONFIDENCE_BEARING_TYPES = {"SECRET", "FINDING"}
 
 
 def _literal(value: Any) -> str:
@@ -78,12 +85,22 @@ class EngagementGraph:
     def upsert_node(
         self, type: str, id: str, props: dict[str, Any], scope_key: str | None = None
     ) -> None:
-        if type in _ALWAYS_IN_SCOPE_TYPES:
-            in_scope = True
-        else:
-            in_scope = self.scope.is_in_scope(scope_key or id)
+        if type in _CONFIDENCE_BEARING_TYPES and "confidence" not in props:
+            # A lifecycle-agnostic sentinel: 0 is below every status cap
+            # (see lifecycle.py / DECISIONS.md). Only advance_secret_status
+            # / advance_finding_status ever write the real derived value;
+            # this just keeps a freshly-created node's confidence column
+            # from being NULL before its first lifecycle transition.
+            props = {**props, "confidence": 0}
 
-        set_clauses = [f"n.in_scope = {_literal(in_scope)}"]
+        set_clauses = []
+        if type not in _NO_IN_SCOPE_COLUMN_TYPES:
+            if type in _ALWAYS_IN_SCOPE_TYPES:
+                in_scope = True
+            else:
+                in_scope = self.scope.is_in_scope(scope_key or id)
+            set_clauses.append(f"n.in_scope = {_literal(in_scope)}")
+
         for key, value in props.items():
             set_clauses.append(f"n.{key} = {_literal(value)}")
         set_sql = ", ".join(set_clauses)
