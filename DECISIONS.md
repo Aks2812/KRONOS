@@ -447,3 +447,24 @@ not a property detail).
   legitimate in-scope wildcard), and the remaining collisions require an
   operator to write genuinely overlapping, ambiguous scope entries in
   the first place.
+
+---
+
+## Human decisions on the two FORKs (architectural review, pre-merge)
+
+**FORK 1 — RESOLVED: option (a), as recommended.** Keep `query_graph`/
+`find_paths`'s current concrete signatures (`node_type=None,
+filters: dict|None` / `from_type, to_type, max_hops, only_in_scope`).
+Explicitly declined to widen `filter` speculatively; a later brief that
+actually builds an agent against this interface decides what richer
+shape it needs, if any.
+
+**FORK 2 — RESOLVED: option (c) (shape-aware matcher dispatch in
+`scope_guard._matches`, no signed-manifest schema change), deferred as
+its own follow-up brief rather than folded into this one.** This brief
+ships as-is, with the collision documented as a known, accepted
+limitation. The follow-up brief implementing (c) is a **hard
+prerequisite before KRONOS is used against any live target** — not
+optional polish. Tracked as
+[Aks2812/KRONOS#2](https://github.com/Aks2812/KRONOS/issues/2) so it
+isn't lost between briefs.
