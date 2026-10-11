@@ -791,3 +791,174 @@ original FORK):**
   not just `cybergym/`'s own (it was already in the shared `.venv` from
   Brief #0.5's cybergym-only install, but the KRONOS package's own
   declared dependencies hadn't caught up).
+
+## Brief #4 (Reconciliation / Dedup Pass)
+
+New module `src/kronos/reconcile/` (`canonical.py`, `merge.py`,
+`runner.py`), wired into `cybergym/kronos_validation_run.py` at both
+pipeline slots SPEC_BRIEF4 §2 specifies: `ingest -> reconcile -> enrich ->
+reconcile -> _assert_enrichment_did_not_shortcut_anyone -> validate`.
+
+### Schema touch: `merged_into` (not a FORK — a necessary consequence of FORK-A's own DEFAULT)
+
+**This is a schema change, flagged explicitly per SPEC_BRIEF4's own
+instruction to call out any schema touch.** FORK-A (§5) was pre-resolved
+to its DEFAULT — tombstone losers, never hard-delete — but implementing
+that DEFAULT requires *somewhere* to record "this node was merged into
+that one," and `schema.py` had no such column on any node type before
+this brief. `SECRET`/`FINDING` already had a `status` column (so
+`status="merged"` was at least expressible, just not wired to anything);
+`HOST`, `API_ENDPOINT`, `MOBILE_APP` — the other three node types
+SPEC_BRIEF4 §3.1 names as mergeable — have **no** `status` column at all.
+Without adding something, FORK-A's chosen DEFAULT is simply not buildable
+for 3 of the 5 mergeable types.
+
+**Resolution (treated as a necessary consequence of the already-resolved
+FORK-A, not a new fork to escalate):** added `merged_into STRING`
+(nullable, no default needed — Kùzu nullable columns default to `NULL`)
+to exactly the five mergeable node types: `HOST`, `API_ENDPOINT`,
+`MOBILE_APP`, `SECRET`, `FINDING`. Minimal and uniform: `merged_into
+IS NOT NULL` is the one tombstone predicate every mergeable type shares,
+queryable via `query.query_graph` (SPEC_BRIEF4 §4 test 7). `SECRET`/
+`FINDING` additionally get `status="merged"` on tombstone, matching
+FORK-A's literal wording for the two types that already had a `status`
+column to set; `HOST`/`API_ENDPOINT`/`MOBILE_APP` do **not** gain a new
+`status` column (that would be a larger, unnecessary surface change) —
+`merged_into` alone is their tombstone signal.
+
+**Why this isn't itself escalated as a third fork:** SPEC_BRIEF4 already
+pre-resolved FORK-A with an explicit DEFAULT the brief says to take if
+unattended; this column is the only way to actually build that DEFAULT,
+not a new, independent design choice. Same class of precedent as Brief
+#2's `exported` column — a locked-schema addition, scoped, documented,
+and the *only* schema change this brief makes to any already-existing
+node type.
+
+`merged_into` is registered in `schema.NODE_PROPS_FORBIDDEN` (global, like
+`in_scope`/`confidence`) — no ingester/caller can ever set it via
+`upsert_node`; only `kronos.reconcile.merge`'s tombstone write touches it.
+**Reversibility:** easy; nullable column additions are backward
+compatible, same caveat as Brief #2's `exported` column — not
+retroactive to an already-initialized engagement DB's existing rows
+(`init_db`'s `CREATE ... IF NOT EXISTS` is a no-op against an
+already-created table).
+
+**`resolves_to` needed no schema touch at all.** It was already in
+`EDGE_PAIRS` (`HOST->HOST`, `API_ENDPOINT->HOST`, `WEB_ENDPOINT->HOST`)
+from Brief #1. SPEC_BRIEF4 §3.3 explicitly allows skipping the edge
+assertion itself ("if in doubt, skip the edge for now and note it — the
+merge discipline is what matters here") — taken here, and noted:
+no ingester in this codebase produces DNS-resolution evidence (an
+FQDN actually resolving to a given IP) today, so there is nothing to
+honestly assert the edge FROM. SPEC_BRIEF4 §4 test 3 ("not merged;
+`resolves_to` asserted (or skipped-and-noted)") is satisfied by the
+"not merged, both nodes still present" half; the edge itself is the
+skipped half, by the brief's own stated allowance.
+
+### FORK-B — resolved exactly per the brief's own DEFAULT
+
+Option 1: `lifecycle.py` gained `recompute_status_from_evidence` (pure —
+no graph parameter at all) and `set_secret_status_from_evidence` (the
+actual write, called only by `kronos.reconcile.merge`, after it has
+already carried every loser's edges — including `evidences` — onto the
+survivor). The second function is necessary because `SECRET.status` can
+only ever change through `lifecycle.py` by this module's own documented
+contract ("the ONLY place `SECRET.status`... change[s] after a node's
+initial creation") — reconciliation cannot write it via a bare Cypher
+`SET` from `merge.py` without breaking that contract. It is explicitly
+**not** a forward mutator: it never consults `SECRET_TRANSITIONS`, and
+may legitimately move status *backward* (an evidenceless `reachable`
+label collapsing to `extracted` on merge) — which `advance_secret_status`
+would reject outright. `advance_secret_status` remains the *only*
+function that advances a SECRET forward, and remains called only by
+`kronos.validate.runner` (verified by a grep-assert test, §4 test 8:
+`test_advance_secret_status_still_called_only_by_the_validation_runner`;
+reconciliation never calling it is covered by a second, dedicated test).
+The small scope-note computation `advance_secret_status` already had was
+extracted into a shared private helper (`_scope_note_if_reachable`) so
+both functions derive it identically — a pure refactor, zero behavior
+change, verified by the full existing `test_lifecycle.py`/
+`test_validate_runner.py` suite staying green throughout.
+
+### FORK-A — resolved exactly per the brief's own DEFAULT
+
+Tombstone, never hard-delete (see the schema-touch writeup above for
+what building this DEFAULT actually required).
+
+### Guardrail 1 — `scope_guard.py` zero-line diff
+
+Confirmed by `git diff --stat` throughout this brief's work, and pinned
+by a test (`test_scope_guard_has_zero_line_diff`) against a `sha256sum`
+of the file captured before any of this brief's edits began. FORK-2
+(Aks2812/KRONOS#2) stays open, untouched, exactly as instructed.
+
+### FINDING canonical key: implemented, currently always inert
+
+`canonical.canonical_key_for_finding(finding_class, affected_asset_id,
+location_sig)` is fully implemented per SPEC_BRIEF4 §3.1's exact formula
+and wired into `runner.py`'s grouping pass — but `FINDING`'s locked
+schema has no `location_sig` column and no ingester in this codebase
+populates one, so `location_sig` is always `None` in practice today and
+the function always returns `None` for every FINDING currently in any
+graph. This is the guardrail-6-safe default ("a node that can't produce
+a confident key... is never merged"), not a bug, and not a reason to
+leave the function unwritten — wiring it in now means a future ingester
+that adds real location data gets correct FINDING dedup for free.
+
+### CyberGym live confirmation
+
+Ran the real, live, docker-backed `cybergym/kronos_validation_run.py`
+end to end with reconciliation wired into both pipeline slots: **X-score
+3/3**, unchanged from the pre-reconciliation baseline. Both reconciliation
+passes (`post_ingest`, `post_enrich`) reported **0 duplicates** — this
+specific fixture's ingestion + enrichment never produces two different
+node IDs for the same real entity today (chain 2/3's enrichment-
+reconstructed secrets have no ingestion-side twin, since Brief #2's
+light extractor never captured them at all — see the existing Brief #3
+FORK writeup), so this run demonstrates reconciliation is a safe,
+behavior-preserving no-op on CyberGym's current fixture. Every merge
+*scenario* the brief requires (dedup, template-merge, cross-shape
+non-merge, idempotency, the three laundering cases, audit) is instead
+exercised directly and deterministically in `tests/test_reconcile.py`,
+which does not depend on live docker services.
+
+### Build-time decisions (below the escalation bar — logged, not asked)
+
+- **Survivor selection: lexicographic `min()` of the group's member
+  ids.** SPEC_BRIEF4 §3.2 asks for "lowest/oldest ID, so merges are
+  reproducible" without specifying a total order; plain string `min()`
+  is deterministic, needs no extra data (no second `created_at` lookup),
+  and is reproducible regardless of insertion order — exactly what the
+  brief asks for, nothing more.
+- **Edge carry-over walks `schema.EDGE_PAIRS` directly** (one typed
+  Cypher query per `(label, from_type, to_type)` the merging node type
+  participates in, either end) rather than a single untyped `MATCH
+  (a)-[r]->(b)` over the loser — keeps every carried-over edge write
+  going through the exact same `graph.upsert_edge(label, from_id,
+  from_type, to_id, to_type)` 5-argument contract every other module
+  uses (`graph.py`'s own documented contract, per its README), and reuses
+  its existing `MERGE`-based de-dup rather than inventing a second one.
+- **`run_reconciliation_pass` takes `engagement_dir`** (like
+  `run_validation_pass` already does) purely to decode SECRET evidence
+  blobs for canonical-key material — `value_ref` never carries the raw
+  secret inline on the node (Brief #2's own design), so computing
+  `canonical_key_for_secret` needs the same evidence-store read
+  `validate.runner._decode_secret_value` already does. Duplicated as a
+  small private helper rather than imported, for the same reason
+  `validate.runner`'s version is private: it's a 6-line, module-local
+  decode-with-graceful-degradation helper, not a shared contract.
+- **`_group_findings` is wired in but currently always empty** (see the
+  FINDING canonical key writeup above) — kept rather than omitted so
+  wiring a future `location_sig` source doesn't need a second brief
+  touching `runner.py`.
+- **`kronos_validation_run.py`'s chain-id lookups now resolve through
+  `_survivor_of` (follows `merged_into`) before the final chain checks.**
+  Without this, a chain's secret ID could get tombstoned by the
+  post-enrich reconcile pass (merged into a differently-IDed survivor),
+  and the existing `_check_chain(graph, ..., secret_id, ...)` calls — which
+  look the node up by its ORIGINAL id — would see a `"merged"` tombstone
+  instead of the real `"reachable"` status. Not exercised on this
+  fixture today (0 duplicates found, see above) but necessary for
+  correctness the moment a second mobile-ingestion source starts
+  overlapping with enrichment's reconstructed secrets, which is exactly
+  the scenario this brief exists to make safe.

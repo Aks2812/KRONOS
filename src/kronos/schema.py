@@ -29,6 +29,7 @@ CREATE NODE TABLE IF NOT EXISTS ENGAGEMENT(
 );
 CREATE NODE TABLE IF NOT EXISTS HOST(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
+    merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS SERVICE(
@@ -48,12 +49,12 @@ CREATE NODE TABLE IF NOT EXISTS PARAMETER(
 );
 CREATE NODE TABLE IF NOT EXISTS API_ENDPOINT(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    url STRING, method STRING,
+    url STRING, method STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS MOBILE_APP(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    bundle_id STRING, platform STRING,
+    bundle_id STRING, platform STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS MOBILE_COMPONENT(
@@ -64,7 +65,7 @@ CREATE NODE TABLE IF NOT EXISTS MOBILE_COMPONENT(
 CREATE NODE TABLE IF NOT EXISTS SECRET(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
     value_ref STRING, kind STRING, status STRING, confidence INT64,
-    scope_note STRING,
+    scope_note STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS IDENTITY(
@@ -85,6 +86,7 @@ CREATE NODE TABLE IF NOT EXISTS TECHNOLOGY(
 CREATE NODE TABLE IF NOT EXISTS FINDING(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
     title STRING, severity STRING, status STRING, confidence INT64,
+    merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS EVIDENCE(
@@ -198,7 +200,16 @@ del _table
 # `props` under any circumstance — passing one of these raises
 # ValueError rather than silently dropping it, so a caller finds out
 # immediately rather than wondering later why its value didn't take.
-NODE_PROPS_FORBIDDEN: set[str] = {"id", "in_scope", "confidence", "scope_note"}
+# `merged_into` (Brief #4 schema touch, see DECISIONS.md) joins this set
+# for the same reason `in_scope`/`confidence` are here: it's a
+# reconciliation-owned column (`kronos.reconcile.merge`'s tombstone
+# write), never an ingester/caller-settable property, even on the node
+# types that don't have the column at all (SERVICE, WEB_ENDPOINT,
+# PARAMETER, IDENTITY, CLOUD_RESOURCE, TECHNOLOGY, EVIDENCE, ENGAGEMENT
+# are never merge targets per SPEC_BRIEF4 §3.1, so they never gained the
+# column — forbidding it globally just means those callers get the same
+# clear ValueError as any other unknown-column attempt).
+NODE_PROPS_FORBIDDEN: set[str] = {"id", "in_scope", "confidence", "scope_note", "merged_into"}
 
 # The full set of real, queryable columns per node type (mirrors the DDL
 # in `_NODE_TABLES` exactly, same pattern as `EDGE_PAIRS`). Used by
@@ -209,18 +220,18 @@ NODE_PROPS_FORBIDDEN: set[str] = {"id", "in_scope", "confidence", "scope_note"}
 # *writing* those columns through `upsert_node` that's restricted.
 NODE_COLUMNS: dict[str, set[str]] = {
     "ENGAGEMENT": {"id", "client", "authorized_by", "window_start", "window_end", "destructive_allowed", "in_scope", "created_at"},
-    "HOST": {"id", "in_scope", "created_at", "source"},
+    "HOST": {"id", "in_scope", "created_at", "source", "merged_into"},
     "SERVICE": {"id", "in_scope", "created_at", "source", "port", "protocol"},
     "WEB_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
     "PARAMETER": {"id", "in_scope", "created_at", "source", "name", "param_type"},
-    "API_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
-    "MOBILE_APP": {"id", "in_scope", "created_at", "source", "bundle_id", "platform"},
+    "API_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method", "merged_into"},
+    "MOBILE_APP": {"id", "in_scope", "created_at", "source", "bundle_id", "platform", "merged_into"},
     "MOBILE_COMPONENT": {"id", "in_scope", "created_at", "source", "component_type", "name", "exported"},
-    "SECRET": {"id", "in_scope", "created_at", "source", "value_ref", "kind", "status", "confidence", "scope_note"},
+    "SECRET": {"id", "in_scope", "created_at", "source", "value_ref", "kind", "status", "confidence", "scope_note", "merged_into"},
     "IDENTITY": {"id", "in_scope", "created_at", "source", "name", "provider"},
     "CLOUD_RESOURCE": {"id", "in_scope", "created_at", "source", "resource_type", "provider"},
     "TECHNOLOGY": {"id", "in_scope", "created_at", "source", "name", "version"},
-    "FINDING": {"id", "in_scope", "created_at", "source", "title", "severity", "status", "confidence"},
+    "FINDING": {"id", "in_scope", "created_at", "source", "title", "severity", "status", "confidence", "merged_into"},
     "EVIDENCE": {"id", "created_at", "sha256", "blob_path", "kind"},
 }
 
