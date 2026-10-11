@@ -572,3 +572,104 @@ retroactive** — engagements created before this change have no
   committing any third-party-derived binary into a repo with no stated
   license, and was SPEC_BRIEF2's own first-listed option anyway ("you
   create a tiny deliberately-leaky test APK").
+
+---
+
+# Brief #0.5 (Seeded Cross-Domain Range / CyberGym X-instrument)
+
+## FORK 1 — LocalStack free tier doesn't enforce IAM/S3 access control (RESOLVED)
+
+**Raised because:** the spec requires the cloud tier to have "real
+accept/reject behavior" — a wrong key must not unlock a resource. Testing
+empirically before writing any lab code: created a real S3 bucket in
+LocalStack, then accessed it with totally made-up, unregistered
+credentials — it succeeded. Fine-grained per-user S3 authorization is a
+LocalStack **Pro** feature; the community tier's IAM calls are
+mocked/accepted but never actually checked against resource access. Also
+discovered along the way: `localstack/localstack:latest` now requires a
+paid Pro license even to **start** basic community services (S3/IAM/STS)
+at all — worked around by pinning `:3.0`, the last version confirmed to
+start cleanly without a license token (see `cybergym/README.md` "Why
+LocalStack is pinned to :3.0").
+
+**Options presented:** (1) pay for LocalStack Pro — not something I can
+provide; (2) build a thin SigV4-verification proxy in front of real
+LocalStack S3, giving genuine accept/reject while keeping the real S3/IAM
+shape; (3) drop the S3/IAM shape entirely, replace the cloud tier with a
+custom mock API — loses the realistic shape the spec explicitly wanted.
+
+**Resolution (human, as a "changes what the X-score measures" decision,
+not decided silently):** option 2, with two hard requirements: the
+signature check must be REAL cryptographic verification (recompute the
+expected signature from the known secret, reject on genuine mismatch —
+not a presence check), with a dedicated test proving a wrong secret for a
+valid access-key-id fails via actual signature mismatch, distinct from a
+missing-credentials case; and `ground_truth.yaml`/README must state
+explicitly that this is a faithful SigV4 proxy, not a full IAM policy
+engine, so the X-score's meaning stays honest.
+
+**Implementation:**
+- `cybergym/cloud/sigv4_verify.py` — standalone AWS SigV4 implementation
+  (canonical request -> string to sign -> HMAC-chain-derived signing key
+  -> signature), reimplemented directly rather than via botocore
+  internals, so the verification side has no dependency on the exact
+  signing library the client happens to use.
+- `cybergym/cloud/known_secrets.py` — the flat access_key_id -> (secret,
+  allowed buckets) table; the proxy's only source of truth.
+- `cybergym/cloud/sigv4_proxy.py` — the FastAPI reverse proxy: parses
+  Authorization, verifies the signature for real, checks bucket
+  authorization, forwards authorized requests to real LocalStack
+  (unauthorized ones never reach it).
+- `cybergym/cloud/test_sigv4_verify.py` — builds REAL boto3-signed
+  requests (not hand-crafted headers) and proves: correct secret
+  verifies; wrong secret (valid access-key-id) produces a genuine
+  signature mismatch; missing/malformed Authorization header is a
+  distinct failure mode (fails at parse time, never reaches the
+  signature comparison at all).
+- Empirically verified end-to-end via `selftest.py`: correct creds
+  succeed, wrong secret gets a real `SignatureDoesNotMatch`, and the
+  Chain 3 over-privilege boundary is confirmed real (Chain 2's credential
+  is denied on Chain 3's bucket, not just "two independent buckets that
+  happen to both exist").
+- Since the proxy (not LocalStack's own IAM) owns the entire
+  authorization decision, `cloud/init_localstack.sh` only creates the two
+  buckets — no IAM users/policies are created in LocalStack at all, which
+  also sidesteps `create-access-key`'s own limitation (AWS's real IAM API
+  always auto-generates random credentials; there's no way to set custom
+  ones through it, which would have blocked using fixed, documented
+  values as the planted secrets).
+
+## Build-time decisions (below the escalation bar — logged, not asked)
+
+- **Planted secret values deliberately avoid any real vendor's key
+  format.** Applied the Brief #2 lesson proactively this time (no
+  payment-processor-live-key-shaped or AWS-access-key-shaped strings)
+  rather than discovering it via a blocked push. All values are
+  `CYBERGYM*`/`cybergym-fixture-*` prefixed and unambiguously
+  fixture-shaped.
+- **Chain 3's split point:** the combined credential string
+  (`access_key_id:secret_access_key`) is split at its exact midpoint
+  (`len(full)//2`) across `assets/cfg.dat` (first half) and a string
+  resource (second half) — an arbitrary but fixed, documented split
+  point; `ground_truth.yaml` states the exact reconstruction method
+  (concatenate in that order) so nothing about it is guessable-but-
+  undocumented.
+- **Manifest window is 100 years (2026-01-01 to 2126-01-01), not a dated
+  engagement window.** This is a standing local test lab re-used across
+  many future KRONOS runs, not a one-off client engagement — a normal
+  Brief #1 dated window would expire and silently break the lab's
+  in-scope status. Logged as deliberate, not an oversight.
+- **`cybergym/requirements.txt` is separate from KRONOS's own
+  `requirements.txt`/`pyproject.toml`**, even though both currently live
+  in the same shared `.venv` for local dev convenience — the manifest-
+  level separation is what matters (KRONOS's own dependency footprint
+  never grows because of this lab's needs), per SPEC_BRIEF05's "clearly
+  separated from `src/kronos/`."
+- **`cybergym/selftest.py` tears the lab down by default** (`docker
+  compose down -v`) after running all checks — matches the spec's
+  "leave nothing running or exposed after teardown," with `--no-teardown`
+  for manual inspection when that's what's actually wanted.
+- **Reused Brief #2's from-scratch `aapt`-based APK-build approach**
+  rather than inventing a new one — same reasoning as Brief #2 (no
+  third-party base, fully reproducible, no mystery blob), and consistency
+  with the established pattern.
