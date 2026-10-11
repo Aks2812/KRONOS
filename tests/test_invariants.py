@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from kronos.graph import EngagementGraph
+from kronos.ingest import apply_upserts, ingest_reference_mobile_secret
 from kronos.lifecycle import LifecycleError, advance_finding_status, advance_secret_status, can_anchor_finding, derive_confidence
 from kronos.manifest import ManifestError, load_and_verify
 from kronos.query import find_paths
@@ -76,3 +77,19 @@ def test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain(manifest_fact
     assert len(paths) >= 1
     assert paths[0]["nodes"][0] == "com.acme.app"
     assert paths[0]["nodes"][-1] == "cr:acme-bucket"
+
+
+def test_invariant_ingested_reference_example_produces_mobile_to_secret_chain(
+    manifest_factory, signing_keypair, tmp_path
+):
+    # Ruling (Task 7, see ledger): the shared engagement_graph fixture's
+    # default in_scope doesn't cover ingest_reference_mobile_secret()'s
+    # default bundle id, so this test builds its own graph with scope
+    # extended to include it.
+    _, pub = signing_keypair
+    manifest_yaml = manifest_factory(scope={"in_scope": ["*.acme.example.com", "com.kronos.*"]})
+    g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_yaml, pub)
+
+    apply_upserts(g, ingest_reference_mobile_secret())
+    paths = find_paths(g, "MOBILE_APP", "SECRET", max_hops=2)
+    assert len(paths) >= 1
