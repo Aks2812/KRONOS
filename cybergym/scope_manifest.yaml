@@ -11,6 +11,8 @@ scope:
   - com.kronos.cybergym.*
   - localhost*
   - 127.0.0.1*
+  - http://localhost*
+  - http://127.0.0.1*
   - kronos-cybergym-*
   - arn:aws:s3:::kronos-cybergym-*
-signature: mXUB5wcZPLQU18CFtMhLeXYcgnfrRjTd+dAOWAhxrYZmGtZCxAdr2r8vjdGA3YR9V7+SNNDi+/frlIRv4Iu6Aw==
+signature: S+MHyUu8awMRE2qQ/sDdTJPnIPL64caUHAiVwJlcUQzoRXIEmaeb9dq1K5CvW5LrQHizFlYZBAERdsO3F8ycBQ==
