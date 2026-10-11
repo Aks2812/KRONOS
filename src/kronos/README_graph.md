@@ -48,17 +48,41 @@ call — see `test_upsert_node_merges_not_duplicates` /
 picking a stable `id` (e.g. `host:10.0.0.1`, a content hash, or a bundle
 id) — the graph layer does not invent one.
 
-## Why `in_scope` is never caller-settable
+## Why `in_scope`/`confidence`/`status` are never caller-settable
 
-`EngagementGraph.upsert_node` computes `in_scope` itself, from
-`ScopeGuard.is_in_scope(scope_key or id)`, and writes it unconditionally —
-any `in_scope` key present in a caller's `props` dict is simply never
-read for that purpose (callers can't pass it at all; it's not a `props`
-key, it's a separate computed value). This is deliberate: SPEC.md's
-`scope_guard(target, manifest)` must be "the only scope mechanism," so
-the one function that writes nodes into the graph is the one function
-that calls it. There is no second, lower-level write path that skips this
-check.
+**This is enforced, not just intended** — a final-review pass found
+that an earlier version of `upsert_node` wrote every key in `props`
+unconditionally, so a caller could set `in_scope=True` on an
+out-of-scope id, or `confidence=10` on a `hypothesis` finding, directly.
+Fixed: `upsert_node` now validates `props` against `schema.py`'s
+allowlists (`NODE_PROPS_ALWAYS`, `NODE_PROPS_CREATE_ONLY`,
+`NODE_PROPS_FORBIDDEN`) *before* building any Cypher:
+
+- `in_scope`, `confidence`, `scope_note`, `id` are in
+  `NODE_PROPS_FORBIDDEN` — present in `props` at all raises `ValueError`
+  immediately. `in_scope` is computed from
+  `ScopeGuard.is_in_scope(scope_key or id)`; `confidence` gets a fixed
+  sentinel (`0`) on creation, never from `props`.
+- `status` is in `NODE_PROPS_CREATE_ONLY` for `SECRET`/`FINDING` — an
+  ingester may set its *initial* value at creation, but a later
+  `upsert_node` call on the same id leaves it untouched (silently, not
+  an error — a parser re-run shouldn't crash) rather than resetting
+  lifecycle-advanced progress. Only `lifecycle.py`'s
+  `advance_secret_status`/`advance_finding_status` ever change `status`
+  or `confidence` after creation.
+- any key not in a type's allowed set at all raises `ValueError` — this
+  also closes a property-name injection vector the old unconditional
+  loop opened (an arbitrary `props` key became literal Cypher text).
+
+This is deliberate: SPEC.md's `scope_guard(target, manifest)` must be
+"the only scope mechanism," and confidence must be "derived from
+status, never set freely." `upsert_node` is the one function that
+creates/updates nodes, so it's the one place both guarantees are
+checked — not merely documented. (`EngagementGraph.execute()` is a
+lower-level primitive `lifecycle.py`/`evidence.py` use internally to
+write `status`/`confidence`/`scope_note` directly; it's not a
+general-purpose escape hatch for outside callers, but it is a real
+method that *could* be misused that way — see `README_lifecycle.md`.)
 
 `scope_key` lets a node's scope be judged by something other than its own
 `id` — e.g. a `SECRET` extracted from a mobile app is in-scope if the

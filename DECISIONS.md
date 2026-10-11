@@ -1,9 +1,12 @@
 # DECISIONS.md — Brief #1 (Findings Graph Core + Validation Lifecycle)
 
 Every non-trivial autonomous call made while building this brief, per the
-escalation contract in `SPEC.md`. None of these required a `FORK:` stop —
-each was a naming/property/file-layout/library detail, or a straight bug
-fix caught by its own test, with low cost if it turns out wrong later.
+escalation contract in `SPEC.md`. The build-time decisions below each
+were a naming/property/file-layout/library detail, or a straight bug fix
+caught by its own test, with low cost if wrong — none needed a `FORK`
+stop. Two `FORK` items *were* raised during the final whole-branch
+review (see that section at the end) and are flagged in the PR
+description per the escalation contract's format.
 
 Format: **Decision** / **Why** / **Reversibility**.
 
@@ -240,3 +243,207 @@ of this project's dependencies (`kuzu`, `pydantic`, `cryptography`,
 where `pip install -e .`/`pip install -r requirements.txt` actually land.
 **Reversibility:** trivial — just the invocation string; documented in
 the PR and in this file so it isn't rediscovered the hard way.
+
+---
+
+## Final whole-branch review (two independent passes, both on Opus)
+
+Two fresh reviewer passes (schema/graph/lifecycle/evidence; manifest/
+scope/query/ingest/tests) independently confirmed the same root-cause
+Critical finding and surfaced several real Important gaps. All
+Critical/Important findings were fixed in one pass, each with a test
+that failed before the fix and passed after (several verified RED by
+reverting the fix momentarily and re-running, not just inferred); two
+findings are raised as `FORK`s instead of fixed, since resolving them
+properly means changing a contract the escalation rules call out
+explicitly. Full test suite: 47 -> 58 (11 new regression/strengthening
+tests), all green throughout.
+
+### Fixed
+
+**C1 — `upsert_node`'s `props` loop had no allowlist.** Both passes
+independently confirmed a caller could set `in_scope=True` on an
+out-of-scope id, `confidence=10` on a `hypothesis` finding, or
+`status="reported"` directly — bypassing `scope_guard` and
+`lifecycle.py` entirely through the one documented write path (reachable
+via `ingest.py`'s `NodeUpsert.props`, i.e. from a future untrusted
+parser's output). A second confirmed effect: because the old code wrote
+`props` on every `MERGE` (create AND match), re-ingesting the same raw
+input reset an already-advanced SECRET/FINDING back to its initial
+status/confidence. **Fix:** `schema.py` gained three registries
+(`NODE_PROPS_ALWAYS`, `NODE_PROPS_CREATE_ONLY`, `NODE_PROPS_FORBIDDEN`);
+`upsert_node` now validates every `props` key against them before
+building any Cypher, and splits its `MERGE` into distinct `ON CREATE`/
+`ON MATCH` clause sets so `status`/`confidence`/`created_at` are never
+rewritten after creation. This also closes the property-*name*
+injection vector (an unrecognized key now raises `ValueError` instead of
+reaching an f-string). **Reversibility:** this is now load-bearing for
+the system's core safety claim; any new node-column needs a registry
+entry, not a free-form `props` key.
+
+**C2 (re-graded Critical from the reviewer's "Important") — scope_guard's
+CIDR branch didn't recognize "ip:port" targets.** Confirmed: an excluded
+`10.0.5.0/24` did not block `10.0.5.10:443` (the colon-suffixed string
+fails `ipaddress.ip_address()`, falls through to plain glob matching,
+and a separately-present looser in-scope wildcard like `10.0.*` then
+matched it). Re-graded to Critical because the escalation contract
+explicitly calls for a security lens on `scope_guard`, and SPEC.md's own
+dedup convention ("same host:port updates") means ip:port-shaped node
+ids are an expected, not exotic, input. **Fix:** `_matches` now also
+tries the target with a single trailing `:<port>` suffix stripped before
+giving up on the CIDR branch (IPv6 literals, which have more than one
+colon, are left untouched). **Reversibility:** easy, isolated to one
+helper function.
+
+**Important — three of the five named invariant tests were weaker than
+their own names.** `..._expired_or_unsigned_manifest_rejected` never
+tested an actually-unsigned manifest (only expired + tampered);
+`..._confidence_cannot_exceed_status_cap` only called the pure
+`derive_confidence` function directly, so it would have passed even
+with C1 present; `..._out_of_scope_secret_cannot_anchor_finding` never
+exercised `can_anchor_finding`'s `True` branch at all (`return False`
+would have passed every test), and its SECRET had no `scope_key`, so it
+was *itself* out of scope — isolating nothing. **Fix:** strengthened all
+three (added a truly-unsigned + not-yet-started case; added a
+through-the-graph confidence check including a props-injection attempt;
+gave the secret an in-scope `scope_key` and added a positive
+`can_anchor_finding` case).
+
+**Important — `test_find_paths_only_in_scope_excludes_out_of_scope_hop`
+was vacuous.** Both of its seeded endpoints were out of scope under the
+default manifest, so it passed via the endpoint-always-checked rule,
+not via the `only_in_scope` intermediate-hop filter it claimed to test
+— confirmed by temporarily disabling that filter and watching the test
+still pass, then it failing once the test was rewritten with in-scope
+endpoints and an out-of-scope-only intermediate hop. This also means an
+earlier ledger entry (Task 6's ruling) was wrong to claim this test
+"holds under the default manifest already" for the right reason.
+**Fix:** rewritten with in-scope endpoints; verified by mutation (the
+rewritten test does fail when the filter is disabled, confirmed and
+reverted).
+
+**Important — `ingest._resolve_node_type` silently picked a table when
+an id existed in more than one.** Ids are only unique *within* a table
+(a HOST and an API_ENDPOINT can share a hostname); the old code
+returned the first match in a fixed table-iteration order, which could
+wire an `EdgeUpsert` to the wrong endpoint type with no error.
+**Fix:** raises `ValueError` on ambiguity instead.
+
+**Important — a manifest window timestamp with no UTC offset raised a
+bare `TypeError`, not `ManifestError`.** A caller catching only
+`ManifestError` (this module's whole documented contract) would crash.
+**Fix:** a pydantic `field_validator` on `ScopeManifest.window_start`/
+`window_end` rejects naive datetimes explicitly, which
+`load_and_verify`'s existing `ValidationError` -> `ManifestError`
+wrapping already covers.
+
+**Important — `query.py` took `node_type`/filter keys/`find_paths`
+endpoint types unvalidated.** Both reviewers confirmed no exploitable
+path exists *today* (only internal constants reach these in this
+brief), but SPEC.md names this read API as what a future agent will
+drive directly. Separately, `find_paths(g, "FINDING", "EVIDENCE")`
+crashed with a raw Kùzu binder `RuntimeError` ("Cannot find property
+in_scope") since EVIDENCE has no such column. **Fix:** added
+`schema.NODE_COLUMNS` (the full read-queryable column set per type,
+deliberately separate from the write-oriented `NODE_PROPS_*` registries
+— reading `status`/`confidence`/`in_scope` is legitimate, only
+*writing* them through `upsert_node` is restricted); `query_graph`
+validates `node_type`/filter keys against it, and `find_paths` rejects
+`EVIDENCE`/`ENGAGEMENT` endpoints with a clear `ValueError`
+(`ENGAGEMENT` never appears in any `EDGE_PAIRS` entry, so it could never
+be a real chain participant anyway — letting it through would just
+silently return `[]` forever).
+
+**Important — `created_at` wasn't auto-stamped on node creation.**
+Contrary to SPEC.md's "every node: id, in_scope, created_at, source."
+Closed as a side effect of the C1 fix (created_at now defaults to
+`now()` in the `ON CREATE`-only clause) — verified directly, no
+additional code needed.
+
+**Important — two READMEs asserted guarantees that didn't hold.**
+`README_graph.md` claimed `in_scope` "callers can't pass it at all" and
+`README_lifecycle.md` claimed "no generic setter" exists — both were
+aspirational at the time, not yet enforced (that's what C1 fixed).
+Updated both to describe the actual, now-enforced mechanism, and
+`README_lifecycle.md` now explicitly acknowledges `EngagementGraph.execute()`
+as the real (if internal-only-by-convention) lower-level primitive
+`lifecycle.py` itself uses to write `status`/`confidence`/`scope_note`.
+
+### Declined to fix (not entering the fix pass)
+
+**Minor — evidence not re-verified on read; `_literal` doesn't guard
+NaN/Inf; `source` isn't an enforced enum; no transaction around an
+`apply_upserts` batch; `find_paths` has no result cap; one test name
+doesn't match its body.** Genuinely minor, no safety impact, deferred —
+see the PR description's "Deferred minors" list.
+
+### `FORK`s raised (escalation contract items 1 "query-interface contract"
+and 3 "security-critical scope-guard tradeoff")
+
+**FORK 1 — the query interface's concrete shapes vs. SPEC.md's
+one-liners.** SPEC.md writes `query_graph(filter) -> matching
+nodes/edges` and `find_paths(from_filter, to_filter, max_hops) ->
+cross-domain chains` without specifying `filter`'s type or whether
+`query_graph` can return edges. This brief's plan (reviewed and approved
+before implementation) concretized these as `query_graph(graph,
+node_type=None, filters: dict|None)` (nodes only) and `find_paths(graph,
+from_type, to_type, max_hops, only_in_scope)`. The escalation contract
+lists "the query-interface contract" as FORK-worthy, and a reviewer
+flagged that this concretization was never explicitly raised as one at
+the time — raising it now, retroactively, rather than silently standing
+by the plan-time choice.
+- OPTIONS: (a) keep the current concrete signatures as-is; (b) widen
+  `filter`/`from_filter`/`to_filter` to accept either a bare type-name
+  string (current behavior) or a richer predicate (e.g. property
+  equality beyond exact-match, so a caller can start `find_paths` from
+  a *specific* secret rather than every SECRET); (c) add edge results to
+  `query_graph`.
+- RECOMMENDATION: (a) for this brief — the next brief that actually
+  builds an agent against this interface is better positioned to know
+  what shape of `filter` it needs than a guess made now; widening later
+  is additive, not breaking, for any caller using today's `node_type=`/
+  `filters=` keyword form.
+- DEFAULT IF NO ANSWER: keep (a) — already shipped.
+
+**FORK 2 — scope-glob pattern-class ambiguity beyond CIDR/port
+normalization.** SPEC.md's scope format lists FQDN, CIDR, URL pattern,
+and mobile-bundle-id globs under one untyped list with no tag
+distinguishing which kind an entry is. A reviewer confirmed two
+concrete collisions beyond the CIDR/port issue already fixed above:
+`fnmatch`'s `*` crosses what should be a URL/hostname boundary (a
+pattern like `*.acme.example.com` can match a crafted URL path
+containing that substring after a scheme/host it was never meant to
+authorize), and a mobile-bundle-id glob (`com.acme.*`) can coincidentally
+match an unrelated hostname with the same dot-separated shape. Both are
+inherent to using one untyped glob mechanism for genuinely different
+identifier kinds, which is how SPEC.md itself defines the scope format
+— fully resolving it means tagging scope entries by kind (e.g.
+`cidr:10.0.0.0/8`, `fqdn:*.example.com`, `bundle:com.acme.*`,
+`url:https://...`), which changes the signed manifest's own schema (a
+FORK-worthy "schema's core shape" change under the escalation contract,
+not a property detail).
+- OPTIONS: (a) ship as-is, documented as a known limitation — an
+  operator who writes genuinely ambiguous overlapping globs (a loose
+  FQDN wildcard that could also parse as a URL-path match, or a bundle-id
+  pattern shaped like a possible hostname) accepts that risk, same as
+  any glob-based ACL; (b) add typed-prefix scope entries now (schema
+  change to the signed manifest format, plus a migration note for any
+  already-signed manifest); (c) keep untyped entries but add a stricter
+  matcher per declared *context* (i.e. only match an FQDN-style pattern
+  against something that parses as a bare hostname, only match a
+  URL-style pattern — one containing `://` — against something that
+  parses as a URL), without changing the manifest's on-disk format.
+- RECOMMENDATION: (c) for a later brief — it closes the actual
+  collisions without touching the signed-manifest schema (so no
+  migration), by making `scope_guard._matches` dispatch on the
+  *target's* apparent shape (bare IP/CIDR, URL, bare hostname/bundle-id)
+  the same way it already does for CIDR vs. everything else, just
+  extended to URL vs. hostname. Didn't implement this now because it's
+  a second, open-ended design pass in its own right, not a bounded bug
+  fix like the CIDR/port case.
+- DEFAULT IF NO ANSWER: (a) — ship as-is; the CIDR/port fix already
+  closes the one bypass confirmed as a genuine exclusion-defeating
+  issue (an excluded IP being let back in by an unrelated, separately
+  legitimate in-scope wildcard), and the remaining collisions require an
+  operator to write genuinely overlapping, ambiguous scope entries in
+  the first place.

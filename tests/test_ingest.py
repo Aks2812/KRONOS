@@ -41,3 +41,20 @@ def test_apply_upserts_is_idempotent_no_duplicates(engagement_graph):
     apply_upserts(g, ups)  # re-run identical raw input
     r = g.execute("MATCH (a:MOBILE_APP)-[:leaks]->(s:SECRET) RETURN count(*)")
     assert r.get_next()[0] == 1
+    r = g.execute("MATCH (a:MOBILE_APP) RETURN count(a)")
+    assert r.get_next()[0] == 1
+    r = g.execute("MATCH (s:SECRET) RETURN count(s)")
+    assert r.get_next()[0] == 1
+
+
+def test_edge_upsert_raises_on_ambiguous_shared_id(engagement_graph):
+    """Final review Important #4: the same id can legitimately exist in
+    two different node tables (e.g. a HOST and an API_ENDPOINT sharing a
+    hostname) — _resolve_node_type must not silently pick whichever
+    table happens first in ALL_NODE_TABLES order, since that can wire an
+    edge to the wrong endpoint type entirely."""
+    g = engagement_graph
+    g.upsert_node("HOST", "shared.acme.example.com", {})
+    g.upsert_node("API_ENDPOINT", "shared.acme.example.com", {})
+    with pytest.raises(ValueError):
+        apply_upserts(g, [EdgeUpsert("resolves_to", "shared.acme.example.com", "shared.acme.example.com")])

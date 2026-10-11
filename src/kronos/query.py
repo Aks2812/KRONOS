@@ -11,20 +11,48 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from kronos.evidence import get_evidence  # noqa: F401 - re-exported per SPEC.md's named interface list
-from kronos.schema import ALL_NODE_TABLES
+from kronos.schema import ALL_NODE_TABLES, NODE_COLUMNS
 
 if TYPE_CHECKING:  # pragma: no cover - avoids a runtime import cycle with graph.py
     from kronos.graph import EngagementGraph
+
+# EVIDENCE has no in_scope column (schema.py) — find_paths' endpoint
+# WHERE clause would crash with a raw Kuzu binder error. ENGAGEMENT
+# never appears in any schema.EDGE_PAIRS entry, so it can never be a
+# real chain participant; letting it through would just silently
+# return [] forever rather than telling the caller why. Final review
+# Important #9.
+_FIND_PATHS_INVALID_ENDPOINT_TYPES = {"EVIDENCE", "ENGAGEMENT"}
 
 
 def query_graph(
     graph: "EngagementGraph", node_type: str | None = None, filters: dict[str, Any] | None = None
 ) -> list[dict[str, Any]]:
     """Return matching nodes as plain dicts. `node_type=None` unions every
-    node table (O(num_tables); fine at this scale, no index needed)."""
+    node table (O(num_tables); fine at this scale, no index needed).
+
+    `node_type` and every key in `filters` are validated against
+    `schema.NODE_COLUMNS` before any Cypher is built — final review
+    Important #6: these were previously pasted into query text
+    unchecked. Nothing in this brief passes untrusted input here, but
+    SPEC.md names this as the read surface a future agent will drive,
+    so the same allowlist discipline as `upsert_node` applies.
+    """
+    if node_type is not None and node_type not in ALL_NODE_TABLES:
+        raise ValueError(f"unknown node type {node_type!r}")
+
+    if filters and node_type is not None:
+        unknown = filters.keys() - NODE_COLUMNS.get(node_type, set())
+        if unknown:
+            raise ValueError(f"filters contains unknown column(s) {sorted(unknown)} for node type {node_type!r}")
+
     types = [node_type] if node_type is not None else ALL_NODE_TABLES
     rows: list[dict[str, Any]] = []
     for t in types:
+        if filters and node_type is None and not (filters.keys() <= NODE_COLUMNS.get(t, set())):
+            # Unioning every table: a table that doesn't even have one
+            # of the filtered columns simply has no matching rows.
+            continue
         where = ""
         params: dict[str, Any] = {}
         if filters:
@@ -72,6 +100,15 @@ def find_paths(
     step (Kuzu's inline `(r,n | WHERE n.in_scope = true)` predicate);
     when False, intermediate hops may leave scope for diagnostic use.
     """
+    for label, t in (("from_type", from_type), ("to_type", to_type)):
+        if t not in ALL_NODE_TABLES:
+            raise ValueError(f"unknown node type {t!r} for {label}")
+        if t in _FIND_PATHS_INVALID_ENDPOINT_TYPES:
+            raise ValueError(
+                f"{t!r} cannot be a find_paths endpoint ({label}): it is never a "
+                "cross-domain chain participant with a scope verdict to check"
+            )
+
     if only_in_scope:
         pattern = f"-[* 1..{max_hops} (r,n | WHERE n.in_scope = true)]->"
     else:

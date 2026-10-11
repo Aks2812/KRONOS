@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 
 
 class ManifestError(Exception):
@@ -35,6 +35,20 @@ class ScopeManifest(BaseModel):
     destructive_allowed: bool = False
     in_scope: list[str]
     excluded: list[str]
+
+    @field_validator("window_start", "window_end")
+    @classmethod
+    def _require_timezone_aware(cls, value: datetime) -> datetime:
+        # Final review Important #5: a naive datetime (no UTC offset in
+        # the YAML) used to reach load_and_verify's `window_start <= now
+        # <= window_end` comparison and raise a bare TypeError instead of
+        # ManifestError — a caller catching only ManifestError would
+        # crash. Reject naive datetimes explicitly here instead of
+        # guessing a timezone for them; this still surfaces as
+        # ManifestError (load_and_verify wraps ValidationError).
+        if value.tzinfo is None:
+            raise ValueError("window_start/window_end must include a UTC offset (e.g. ...+00:00 or ...Z)")
+        return value
 
 
 def canonicalize(data: dict[str, Any]) -> bytes:

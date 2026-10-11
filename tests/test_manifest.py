@@ -50,3 +50,18 @@ def test_wrong_public_key_rejected(manifest_factory):
     wrong_pub = Ed25519PrivateKey.generate().public_key()
     with pytest.raises(ManifestError):
         load_and_verify(yaml_text, wrong_pub)
+
+
+def test_naive_window_timestamp_rejected_as_manifest_error_not_typeerror(manifest_factory, signing_keypair):
+    """Final review Important #5: a window timestamp with no UTC offset
+    used to reach the aware/naive datetime comparison in load_and_verify
+    and raise a bare TypeError. A caller catching only ManifestError (as
+    this module's whole contract promises) would crash instead of
+    getting a clean rejection."""
+    _, pub = signing_keypair
+    naive = manifest_factory(engagement={
+        "window_start": "2026-01-01T00:00:00",  # no offset
+        "window_end": "2026-12-31T23:59:59",
+    })
+    with pytest.raises(ManifestError):
+        load_and_verify(naive, pub)

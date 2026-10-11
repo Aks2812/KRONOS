@@ -13,6 +13,21 @@ import ipaddress
 from kronos.manifest import ScopeManifest
 
 
+def _strip_port_suffix(target: str) -> str:
+    """"10.0.5.10:443" -> "10.0.5.10"; anything else is returned unchanged.
+
+    Only strips a single trailing ":<digits>" — a bare IPv6 address has
+    more than one colon and is left alone, so this never mangles a real
+    IPv6 literal while still recognizing the "ip:port" node-id shape
+    SPEC.md's own dedup convention ("same host:port updates") produces.
+    """
+    if target.count(":") == 1:
+        host, _, maybe_port = target.rpartition(":")
+        if maybe_port.isdigit():
+            return host
+    return target
+
+
 def _matches(pattern: str, target: str) -> bool:
     if "/" in pattern:
         try:
@@ -20,11 +35,16 @@ def _matches(pattern: str, target: str) -> bool:
         except ValueError:
             network = None
         if network is not None:
-            try:
-                address = ipaddress.ip_address(target)
-            except ValueError:
-                pass
-            else:
+            # Final review Important #3: a CIDR pattern must still catch
+            # an "ip:port"-shaped target (e.g. "10.0.5.10:443") rather
+            # than silently falling through to glob matching, which
+            # could let an excluded IP slip past via an unrelated
+            # looser in-scope wildcard.
+            for candidate in (target, _strip_port_suffix(target)):
+                try:
+                    address = ipaddress.ip_address(candidate)
+                except ValueError:
+                    continue
                 return address in network
     return fnmatch.fnmatchcase(target.lower(), pattern.lower())
 

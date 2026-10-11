@@ -54,3 +54,15 @@ def test_mobile_bundle_id_glob():
     m = _m(["com.acme.*"], [])
     assert scope_guard("com.acme.mobileapp", m) is True
     assert scope_guard("com.evil.app", m) is False
+
+
+def test_cidr_excluded_still_blocks_ip_port_target():
+    """Final review Important #3: a CIDR exclusion must still deny an
+    'ip:port'-style target (e.g. a SERVICE node id like
+    "10.0.5.10:443") — SPEC.md explicitly uses host:port-shaped ids for
+    dedup, so scope_guard must not let the port suffix smuggle an
+    excluded IP past the CIDR check and fall through to an unrelated,
+    looser in-scope glob that happens to match the raw string."""
+    m = _m(["10.0.*"], ["10.0.5.0/24"])
+    assert scope_guard("10.0.5.10:443", m) is False
+    assert scope_guard("10.0.1.10:443", m) is True

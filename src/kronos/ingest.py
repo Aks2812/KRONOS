@@ -67,10 +67,20 @@ def ingest(raw_tool_output: Any, tool_name: str, engagement: "EngagementGraph") 
 
 
 def _resolve_node_type(engagement: "EngagementGraph", node_id: str) -> str:
-    for table in ALL_NODE_TABLES:
-        if engagement.get_node(table, node_id) is not None:
-            return table
-    raise ValueError(f"no existing node with id {node_id!r} in any table; apply its NodeUpsert first")
+    matches = [table for table in ALL_NODE_TABLES if engagement.get_node(table, node_id) is not None]
+    if not matches:
+        raise ValueError(f"no existing node with id {node_id!r} in any table; apply its NodeUpsert first")
+    if len(matches) > 1:
+        # Final review Important #4: ids are only unique within a table
+        # (e.g. a HOST and an API_ENDPOINT can legitimately share a
+        # hostname), so silently picking the first match in table order
+        # could wire an edge to the wrong endpoint type. Fail loudly
+        # instead — a caller that hits this must pass an id that's
+        # unambiguous, or resolve the type itself and call
+        # engagement.upsert_edge() directly rather than through
+        # apply_upserts()'s EdgeUpsert.
+        raise ValueError(f"id {node_id!r} exists in more than one node table ({matches}); ambiguous endpoint type")
+    return matches[0]
 
 
 def apply_upserts(engagement: "EngagementGraph", upserts: list[NodeUpsert | EdgeUpsert]) -> None:

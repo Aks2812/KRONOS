@@ -150,6 +150,80 @@ ALL_NODE_TABLES = [
     "TECHNOLOGY", "FINDING", "EVIDENCE",
 ]
 
+# Columns `EngagementGraph.upsert_node` may write from caller-supplied
+# `props` on EVERY call (create and re-merge alike). Deliberately
+# excludes `id` (the MERGE key, never a SET target), `in_scope`
+# (scope_guard's alone — see graph.py's _ALWAYS_IN_SCOPE_TYPES /
+# _NO_IN_SCOPE_COLUMN_TYPES), `created_at` (create-only, see below), and
+# `status`/`confidence`/`scope_note` (lifecycle.py's alone after
+# creation — see NODE_PROPS_CREATE_ONLY and DECISIONS.md's "upsert_node
+# prop allowlist" entry for why this exists at all).
+NODE_PROPS_ALWAYS: dict[str, set[str]] = {
+    "ENGAGEMENT": {"client", "authorized_by", "window_start", "window_end", "destructive_allowed"},
+    "HOST": {"source"},
+    "SERVICE": {"source", "port", "protocol"},
+    "WEB_ENDPOINT": {"source", "url", "method"},
+    "PARAMETER": {"source", "name", "param_type"},
+    "API_ENDPOINT": {"source", "url", "method"},
+    "MOBILE_APP": {"source", "bundle_id", "platform"},
+    "MOBILE_COMPONENT": {"source", "component_type", "name"},
+    "SECRET": {"source", "value_ref", "kind"},
+    "IDENTITY": {"source", "name", "provider"},
+    "CLOUD_RESOURCE": {"source", "resource_type", "provider"},
+    "TECHNOLOGY": {"source", "name", "version"},
+    "FINDING": {"source", "title", "severity"},
+    "EVIDENCE": {"sha256", "blob_path", "kind"},
+}
+
+# Columns settable via `props` ONLY on the node's first creation. A
+# caller may resupply them on a later upsert_node call (e.g. a parser
+# re-running over the same raw input) without error, but the resupplied
+# value is silently ignored rather than overwriting what's already
+# there — `created_at` is immutable once stamped, and `status`'s initial
+# value is an ingester's business, but every change after creation must
+# go through lifecycle.py's advance_secret_status/advance_finding_status,
+# never through a second upsert_node call.
+NODE_PROPS_CREATE_ONLY: dict[str, set[str]] = {
+    "SECRET": {"status"},
+    "FINDING": {"status"},
+}
+# created_at is create-only for every node type that has the column
+# (every type except EVIDENCE's own handling is identical — EVIDENCE
+# also has created_at and follows the same rule).
+for _table in ALL_NODE_TABLES:
+    NODE_PROPS_CREATE_ONLY.setdefault(_table, set()).add("created_at")
+del _table
+
+# Columns `upsert_node` computes itself and will never accept from
+# `props` under any circumstance — passing one of these raises
+# ValueError rather than silently dropping it, so a caller finds out
+# immediately rather than wondering later why its value didn't take.
+NODE_PROPS_FORBIDDEN: set[str] = {"id", "in_scope", "confidence", "scope_note"}
+
+# The full set of real, queryable columns per node type (mirrors the DDL
+# in `_NODE_TABLES` exactly, same pattern as `EDGE_PAIRS`). Used by
+# `query.py` to validate `node_type`/filter keys before they reach any
+# Cypher text — unlike the write-side registries above, this one is
+# unrestricted: a read filter on `status`/`confidence`/`in_scope` is
+# completely legitimate (e.g. `list_findings(status=...)`), it's only
+# *writing* those columns through `upsert_node` that's restricted.
+NODE_COLUMNS: dict[str, set[str]] = {
+    "ENGAGEMENT": {"id", "client", "authorized_by", "window_start", "window_end", "destructive_allowed", "in_scope", "created_at"},
+    "HOST": {"id", "in_scope", "created_at", "source"},
+    "SERVICE": {"id", "in_scope", "created_at", "source", "port", "protocol"},
+    "WEB_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
+    "PARAMETER": {"id", "in_scope", "created_at", "source", "name", "param_type"},
+    "API_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
+    "MOBILE_APP": {"id", "in_scope", "created_at", "source", "bundle_id", "platform"},
+    "MOBILE_COMPONENT": {"id", "in_scope", "created_at", "source", "component_type", "name"},
+    "SECRET": {"id", "in_scope", "created_at", "source", "value_ref", "kind", "status", "confidence", "scope_note"},
+    "IDENTITY": {"id", "in_scope", "created_at", "source", "name", "provider"},
+    "CLOUD_RESOURCE": {"id", "in_scope", "created_at", "source", "resource_type", "provider"},
+    "TECHNOLOGY": {"id", "in_scope", "created_at", "source", "name", "version"},
+    "FINDING": {"id", "in_scope", "created_at", "source", "title", "severity", "status", "confidence"},
+    "EVIDENCE": {"id", "created_at", "sha256", "blob_path", "kind"},
+}
+
 
 def init_db(db_path: str | Path) -> kuzu.Database:
     """Open (creating if absent) the one-file-per-engagement Kùzu DB and
