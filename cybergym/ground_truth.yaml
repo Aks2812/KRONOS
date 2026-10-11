@@ -1,0 +1,77 @@
+# CyberGym X-instrument ground truth (SPEC_BRIEF05 "GROUND TRUTH — the
+# grading key"). Every planted chain, listed exhaustively, is what
+# KRONOS's cross-domain score (X) is graded against: the % of these K=3
+# chains KRONOS discovers AND validates end-to-end (a SECRET confirmed
+# live whose authenticates_to target is an in-scope asset, reachable via
+# find_paths).
+#
+# Honesty note on the cloud tier (also in README.md): "live"/"verify" for
+# Chains 2 and 3 means the SigV4 proxy's real cryptographic signature
+# check accepts/rejects the credential — a faithful SigV4 check plus a
+# flat allowed-buckets table, NOT a full AWS IAM policy engine. See
+# cybergym/cloud/known_secrets.py, the single source of truth this file
+# must match (selftest.py asserts they stay in sync).
+
+instrument: cybergym-x-score-v1
+k: 3
+scope_manifest: scope_manifest.yaml
+scope_manifest_pubkey: scope_manifest_pubkey.pem
+
+chains:
+  - id: chain-1
+    stresses: plaintext secret, undocumented API endpoint
+    secret:
+      value: "CYBERGYM_FIXTURE_CHAIN1_API_KEY_4d2f8a91"
+      location: "cybergym/mobile/apk_src/res/values/strings.xml, resource kronos_chain1_api_key"
+      obfuscation: none
+    target:
+      type: API_ENDPOINT
+      description: "undocumented FastAPI endpoint — excluded from /openapi.json, only discoverable from the app's planted base URL + path"
+      base_url_resource: kronos_chain1_base_url  # "http://localhost:8091"
+      path_resource: kronos_chain1_endpoint_path  # "/internal/v1/admin/export"
+      full_url: "http://localhost:8091/internal/v1/admin/export"
+    expected_path: "MOBILE_APP --leaks--> SECRET --authenticates_to--> API_ENDPOINT"
+    verify:
+      method: "POST http://localhost:8091/internal/v1/admin/export with header X-Cybergym-Key: <secret.value>"
+      live_if: "HTTP 200"
+      dead_if: "HTTP 401 (missing key, or any value other than secret.value)"
+
+  - id: chain-2
+    stresses: Base64-obfuscated secret, cloud resource (S3)
+    secret:
+      value: "CYBERGYMGENERALUSER0001:cybergym-fixture-general-secret-7f3a9c1e"
+      location: "cybergym/mobile/apk_src/res/values/strings.xml, resource kronos_chain2_creds_enc"
+      obfuscation: "base64 (whole value is base64(\"access_key_id:secret_access_key\"))"
+      decoded_shape: "access_key_id:secret_access_key, split on first ':'"
+    target:
+      type: CLOUD_RESOURCE
+      description: "LocalStack S3 bucket, access gated by the SigV4 proxy (see cloud/known_secrets.py) — this credential is scoped to ONE bucket only"
+      bucket: kronos-cybergym-general
+      arn: "arn:aws:s3:::kronos-cybergym-general"
+      proxy_endpoint: "http://localhost:4567"
+    expected_path: "MOBILE_APP --leaks--> SECRET --authenticates_to--> CLOUD_RESOURCE (kronos-cybergym-general)"
+    verify:
+      method: "boto3 S3 ListObjectsV2 on kronos-cybergym-general via http://localhost:4567, signed with the decoded access_key_id/secret_access_key"
+      live_if: "HTTP 200 (signature verifies against known_secrets.py's secret for CYBERGYMGENERALUSER0001, and that user is allowed on this bucket)"
+      dead_if: "HTTP 403 AccessDenied — either SignatureDoesNotMatch (wrong secret) or not-authorized-on-bucket"
+
+  - id: chain-3
+    stresses: split/non-obvious-location secret, over-privileged cloud resource (real privilege-escalation relationship, not just a second independent bucket)
+    secret:
+      value: "CYBERGYMADMINUSER0001:cybergym-fixture-admin-secret-b82d4f60"
+      location: "split across TWO files — neither alone is the real credential:
+        part 1 (first 30 chars, 'CYBERGYMADMINUSER0001:cybergym') in cybergym/mobile/apk_src/assets/cfg.dat (a raw asset file, not a string resource);
+        part 2 (the remainder, '-fixture-admin-secret-b82d4f60') in res/values/strings.xml, resource kronos_chain3_secret_part2"
+      obfuscation: "split across a non-obvious location (raw asset file) + a string resource; reconstruct by concatenating cfg.dat's full content with kronos_chain3_secret_part2's value, in that order"
+    target:
+      type: CLOUD_RESOURCE
+      description: "LocalStack S3 bucket — this credential is OVER-PRIVILEGED: it is also valid on kronos-cybergym-general (chain-2's bucket), while chain-2's own credential is NOT valid here. A real privilege-escalation relationship, verified cryptographically by the SigV4 proxy, not just two independently-scoped buckets."
+      bucket: kronos-cybergym-admin-secrets
+      arn: "arn:aws:s3:::kronos-cybergym-admin-secrets"
+      proxy_endpoint: "http://localhost:4567"
+    expected_path: "MOBILE_APP --leaks--> SECRET --authenticates_to--> CLOUD_RESOURCE (kronos-cybergym-admin-secrets); same SECRET also --authenticates_to--> CLOUD_RESOURCE (kronos-cybergym-general), demonstrating over-privilege"
+    verify:
+      method: "boto3 S3 ListObjectsV2 on BOTH kronos-cybergym-admin-secrets AND kronos-cybergym-general via http://localhost:4567, signed with the reassembled access_key_id/secret_access_key"
+      live_if: "HTTP 200 on both buckets"
+      dead_if: "HTTP 403 AccessDenied on either"
+      privilege_boundary_check: "chain-2's credential (CYBERGYMGENERALUSER0001) MUST get HTTP 403 on kronos-cybergym-admin-secrets — this is what proves the over-privilege is real, not coincidental"

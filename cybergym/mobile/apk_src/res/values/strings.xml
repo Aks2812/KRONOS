@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KronosCyberGymLab</string>
+
+    <!-- Chain 1: plaintext secret -> undocumented API endpoint. -->
+    <string name="kronos_chain1_api_key">CYBERGYM_FIXTURE_CHAIN1_API_KEY_4d2f8a91</string>
+    <string name="kronos_chain1_base_url">http://localhost:8091</string>
+    <string name="kronos_chain1_endpoint_path">/internal/v1/admin/export</string>
+
+    <!-- Chain 2: Base64-obfuscated "access_key_id:secret_access_key" -> cloud. -->
+    <string name="kronos_chain2_creds_enc">Q1lCRVJHWU1HRU5FUkFMVVNFUjAwMDE6Y3liZXJneW0tZml4dHVyZS1nZW5lcmFsLXNlY3JldC03ZjNhOWMxZQ==</string>
+
+    <!-- Chain 3: second half of a split secret (first half is in
+         assets/cfg.dat — see tests/fixtures-equivalent README/ground_truth.yaml
+         for the reconstruction method). Non-obvious: two separate files,
+         neither one alone is the real credential. -->
+    <string name="kronos_chain3_secret_part2">-fixture-admin-secret-b82d4f60</string>
+
+    <!-- The planted cloud-resource references (SPEC_BRIEF05 mobile tier
+         item: "a reference to a cloud resource"). -->
+    <string name="kronos_cloud_endpoint">http://localhost:4567</string>
+    <string name="kronos_cloud_bucket_general">kronos-cybergym-general</string>
+    <string name="kronos_cloud_bucket_admin">kronos-cybergym-admin-secrets</string>
+</resources>

@@ -1,0 +1,52 @@
+# CyberGym X-instrument lab. Everything local-only (SPEC_BRIEF05 security
+# posture): no port is exposed beyond localhost, no real cloud account,
+# no real credentials — every "secret" here is a fake fixture value.
+#
+# LocalStack is PINNED to :3.0 deliberately — `latest` now requires a
+# paid Pro license even for basic community services (S3/IAM/STS); see
+# cybergym/README.md "Why LocalStack is pinned to :3.0" before changing
+# this tag.
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    environment:
+      - SERVICES=s3
+    ports:
+      - "127.0.0.1:4566:4566"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  init-buckets:
+    build:
+      context: .
+      dockerfile: cloud/init.Dockerfile
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+    depends_on:
+      localstack:
+        condition: service_healthy
+    restart: "no"
+
+  sigv4-proxy:
+    build:
+      context: .
+      dockerfile: cloud/Dockerfile
+    environment:
+      - LOCALSTACK_URL=http://localstack:4566
+    ports:
+      - "127.0.0.1:4567:4567"
+    depends_on:
+      localstack:
+        condition: service_healthy
+      init-buckets:
+        condition: service_completed_successfully
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "127.0.0.1:8091:8091"

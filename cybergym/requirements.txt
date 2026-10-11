@@ -1,0 +1,11 @@
+# CyberGym lab dependencies — intentionally separate from KRONOS's own
+# requirements.txt/pyproject.toml (this lab is a TARGET to test KRONOS
+# against, not part of the KRONOS framework itself). Used by the API
+# tier, the SigV4 proxy, and selftest.py.
+fastapi==0.143.0
+uvicorn==0.54.0
+boto3==1.43.111
+requests==2.32.3
+pyyaml==6.0.1
+cryptography==50.0.1
+pydantic==2.13.5
