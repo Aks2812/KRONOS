@@ -95,7 +95,17 @@ def run_validation_pass(
         if validator is None:
             continue
 
+        expected_target_type = "CLOUD_RESOURCE" if kind == "cloud_credential_pair" else "API_ENDPOINT"
+
         for candidate in find_candidate_targets_for_secret(graph, secret_id):
+            if candidate.type != expected_target_type:
+                # A secret's classified kind picks ONE validator with
+                # ONE calling convention — an api_token secret has no
+                # business being boto3-tested against a bucket, and vice
+                # versa. find_candidate_targets_for_secret returns both
+                # kinds of candidate for every secret (see candidates.py);
+                # this filters to the ones the chosen validator applies to.
+                continue
             if not candidate.in_scope:
                 # Scope-gated BEFORE any call: the validator (and
                 # therefore any network/boto3 call inside it) is never

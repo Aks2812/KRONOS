@@ -195,3 +195,33 @@ def test_unknown_shaped_decoded_secret_is_skipped_without_crashing(
 
     secret = graph.get_node("SECRET", secret_id)
     assert secret["status"] == "extracted"
+
+
+def test_api_token_secret_never_dispatched_to_the_cloud_validator_even_with_cloud_candidates(
+    tmp_path, manifest_factory, signing_keypair
+) -> None:
+    """Review-focus regression: find_candidate_targets_for_secret returns
+    BOTH API_ENDPOINT and CLOUD_RESOURCE candidates for every secret
+    (candidates.py tries every known CLOUD_RESOURCE regardless of kind).
+    An api_token-classified secret must only ever be dispatched to
+    validate_api_token, never validate_cloud_credential, even when an
+    in-scope CLOUD_RESOURCE candidate exists in the same engagement —
+    caught empirically running the real CyberGym e2e proof, where this
+    crashed with a TypeError before the fix."""
+    graph, engagement_dir, secret_id = _graph_with_secret(
+        tmp_path, manifest_factory, signing_keypair,
+        decoded_value="plain-bearer-token", in_scope_globs=["http://localhost:8091*", "arn:aws:s3:::*"],
+    )
+    _add_endpoint(graph, "http://localhost:8091")
+    graph.upsert_node(
+        "CLOUD_RESOURCE", "some-bucket", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"},
+        scope_key="arn:aws:s3:::some-bucket",
+    )
+
+    with patch("kronos.validate.http_validator.validate_api_token") as mock_http, \
+         patch("kronos.validate.cloud_validator.validate_cloud_credential") as mock_cloud:
+        mock_http.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        run_validation_pass(graph, engagement_dir, cloud_proxy_endpoint="http://localhost:4567")
+
+    mock_cloud.assert_not_called()
+    mock_http.assert_called_once()
