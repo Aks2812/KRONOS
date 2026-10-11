@@ -1,0 +1,16 @@
+engagement:
+  authorized_by: KRONOS project maintainer (Aks2812)
+  client: KRONOS self-test (CyberGym X-score measurement lab)
+  destructive_allowed: false
+  id: cybergym-x-instrument-v1
+  window_end: '2125-12-08T00:00:00+00:00'
+  window_start: '2026-01-01T00:00:00+00:00'
+scope:
+  excluded: []
+  in_scope:
+  - com.kronos.cybergym.*
+  - localhost*
+  - 127.0.0.1*
+  - kronos-cybergym-*
+  - arn:aws:s3:::kronos-cybergym-*
+signature: mXUB5wcZPLQU18CFtMhLeXYcgnfrRjTd+dAOWAhxrYZmGtZCxAdr2r8vjdGA3YR9V7+SNNDi+/frlIRv4Iu6Aw==
