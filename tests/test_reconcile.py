@@ -3,6 +3,13 @@ plus the two guardrail-diff checks (§4 test 8) and the pipeline-invariant
 proof (§4 test 6) run generically (CyberGym's own live run is the
 docker-backed proof of the same invariant; this test proves it without a
 live range so it holds in plain CI too).
+
+SPEC_BRIEF4.1 adds the tests that turn the no-op proof into a real one:
+genuine distinct-id duplicates for SECRET and API_ENDPOINT, proving Fix
+#1 (a tombstoned loser ends up with ZERO relationships, not just a
+`merged_into` label — `find_paths` returns the survivor only) and the
+FINDING guard (Fix #2: a real FINDING group must raise `NotImplementedError`
+rather than silently merge with no evidence recompute).
 """
 
 from __future__ import annotations
@@ -17,7 +24,10 @@ import kronos
 from kronos.evidence import attach_evidence, store_evidence
 from kronos.graph import EngagementGraph
 from kronos.lifecycle import advance_secret_status
+from kronos.query import find_paths, query_graph
 from kronos.reconcile import run_reconciliation_pass
+from kronos.reconcile.merge import merge_group
+from kronos.schema import EDGE_PAIRS
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
 
@@ -277,10 +287,172 @@ def test_merge_report_and_tombstones_are_queryable(tmp_path, manifest_factory, s
     assert record.pass_name == "reconcile"
     assert record.timestamp  # non-empty ISO timestamp
 
-    from kronos.query import query_graph
-
     tombstones = query_graph(g, "SECRET", {"merged_into": record.survivor_id})
     assert any(n["id"] == "secret:bbb" and n["status"] == "merged" for n in tombstones)
+
+
+# --- SPEC_BRIEF4.1 §4: real duplicates — inertness + FINDING guard ---------
+
+def _edge_count_touching(graph, node_type: str, node_id: str) -> int:
+    """Every relationship this node participates in, either direction,
+    across every label/pair `EDGE_PAIRS` declares it for — the same walk
+    `merge.py`'s own carry-over/delete steps use, so this is a faithful
+    "is this node genuinely edgeless" check (Fix #1), not just a count of
+    the one or two edge types a given test happens to set up."""
+    total = 0
+    for label, pairs in EDGE_PAIRS.items():
+        for frm, to in pairs:
+            if frm == node_type:
+                result = graph.execute(
+                    f"MATCH (a:{frm} {{id: $id}})-[:{label}]->(b:{to}) RETURN count(*)", {"id": node_id}
+                )
+                total += result.get_next()[0]
+            if to == node_type:
+                result = graph.execute(
+                    f"MATCH (a:{frm})-[:{label}]->(b:{to} {{id: $id}}) RETURN count(*)", {"id": node_id}
+                )
+                total += result.get_next()[0]
+    return total
+
+
+def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent(
+    tmp_path, manifest_factory, signing_keypair
+):
+    """The SECRET case SPEC_BRIEF4.1 §4 asks for: two distinct-id
+    secrets, same material, each with its OWN edges (one evidence-backed
+    plus a cloud `authenticates_to`, one only `leaks`-linked from an
+    app). Proves: the survivor holds the union of both secrets' edges;
+    the loser ends up with ZERO relationships (Fix #1's actual
+    inertness, not just a `merged_into` label — `find_paths` returns the
+    survivor only, never the loser); the survivor's status is
+    `recompute_status_from_evidence` of the merged evidence, not a
+    carried-over label; and a second pass on this now-non-empty,
+    already-tombstoned graph is still a true no-op."""
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+    engagement_dir = tmp_path
+
+    _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material")
+    advance_secret_status(g, "secret:aaa", "validated")
+    evidence_id = attach_evidence(
+        g, engagement_dir, b"real-dup-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa"
+    )
+    advance_secret_status(g, "secret:aaa", "reachable")
+    g.upsert_node("CLOUD_RESOURCE", "cr1", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"})
+    g.upsert_edge("authenticates_to", "secret:aaa", "SECRET", "cr1", "CLOUD_RESOURCE")
+
+    _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material")  # extracted, no evidence
+    g.upsert_node("MOBILE_APP", "app1", {"bundle_id": "app1", "platform": "android", "source": "test"})
+    g.upsert_edge("leaks", "app1", "MOBILE_APP", "secret:bbb", "SECRET")
+
+    first = run_reconciliation_pass(g, engagement_dir)
+    assert len(first.merges) == 1
+    survivor_id, loser_id = "secret:aaa", "secret:bbb"
+    assert first.merges[0].survivor_id == survivor_id
+    assert first.merges[0].merged_ids == (loser_id,)
+
+    # Fix #1: the loser is a genuinely edgeless tombstone.
+    assert _edge_count_touching(g, "SECRET", loser_id) == 0
+    loser = g.get_node("SECRET", loser_id)
+    assert loser["status"] == "merged"
+    assert loser["merged_into"] == survivor_id
+
+    # The survivor holds the UNION of both secrets' edges.
+    result = g.execute(
+        "MATCH (app:MOBILE_APP {id: 'app1'})-[:leaks]->(s:SECRET {id: $id}) RETURN count(*)", {"id": survivor_id}
+    )
+    assert result.get_next()[0] == 1
+    result = g.execute(
+        "MATCH (s:SECRET {id: $id})-[:authenticates_to]->(c:CLOUD_RESOURCE {id: 'cr1'}) RETURN count(*)",
+        {"id": survivor_id},
+    )
+    assert result.get_next()[0] == 1
+
+    # Status recomputed from the merged evidence (guardrail 3) — the
+    # survivor already had real evidence and stays reachable, but that's
+    # recompute.py's own derivation re-confirming it, not an untouched
+    # carried-over label.
+    survivor = g.get_node("SECRET", survivor_id)
+    assert survivor["status"] == "reachable"
+    result = g.execute(
+        "MATCH (e:EVIDENCE {id: $eid})-[:evidences]->(s:SECRET {id: $sid}) RETURN count(*)",
+        {"eid": evidence_id, "sid": survivor_id},
+    )
+    assert result.get_next()[0] == 1
+
+    # find_paths never traverses through the edgeless loser.
+    paths = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE")
+    assert len(paths) >= 1
+    for path in paths:
+        assert loser_id not in path["nodes"]
+        assert survivor_id in path["nodes"]
+
+    # Idempotent on this now-non-empty, already-tombstoned graph.
+    survivor_before = g.get_node("SECRET", survivor_id)
+    loser_before = g.get_node("SECRET", loser_id)
+    second = run_reconciliation_pass(g, engagement_dir)
+    assert second.is_empty()
+    assert g.get_node("SECRET", survivor_id) == survivor_before
+    assert g.get_node("SECRET", loser_id) == loser_before
+
+
+def test_api_endpoint_real_duplicate_edges_move_and_find_paths_returns_survivor_only(
+    tmp_path, manifest_factory, signing_keypair
+):
+    """The API_ENDPOINT case SPEC_BRIEF4.1 §4 asks for: two endpoints
+    merge on their templated path, a third with a genuinely different
+    path stays separate, and a `find_paths` traversal through the
+    endpoint domain returns the survivor only — never a loser id."""
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+
+    url_a = "http://api.acme.example.com/users/123"
+    url_b = "http://api.acme.example.com/users/456"
+    url_c = "http://api.acme.example.com/admin/1"
+    for url in (url_a, url_b, url_c):
+        g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"})
+    g.upsert_node("HOST", "h1", {"source": "test"})
+    for url in (url_a, url_b, url_c):
+        g.upsert_edge("exposes", "h1", "HOST", url, "API_ENDPOINT")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    merges = [r for r in report.merges if r.node_type == "API_ENDPOINT"]
+    assert len(merges) == 1
+    survivor_id = min(url_a, url_b)
+    loser_id = url_b if survivor_id == url_a else url_a
+    assert merges[0].survivor_id == survivor_id
+    assert merges[0].merged_ids == (loser_id,)
+
+    # Fix #1: the loser is edgeless.
+    assert _edge_count_touching(g, "API_ENDPOINT", loser_id) == 0
+    # The survivor still carries the exposes edge from h1.
+    result = g.execute(
+        "MATCH (h:HOST {id: 'h1'})-[:exposes]->(e:API_ENDPOINT {id: $id}) RETURN count(*)", {"id": survivor_id}
+    )
+    assert result.get_next()[0] == 1
+    # url_c never merged — genuinely different path.
+    assert g.get_node("API_ENDPOINT", url_c)["merged_into"] is None
+
+    paths = find_paths(g, "HOST", "API_ENDPOINT")
+    found_ids = {node_id for path in paths for node_id in path["nodes"]}
+    assert survivor_id in found_ids
+    assert url_c in found_ids
+    assert loser_id not in found_ids
+
+
+def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory, signing_keypair):
+    """SPEC_BRIEF4.1 §3 Fix #2's backstop: `canonical_key_for_finding`
+    always returns `None` today, so the runner never actually calls
+    `merge_group` for FINDING — but if it ever did (a future brief
+    populates `location_sig`), a >=2 FINDING group must refuse to merge
+    rather than silently settle on an un-recomputed survivor. Calls
+    `merge_group` directly, bypassing the None-key runner path, to prove
+    the guard itself fires."""
+    g = _graph(tmp_path, manifest_factory, signing_keypair)
+    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"})
+    g.upsert_node("FINDING", "f2", {"title": "t", "severity": "high", "status": "hypothesis"})
+
+    with pytest.raises(NotImplementedError):
+        merge_group(g, "FINDING", ["f1", "f2"], "some:canonical:key", "test_pass")
 
 
 # --- §4 test 8: guardrail diff checks -----------------------------------------

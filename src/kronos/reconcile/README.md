@@ -33,9 +33,15 @@ and touches nothing.
   the same `graph.upsert_edge` every ingester uses — so de-dup is free),
   recomputes `SECRET` status from the survivor's now-merged evidence
   (never copies/maxes the input statuses — see
-  `lifecycle.recompute_status_from_evidence`), then tombstones each
+  `lifecycle.recompute_status_from_evidence`), **deletes every
+  relationship still on each loser** (move-don't-copy — SPEC_BRIEF4.1
+  §2; a tombstone that kept its original edges would still be fully
+  live to `find_paths` and any other traversal), then tombstones each
   loser (`merged_into=<survivor_id>`, plus `status="merged"` for
-  `SECRET`/`FINDING`, which already own a `status` column).
+  `SECRET`/`FINDING`, which already own a `status` column). A `FINDING`
+  group of >=2 raises `NotImplementedError` (SPEC_BRIEF4.1 §3) — FINDING
+  has no evidence-recompute path yet, so it must refuse rather than
+  silently merge on an un-recomputed survivor.
 - **`runner.py`** — `run_reconciliation_pass(graph, engagement_dir) ->
   MergeReport`, the one entry point other code calls. Groups every
   active (non-tombstoned) node of each mergeable type by its canonical
@@ -74,6 +80,13 @@ function that advances a SECRET forward, and remains called only by
   even asserting that edge today (see `DECISIONS.md`'s Brief #4 entry):
   no ingester in this codebase produces DNS-resolution evidence yet, so
   there's nothing honest to assert it from.
-- **No hard deletes.** Every merged-away node stays queryable
+- **No hard deletes of nodes.** Every merged-away node stays queryable
   (`merged_into` set) — authorized-engagement provenance needs every
-  observed node to stay defensible and traceable.
+  observed node to stay defensible and traceable. Its *relationships*
+  are a different matter: those ARE deleted (move-don't-copy, above) so
+  the tombstone is genuinely inert, not just labelled.
+- **No FINDING reconciliation yet.** `canonical_key_for_finding` and the
+  runner's `_group_findings` are wired in and correctly produce nothing
+  today (FINDING's schema has no `location_sig`), but `merge_group`
+  actively refuses a real FINDING group rather than silently merging —
+  see `DECISIONS.md`'s Brief #4.1 entry.
