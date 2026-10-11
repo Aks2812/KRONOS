@@ -89,16 +89,16 @@ def _load_manifest_and_graph(engagement_dir: Path) -> EngagementGraph:
     return EngagementGraph.init_engagement(engagement_dir / "e.kz", manifest_text, pubkey)
 
 
-def _assert_enrichment_did_not_shortcut_anyone(graph: EngagementGraph, chain3_secret_id: str) -> None:
+def _assert_enrichment_did_not_shortcut_anyone(graph: EngagementGraph, secret_id: str) -> None:
     """Mechanical check, not just convention (explicit user guardrail):
     every secret the enrichment step touches must still be exactly
     "extracted" immediately after enrichment and before any validation
     call. If this ever fails, the run aborts — an X-score built on a
     shortcut is worse than no X-score."""
-    secret = graph.get_node("SECRET", chain3_secret_id)
+    secret = graph.get_node("SECRET", secret_id)
     if secret["status"] != "extracted":
         raise AssertionError(
-            f"enrichment-created secret {chain3_secret_id} has status={secret['status']!r}, "
+            f"enrichment-created secret {secret_id} has status={secret['status']!r}, "
             "not 'extracted' — enrichment must never pre-set a terminal status"
         )
 
