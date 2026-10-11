@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KronosLeakyTestFixture</string>
+    <string name="kronos_api_key">KRONOS_FIXTURE_PLAINTEXT_SECRET_abcdef1234567890</string>
+    <string name="kronos_api_key_enc">a3Jvbm9zX3Rlc3Rfb2JmdXNjYXRlZF9zZWNyZXRfOTg3NjU0MzIx</string>
+    <string name="kronos_api_base_url">https://internal-api.kronos-fixture.test/v1/admin</string>
+</resources>

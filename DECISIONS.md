@@ -468,3 +468,107 @@ prerequisite before KRONOS is used against any live target** — not
 optional polish. Tracked as
 [Aks2812/KRONOS#2](https://github.com/Aks2812/KRONOS/issues/2) so it
 isn't lost between briefs.
+
+---
+
+# Brief #2 (Mobile Static Ingestion)
+
+## Human-authorized Brief #1 schema extension: `MOBILE_COMPONENT.exported`
+
+**This is a schema change, not an autonomous decision.** Brief #2's own
+extraction mapping required recording whether a mobile component
+(activity/service/receiver/provider) is exported, but Brief #1's locked
+schema for `MOBILE_COMPONENT` had no such column, and Brief #1 explicitly
+says "you do NOT modify schema.py's node/edge types." Per the escalation
+contract this is exactly a FORK (a change to the graph schema), so it was
+raised rather than guessed at — see the FORK writeup in the PR description
+for the three options considered.
+
+**Resolution (architect's call, lifting the lock for this one change
+only):** add `exported BOOLEAN DEFAULT false` to `MOBILE_COMPONENT`.
+**Rationale (as given):** exported status is a first-class attack-surface
+fact, core to KRONOS's cross-domain chain modeling — it belongs in the
+schema itself, not worked around via an encoding hack in `component_type`
+or dropped entirely. This is option 1 from the FORK, but done as a
+reviewed, deliberate foundation extension rather than a convenience
+shortcut.
+
+**Implementation**, exactly as directed:
+- `schema.py`: `exported BOOLEAN DEFAULT false` added to the
+  `MOBILE_COMPONENT` `CREATE NODE TABLE` DDL.
+- `exported` added to `NODE_PROPS_ALWAYS["MOBILE_COMPONENT"]` — registered
+  the same way as `component_type`/`name` (a plain descriptive attribute a
+  caller CAN set via `props`), **not** the `in_scope`/`status`/`confidence`
+  restricted path (those stay caller-forbidden or create-only for their
+  own, different reasons).
+- `exported` added to `NODE_COLUMNS["MOBILE_COMPONENT"]` so `query.py`'s
+  read-side filter validation recognizes it as a legitimate column.
+- Schema-level default (`DEFAULT false` in the DDL) covers a node created
+  without `exported` in `props` at all — the mobile parser only passes it
+  when the manifest states `android:exported="true"` or an intent-filter
+  implies it; everything else is non-exported by default, matching "a
+  component is non-exported unless the manifest says otherwise."
+- New test: `test_mobile_component_exported_flag_round_trips` in
+  `test_schema_graph.py` — creates components with `exported=True`,
+  `exported=False`, and omitted entirely, asserts all three read back
+  correctly (the omitted case defaults to `False`).
+
+**Scope of this authorization:** this is the *only* schema/lifecycle/
+contract change authorized for Brief #2. Any other conflict between this
+brief's extraction mapping and Brief #1's locked contract is still a FORK
+— this entry does not generalize into standing permission to change
+anything else in `schema.py`, `graph.py`, or `ingest.py`'s existing
+contract shape.
+
+**Reversibility:** easy at the schema level (one nullable-with-default
+boolean column; Kùzu's `IF NOT EXISTS` DDL means re-running `init_db` on
+an already-initialized engagement DB is still safe) but **not
+retroactive** — engagements created before this change have no
+`exported` value on existing `MOBILE_COMPONENT` nodes until re-ingested.
+
+## Build-time decisions (below the escalation bar — logged, not asked)
+
+- **`ingest.py` → `ingest/` package.** Adding `kronos.ingest.mobile` as a
+  subpackage collided with `kronos/ingest.py` being a plain module (a
+  directory and a file of the same name can't coexist). Moved its content
+  verbatim into `ingest/__init__.py` — a structural move only; every
+  existing `from kronos.ingest import ...` import path is unchanged, and
+  Brief #1's ingestion contract itself (`NodeUpsert`/`EdgeUpsert`/`ingest`/
+  `apply_upserts`) is untouched.
+- **New dependency: `requests==2.32.3`.** Needed for `mobsf_client.py`'s
+  REST calls. A plain new pip dependency, not a contract/schema change.
+- **`requests` imported at module top level in `mobsf_client.py`, but
+  `kronos.ingest.mobile.mobsf_client`'s MobSF-report extraction helpers are
+  imported lazily inside `parser.py`'s MobSF branch** — avoids importing
+  `requests` at all for callers who never touch the mobile module, and
+  keeps `ingest/__init__.py`'s new `mobile_static` dispatch import local to
+  avoid a circular import (`mobile/parser.py` imports `NodeUpsert`/
+  `EdgeUpsert` from `kronos.ingest`, so a top-level import the other way
+  would cycle).
+- **MobSF degrades gracefully, never blocks ingestion.** Per SPEC_BRIEF2's
+  security lens ("your parser must not crash"), an unreachable MobSF
+  (checked via a cheap `is_reachable()` probe before attempting
+  upload/scan) or one that errors mid-scan both fall back to light-
+  extractor-only results rather than raising — MobSF augments findings, it
+  is never a single point of failure for the whole ingestion run.
+- **Evidence written through the upsert-list contract, not
+  `evidence.attach_evidence`'s direct-graph-write path.** `attach_evidence`
+  takes a live graph and writes immediately; this module instead calls
+  `evidence.store_evidence` (pure blob-to-disk write, no graph access) and
+  appends the resulting `EVIDENCE` `NodeUpsert`/`evidences` `EdgeUpsert`
+  to the same list `apply_upserts()` already writes everything else
+  through — keeps the whole module's graph-writing on one path.
+- **Light extractor obfuscation scope: Base64 only.** Split/concatenated-
+  string obfuscation (e.g. `"sk_" + "live_" + "..."` or runtime
+  `StringBuilder` assembly) needs real decompiled-code data-flow analysis,
+  not a regex pass — explicitly out of scope for this brief per its own
+  "DO NOT BUILD" boundaries on parser sophistication. Tracked as a
+  follow-up (see `tests/fixtures/README.md`), not silently dropped.
+- **Test fixture built from scratch, not from a decoded third-party APK.**
+  First attempt reused a sample APK from Kali's `exploitdb-bin-sploits`
+  package (GPL-2+) as an `apktool`-decode base to plant artifacts into.
+  Switched to building the fixture entirely from an original, hand-written
+  `AndroidManifest.xml` + `strings.xml` via `aapt` directly — avoids
+  committing any third-party-derived binary into a repo with no stated
+  license, and was SPEC_BRIEF2's own first-listed option anyway ("you
+  create a tiny deliberately-leaky test APK").

@@ -43,6 +43,30 @@ def test_upsert_node_stamps_in_scope_via_scope_guard(tmp_path, manifest_factory,
     assert g.get_node("API_ENDPOINT", "api.evil.com")["in_scope"] is False
 
 
+def test_mobile_component_exported_flag_round_trips(tmp_path, manifest_factory, signing_keypair):
+    """Brief #2 schema extension: MOBILE_COMPONENT.exported is a plain
+    descriptive attribute (like component_type/name), caller-settable via
+    props, defaulting to false when omitted."""
+    _, pub = signing_keypair
+    g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
+    g.upsert_node("MOBILE_APP", "com.acme.app", {})
+    g.upsert_node(
+        "MOBILE_COMPONENT", "com.acme.app/.MainActivity",
+        {"component_type": "activity", "name": "MainActivity", "exported": True},
+    )
+    g.upsert_node(
+        "MOBILE_COMPONENT", "com.acme.app/.InternalService",
+        {"component_type": "service", "name": "InternalService", "exported": False},
+    )
+    g.upsert_node(
+        "MOBILE_COMPONENT", "com.acme.app/.NoFlagGiven",
+        {"component_type": "receiver", "name": "NoFlagGiven"},
+    )
+    assert g.get_node("MOBILE_COMPONENT", "com.acme.app/.MainActivity")["exported"] is True
+    assert g.get_node("MOBILE_COMPONENT", "com.acme.app/.InternalService")["exported"] is False
+    assert g.get_node("MOBILE_COMPONENT", "com.acme.app/.NoFlagGiven")["exported"] is False
+
+
 def test_upsert_edge_merges_not_duplicates(tmp_path, manifest_factory, signing_keypair):
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
