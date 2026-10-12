@@ -11,6 +11,17 @@ adversarial input (SPEC_BRIEF3 "Security lens"):
   2. `advance_secret_status` (Brief #1's sole status-writing chokepoint)
      is the ONLY thing that ever changes a SECRET's status here — this
      module never sets status/confidence/evidence any other way.
+
+A third invariant as of SPEC_BRIEF5: every attempted validator call
+charges a `BudgetLedger` (the one chokepoint — `kronos.budget`) BEFORE
+the validator is invoked, never after and never from inside
+`_advance_through`/`attach_evidence` — budget enforcement wraps around
+validation, it never reaches into the status/evidence logic those two
+guardrails already own (SPEC_BRIEF5 guardrail 2). A `BudgetExceeded`
+raised by that charge propagates straight out of this function
+uncaught: this module's job is to meter and attempt, not to decide what
+"stopped early" means for the run as a whole — that's the caller's
+wind-down to perform (see `cybergym/kronos_validation_run.py`).
 """
 
 from __future__ import annotations
@@ -18,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from kronos.budget import BudgetLedger, DEFAULT_BUDGET_LIMITS
 from kronos.evidence import attach_evidence, get_evidence
 from kronos.lifecycle import advance_secret_status
 from kronos.validate.candidates import find_candidate_targets_for_secret
@@ -79,12 +91,24 @@ def run_validation_pass(
     *,
     cloud_proxy_endpoint: str | None = None,
     http_hints: dict[str, dict[str, Any]] | None = None,
+    budget: BudgetLedger | None = None,
 ) -> list[ValidationAttempt]:
     """Snapshot every `extracted` SECRET once at the start — a secret
     that reaches `reachable` partway through still has its remaining
     candidates tried (needed to prove an over-privileged credential
-    authenticates to MORE THAN ONE target, e.g. CyberGym's chain 3)."""
+    authenticates to MORE THAN ONE target, e.g. CyberGym's chain 3).
+
+    `budget` is optional so every existing caller/test keeps working
+    unchanged; when omitted, a fresh ledger is built from
+    `DEFAULT_BUDGET_LIMITS` rather than skipping metering altogether —
+    SPEC_BRIEF5 guardrail 3 is "never unlimited by accident," which
+    applies just as much to an unannotated call site as to a missing
+    `budget.yaml`. A caller that wants this run's spend to count against
+    a shared, engagement-wide ledger (the normal case — see
+    `cybergym/kronos_validation_run.py`) passes one in explicitly."""
     http_hints = http_hints or {}
+    if budget is None:
+        budget = BudgetLedger(DEFAULT_BUDGET_LIMITS, config_source="default", config_reason="no ledger supplied to run_validation_pass")
     attempts: list[ValidationAttempt] = []
 
     for secret_id in _extracted_secret_ids(graph):
@@ -111,13 +135,22 @@ def run_validation_pass(
                 # therefore any network/boto3 call inside it) is never
                 # invoked for an out-of-scope candidate.
                 continue
+            if candidate.type == "CLOUD_RESOURCE" and cloud_proxy_endpoint is None:
+                continue
+
+            # SPEC_BRIEF5 chokepoint: charge BEFORE the validator call,
+            # which is the one and only external tool/HTTP call this
+            # loop makes. If either charge raises `BudgetExceeded`, it
+            # propagates uncaught — the validator below is never
+            # reached, so an over-cap attempt truly never ran.
+            detail = f"secret={secret_id} target={candidate.id} ({candidate.type})"
+            budget.charge("validation_attempts", 1, actor="validate.runner", detail=detail)
+            budget.charge("tool_invocations", 1, actor="validate.runner", detail=detail)
 
             if candidate.type == "API_ENDPOINT":
                 hint = http_hints.get(candidate.id, {})
                 outcome = validator(decoded_value, candidate.id, **hint)
             else:  # CLOUD_RESOURCE
-                if cloud_proxy_endpoint is None:
-                    continue
                 outcome = validator(decoded_value, candidate.id, cloud_proxy_endpoint)
 
             attempts.append(

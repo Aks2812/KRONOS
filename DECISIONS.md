@@ -1078,3 +1078,131 @@ evidence-recompute rule; the conservative canonical keys; the
 `merged_into`-forbidden-in-upsert lock; the post-enrichment
 `_survivor_of`-based re-assertion of `_assert_enrichment_did_not_shortcut_anyone`.
 None of this was touched.
+
+## Brief #5 — Per-engagement budget governance
+
+New module `src/kronos/budget/`: `limits.py` (the frozen `BudgetLimits`
+dataclass and the conservative `DEFAULT_BUDGET_LIMITS`), `config.py`
+(`load_budget_limits(engagement_dir)`, reading `budget.yaml`),
+`ledger.py` (`BudgetLedger` — the chokepoint — plus `BudgetExceeded`,
+`BudgetSnapshot`, `write_ledger_snapshot`, `stopped_early_marker`).
+Wired into `kronos.validate.runner.run_validation_pass` (a new optional
+`budget: BudgetLedger | None` kwarg; omitted, it builds its own ledger
+from `DEFAULT_BUDGET_LIMITS` rather than running unmetered) and into
+`cybergym/kronos_validation_run.py` (one ledger per run, a generous
+`budget.yaml` written into the engagement dir, `check_wall_clock()`
+calls between pipeline phases, a `BudgetExceeded` catch around the
+whole pipeline for a clean, non-crash wind-down).
+
+### Guardrail confirmation
+
+- **`scope_guard.py`: zero-line diff** — re-confirmed via `git diff
+  --stat` (empty) and the existing sha256-pinned test (now duplicated,
+  deliberately, as `test_budget.py::test_scope_guard_still_has_zero_line_diff`,
+  per SPEC_BRIEF5 §4 test 8's explicit ask to re-verify this brief by
+  brief, not just trust an earlier pin). FORK-2 (#2) stays untouched.
+- **`advance_secret_status` remains the only forward mutator, called
+  only by the validation runner** — unchanged; `test_reconcile.py`'s
+  whole-tree grep test now also covers `src/kronos/budget/` for free
+  (it walks the entire `src/kronos` tree), and
+  `test_budget.py::test_budget_module_never_calls_advance_secret_status`
+  adds a budget-scoped version of the same proof. Budget enforcement
+  charges at exactly one point in `validate/runner.py` — immediately
+  before the validator call, strictly before `_advance_through`/
+  `attach_evidence`/the `authenticates_to` edge write — so it wraps
+  *around* validation and never reaches into guardrail 2's territory.
+- **Fail-closed, never fail-open** — `BudgetLedger.charge` checks the
+  ceiling BEFORE recording anything; a charge that would cross it
+  raises `BudgetExceeded` and the action it would have paid for is
+  never started. Nothing in `kronos.validate` or `kronos.budget`
+  catches `BudgetExceeded` internally — every raise propagates to the
+  one orchestrator-level catch site (`cybergym/kronos_validation_run.py`
+  has it; a future CLI entry point gets its own), which is where
+  "stopped early" wind-down actually happens.
+- **Deterministic only** — no LLM, no heuristic, in `charge`/
+  `check_wall_clock`. `test_budget.py`'s determinism test runs the same
+  graph shape through the same budget twice and asserts the identical
+  stop point and entry log (clock-based readings aside, same caveat as
+  timestamps).
+- **Single chokepoint** — `BudgetLedger.charge` is the only API any
+  caller spends through; no second counting mechanism exists anywhere
+  in the codebase.
+
+### FORKs — both taken as their pre-resolved DEFAULT
+
+- **FORK-D (where budget limits live): DEFAULT taken — a separate
+  `budget.yaml`** in the engagement dir, outside the signed Ed25519
+  manifest. `config.py`'s loader fills any dimension a *valid* file
+  omits from `DEFAULT_BUDGET_LIMITS` rather than leaving it `None` — a
+  run is never unlimited by accident just because an operator's file
+  didn't mention every dimension; only an explicit `null` produces a
+  genuinely unlimited dimension.
+- **FORK-E (behavior at the moment a ceiling is crossed): DEFAULT
+  taken — finish the in-flight atomic action, then stop before the
+  next.** No special code was needed to build this: every caller
+  charges strictly BEFORE performing its action, and every action
+  KRONOS runs today completes synchronously before the next one's
+  charge is even attempted, so an action whose own charge raises was
+  simply never started, and any action that already passed its charge
+  runs to its normal completion. The charge-before-start calling
+  convention makes the DEFAULT fall out for free — see
+  `src/kronos/budget/README.md`'s "Why FORK-E's DEFAULT needs no
+  special code" section for the full reasoning.
+
+### Test results
+
+**125 passed, 1 skipped** (pre-existing, unrelated: MobSF not
+configured), **0 failed**. 18 new tests in `tests/test_budget.py`
+covering every §4 acceptance test: fail-closed enforcement stopping
+exactly at a tiny `validation_attempts` cap with the over-cap attempt
+proven never to have run; never-fails-open with a pre-exhausted budget;
+determinism across two independent identically-built runs; a
+deterministic-fake-clock wall-clock cap test (no real `sleep`, no
+flakiness); six config-fallback tests (missing file, invalid YAML,
+non-mapping YAML, unknown dimension, non-numeric value, negative value,
+a valid-but-partial file, and an explicit `null`); a mocked
+ingest-reconcile-validate pipeline proving a generous budget is a pure
+passthrough with real, non-zero, below-ceiling consumption; an
+audit-trail test proving the snapshot file is written, parseable, and
+only ever grows; and the two guardrail tests above. All 107 pre-existing
+tests stayed green, unmodified.
+
+### Live CyberGym confirmation
+
+Stood up the real, live, docker-backed range and ran
+`cybergym/kronos_validation_run.py` end to end with a generous
+`budget.yaml` (`validation_attempts: 100`, `tool_invocations: 100`,
+`wall_clock_seconds: 900`, `llm_tokens: 0`, `llm_cost_usd: 0`) written
+into the engagement dir before the pipeline starts — exercising
+FORK-D's real file-loading path live, not just the in-memory default:
+
+```
+X-SCORE: 3/3 chains validated end-to-end
+BUDGET: config_source=file
+  validation_attempts: 10.0 / 100
+  tool_invocations: 10.0 / 100
+  wall_clock_seconds: 5.424388996999937 / 900
+  llm_tokens: 0 / 0
+  llm_cost_usd: 0 / 0
+```
+
+**X-score: 3/3, unchanged from the pre-budget baseline.** Every
+dimension's consumption is comfortably below its ceiling — this run
+demonstrates the budget is a safe no-op at generous limits, exactly as
+SPEC_BRIEF5 §4 test 6 asks; the acceptance tests that actually trip the
+ceiling (tests 1, 2, 4) are the dedicated, deterministic unit tests in
+`tests/test_budget.py`, which need no live docker. `llm_tokens`/
+`llm_cost_usd` both read `0/0` — nothing charges either dimension yet,
+confirming they exist and are chargeable (proven directly in
+`test_budget.py`'s API-level tests) without ever being spent by
+anything in this codebase today.
+
+### Unchanged (confirmed, not re-litigated)
+
+Everything from Brief #4/#4.1's reconciliation pass — tombstoning,
+move-don't-copy edge deletion, the FINDING guard, the SECRET
+evidence-recompute rule — is untouched; this brief only adds a new,
+optional `budget` parameter to `run_validation_pass` and a new,
+unrelated module. No schema touch was needed or made — budget state
+lives entirely in `budget.yaml`/the in-memory ledger/the JSON snapshot
+file, never in the Kùzu graph itself.

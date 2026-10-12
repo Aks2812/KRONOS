@@ -24,6 +24,17 @@ mechanically, not just by convention, right after enrichment runs and
 BEFORE the validation pass — so if this ever regresses, the run fails
 loudly instead of producing a lying X-score.
 
+SPEC_BRIEF5: this run is now budget-governed. A `budget.yaml` is written
+into the engagement dir before anything else runs (FORK-D's DEFAULT —
+a file, not a signed-manifest section) with a deliberately generous
+ceiling on every metered dimension, and the one `BudgetLedger` created
+from it is passed into `run_validation_pass` and checked between every
+pipeline phase. A `BudgetExceeded` anywhere stops the run cleanly: the
+ledger snapshot is written to the engagement dir, a "stopped early"
+marker is printed, and whatever chain checks are still answerable from
+the graph as it stands run anyway — this script never crashes on an
+exhausted budget, and never produces an unmetered X-score.
+
 Run (from the repo root, after `docker compose up` is NOT required —
 this script brings the lab up and down itself):
     PYTHONPATH=. .venv/bin/python cybergym/kronos_validation_run.py
@@ -33,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import dataclasses
 import hashlib
 import sys
 import xml.etree.ElementTree as ET
@@ -45,6 +57,13 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from cybergym.selftest import compose, wait_for_services  # noqa: E402
 
+from kronos.budget import (  # noqa: E402
+    BudgetExceeded,
+    BudgetLedger,
+    load_budget_limits,
+    stopped_early_marker,
+    write_ledger_snapshot,
+)
 from kronos.evidence import store_evidence  # noqa: E402
 from kronos.graph import EngagementGraph  # noqa: E402
 from kronos.ingest import EdgeUpsert, NodeUpsert, apply_upserts, ingest  # noqa: E402
@@ -54,6 +73,21 @@ from kronos.reconcile import MergeReport, run_reconciliation_pass  # noqa: E402
 from kronos.validate import run_validation_pass  # noqa: E402
 
 from cryptography.hazmat.primitives import serialization  # noqa: E402
+
+# A deliberately generous ceiling for this fixture (SPEC_BRIEF5 §4 test
+# 6: "non-interference" — the budget must change nothing about a run
+# this small) — written to the engagement dir so this run also
+# exercises FORK-D's real file-loading path, not just the in-memory
+# default. The acceptance tests for "missing/invalid budget.yaml falls
+# back to the conservative default" (§4 test 5) live in
+# `tests/test_budget.py`, exercising that path directly.
+_GENEROUS_BUDGET_YAML = """\
+validation_attempts: 100
+tool_invocations: 100
+wall_clock_seconds: 900
+llm_tokens: 0
+llm_cost_usd: 0
+"""
 
 APK_PATH = HERE / "mobile" / "cybergym_lab.apk"
 BUNDLE_ID = "com.kronos.cybergym.lab"
@@ -127,6 +161,170 @@ def _assert_enrichment_did_not_shortcut_anyone(graph: EngagementGraph, secret_id
         )
 
 
+def _print_budget_snapshot(ledger: BudgetLedger) -> None:
+    snapshot = ledger.snapshot()
+    print(f"BUDGET: config_source={snapshot.config_source}" + (f" ({snapshot.config_reason})" if snapshot.config_reason else ""))
+    for dimension, ceiling in dataclasses.asdict(snapshot.limits).items():
+        spent = snapshot.totals.get(dimension, 0)
+        print(f"  {dimension}: {spent} / {ceiling if ceiling is not None else 'unlimited'}")
+    marker = stopped_early_marker(snapshot)
+    if marker:
+        print(f"  {marker}")
+
+
+def _run_pipeline(engagement_dir: Path) -> int:
+    """Everything from loading the manifest through the X-SCORE line —
+    extracted to its own function (SPEC_BRIEF5) so the budget-exhaustion
+    wind-down (write the ledger snapshot, print the "stopped early"
+    marker, exit non-crash) has exactly one place to catch
+    `BudgetExceeded`, no matter which phase raised it."""
+    graph = _load_manifest_and_graph(engagement_dir)
+
+    (engagement_dir / "budget.yaml").write_text(_GENEROUS_BUDGET_YAML)
+    config_result = load_budget_limits(engagement_dir)
+    ledger = BudgetLedger(config_result.limits, config_source=config_result.source, config_reason=config_result.reason)
+
+    try:
+        print("running Brief #2 mobile static ingestion on the planted APK...")
+        upserts = ingest(APK_PATH, "mobile_static", graph)
+        apply_upserts(graph, upserts)
+        ledger.check_wall_clock()
+
+        print("reconciling (post-ingest pass)...")
+        post_ingest_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_ingest")
+        _print_merge_report(post_ingest_report)
+        ledger.check_wall_clock()
+
+        print("applying CyberGym-only enrichment (target nodes/edges + documented secret reconstruction)...")
+        strings_xml = (HERE / "mobile" / "apk_src" / "res" / "values" / "strings.xml").read_text()
+
+        # Chain 2's secret: Brief #2's secret-name regex matches
+        # "credential" but not the abbreviation "creds", so
+        # "kronos_chain2_creds_enc" was never captured at all (found
+        # empirically running this script — not anticipated in the
+        # original plan). ground_truth.yaml documents this resource's
+        # exact location and decode method (base64), so decoding it
+        # here is the same class of allowance already granted for
+        # chain 3, applied to a second, independently-discovered gap.
+        chain2_value = base64.b64decode(_extract_resource(strings_xml, "kronos_chain2_creds_enc")).decode()
+        chain2_secret_id = _secret_node_id(chain2_value)
+        chain2_info = store_evidence(engagement_dir, chain2_value.encode(), kind="mobile_secret_reconstructed")
+
+        # Chain 3's secret: split across assets/cfg.dat + a strings.xml
+        # fragment — ground_truth.yaml's documented reconstruction.
+        part1 = (HERE / "mobile" / "apk_src" / "assets" / "cfg.dat").read_text()
+        part2 = _extract_resource(strings_xml, "kronos_chain3_secret_part2")
+        chain3_value = part1 + part2
+        chain3_secret_id = _secret_node_id(chain3_value)
+        chain3_info = store_evidence(engagement_dir, chain3_value.encode(), kind="mobile_secret_reconstructed")
+
+        reconstructed_secret_ids = [chain2_secret_id, chain3_secret_id]
+
+        enrichment_upserts: list[NodeUpsert | EdgeUpsert] = [
+            NodeUpsert("API_ENDPOINT", CHAIN1_FULL_URL, {"source": "cybergym_enrichment"}),
+            EdgeUpsert("references", BUNDLE_ID, CHAIN1_FULL_URL),
+            NodeUpsert(
+                "CLOUD_RESOURCE", GENERAL_BUCKET,
+                {"resource_type": "s3_bucket", "provider": "aws", "source": "cybergym_enrichment"},
+                scope_key=f"arn:aws:s3:::{GENERAL_BUCKET}",
+            ),
+            NodeUpsert(
+                "CLOUD_RESOURCE", ADMIN_BUCKET,
+                {"resource_type": "s3_bucket", "provider": "aws", "source": "cybergym_enrichment"},
+                scope_key=f"arn:aws:s3:::{ADMIN_BUCKET}",
+            ),
+            NodeUpsert(
+                "SECRET", chain2_secret_id,
+                {"value_ref": "sha256:" + chain2_info["sha256"], "kind": "api_key_obfuscated",
+                 "status": "extracted", "source": "cybergym_enrichment"},
+                scope_key=BUNDLE_ID,
+            ),
+            EdgeUpsert("leaks", BUNDLE_ID, chain2_secret_id),
+            NodeUpsert(
+                "SECRET", chain3_secret_id,
+                {"value_ref": "sha256:" + chain3_info["sha256"], "kind": "api_key_obfuscated",
+                 "status": "extracted", "source": "cybergym_enrichment"},
+                scope_key=BUNDLE_ID,
+            ),
+            EdgeUpsert("leaks", BUNDLE_ID, chain3_secret_id),
+        ]
+        apply_upserts(graph, enrichment_upserts)
+        for sid in reconstructed_secret_ids:
+            _assert_enrichment_did_not_shortcut_anyone(graph, sid)
+
+        print("reconciling (post-enrichment pass, before validation)...")
+        post_enrich_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_enrich")
+        _print_merge_report(post_enrich_report)
+        # Reconciliation must never become a second shortcut path
+        # (guardrail 7): re-assert on whichever id each reconstructed
+        # secret survived as (reconcile may have renamed the survivor
+        # if it merged with an ingestion-discovered twin).
+        for sid in reconstructed_secret_ids:
+            survivor_id = _survivor_of(graph, sid)
+            _assert_enrichment_did_not_shortcut_anyone(graph, survivor_id)
+        ledger.check_wall_clock()
+
+        print("running the REAL kronos.validate validation pass against the live range...")
+        attempts = run_validation_pass(
+            graph,
+            engagement_dir,
+            cloud_proxy_endpoint=CLOUD_PROXY_ENDPOINT,
+            http_hints={CHAIN1_FULL_URL: {"method": "POST", "header_name": "X-Cybergym-Key"}},
+            budget=ledger,
+        )
+        for a in attempts:
+            print(f"  attempt: secret={a.secret_id[:20]} target={a.target_id} live={a.live} ({a.detail})")
+
+        # Resolve each chain's secret to wherever reconciliation left
+        # its data (a no-op if it was never merged) — Brief #4 can
+        # legitimately rename which id a chain's data now lives under.
+        chain1_id = _survivor_of(graph, _secret_node_id(CHAIN1_SECRET_VALUE))
+        chain2_id = _survivor_of(graph, _secret_node_id(CHAIN2_SECRET_VALUE))
+        chain3_id = _survivor_of(graph, chain3_secret_id)
+
+        print()
+        chain_results = [
+            _check_chain(graph, "chain-1", chain1_id, expect_edges_to=[CHAIN1_FULL_URL], expect_no_edges_to=[]),
+            _check_chain(
+                graph, "chain-2", chain2_id, expect_edges_to=[GENERAL_BUCKET], expect_no_edges_to=[ADMIN_BUCKET]
+            ),
+            _check_chain(
+                graph, "chain-3", chain3_id,
+                expect_edges_to=[GENERAL_BUCKET, ADMIN_BUCKET], expect_no_edges_to=[],
+            ),
+        ]
+
+        print()
+        print("cross-domain chains (find_paths):")
+        for path in find_paths(graph, "MOBILE_APP", "API_ENDPOINT"):
+            print(f"  {' -> '.join(f'{n}[{l}]' for n, l in zip(path['nodes'], [''] + path['labels']))}")
+        for path in find_paths(graph, "MOBILE_APP", "CLOUD_RESOURCE"):
+            print(f"  {' -> '.join(f'{n}[{l}]' for n, l in zip(path['nodes'], [''] + path['labels']))}")
+
+        x_score = sum(chain_results)
+        print()
+        total_merges = len(post_ingest_report.merges) + len(post_enrich_report.merges)
+        print(f"RECONCILIATION: {total_merges} duplicate(s) collapsed across both passes")
+        print(f"X-SCORE: {x_score}/3 chains validated end-to-end")
+        write_ledger_snapshot(engagement_dir, ledger)
+        _print_budget_snapshot(ledger)
+        return 0 if x_score == 3 else 1
+    except BudgetExceeded as exc:
+        # Fail-closed wind-down (SPEC_BRIEF5 §2/guardrail 6): never a
+        # crash, never an unmetered continuation. Write what the ledger
+        # has, print the one canonical marker, and report whatever the
+        # graph as it stands can answer — an interrupted chain simply
+        # reads as not-yet-reachable, exactly like a chain validation
+        # never got to would under the EXISTING `_check_chain` logic, no
+        # special-casing needed.
+        write_ledger_snapshot(engagement_dir, ledger)
+        print()
+        print(f"BUDGET EXCEEDED: {exc}")
+        _print_budget_snapshot(ledger)
+        print("X-SCORE: incomplete — run stopped early by budget enforcement, not evaluated")
+        return 3
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-teardown", action="store_true")
@@ -141,127 +339,7 @@ def main() -> int:
             wait_for_services()
 
         with TemporaryDirectory(prefix="kronos-cybergym-run-") as tmp:
-            engagement_dir = Path(tmp)
-            graph = _load_manifest_and_graph(engagement_dir)
-
-            print("running Brief #2 mobile static ingestion on the planted APK...")
-            upserts = ingest(APK_PATH, "mobile_static", graph)
-            apply_upserts(graph, upserts)
-
-            print("reconciling (post-ingest pass)...")
-            post_ingest_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_ingest")
-            _print_merge_report(post_ingest_report)
-
-            print("applying CyberGym-only enrichment (target nodes/edges + documented secret reconstruction)...")
-            strings_xml = (HERE / "mobile" / "apk_src" / "res" / "values" / "strings.xml").read_text()
-
-            # Chain 2's secret: Brief #2's secret-name regex matches
-            # "credential" but not the abbreviation "creds", so
-            # "kronos_chain2_creds_enc" was never captured at all (found
-            # empirically running this script — not anticipated in the
-            # original plan). ground_truth.yaml documents this resource's
-            # exact location and decode method (base64), so decoding it
-            # here is the same class of allowance already granted for
-            # chain 3, applied to a second, independently-discovered gap.
-            chain2_value = base64.b64decode(_extract_resource(strings_xml, "kronos_chain2_creds_enc")).decode()
-            chain2_secret_id = _secret_node_id(chain2_value)
-            chain2_info = store_evidence(engagement_dir, chain2_value.encode(), kind="mobile_secret_reconstructed")
-
-            # Chain 3's secret: split across assets/cfg.dat + a strings.xml
-            # fragment — ground_truth.yaml's documented reconstruction.
-            part1 = (HERE / "mobile" / "apk_src" / "assets" / "cfg.dat").read_text()
-            part2 = _extract_resource(strings_xml, "kronos_chain3_secret_part2")
-            chain3_value = part1 + part2
-            chain3_secret_id = _secret_node_id(chain3_value)
-            chain3_info = store_evidence(engagement_dir, chain3_value.encode(), kind="mobile_secret_reconstructed")
-
-            reconstructed_secret_ids = [chain2_secret_id, chain3_secret_id]
-
-            enrichment_upserts: list[NodeUpsert | EdgeUpsert] = [
-                NodeUpsert("API_ENDPOINT", CHAIN1_FULL_URL, {"source": "cybergym_enrichment"}),
-                EdgeUpsert("references", BUNDLE_ID, CHAIN1_FULL_URL),
-                NodeUpsert(
-                    "CLOUD_RESOURCE", GENERAL_BUCKET,
-                    {"resource_type": "s3_bucket", "provider": "aws", "source": "cybergym_enrichment"},
-                    scope_key=f"arn:aws:s3:::{GENERAL_BUCKET}",
-                ),
-                NodeUpsert(
-                    "CLOUD_RESOURCE", ADMIN_BUCKET,
-                    {"resource_type": "s3_bucket", "provider": "aws", "source": "cybergym_enrichment"},
-                    scope_key=f"arn:aws:s3:::{ADMIN_BUCKET}",
-                ),
-                NodeUpsert(
-                    "SECRET", chain2_secret_id,
-                    {"value_ref": "sha256:" + chain2_info["sha256"], "kind": "api_key_obfuscated",
-                     "status": "extracted", "source": "cybergym_enrichment"},
-                    scope_key=BUNDLE_ID,
-                ),
-                EdgeUpsert("leaks", BUNDLE_ID, chain2_secret_id),
-                NodeUpsert(
-                    "SECRET", chain3_secret_id,
-                    {"value_ref": "sha256:" + chain3_info["sha256"], "kind": "api_key_obfuscated",
-                     "status": "extracted", "source": "cybergym_enrichment"},
-                    scope_key=BUNDLE_ID,
-                ),
-                EdgeUpsert("leaks", BUNDLE_ID, chain3_secret_id),
-            ]
-            apply_upserts(graph, enrichment_upserts)
-            for sid in reconstructed_secret_ids:
-                _assert_enrichment_did_not_shortcut_anyone(graph, sid)
-
-            print("reconciling (post-enrichment pass, before validation)...")
-            post_enrich_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_enrich")
-            _print_merge_report(post_enrich_report)
-            # Reconciliation must never become a second shortcut path
-            # (guardrail 7): re-assert on whichever id each reconstructed
-            # secret survived as (reconcile may have renamed the survivor
-            # if it merged with an ingestion-discovered twin).
-            for sid in reconstructed_secret_ids:
-                survivor_id = _survivor_of(graph, sid)
-                _assert_enrichment_did_not_shortcut_anyone(graph, survivor_id)
-
-            print("running the REAL kronos.validate validation pass against the live range...")
-            attempts = run_validation_pass(
-                graph,
-                engagement_dir,
-                cloud_proxy_endpoint=CLOUD_PROXY_ENDPOINT,
-                http_hints={CHAIN1_FULL_URL: {"method": "POST", "header_name": "X-Cybergym-Key"}},
-            )
-            for a in attempts:
-                print(f"  attempt: secret={a.secret_id[:20]} target={a.target_id} live={a.live} ({a.detail})")
-
-            # Resolve each chain's secret to wherever reconciliation left
-            # its data (a no-op if it was never merged) — Brief #4 can
-            # legitimately rename which id a chain's data now lives under.
-            chain1_id = _survivor_of(graph, _secret_node_id(CHAIN1_SECRET_VALUE))
-            chain2_id = _survivor_of(graph, _secret_node_id(CHAIN2_SECRET_VALUE))
-            chain3_id = _survivor_of(graph, chain3_secret_id)
-
-            print()
-            chain_results = [
-                _check_chain(graph, "chain-1", chain1_id, expect_edges_to=[CHAIN1_FULL_URL], expect_no_edges_to=[]),
-                _check_chain(
-                    graph, "chain-2", chain2_id, expect_edges_to=[GENERAL_BUCKET], expect_no_edges_to=[ADMIN_BUCKET]
-                ),
-                _check_chain(
-                    graph, "chain-3", chain3_id,
-                    expect_edges_to=[GENERAL_BUCKET, ADMIN_BUCKET], expect_no_edges_to=[],
-                ),
-            ]
-
-            print()
-            print("cross-domain chains (find_paths):")
-            for path in find_paths(graph, "MOBILE_APP", "API_ENDPOINT"):
-                print(f"  {' -> '.join(f'{n}[{l}]' for n, l in zip(path['nodes'], [''] + path['labels']))}")
-            for path in find_paths(graph, "MOBILE_APP", "CLOUD_RESOURCE"):
-                print(f"  {' -> '.join(f'{n}[{l}]' for n, l in zip(path['nodes'], [''] + path['labels']))}")
-
-            x_score = sum(chain_results)
-            print()
-            total_merges = len(post_ingest_report.merges) + len(post_enrich_report.merges)
-            print(f"RECONCILIATION: {total_merges} duplicate(s) collapsed across both passes")
-            print(f"X-SCORE: {x_score}/3 chains validated end-to-end")
-            return 0 if x_score == 3 else 1
+            return _run_pipeline(Path(tmp))
     finally:
         if not args.no_teardown and not args.no_standup:
             print("tearing down the lab (docker compose down)...")
