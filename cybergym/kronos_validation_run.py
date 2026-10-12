@@ -35,6 +35,18 @@ marker is printed, and whatever chain checks are still answerable from
 the graph as it stands run anyway — this script never crashes on an
 exhausted budget, and never produces an unmetered X-score.
 
+SPEC_BRIEF6: the Docker range is now torn down through a single
+`kronos.cleanup.CleanupRegistry` instead of the old ad-hoc `finally:
+compose("down", "-v")` — there is exactly one teardown path left in
+this script. The registry is entered BEFORE the range comes up and
+wraps the whole pipeline, so teardown runs on the happy path, on a
+`BudgetExceeded` wind-down, and on any other exception alike (FORK-G's
+DEFAULT: a context manager owned by this orchestrator, not
+atexit/signal handlers). Teardown is budget-exempt (FORK-F's DEFAULT)
+— it never goes through `BudgetLedger.charge` and so can never be
+blocked by an exhausted budget. The resulting `TeardownReport` is
+written to the engagement dir alongside the budget ledger snapshot.
+
 Run (from the repo root, after `docker compose up` is NOT required —
 this script brings the lab up and down itself):
     PYTHONPATH=. .venv/bin/python cybergym/kronos_validation_run.py
@@ -63,6 +75,12 @@ from kronos.budget import (  # noqa: E402
     load_budget_limits,
     stopped_early_marker,
     write_ledger_snapshot,
+)
+from kronos.cleanup import (  # noqa: E402
+    CleanupRegistry,
+    TeardownReport,
+    compose_down,
+    write_teardown_report,
 )
 from kronos.evidence import store_evidence  # noqa: E402
 from kronos.graph import EngagementGraph  # noqa: E402
@@ -170,6 +188,14 @@ def _print_budget_snapshot(ledger: BudgetLedger) -> None:
     marker = stopped_early_marker(snapshot)
     if marker:
         print(f"  {marker}")
+
+
+def _print_teardown_report(report: TeardownReport) -> None:
+    print(f"TEARDOWN: {'all clear' if report.all_ok else 'FAILURES PRESENT -- see below'}")
+    for item in report.items:
+        marker = "ok" if item.outcome != "failed" else "FAIL"
+        suffix = f" ({item.error})" if item.error else ""
+        print(f"  [{marker}] {item.kind} {item.detail!r} -> {item.outcome}{suffix}")
 
 
 def _run_pipeline(engagement_dir: Path) -> int:
@@ -331,19 +357,41 @@ def main() -> int:
     parser.add_argument("--no-standup", action="store_true")
     args = parser.parse_args()
 
-    try:
-        if not args.no_standup:
-            print("standing up the lab (docker compose up -d --build)...")
-            compose("up", "-d", "--build")
-            print("waiting for services...")
-            wait_for_services()
+    # SPEC_BRIEF6: the single teardown path for this script. `registry`
+    # is entered BEFORE the range comes up, so `teardown_all()` runs on
+    # __exit__ no matter how the body ends -- happy path, a
+    # `BudgetExceeded` propagating out of `_run_pipeline`, or any other
+    # exception (FORK-G's DEFAULT). There is no second, competing
+    # `finally: compose("down", ...)` left anywhere in this script.
+    with TemporaryDirectory(prefix="kronos-cybergym-run-") as tmp:
+        engagement_dir = Path(tmp)
+        registry = CleanupRegistry()
+        try:
+            with registry:
+                if not args.no_standup:
+                    print("standing up the lab (docker compose up -d --build)...")
+                    compose("up", "-d", "--build")
+                    if not args.no_teardown:
+                        registry.register(
+                            "docker",
+                            "cybergym-range-stack",
+                            compose_down(compose),
+                            detail="docker compose down -v (CyberGym range)",
+                        )
+                    print("waiting for services...")
+                    wait_for_services()
 
-        with TemporaryDirectory(prefix="kronos-cybergym-run-") as tmp:
-            return _run_pipeline(Path(tmp))
-    finally:
-        if not args.no_teardown and not args.no_standup:
-            print("tearing down the lab (docker compose down)...")
-            compose("down", "-v")
+                exit_code = _run_pipeline(engagement_dir)
+        finally:
+            # Teardown has already happened by the time we get here
+            # (`registry.__exit__` ran it, win or lose) -- this is just
+            # reporting it, and it runs even if `_run_pipeline` raised
+            # something `BudgetExceeded` didn't already catch.
+            if registry.last_report is not None:
+                write_teardown_report(engagement_dir, registry.last_report)
+                _print_teardown_report(registry.last_report)
+
+        return exit_code
 
 
 def _check_chain(
