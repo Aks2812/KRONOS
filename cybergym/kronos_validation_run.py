@@ -50,6 +50,7 @@ from kronos.graph import EngagementGraph  # noqa: E402
 from kronos.ingest import EdgeUpsert, NodeUpsert, apply_upserts, ingest  # noqa: E402
 from kronos.manifest import load_and_verify  # noqa: E402
 from kronos.query import find_paths  # noqa: E402
+from kronos.reconcile import MergeReport, run_reconciliation_pass  # noqa: E402
 from kronos.validate import run_validation_pass  # noqa: E402
 
 from cryptography.hazmat.primitives import serialization  # noqa: E402
@@ -89,6 +90,29 @@ def _load_manifest_and_graph(engagement_dir: Path) -> EngagementGraph:
     return EngagementGraph.init_engagement(engagement_dir / "e.kz", manifest_text, pubkey)
 
 
+def _print_merge_report(report: MergeReport) -> None:
+    if report.is_empty():
+        print("  no duplicates found")
+        return
+    for record in report.merges:
+        print(
+            f"  merged {record.node_type} {record.merged_ids} -> {record.survivor_id} "
+            f"(canonical_key={record.canonical_key!r})"
+        )
+
+
+def _survivor_of(graph: EngagementGraph, secret_id: str) -> str:
+    """Follow `merged_into` to whichever id this secret's data now lives
+    on (a no-op if it was never merged) — Brief #4's reconciliation can
+    rename which id a chain's secret is addressable under."""
+    current = secret_id
+    while True:
+        node = graph.get_node("SECRET", current)
+        if node is None or node.get("merged_into") is None:
+            return current
+        current = node["merged_into"]
+
+
 def _assert_enrichment_did_not_shortcut_anyone(graph: EngagementGraph, secret_id: str) -> None:
     """Mechanical check, not just convention (explicit user guardrail):
     every secret the enrichment step touches must still be exactly
@@ -123,6 +147,10 @@ def main() -> int:
             print("running Brief #2 mobile static ingestion on the planted APK...")
             upserts = ingest(APK_PATH, "mobile_static", graph)
             apply_upserts(graph, upserts)
+
+            print("reconciling (post-ingest pass)...")
+            post_ingest_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_ingest")
+            _print_merge_report(post_ingest_report)
 
             print("applying CyberGym-only enrichment (target nodes/edges + documented secret reconstruction)...")
             strings_xml = (HERE / "mobile" / "apk_src" / "res" / "values" / "strings.xml").read_text()
@@ -181,6 +209,17 @@ def main() -> int:
             for sid in reconstructed_secret_ids:
                 _assert_enrichment_did_not_shortcut_anyone(graph, sid)
 
+            print("reconciling (post-enrichment pass, before validation)...")
+            post_enrich_report = run_reconciliation_pass(graph, engagement_dir, pass_name="post_enrich")
+            _print_merge_report(post_enrich_report)
+            # Reconciliation must never become a second shortcut path
+            # (guardrail 7): re-assert on whichever id each reconstructed
+            # secret survived as (reconcile may have renamed the survivor
+            # if it merged with an ingestion-discovered twin).
+            for sid in reconstructed_secret_ids:
+                survivor_id = _survivor_of(graph, sid)
+                _assert_enrichment_did_not_shortcut_anyone(graph, survivor_id)
+
             print("running the REAL kronos.validate validation pass against the live range...")
             attempts = run_validation_pass(
                 graph,
@@ -191,8 +230,12 @@ def main() -> int:
             for a in attempts:
                 print(f"  attempt: secret={a.secret_id[:20]} target={a.target_id} live={a.live} ({a.detail})")
 
-            chain1_id = _secret_node_id(CHAIN1_SECRET_VALUE)
-            chain2_id = _secret_node_id(CHAIN2_SECRET_VALUE)
+            # Resolve each chain's secret to wherever reconciliation left
+            # its data (a no-op if it was never merged) — Brief #4 can
+            # legitimately rename which id a chain's data now lives under.
+            chain1_id = _survivor_of(graph, _secret_node_id(CHAIN1_SECRET_VALUE))
+            chain2_id = _survivor_of(graph, _secret_node_id(CHAIN2_SECRET_VALUE))
+            chain3_id = _survivor_of(graph, chain3_secret_id)
 
             print()
             chain_results = [
@@ -201,7 +244,7 @@ def main() -> int:
                     graph, "chain-2", chain2_id, expect_edges_to=[GENERAL_BUCKET], expect_no_edges_to=[ADMIN_BUCKET]
                 ),
                 _check_chain(
-                    graph, "chain-3", chain3_secret_id,
+                    graph, "chain-3", chain3_id,
                     expect_edges_to=[GENERAL_BUCKET, ADMIN_BUCKET], expect_no_edges_to=[],
                 ),
             ]
@@ -215,6 +258,8 @@ def main() -> int:
 
             x_score = sum(chain_results)
             print()
+            total_merges = len(post_ingest_report.merges) + len(post_enrich_report.merges)
+            print(f"RECONCILIATION: {total_merges} duplicate(s) collapsed across both passes")
             print(f"X-SCORE: {x_score}/3 chains validated end-to-end")
             return 0 if x_score == 3 else 1
     finally:

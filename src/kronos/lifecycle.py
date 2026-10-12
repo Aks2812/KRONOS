@@ -3,8 +3,9 @@
 This module is the ONLY place `SECRET.status`, `FINDING.status`, and
 `confidence` change after a node's initial creation. `EngagementGraph`
 exposes no generic status/confidence setter; `advance_secret_status` and
-`advance_finding_status` are the sole write path, so every hard rule below
-is enforced at that single chokepoint rather than hoped for by convention:
+`advance_finding_status` are the sole *forward* write path (still called
+only by the validation runner), so every hard rule below is enforced at
+that single chokepoint rather than hoped for by convention:
 
   1. FINDING -> 'reported' ONLY if status==exploited AND >=1 EVIDENCE node.
   2. SECRET anchors a reported finding ONLY if status==reachable AND its
@@ -12,6 +13,21 @@ is enforced at that single chokepoint rather than hoped for by convention:
   3. confidence is DERIVED from status, never set freely.
   4. A SECRET whose only authenticates_to target is out-of-scope is
      recorded but flagged (`scope_note`) — never actioned, never reported.
+
+SPEC_BRIEF4 (reconciliation) adds a second, narrowly-scoped write path:
+`set_secret_status_from_evidence`, called only by `kronos.reconcile.merge`
+after folding a duplicate SECRET's edges into its merge survivor. It is
+NOT a forward mutator — it does not consult `SECRET_TRANSITIONS` and may
+legitimately move status *backward* (e.g. an evidenceless `reachable`
+label collapsing to `extracted` once merged with a twin that carries no
+evidence either — see `recompute_status_from_evidence`). That is
+deliberate: a merge is a recompute of what the now-combined evidence
+actually justifies, not a lifecycle transition, so the forward-only
+transition table does not apply to it. `advance_secret_status` remains
+the only place a SECRET is advanced *forward*, and remains exclusively
+called by the validation runner — reconciliation never calls it, and
+never assigns a status value that didn't come out of
+`recompute_status_from_evidence`.
 """
 
 from __future__ import annotations
@@ -113,6 +129,27 @@ def _set_finding_fields(graph: "EngagementGraph", finding_id: str, status: str, 
     )
 
 
+def _scope_note_if_reachable(graph: "EngagementGraph", secret_id: str, new_status: str) -> str | None:
+    """SPEC.md rule 4: a `reachable` SECRET whose only authenticates_to
+    target(s) are out-of-scope gets a note, never a silent upgrade.
+    Shared by `advance_secret_status` and `set_secret_status_from_evidence`
+    — both ultimately write the same `reachable` state and must derive
+    `scope_note` identically."""
+    if new_status != "reachable":
+        return None
+    result = graph.execute(
+        "MATCH (s:SECRET {id: $id})-[:authenticates_to]->(t) RETURN t.in_scope",
+        {"id": secret_id},
+    )
+    targets_in_scope = []
+    while result.has_next():
+        (in_scope,) = result.get_next()
+        targets_in_scope.append(in_scope)
+    if targets_in_scope and not any(targets_in_scope):
+        return _OUT_OF_SCOPE_NOTE
+    return None
+
+
 def advance_secret_status(graph: "EngagementGraph", secret_id: str, new_status: str) -> None:
     secret = graph.get_node("SECRET", secret_id)
     if secret is None:
@@ -122,20 +159,56 @@ def advance_secret_status(graph: "EngagementGraph", secret_id: str, new_status: 
     if new_status not in allowed:
         raise LifecycleError(f"invalid SECRET transition {current} -> {new_status}")
 
-    scope_note = None
-    if new_status == "reachable":
-        result = graph.execute(
-            "MATCH (s:SECRET {id: $id})-[:authenticates_to]->(t) RETURN t.in_scope",
-            {"id": secret_id},
-        )
-        targets_in_scope = []
-        while result.has_next():
-            (in_scope,) = result.get_next()
-            targets_in_scope.append(in_scope)
-        if targets_in_scope and not any(targets_in_scope):
-            scope_note = _OUT_OF_SCOPE_NOTE
-
+    scope_note = _scope_note_if_reachable(graph, secret_id, new_status)
     has_evidence = _evidence_count(graph, "secret", secret_id) > 0
+    confidence = derive_confidence("secret", new_status, has_evidence)
+    _set_secret_fields(graph, secret_id, new_status, confidence, scope_note)
+
+
+def recompute_status_from_evidence(carried_statuses: list[str], has_evidence: bool) -> str:
+    """Pure (SPEC_BRIEF4 FORK-B, option 1): given the statuses a merge's
+    members carried in BEFORE the merge, and whether the survivor has at
+    least one EVIDENCE node linked (`evidences`) AFTER the merge's edges
+    have been carried over, return the status the merge justifies.
+
+    Deliberately NOT "max of carried_statuses" (SPEC_BRIEF4 §3.2's core
+    FP-safety rule) — a label survives a merge only if the evidence that
+    justifies it survives too:
+
+      - "dead" is terminal and sticky: once any twin is proven dead, no
+        amount of (possibly stale) evidence on another twin resurrects
+        it. A credential that's been rotated/revoked stays dead.
+      - Otherwise, evidence is the ONLY thing that can earn "reachable" —
+        a node merely *labelled* reachable with no evidence behind it
+        (an unbacked optimistic label) is indistinguishable, post-merge,
+        from a plain "extracted" secret, and recomputes to "extracted".
+      - No evidence and no dead twin -> "extracted" (the floor; this
+        function never produces "validated" — that intermediate step
+        belongs to the forward lifecycle's real validate-then-reach
+        sequence, not to a merge recompute).
+    """
+    if "dead" in carried_statuses:
+        return "dead"
+    return "reachable" if has_evidence else "extracted"
+
+
+def set_secret_status_from_evidence(
+    graph: "EngagementGraph", secret_id: str, carried_statuses: list[str]
+) -> None:
+    """The reconciliation write path (SPEC_BRIEF4 FORK-B). Called ONLY by
+    `kronos.reconcile.merge`, after it has already carried every loser's
+    edges (including `evidences`) onto `secret_id`, the merge survivor.
+
+    Not a forward mutator: does not consult `SECRET_TRANSITIONS` at all,
+    because a merge recompute can legitimately move status backward
+    (`reachable` label -> `extracted`, see `recompute_status_from_evidence`),
+    which the forward-only transition table would reject. The status it
+    writes is never anything other than `recompute_status_from_evidence`'s
+    own return value — reconciliation does not get to pick a status.
+    """
+    has_evidence = _evidence_count(graph, "secret", secret_id) > 0
+    new_status = recompute_status_from_evidence(carried_statuses, has_evidence)
+    scope_note = _scope_note_if_reachable(graph, secret_id, new_status)
     confidence = derive_confidence("secret", new_status, has_evidence)
     _set_secret_fields(graph, secret_id, new_status, confidence, scope_note)
 

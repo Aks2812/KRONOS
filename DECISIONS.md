@@ -791,3 +791,290 @@ original FORK):**
   not just `cybergym/`'s own (it was already in the shared `.venv` from
   Brief #0.5's cybergym-only install, but the KRONOS package's own
   declared dependencies hadn't caught up).
+
+## Brief #4 (Reconciliation / Dedup Pass)
+
+New module `src/kronos/reconcile/` (`canonical.py`, `merge.py`,
+`runner.py`), wired into `cybergym/kronos_validation_run.py` at both
+pipeline slots SPEC_BRIEF4 §2 specifies: `ingest -> reconcile -> enrich ->
+reconcile -> _assert_enrichment_did_not_shortcut_anyone -> validate`.
+
+### Schema touch: `merged_into` (not a FORK — a necessary consequence of FORK-A's own DEFAULT)
+
+**This is a schema change, flagged explicitly per SPEC_BRIEF4's own
+instruction to call out any schema touch.** FORK-A (§5) was pre-resolved
+to its DEFAULT — tombstone losers, never hard-delete — but implementing
+that DEFAULT requires *somewhere* to record "this node was merged into
+that one," and `schema.py` had no such column on any node type before
+this brief. `SECRET`/`FINDING` already had a `status` column (so
+`status="merged"` was at least expressible, just not wired to anything);
+`HOST`, `API_ENDPOINT`, `MOBILE_APP` — the other three node types
+SPEC_BRIEF4 §3.1 names as mergeable — have **no** `status` column at all.
+Without adding something, FORK-A's chosen DEFAULT is simply not buildable
+for 3 of the 5 mergeable types.
+
+**Resolution (treated as a necessary consequence of the already-resolved
+FORK-A, not a new fork to escalate):** added `merged_into STRING`
+(nullable, no default needed — Kùzu nullable columns default to `NULL`)
+to exactly the five mergeable node types: `HOST`, `API_ENDPOINT`,
+`MOBILE_APP`, `SECRET`, `FINDING`. Minimal and uniform: `merged_into
+IS NOT NULL` is the one tombstone predicate every mergeable type shares,
+queryable via `query.query_graph` (SPEC_BRIEF4 §4 test 7). `SECRET`/
+`FINDING` additionally get `status="merged"` on tombstone, matching
+FORK-A's literal wording for the two types that already had a `status`
+column to set; `HOST`/`API_ENDPOINT`/`MOBILE_APP` do **not** gain a new
+`status` column (that would be a larger, unnecessary surface change) —
+`merged_into` alone is their tombstone signal.
+
+**Why this isn't itself escalated as a third fork:** SPEC_BRIEF4 already
+pre-resolved FORK-A with an explicit DEFAULT the brief says to take if
+unattended; this column is the only way to actually build that DEFAULT,
+not a new, independent design choice. Same class of precedent as Brief
+#2's `exported` column — a locked-schema addition, scoped, documented,
+and the *only* schema change this brief makes to any already-existing
+node type.
+
+`merged_into` is registered in `schema.NODE_PROPS_FORBIDDEN` (global, like
+`in_scope`/`confidence`) — no ingester/caller can ever set it via
+`upsert_node`; only `kronos.reconcile.merge`'s tombstone write touches it.
+**Reversibility:** easy; nullable column additions are backward
+compatible, same caveat as Brief #2's `exported` column — not
+retroactive to an already-initialized engagement DB's existing rows
+(`init_db`'s `CREATE ... IF NOT EXISTS` is a no-op against an
+already-created table).
+
+**`resolves_to` needed no schema touch at all.** It was already in
+`EDGE_PAIRS` (`HOST->HOST`, `API_ENDPOINT->HOST`, `WEB_ENDPOINT->HOST`)
+from Brief #1. SPEC_BRIEF4 §3.3 explicitly allows skipping the edge
+assertion itself ("if in doubt, skip the edge for now and note it — the
+merge discipline is what matters here") — taken here, and noted:
+no ingester in this codebase produces DNS-resolution evidence (an
+FQDN actually resolving to a given IP) today, so there is nothing to
+honestly assert the edge FROM. SPEC_BRIEF4 §4 test 3 ("not merged;
+`resolves_to` asserted (or skipped-and-noted)") is satisfied by the
+"not merged, both nodes still present" half; the edge itself is the
+skipped half, by the brief's own stated allowance.
+
+### FORK-B — resolved exactly per the brief's own DEFAULT
+
+Option 1: `lifecycle.py` gained `recompute_status_from_evidence` (pure —
+no graph parameter at all) and `set_secret_status_from_evidence` (the
+actual write, called only by `kronos.reconcile.merge`, after it has
+already carried every loser's edges — including `evidences` — onto the
+survivor). The second function is necessary because `SECRET.status` can
+only ever change through `lifecycle.py` by this module's own documented
+contract ("the ONLY place `SECRET.status`... change[s] after a node's
+initial creation") — reconciliation cannot write it via a bare Cypher
+`SET` from `merge.py` without breaking that contract. It is explicitly
+**not** a forward mutator: it never consults `SECRET_TRANSITIONS`, and
+may legitimately move status *backward* (an evidenceless `reachable`
+label collapsing to `extracted` on merge) — which `advance_secret_status`
+would reject outright. `advance_secret_status` remains the *only*
+function that advances a SECRET forward, and remains called only by
+`kronos.validate.runner` (verified by a grep-assert test, §4 test 8:
+`test_advance_secret_status_still_called_only_by_the_validation_runner`;
+reconciliation never calling it is covered by a second, dedicated test).
+The small scope-note computation `advance_secret_status` already had was
+extracted into a shared private helper (`_scope_note_if_reachable`) so
+both functions derive it identically — a pure refactor, zero behavior
+change, verified by the full existing `test_lifecycle.py`/
+`test_validate_runner.py` suite staying green throughout.
+
+### FORK-A — resolved exactly per the brief's own DEFAULT
+
+Tombstone, never hard-delete (see the schema-touch writeup above for
+what building this DEFAULT actually required).
+
+### Guardrail 1 — `scope_guard.py` zero-line diff
+
+Confirmed by `git diff --stat` throughout this brief's work, and pinned
+by a test (`test_scope_guard_has_zero_line_diff`) against a `sha256sum`
+of the file captured before any of this brief's edits began. FORK-2
+(Aks2812/KRONOS#2) stays open, untouched, exactly as instructed.
+
+### FINDING canonical key: implemented, currently always inert
+
+`canonical.canonical_key_for_finding(finding_class, affected_asset_id,
+location_sig)` is fully implemented per SPEC_BRIEF4 §3.1's exact formula
+and wired into `runner.py`'s grouping pass — but `FINDING`'s locked
+schema has no `location_sig` column and no ingester in this codebase
+populates one, so `location_sig` is always `None` in practice today and
+the function always returns `None` for every FINDING currently in any
+graph. This is the guardrail-6-safe default ("a node that can't produce
+a confident key... is never merged"), not a bug, and not a reason to
+leave the function unwritten — wiring it in now means a future ingester
+that adds real location data gets correct FINDING dedup for free.
+
+### CyberGym live confirmation
+
+Ran the real, live, docker-backed `cybergym/kronos_validation_run.py`
+end to end with reconciliation wired into both pipeline slots: **X-score
+3/3**, unchanged from the pre-reconciliation baseline. Both reconciliation
+passes (`post_ingest`, `post_enrich`) reported **0 duplicates** — this
+specific fixture's ingestion + enrichment never produces two different
+node IDs for the same real entity today (chain 2/3's enrichment-
+reconstructed secrets have no ingestion-side twin, since Brief #2's
+light extractor never captured them at all — see the existing Brief #3
+FORK writeup), so this run demonstrates reconciliation is a safe,
+behavior-preserving no-op on CyberGym's current fixture. Every merge
+*scenario* the brief requires (dedup, template-merge, cross-shape
+non-merge, idempotency, the three laundering cases, audit) is instead
+exercised directly and deterministically in `tests/test_reconcile.py`,
+which does not depend on live docker services.
+
+### Build-time decisions (below the escalation bar — logged, not asked)
+
+- **Survivor selection: lexicographic `min()` of the group's member
+  ids.** SPEC_BRIEF4 §3.2 asks for "lowest/oldest ID, so merges are
+  reproducible" without specifying a total order; plain string `min()`
+  is deterministic, needs no extra data (no second `created_at` lookup),
+  and is reproducible regardless of insertion order — exactly what the
+  brief asks for, nothing more.
+- **Edge carry-over walks `schema.EDGE_PAIRS` directly** (one typed
+  Cypher query per `(label, from_type, to_type)` the merging node type
+  participates in, either end) rather than a single untyped `MATCH
+  (a)-[r]->(b)` over the loser — keeps every carried-over edge write
+  going through the exact same `graph.upsert_edge(label, from_id,
+  from_type, to_id, to_type)` 5-argument contract every other module
+  uses (`graph.py`'s own documented contract, per its README), and reuses
+  its existing `MERGE`-based de-dup rather than inventing a second one.
+- **`run_reconciliation_pass` takes `engagement_dir`** (like
+  `run_validation_pass` already does) purely to decode SECRET evidence
+  blobs for canonical-key material — `value_ref` never carries the raw
+  secret inline on the node (Brief #2's own design), so computing
+  `canonical_key_for_secret` needs the same evidence-store read
+  `validate.runner._decode_secret_value` already does. Duplicated as a
+  small private helper rather than imported, for the same reason
+  `validate.runner`'s version is private: it's a 6-line, module-local
+  decode-with-graceful-degradation helper, not a shared contract.
+- **`_group_findings` is wired in but currently always empty** (see the
+  FINDING canonical key writeup above) — kept rather than omitted so
+  wiring a future `location_sig` source doesn't need a second brief
+  touching `runner.py`.
+- **`kronos_validation_run.py`'s chain-id lookups now resolve through
+  `_survivor_of` (follows `merged_into`) before the final chain checks.**
+  Without this, a chain's secret ID could get tombstoned by the
+  post-enrich reconcile pass (merged into a differently-IDed survivor),
+  and the existing `_check_chain(graph, ..., secret_id, ...)` calls — which
+  look the node up by its ORIGINAL id — would see a `"merged"` tombstone
+  instead of the real `"reachable"` status. Not exercised on this
+  fixture today (0 duplicates found, see above) but necessary for
+  correctness the moment a second mobile-ingestion source starts
+  overlapping with enrichment's reconstructed secrets, which is exactly
+  the scenario this brief exists to make safe.
+
+## Brief #4.1 (Reconciliation fixes — amends PR #6, pre-merge)
+
+Review of Brief #4 found the dedup mechanics were only half-wired: the
+live CyberGym 3/3 was a no-op proof (that fixture has no real
+duplicates, so `merge_group` never actually ran), and two latent defects
+would have activated the moment a genuine duplicate appeared. Both are
+closed here, additive on the same branch/PR — nothing from Brief #4 is
+reverted.
+
+### Fix #1 — tombstoned losers are now genuinely inert (FORK-C)
+
+**Problem:** `_carry_over_edges` *copied* a loser's edges onto the
+survivor but never removed them. The loser stayed fully live in the
+graph with all its original edges — `find_paths` and any non-SECRET
+candidate enumeration would still traverse straight through it. A real
+duplicate was being added as a superset survivor, not removed.
+
+**FORK-C — resolved exactly per the brief's own DEFAULT: option 1,
+move-don't-copy.** Confirmed empirically before committing to this path
+(per the brief's own instruction to verify Kùzu can delete relationships
+by pattern before taking the DEFAULT): `MATCH (a)-[r:label]->(b) DELETE r`
+removes the matched relationship without touching either node — tested
+directly against this exact Kùzu build. `merge.py` gained
+`_delete_loser_edges`, called after `_carry_over_edges` (and, for
+SECRET, after `set_secret_status_from_evidence` — deleting the loser's
+edges afterward doesn't change what the survivor already carries, but
+the brief pins this order regardless) and before `_tombstone`. Same
+`EDGE_PAIRS` walk as the carry-over, both directions, localized entirely
+to `merge.py` — no `merged_into` filter was added to `find_paths`,
+candidate enumeration, or anywhere else, which is the point: every
+current and future reader is protected without needing its own
+filtering discipline.
+
+**Ordering detail not spelled out in the brief but required for
+correctness:** carry-over for ALL losers in a group happens before
+deletion for ANY of them (two separate loops, not interleaved
+per-loser). A 3+-way merge can have an edge between two losers; carrying
+every loser's edges over first — even if that transiently creates a
+spurious survivor<->loser edge along the way — guarantees every real
+external edge reaches the survivor exactly once, and the deletion pass
+afterward cleans up anything left dangling on any loser regardless of
+processing order. Interleaving carry-over and deletion per loser would
+make the result order-dependent.
+
+### Fix #2 — FINDING merge path refuses rather than half-activates
+
+**Problem:** `merge_group` collected `carried_statuses` for FINDING but
+never recomputed a survivor status from evidence (only SECRET did,
+`carried_statuses` was dead data for FINDING). Unreachable today only
+because `canonical_key_for_finding` always returns `None` — but
+`canonical.py` is deliberately pre-wired to switch on "for free" the
+moment a future ingester populates `location_sig`, at which point a real
+FINDING merge would silently keep the arbitrary min-id survivor's status
+unrecomputed: a false-negative (a real `exploited` finding quietly
+downgraded) that nobody would be looking at `merge.py` to catch.
+
+**Fix:** `merge_group` now raises `NotImplementedError` immediately for
+any FINDING group of size >=2, naming SPEC_BRIEF4.1 §3 in the message.
+The dead `carried_statuses` collection for FINDING was removed (the
+condition narrowed from `node_type in _STATUS_BEARING_TYPES` to
+`node_type == "SECRET"`); SECRET's collection is unchanged.
+`canonical_key_for_finding` and `runner._group_findings` are left in
+place exactly as instructed — they correctly yield nothing today, and
+are the backstop's trigger for the day they don't. Full FINDING
+reconciliation (its own `exploited`->`reported` evidence-gating rules,
+which differ from SECRET's) belongs in whichever later brief actually
+produces FINDING nodes.
+
+### The missing test — turning the no-op proof into a real one
+
+`tests/test_reconcile.py` gained three tests (13 -> 16 in this file; 107
+passed project-wide, 1 pre-existing skip, 0 failed):
+
+- **SECRET, real duplicate:** two distinct-id secrets, same material,
+  each with its own edges (one evidence-backed + an `authenticates_to` a
+  cloud resource, one only `leaks`-linked from an app). Proves: the
+  survivor holds the union of both; the loser has **zero** relationships
+  post-merge (the actual Fix #1 proof, via a helper that walks every
+  `EDGE_PAIRS` label/pair the node type can participate in — not just
+  the couple of edges the test happens to set up); `find_paths` returns
+  the survivor only, never the loser; the survivor's status is
+  `recompute_status_from_evidence` of the merged evidence; and a second
+  pass on this now-non-empty, already-tombstoned graph is still a true
+  no-op.
+- **API_ENDPOINT, real duplicate:** `/users/123` and `/users/456` merge
+  on their shared template, `/admin/1` stays separate; the loser is
+  edgeless; `find_paths(HOST, API_ENDPOINT)` returns the survivor and
+  the genuinely-distinct third endpoint, never the loser.
+- **FINDING guard:** calls `merge_group` directly with a 2-member
+  FINDING group (bypassing the always-`None` canonical-key runner path)
+  and asserts it raises `NotImplementedError` — proves Fix #2's backstop
+  actually fires, not just that it's unreachable today.
+
+All 13 of Brief #4's original tests stayed green throughout, unmodified.
+
+### Live CyberGym re-confirmation
+
+Re-ran the full live, docker-backed `cybergym/kronos_validation_run.py`
+after both fixes: **X-score still 3/3**, both reconciliation passes
+still report 0 duplicates (unchanged — this fixture still has no genuine
+duplicate, exactly as Brief #4's run found). The fixes change nothing
+about this fixture's outcome by design; what they change is proven by
+the new unit/graph tests above, which inject real duplicates
+deliberately.
+
+### Unchanged (confirmed, not re-litigated)
+
+`scope_guard.py` zero-line diff (re-confirmed via the existing sha256
+test, unchanged from Brief #4); `advance_secret_status` still the only
+forward mutator, called only by the validation runner (existing
+grep-assert tests, unmodified, still pass); the SECRET
+evidence-recompute rule; the conservative canonical keys; the
+`merged_into`-forbidden-in-upsert lock; the post-enrichment
+`_survivor_of`-based re-assertion of `_assert_enrichment_did_not_shortcut_anyone`.
+None of this was touched.
