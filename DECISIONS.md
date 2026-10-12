@@ -1206,3 +1206,145 @@ optional `budget` parameter to `run_validation_pass` and a new,
 unrelated module. No schema touch was needed or made — budget state
 lives entirely in `budget.yaml`/the in-memory ledger/the JSON snapshot
 file, never in the Kùzu graph itself.
+
+## Brief #6 — Engagement cleanup / teardown registry
+
+New module `src/kronos/cleanup/`: `registry.py` (`CleanupRegistry` —
+the chokepoint, `TeardownItem`/`TeardownReport`, `write_teardown_report`)
+and `kinds.py` (idempotent teardown-callable factories: `remove_container`
+/`remove_network`/`remove_volume` via raw `docker rm -f`/`network rm`/
+`volume rm` tolerating "no such object"; `compose_down` wrapping an
+existing `compose(*args)` helper as one teardown callable for a whole
+range stack; `remove_file`/`remove_dir`; `shred_credential_file`
+(overwrite-then-unlink — removed from disk, not just logged);
+`terminate_process`, pre-wired for the agent layer). Wired into
+`cybergym/kronos_validation_run.py`, replacing the old ad-hoc
+`finally: compose("down", "-v")` with a single `CleanupRegistry`
+entered before the range comes up and wrapping the whole pipeline; the
+resulting `TeardownReport` is written to the engagement dir alongside
+the budget ledger snapshot.
+
+### Guardrail confirmation
+
+- **`scope_guard.py`: zero-line diff** — re-confirmed via `git diff
+  --stat` (empty) and `test_cleanup.py::test_scope_guard_still_has_zero_line_diff`
+  (the same sha256 pin re-verified by this brief, per its own §4 test 8).
+  FORK-2 (#2) stays untouched.
+- **`advance_secret_status` remains the only forward mutator** — this
+  brief's module never calls it; `test_cleanup.py::test_cleanup_module_never_calls_advance_secret_status`
+  greps the whole `src/kronos/cleanup/` tree for the call, mirroring the
+  budget brief's own guardrail test. `src/kronos/lifecycle.py` and
+  `src/kronos/reconcile/` have a zero-line diff from main.
+- **Teardown is mechanically budget-exempt (guardrail 3 / FORK-F's
+  DEFAULT)** — `test_cleanup.py::test_cleanup_module_is_budget_exempt_mechanically`
+  walks every file under `src/kronos/cleanup/` and asserts none of them
+  has a real `import kronos.budget`/`from kronos.budget` line or a
+  `.charge(...)` call. `src/kronos/budget/` itself has a zero-line diff
+  from main — this brief only reads `BudgetExceeded` in its own test
+  file to prove teardown survives it, never inside the cleanup module.
+- **The key cross-module test:**
+  `test_cleanup.py::test_teardown_runs_even_when_budget_is_exhausted`
+  registers artifacts, charges a zero-ceiling `BudgetLedger` inside a
+  `with CleanupRegistry() as registry:` body (raising `BudgetExceeded`
+  mid-body), and asserts every registered artifact was torn down in LIFO
+  order and the `TeardownReport` written — before the exception is even
+  caught. The `CleanupRegistry` context manager has no knowledge of
+  `BudgetExceeded` at all; it just treats it as "the body raised,"
+  which is exactly what makes this guardrail mechanically true rather
+  than merely a policy.
+
+### FORKs — both taken as their pre-resolved DEFAULT
+
+- **FORK-F (does teardown charge the budget?): DEFAULT taken — exempt.**
+  Nothing in `kronos.cleanup` imports `kronos.budget` or can raise/catch
+  `BudgetExceeded`; cleanup cannot depend on spare budget to run.
+- **FORK-G (crash-safety mechanism): DEFAULT taken — a context manager
+  owned by the orchestrator**, not `atexit`/signal handlers.
+  `CleanupRegistry.__exit__` always calls `teardown_all()` — on a clean
+  return, on `BudgetExceeded`, or on any other exception — then lets the
+  original exception (if any) propagate unchanged. Deterministic and
+  directly testable without needing to kill the interpreter.
+
+### Test results
+
+**140 passed, 1 skipped** (pre-existing, unrelated: MobSF not
+configured), **0 failed**. 15 new tests in `tests/test_cleanup.py`
+covering every §4 acceptance test: LIFO teardown order; teardown on an
+exception with the exception still propagating; teardown surviving a
+real `BudgetExceeded` (the key cross-module test, see above);
+idempotence (`teardown_all()` called twice, an already-gone artifact
+reported `already_gone`, not `failed`); a partial-failure test (one
+callable raises, the other two still run, the failure is recorded, and
+`teardown_all()` itself never raises); a temp credential file genuinely
+removed from disk (plus its already-missing-file variant); the
+`docker`-kind teardown-callable unit tests (`remove_container`
+success/failure/already-gone, `compose_down` wrapping); a
+`TeardownReport` JSON round-trip; and the three guardrail tests above.
+All 125 pre-existing tests (18 of them Brief #5's) stayed green,
+unmodified.
+
+### Live CyberGym confirmation
+
+Stood up the real, live, docker-backed range via the now-registry-based
+`cybergym/kronos_validation_run.py` and ran it end to end (happy path):
+
+```
+X-SCORE: 3/3 chains validated end-to-end
+BUDGET: config_source=file
+  validation_attempts: 10.0 / 100
+  tool_invocations: 10.0 / 100
+  wall_clock_seconds: 5.790974900999913 / 900
+  llm_tokens: 0 / 0
+  llm_cost_usd: 0 / 0
+TEARDOWN: all clear
+  [ok] docker 'docker compose down -v (CyberGym range)' -> done
+```
+
+Exit code `0`. `docker ps -a`, `docker network ls`, and `docker volume
+ls` immediately after the run show zero leftover KRONOS/CyberGym
+containers, networks, or volumes — only Docker's own built-in
+`bridge`/`host`/`none` networks remain.
+
+Also forced an early stop against the SAME live range (a temporary
+`validation_attempts: 0` ceiling, applied only for this confirmation
+run, never committed) to exercise guardrail 3 for real, not just in the
+unit test:
+
+```
+BUDGET EXCEEDED: budget exceeded: validation_attempts would reach 1.0 > ceiling 0
+  stopped early: budget validation_attempts exhausted
+X-SCORE: incomplete — run stopped early by budget enforcement, not evaluated
+TEARDOWN: all clear
+  [ok] docker 'docker compose down -v (CyberGym range)' -> done
+```
+
+Exit code `3` (the existing `BudgetExceeded` wind-down code from Brief
+#5 — unchanged). Teardown ran in full even though the engagement's
+budget was fully exhausted mid-run against still-live containers; a
+post-run check again showed zero leftover containers, networks, or
+volumes. The `TeardownReport.to_dict()` shape, matching both runs'
+single docker-stack item:
+
+```json
+{
+  "all_ok": true,
+  "items": [
+    {
+      "detail": "docker compose down -v (CyberGym range)",
+      "error": null,
+      "kind": "docker",
+      "outcome": "done",
+      "timestamp": "2026-10-12T05:52:42.201065+00:00"
+    }
+  ]
+}
+```
+
+### Unchanged (confirmed, not re-litigated)
+
+Brief #5's budget governance — the ledger, the config loader, the
+`validate/runner.py` charge points — is untouched; this brief adds no
+new `budget` parameter and no new charge call anywhere. The old
+ad-hoc `finally: compose("down", "-v")` in
+`cybergym/kronos_validation_run.py` is gone — there is exactly one
+teardown path left in that script now, the `CleanupRegistry`.
