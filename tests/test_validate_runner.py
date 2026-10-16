@@ -15,6 +15,20 @@ from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
 
 
+def _live(evidence: bytes = b"proof", detail: str = "200") -> ValidationOutcome:
+    """A SPEC_BRIEF8-valid `live=True` outcome for tests that only care
+    about the runner's scope/lifecycle/evidence behavior, not about the
+    differential's own classification logic (that's `controls.py`'s and
+    the validators' own test files' job)."""
+    return ValidationOutcome(
+        live=True, evidence=evidence, detail=detail, classification="live_discriminated", discriminated=True
+    )
+
+
+def _dead(detail: str = "401") -> ValidationOutcome:
+    return ValidationOutcome(live=False, evidence=b"", detail=detail, classification="not_live", discriminated=False)
+
+
 def _graph_with_secret(tmp_path, manifest_factory, signing_keypair, *, decoded_value: str, in_scope_globs: list[str]):
     _, pub = signing_keypair
     manifest_text = manifest_factory(scope={"in_scope": in_scope_globs, "excluded": []})
@@ -50,7 +64,7 @@ def test_live_in_scope_secret_reaches_reachable_with_evidence_and_edge(
     _add_endpoint(graph, "http://localhost:8091")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = _live()
         run_validation_pass(graph, engagement_dir)
 
     secret = graph.get_node("SECRET", secret_id)
@@ -73,7 +87,7 @@ def test_live_but_out_of_scope_target_never_exceeds_validated_and_is_never_actio
     _add_endpoint(graph, "http://localhost:8091")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = _live()
         run_validation_pass(graph, engagement_dir)
 
     secret = graph.get_node("SECRET", secret_id)
@@ -94,7 +108,7 @@ def test_dead_secret_stays_extracted_no_edge_no_evidence(tmp_path, manifest_fact
     _add_endpoint(graph, "http://localhost:8091")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=False, evidence=b"", detail="401")
+        mock_validate.return_value = _dead()
         run_validation_pass(graph, engagement_dir)
 
     secret = graph.get_node("SECRET", secret_id)
@@ -136,7 +150,7 @@ def test_out_of_scope_skip_does_not_also_skip_an_in_scope_candidate_of_the_same_
     _add_endpoint(graph, "http://in-scope.example.com")
 
     def fake_validate(secret_value, endpoint_url, **kwargs):
-        return ValidationOutcome(live=(endpoint_url == "http://in-scope.example.com"), evidence=b"proof", detail="")
+        return _live() if endpoint_url == "http://in-scope.example.com" else _dead()
 
     with patch("kronos.validate.http_validator.validate_api_token", side_effect=fake_validate) as mock_validate:
         run_validation_pass(graph, engagement_dir)
@@ -158,7 +172,7 @@ def test_confidence_after_reachable_matches_derived_cap_no_inflation(
     _add_endpoint(graph, "http://localhost:8091")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = _live()
         run_validation_pass(graph, engagement_dir)
 
     secret = graph.get_node("SECRET", secret_id)
@@ -175,7 +189,7 @@ def test_rerunning_validation_pass_on_already_reachable_secret_is_a_safe_noop(
     _add_endpoint(graph, "http://localhost:8091")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = _live()
         run_validation_pass(graph, engagement_dir)
         run_validation_pass(graph, engagement_dir)  # secret is already extracted->reachable; loop only considers "extracted" secrets
 
@@ -220,7 +234,7 @@ def test_api_token_secret_never_dispatched_to_the_cloud_validator_even_with_clou
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_http, \
          patch("kronos.validate.cloud_validator.validate_cloud_credential") as mock_cloud:
-        mock_http.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_http.return_value = _live()
         run_validation_pass(graph, engagement_dir, cloud_proxy_endpoint="http://localhost:4567")
 
     mock_cloud.assert_not_called()

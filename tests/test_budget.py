@@ -58,7 +58,7 @@ def test_fail_closed_enforcement_stops_exactly_at_the_cap(tmp_path, manifest_fac
     ledger = BudgetLedger(BudgetLimits(validation_attempts=1), config_source="test")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         with pytest.raises(BudgetExceeded) as excinfo:
             run_validation_pass(graph, tmp_path, budget=ledger)
 
@@ -100,7 +100,7 @@ def _run_capped(tmp_path_factory, manifest_factory, signing_keypair, label: str)
     graph, _ = _graph_with_secret_and_endpoints(run_dir, manifest_factory, signing_keypair, n_endpoints=3)
     ledger = BudgetLedger(BudgetLimits(validation_attempts=2), config_source="test")
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         with pytest.raises(BudgetExceeded) as excinfo:
             run_validation_pass(graph, run_dir, budget=ledger)
     return excinfo.value.dimension, ledger.snapshot()
@@ -257,7 +257,7 @@ def test_full_pipeline_with_generous_budget_is_a_pure_passthrough(tmp_path, mani
 
     ledger = BudgetLedger(BudgetLimits(validation_attempts=500, tool_invocations=1000, wall_clock_seconds=3600.0), config_source="test")
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         run_validation_pass(graph, tmp_path, budget=ledger)  # must NOT raise
 
     assert graph.get_node("SECRET", secret_id)["status"] == "reachable"
@@ -279,7 +279,7 @@ def test_ledger_snapshot_is_written_queryable_and_append_only(tmp_path, manifest
     ledger = BudgetLedger(BudgetLimits(validation_attempts=10), config_source="test")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         run_validation_pass(graph, tmp_path, budget=ledger)
 
     path = write_ledger_snapshot(tmp_path, ledger)
@@ -302,7 +302,7 @@ def test_stopped_early_marker_present_only_when_tripped(tmp_path, manifest_facto
     ledger = BudgetLedger(BudgetLimits(validation_attempts=1), config_source="test")
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         with pytest.raises(BudgetExceeded):
             run_validation_pass(graph, tmp_path, budget=ledger)
 

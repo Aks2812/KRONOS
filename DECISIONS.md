@@ -1537,3 +1537,156 @@ this brief adds no cleanup-registered resource and no new teardown path;
 the one `docker compose down -v` registration in
 `kronos_validation_run.py` is exactly as Brief #6 left it. Brief #5's
 budget governance is likewise untouched.
+
+## Brief #8 — Negative-control validation (two-armed proof)
+
+### Why
+
+Brief #3's validators each trusted a SINGLE arm: `http_validator.py`
+treated the first `2xx` as proof; `cloud_validator.py` collapsed every
+`ClientError` to `live=False`. Hole 1 is real and reproducible against
+this exact range: CyberGym's `GET /health` returns `200 {"status": "ok"}`
+with no auth required, so pointing the old validator at it with a
+garbage secret reported the secret live. Hole 2 meant the validator could
+never turn Brief #7's AWS-faithful `AccessDenied` into the positive
+evidence it actually is (a signed request that gets `AccessDenied` proves
+the signature verified). Both validators now run a differential — the
+real secret plus one or two derived, guaranteed-invalid negative
+controls — and hand it to `kronos.validate.controls.run_differential`,
+the one chokepoint that decides whether the target actually
+discriminates before any claim is trusted.
+
+### Classification matrix as implemented, next to Brief #7's declared matrix
+
+Brief #7 declared five S3 denial codes for a *single* signed request.
+Brief #8 reads those same codes across THREE arms (A canonical, B
+bad-secret, C unknown-key) and classifies the differential:
+
+| Brief #7 single-arm code (for reference) | Brief #8 three-arm pattern (A / B / C) | `classification` implemented |
+|---|---|---|
+| (A succeeds) | A success / B denied / C denied | `live_discriminated` (`live=True`) |
+| `AccessDenied` (no-auth or bucket-not-allowed) | A `AccessDenied` / B `SignatureDoesNotMatch` / C `InvalidAccessKeyId` | `authenticated_not_authorized` (FORK-M: `validated` only, no edge) |
+| `AccessDenied` | A `AccessDenied` / B `AccessDenied` (identical) | `inconclusive` (target doesn't discriminate between real/fake signature) |
+| (any code, A also succeeds) | A success / B **also** success | `indiscriminate_target` (the `/health` case) |
+| `AuthorizationHeaderMalformed` (§3.1a, case M1) | **any** arm returns it | `self_request_malformed` (our own request, never a target signal) |
+| `InvalidAccessKeyId` / `SignatureDoesNotMatch` (A itself) | A denied, none of the above patterns match | `not_live` |
+
+HTTP's two-arm table collapses to the same four non-cloud-specific rows:
+`live_discriminated`, `indiscriminate_target`, `not_live`,
+`inconclusive` (both arms transport-error) — there is no
+`authenticated_not_authorized`/`self_request_malformed` concept on the
+HTTP side, since there is no S3-style structured error code to read.
+
+Implemented exactly in `kronos.validate.controls.run_differential` — see
+`src/kronos/validate/controls.py`.
+
+### FORK choices (all DEFAULT; no escalation needed)
+
+- **FORK-I (where the arm logic lives):** DEFAULT (1) — one shared
+  `controls.py`. Same reasoning as `scope_guard`: a classification rule
+  duplicated per validator is a rule that rots per validator.
+- **FORK-J (budget metering of arms):** DEFAULT (1) — charge all arms up
+  front, differential atomic. `runner.py` charges `validation_attempts`
+  (still 1/candidate) and `tool_invocations` (now the arm count) together,
+  before the validator call that runs the whole differential — so a
+  `BudgetExceeded` can only land *between* candidates, never mid-arm-set
+  (`tests/test_negative_controls.py::test_budget_exceeded_between_candidates_never_mid_differential`
+  proves this with a ledger sized for exactly one candidate's 3 arms).
+- **FORK-K (control arm also succeeds):** DEFAULT (1) — abstain:
+  `live=False`, `classification="indiscriminate_target"`, secret stays
+  `extracted`, no FINDING. The secret is not disproven; the target is
+  uninformative.
+- **FORK-L (control derivation):** DEFAULT (1) — HMAC-derived,
+  shape-preserving, fixed `KRONOS-NEGATIVE-CONTROL` domain-separation
+  label. `derive_negative_control` forces every digit/upper/lower
+  character position to differ from the original (not just "probably,
+  by hash"), so it is structurally, not just probabilistically,
+  guaranteed never to equal the real value for any realistic secret
+  shape; a defensive `RuntimeError` fail-closed guard covers the
+  degenerate case of a value with no digit/letter characters at all.
+- **FORK-M (cloud `authenticated_not_authorized`):** DEFAULT (1) —
+  advance to `validated`, no edge, not `reachable` via that candidate.
+  Discarding this signal would be a false negative on exactly the
+  over-privilege evidence Brief #7 §0 named.
+
+### Guardrail confirmation
+
+- `src/kronos/scope_guard.py`: zero-line diff (confirmed via
+  `git diff --stat main -- src/kronos/scope_guard.py`, empty).
+- `src/kronos/lifecycle.py`: untouched (not in this PR's diff at all).
+  `advance_secret_status` remains the only forward status mutator,
+  called only from `runner.py`'s existing `_advance_through` and the new
+  `_advance_to_validated_only` — both call it, neither reimplements it.
+- No `FINDING` nodes created anywhere in this brief's code.
+- No secret value in any evidence blob, log line, or `detail` string —
+  `ArmResult` structurally carries only labels/success/status/error-code,
+  never a credential value; `tests/test_negative_controls.py`'s
+  `test_cloud_validator_evidence_and_control_outcome_never_contain_a_secret_value`
+  and each validator test file's assertions check this directly.
+- `known_secrets.py` / `scope_guard.py` authorization semantics
+  unchanged; no new dependency, no new egress target, no new exposed
+  port — this brief is pure Python logic plus one new live `selftest.py`
+  check against ports the range already exposes.
+
+### §5.1.8 — NOT implemented: allowlist conflict (stop-and-report)
+
+SPEC_BRIEF8.md §5.1.8 explicitly instructs: "(a) add `assert scanned > 0`
+non-vacuity to the anti-leak guard in `cybergym/cloud/test_denial_matrix.py`;
+(b) add a negative test that a non-M1 malformed Authorization header does
+not return 400." But the SAME brief's §2 "Must NOT change" list includes
+`cybergym/cloud/*`, which covers that exact file, and §2 says: "If you
+believe one is required, stop and report." This is a direct contradiction
+within the brief, not a judgment call — §5.1.8 names the file to edit,
+§2 forbids editing it. Per the brief's own binding instruction ("stay
+inside the §2 allowlist... stop and report instead of changing it"), this
+sub-item was **not implemented**. Everything else in §5.1/§5.2/§5.3 was
+implemented and is green. This needs the brief author/reviewer to resolve
+(either §2 should carve out an explicit exception for this one file, or
+§5.1.8 should move its target to a file Brief #8 may touch) before it can
+land.
+
+### Test results
+
+**`tests/` (KRONOS's own suite): 306 passed, 1 skipped** (baseline before
+this brief: 140 passed, 1 skipped). The net growth is the new
+`tests/test_negative_controls.py` (header/cloud classification-matrix
+parametrizations sweep every combination in `controls.ArmResult`'s space,
+not just one case per §5.1.3) plus additive fixes to existing call sites
+that construct `ValidationOutcome(live=True, ...)` directly
+(`tests/test_http_validator.py`, `tests/test_cloud_validator.py`,
+`tests/test_validate_runner.py`, and — made necessary by the new
+structural invariant in `types.py`, not by anything specific to
+validation — `tests/test_budget.py` and `tests/test_reconcile.py`, which
+each had one such construction in a budget/reconciliation scenario that
+happens to use the validate module).
+
+**`cybergym/cloud/` (hermetic, Brief #7): unchanged at 16 passed** — this
+brief does not touch `cybergym/cloud/*` (see §5.1.8 above).
+
+### Live, Docker-backed run (§5.3) — BLOCKED / INCOMPLETE
+
+Same environment blocker as Brief #7, reproduced independently rather
+than assumed: `docker compose up -d --build` fails inside the
+`sigv4-proxy`/`init-buckets`/`api` image builds with
+`SSLCertVerificationError: self-signed certificate in certificate chain`
+against PyPI — this cloud container's egress proxy CA is trusted on the
+host but not inside the Docker build's network namespace. The fix
+(installing the CA bundle into an image layer) requires editing
+Dockerfiles, which are explicitly out of §2's allowlist for this brief
+too.
+
+The §5.3 checks (`check_negative_control_differential` in
+`cybergym/selftest.py`, wired into `main()` right after
+`check_cloud_denial_matrix`) are **written and ready to run** on a host
+with unproxied egress (per the brief's own explicit instruction: "Still
+WRITE the §5.3 selftest.py check so it can be run on the local host"),
+but have not themselves been executed against the live range from this
+container. **X-score and the live negative-control-differential
+criterion are therefore unverified by this PR.** The hermetic suite
+above does not and cannot stand in for them.
+
+### One-line cost statement
+
+Validation now costs **2× `tool_invocations` per HTTP candidate, 3× per
+cloud candidate** (`validation_attempts` is unchanged at 1 per
+candidate) — `_ARM_COUNT_BY_KIND` in `src/kronos/validate/runner.py`.
