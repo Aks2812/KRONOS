@@ -182,6 +182,198 @@ def test_cloud_invariant_live_implies_discriminated_over_every_combination(arms)
         assert result.classification == "live_discriminated"
 
 
+# --------------------------------------------------------------------------
+# SPEC_BRIEF8.1 Fix #1 — cloud live_discriminated requires BOTH controls
+# denied, not just one. A target that accepts the canonical arm AND the
+# unknown-access-key arm does not discriminate, even though the
+# bad-secret arm was correctly rejected.
+# --------------------------------------------------------------------------
+
+
+def test_cloud_canonical_success_with_unknown_key_also_succeeding_is_indiscriminate() -> None:
+    a = ArmResult(label="A_canonical", success=True, status_code=200)
+    b = ArmResult(label="B_bad_secret", success=False, error_code="SignatureDoesNotMatch", status_code=403)
+    c = ArmResult(label="C_unknown_key", success=True, status_code=200)
+    result = run_differential([a, b, c], kind="cloud")
+    assert result.classification == "indiscriminate_target"
+    assert result.live is False
+    assert result.discriminated is False
+
+
+# --------------------------------------------------------------------------
+# SPEC_BRIEF8.1 Fix #2 — cloud both-transport-error must abstain
+# (inconclusive), mirroring the http branch's existing handling. Neither
+# _all_cloud_arm_combinations() nor the matrix table below exercises
+# transport_error, so this is constructed directly.
+# --------------------------------------------------------------------------
+
+
+def test_cloud_both_transport_error_is_inconclusive_not_not_live() -> None:
+    a = ArmResult(label="A_canonical", success=False, transport_error=True)
+    b = ArmResult(label="B_bad_secret", success=False, transport_error=True)
+    c = ArmResult(label="C_unknown_key", success=False, status_code=403, error_code="InvalidAccessKeyId")
+    result = run_differential([a, b, c], kind="cloud")
+    assert result.classification == "inconclusive"
+    assert result.live is False
+    assert result.discriminated is False
+
+
+# --------------------------------------------------------------------------
+# SPEC_BRIEF8.1 Fix #3 — full 125-row expected-classification table,
+# derived independently from SPEC_BRIEF8 §3.4 plus Fixes #1-#2 (NOT by
+# calling or mirroring controls.py's branching): any of the three codes
+# being AuthorizationHeaderMalformed -> self_request_malformed; else if
+# the canonical arm succeeds, a target is indiscriminate_target unless
+# BOTH controls are denied, in which case live_discriminated; else if the
+# canonical arm is AccessDenied, authenticated_not_authorized requires
+# exactly (SignatureDoesNotMatch, InvalidAccessKeyId) on (B, C), an
+# identical AccessDenied on B is inconclusive, and anything else is
+# not_live; else (canonical itself SignatureDoesNotMatch/InvalidAccessKeyId)
+# is always not_live. A test asserting only the §3.1 invariant cannot
+# fail on a wrong-but-still-"live-implies-discriminated" answer — see
+# Fix #3's acceptance check, run manually below and reverted.
+# --------------------------------------------------------------------------
+
+_CLOUD_CLASSIFICATION_TABLE: list[tuple[str | None, str | None, str | None, str]] = [
+    (None, None, None, "indiscriminate_target"),
+    (None, None, "AccessDenied", "indiscriminate_target"),
+    (None, None, "SignatureDoesNotMatch", "indiscriminate_target"),
+    (None, None, "InvalidAccessKeyId", "indiscriminate_target"),
+    (None, None, "AuthorizationHeaderMalformed", "self_request_malformed"),
+    (None, "AccessDenied", None, "indiscriminate_target"),
+    (None, "AccessDenied", "AccessDenied", "live_discriminated"),
+    (None, "AccessDenied", "SignatureDoesNotMatch", "live_discriminated"),
+    (None, "AccessDenied", "InvalidAccessKeyId", "live_discriminated"),
+    (None, "AccessDenied", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    (None, "SignatureDoesNotMatch", None, "indiscriminate_target"),
+    (None, "SignatureDoesNotMatch", "AccessDenied", "live_discriminated"),
+    (None, "SignatureDoesNotMatch", "SignatureDoesNotMatch", "live_discriminated"),
+    (None, "SignatureDoesNotMatch", "InvalidAccessKeyId", "live_discriminated"),
+    (None, "SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    (None, "InvalidAccessKeyId", None, "indiscriminate_target"),
+    (None, "InvalidAccessKeyId", "AccessDenied", "live_discriminated"),
+    (None, "InvalidAccessKeyId", "SignatureDoesNotMatch", "live_discriminated"),
+    (None, "InvalidAccessKeyId", "InvalidAccessKeyId", "live_discriminated"),
+    (None, "InvalidAccessKeyId", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    (None, "AuthorizationHeaderMalformed", None, "self_request_malformed"),
+    (None, "AuthorizationHeaderMalformed", "AccessDenied", "self_request_malformed"),
+    (None, "AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "self_request_malformed"),
+    (None, "AuthorizationHeaderMalformed", "InvalidAccessKeyId", "self_request_malformed"),
+    (None, "AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AccessDenied", None, None, "not_live"),
+    ("AccessDenied", None, "AccessDenied", "not_live"),
+    ("AccessDenied", None, "SignatureDoesNotMatch", "not_live"),
+    ("AccessDenied", None, "InvalidAccessKeyId", "not_live"),
+    ("AccessDenied", None, "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AccessDenied", "AccessDenied", None, "inconclusive"),
+    ("AccessDenied", "AccessDenied", "AccessDenied", "inconclusive"),
+    ("AccessDenied", "AccessDenied", "SignatureDoesNotMatch", "inconclusive"),
+    ("AccessDenied", "AccessDenied", "InvalidAccessKeyId", "inconclusive"),
+    ("AccessDenied", "AccessDenied", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AccessDenied", "SignatureDoesNotMatch", None, "not_live"),
+    ("AccessDenied", "SignatureDoesNotMatch", "AccessDenied", "not_live"),
+    ("AccessDenied", "SignatureDoesNotMatch", "SignatureDoesNotMatch", "not_live"),
+    ("AccessDenied", "SignatureDoesNotMatch", "InvalidAccessKeyId", "authenticated_not_authorized"),
+    ("AccessDenied", "SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AccessDenied", "InvalidAccessKeyId", None, "not_live"),
+    ("AccessDenied", "InvalidAccessKeyId", "AccessDenied", "not_live"),
+    ("AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch", "not_live"),
+    ("AccessDenied", "InvalidAccessKeyId", "InvalidAccessKeyId", "not_live"),
+    ("AccessDenied", "InvalidAccessKeyId", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AccessDenied", "AuthorizationHeaderMalformed", None, "self_request_malformed"),
+    ("AccessDenied", "AuthorizationHeaderMalformed", "AccessDenied", "self_request_malformed"),
+    ("AccessDenied", "AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AccessDenied", "AuthorizationHeaderMalformed", "InvalidAccessKeyId", "self_request_malformed"),
+    ("AccessDenied", "AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("SignatureDoesNotMatch", None, None, "not_live"),
+    ("SignatureDoesNotMatch", None, "AccessDenied", "not_live"),
+    ("SignatureDoesNotMatch", None, "SignatureDoesNotMatch", "not_live"),
+    ("SignatureDoesNotMatch", None, "InvalidAccessKeyId", "not_live"),
+    ("SignatureDoesNotMatch", None, "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AccessDenied", None, "not_live"),
+    ("SignatureDoesNotMatch", "AccessDenied", "AccessDenied", "not_live"),
+    ("SignatureDoesNotMatch", "AccessDenied", "SignatureDoesNotMatch", "not_live"),
+    ("SignatureDoesNotMatch", "AccessDenied", "InvalidAccessKeyId", "not_live"),
+    ("SignatureDoesNotMatch", "AccessDenied", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "SignatureDoesNotMatch", None, "not_live"),
+    ("SignatureDoesNotMatch", "SignatureDoesNotMatch", "AccessDenied", "not_live"),
+    ("SignatureDoesNotMatch", "SignatureDoesNotMatch", "SignatureDoesNotMatch", "not_live"),
+    ("SignatureDoesNotMatch", "SignatureDoesNotMatch", "InvalidAccessKeyId", "not_live"),
+    ("SignatureDoesNotMatch", "SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "InvalidAccessKeyId", None, "not_live"),
+    ("SignatureDoesNotMatch", "InvalidAccessKeyId", "AccessDenied", "not_live"),
+    ("SignatureDoesNotMatch", "InvalidAccessKeyId", "SignatureDoesNotMatch", "not_live"),
+    ("SignatureDoesNotMatch", "InvalidAccessKeyId", "InvalidAccessKeyId", "not_live"),
+    ("SignatureDoesNotMatch", "InvalidAccessKeyId", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AuthorizationHeaderMalformed", None, "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "AccessDenied", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "InvalidAccessKeyId", "self_request_malformed"),
+    ("SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("InvalidAccessKeyId", None, None, "not_live"),
+    ("InvalidAccessKeyId", None, "AccessDenied", "not_live"),
+    ("InvalidAccessKeyId", None, "SignatureDoesNotMatch", "not_live"),
+    ("InvalidAccessKeyId", None, "InvalidAccessKeyId", "not_live"),
+    ("InvalidAccessKeyId", None, "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("InvalidAccessKeyId", "AccessDenied", None, "not_live"),
+    ("InvalidAccessKeyId", "AccessDenied", "AccessDenied", "not_live"),
+    ("InvalidAccessKeyId", "AccessDenied", "SignatureDoesNotMatch", "not_live"),
+    ("InvalidAccessKeyId", "AccessDenied", "InvalidAccessKeyId", "not_live"),
+    ("InvalidAccessKeyId", "AccessDenied", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("InvalidAccessKeyId", "SignatureDoesNotMatch", None, "not_live"),
+    ("InvalidAccessKeyId", "SignatureDoesNotMatch", "AccessDenied", "not_live"),
+    ("InvalidAccessKeyId", "SignatureDoesNotMatch", "SignatureDoesNotMatch", "not_live"),
+    ("InvalidAccessKeyId", "SignatureDoesNotMatch", "InvalidAccessKeyId", "not_live"),
+    ("InvalidAccessKeyId", "SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("InvalidAccessKeyId", "InvalidAccessKeyId", None, "not_live"),
+    ("InvalidAccessKeyId", "InvalidAccessKeyId", "AccessDenied", "not_live"),
+    ("InvalidAccessKeyId", "InvalidAccessKeyId", "SignatureDoesNotMatch", "not_live"),
+    ("InvalidAccessKeyId", "InvalidAccessKeyId", "InvalidAccessKeyId", "not_live"),
+    ("InvalidAccessKeyId", "InvalidAccessKeyId", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("InvalidAccessKeyId", "AuthorizationHeaderMalformed", None, "self_request_malformed"),
+    ("InvalidAccessKeyId", "AuthorizationHeaderMalformed", "AccessDenied", "self_request_malformed"),
+    ("InvalidAccessKeyId", "AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("InvalidAccessKeyId", "AuthorizationHeaderMalformed", "InvalidAccessKeyId", "self_request_malformed"),
+    ("InvalidAccessKeyId", "AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", None, None, "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", None, "AccessDenied", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", None, "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", None, "InvalidAccessKeyId", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", None, "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AccessDenied", None, "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AccessDenied", "AccessDenied", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AccessDenied", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AccessDenied", "InvalidAccessKeyId", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AccessDenied", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "SignatureDoesNotMatch", None, "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "AccessDenied", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "InvalidAccessKeyId", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "InvalidAccessKeyId", None, "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "InvalidAccessKeyId", "AccessDenied", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "InvalidAccessKeyId", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "InvalidAccessKeyId", "InvalidAccessKeyId", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "InvalidAccessKeyId", "AuthorizationHeaderMalformed", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", None, "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "AccessDenied", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "SignatureDoesNotMatch", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "InvalidAccessKeyId", "self_request_malformed"),
+    ("AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "AuthorizationHeaderMalformed", "self_request_malformed"),
+]
+
+assert len(_CLOUD_CLASSIFICATION_TABLE) == 125
+
+
+@pytest.mark.parametrize("a_code,b_code,c_code,expected", _CLOUD_CLASSIFICATION_TABLE)
+def test_cloud_classification_matrix_full_125_row_table(a_code, b_code, c_code, expected) -> None:
+    a = ArmResult(label="A_canonical", success=a_code is None, error_code=a_code, status_code=None if a_code is None else 403)
+    b = ArmResult(label="B_bad_secret", success=b_code is None, error_code=b_code, status_code=None if b_code is None else 403)
+    c = ArmResult(label="C_unknown_key", success=c_code is None, error_code=c_code, status_code=None if c_code is None else 403)
+    result = run_differential([a, b, c], kind="cloud")
+    assert result.classification == expected
+
+
 @pytest.mark.parametrize(
     "live,discriminated,classification",
     [

@@ -207,14 +207,19 @@ def run_differential(arms: Sequence[ArmResult], *, kind: Literal["http", "cloud"
     c = by_label["C_unknown_key"]
     control_outcome = f"{_arm_outcome_str(b)} {_arm_outcome_str(c)}"
 
+    if a.transport_error and b.transport_error:
+        return DifferentialResult(
+            "inconclusive", False, False, control_outcome, "canonical and bad-secret arms were unreachable"
+        )
+
     if a.success:
-        if b.success:
+        if b.success or c.success:
             return DifferentialResult(
                 "indiscriminate_target",
                 False,
                 False,
                 control_outcome,
-                "bad-secret control also succeeded — target is not enforcing auth",
+                "canonical succeeded, but at least one control also succeeded — target does not discriminate",
             )
         return DifferentialResult(
             "live_discriminated",
