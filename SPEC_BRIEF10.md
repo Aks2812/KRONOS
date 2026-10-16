@@ -1,7 +1,8 @@
 # SPEC_BRIEF10.md — FORK-2: shape-aware `scope_guard` matcher (hard pre-live blocker)
 
-**Status:** build brief (stateless), **revision 2** — §1.1 scope-intent decision added by the
-operator; §0.3 and §5 corrected against it. Start from latest `main` (must contain the PR #11 merge
+**Status:** build brief (stateless), **revision 3** — §1.1 scope-intent decision added by the
+operator (rev 2); §8.5 CIDR/IP port semantics ratified by the operator and encoded as §1.1 rule 7
+with matrix §5.5b (rev 3). §0.3 and §5 corrected against both. Start from latest `main` (must contain the PR #11 merge
 — check `src/kronos/ingest/contract.py` exists). New branch, open a PR, **do NOT merge**.
 **Autonomy:** Balanced. Proceed on reversible calls. Escalate the FORKs in §7, and **stop and
 report** on anything in §8 rather than guessing — this brief governs an authorization boundary, so
@@ -117,11 +118,22 @@ Derived semantics the implementation must honour:
 6. **Allow is narrow; deny is broad.** This asymmetry is deliberate and must not be "harmonized":
    an *allow* entry for a host covers standard ports only, while an *exclusion* for a host excludes
    it on **every** port, scheme, path and representation. When in doubt, deny.
+7. **A CIDR or bare-IP entry authorizes ALL ports on a matching address** — operator-ratified,
+   2026-10-16, resolving §8.5. `10.0.5.0/24` authorizes `10.0.5.10`, `10.0.5.10:443`,
+   `10.0.5.10:8443`, `10.0.5.10:22` and `https://10.0.5.10/x` alike. Rationale: an IP range in a
+   signed SOW expresses **network-level** authorization — the host itself, not merely its web tier
+   — whereas a hostname entry expresses web-tier intent and keeps rule 4's standard-port limit.
 
-**Operational consequence to carry into S3:** infra scans discover services on arbitrary ports, and
-under rule 4 those are out of scope unless the manifest names them. That is the intended
-conservative posture, not a defect — but S3's brief must say so, and engagement manifests for
-infra work will need port-bearing entries.
+   **Allow semantics therefore differ by pattern shape, deliberately.** An address-shaped entry is
+   port-blind; a hostname-shaped entry is port-limited. A builder's instinct will be to unify these
+   — do not. They encode two different authorizations that clients actually grant differently.
+   Rule 6 is unaffected: exclusions remain port-blind for every shape.
+
+**Operational consequence to carry into S3:** under rule 7, CIDR- or IP-scoped infra work needs
+**no** port-bearing manifest entries — an infra scan of an authorized range can validate services
+on any port. Under rule 4, *hostname*-scoped work still does: a service on
+`api.acme.com:8443` requires an explicit entry. S3's brief must state both, because an engagement
+scoped by hostname and one scoped by CIDR will behave differently on exactly the same network.
 
 ---
 
@@ -248,6 +260,33 @@ the fix. Cases marked **(lock)** already pass and must not regress.
 | `api.acme.com:8443` | `api.acme.com` | **DENY** — a port entry does not authorize the bare host |
 | `*.acme.com` | `http://api.acme.com:8080/x` | **DENY** — 8080 is not standard for http |
 
+### 5.5b CIDR and bare-IP entries authorize all ports (§1.1 rule 7)
+
+Address-shaped entries are **port-blind on the allow side**. Contrast every row here with §5.5,
+where the hostname-shaped equivalent is denied — that divergence is the specification, not an
+inconsistency to resolve.
+
+| in_scope | target | expected |
+|---|---|---|
+| `10.0.5.0/24` | `10.0.5.10` | ALLOW (lock) |
+| `10.0.5.0/24` | `10.0.5.10:443` | ALLOW (lock) |
+| `10.0.5.0/24` | `10.0.5.10:8443` | **ALLOW** — port-blind, unlike the hostname rule |
+| `10.0.5.0/24` | `10.0.5.10:22` | **ALLOW** |
+| `10.0.5.0/24` | `https://10.0.5.10/x` | **ALLOW** |
+| `10.0.5.0/24` | `https://10.0.5.10:8443/x` | **ALLOW** |
+| `10.0.5.10` | `10.0.5.10:9999` | **ALLOW** — bare-IP entry, same rule |
+| `10.0.5.0/24` | `10.0.6.10:443` | **DENY** — outside the network |
+| `2001:db8::/32` | `[2001:db8::1]:8443` | **ALLOW** |
+| `2001:db8::/32` | `[2001:db9::1]:443` | **DENY** — outside the network |
+
+**Cross-shape sanity (the asymmetry, asserted directly):** with `in_scope = ['10.0.5.0/24',
+'*.acme.com']`, `10.0.5.10:8443` is **ALLOW** while `api.acme.com:8443` is **DENY**, in the same
+call. A single test should pin both so a later "cleanup" cannot quietly unify them.
+
+**Exclusions stay port-blind for every shape (rule 6 unaffected):** with
+`in_scope = ['10.0.5.0/24']` and `excluded = ['10.0.5.10']`, every target in the first seven rows
+above becomes **DENY**.
+
 ### 5.6 No authorization transfer via URL content (§1.1 rule 5)
 
 | in_scope | target | expected |
@@ -355,15 +394,9 @@ heuristic that authorizes `com.acme.evil.attacker.net` is not.
 form does not cover an equivalent form, that is an **F1-class bypass** and must be reported, not
 quietly left.
 
-**8.5 NEW — do CIDR and bare-IP entries follow §1.1's standard-port rule?** §1.1 is written in terms
-of hostnames and URL forms. Today `10.0.5.0/24` allows `10.0.5.10:443`, and I have **not** probed
-`10.0.5.10:8443`. Two readings: (a) a CIDR/IP entry is network-level authorization and covers **all
-ports** on matching addresses; (b) it follows the same standard-port rule as hostnames. My
-inclination is **(a)** — an IP range in a signed SOW usually means the host, not its web tier — but
-this is **my inference, not an operator decision**, and it is exactly the kind of asymmetry that
-should be ratified rather than assumed. **Report the question with your reading; do not encode
-either until the operator confirms.** If unattended, implement (a) and mark it clearly as
-provisional in `DECISIONS.md`.
+**8.5 RESOLVED** — operator-ratified 2026-10-16: reading (a), a CIDR or bare-IP entry authorizes
+**all ports** on a matching address. Encoded as §1.1 rule 7 with matrix §5.5b. Not provisional;
+record it in `DECISIONS.md` as a ratified decision alongside §1.1.
 
 **8.6 NEW — URL userinfo and host-confusion forms.** §5.6 includes
 `https://api.acme.com@evil.net/x`, where the real host is `evil.net`. `urlsplit().hostname` handles
@@ -382,14 +415,17 @@ an HTTP client would actually connect to. A parser/client disagreement here is a
 5. Every §5.4 case allows — F6, F6b, F6c, F7′, F7″ fixed.
 6. Every §5.5 case behaves as specified — nonstandard ports denied without an explicit entry, and
    F8 fixed so an explicit port entry covers its URL form.
+6b. Every §5.5b case behaves as specified — address-shaped entries are port-blind on the allow
+   side, including the cross-shape test pinning `10.0.5.10:8443` ALLOW against
+   `api.acme.com:8443` DENY in the same call, and the port-blind-exclusion rows.
 7. Every §5.6 case denies — no authorization transfer via path, query, fragment or userinfo.
 8. §5.7 as specified, **or** F5 explicitly escalated per §8.2.
 9. §5.8 structural properties hold, including the exclusion-not-default-deny assertion.
 10. Existing `tests/test_scope_guard.py` green **unmodified**; whole suite green, totals reported.
 11. Live X-score 3/3 exit 0 at the PR head, or **BLOCKED / INCOMPLETE** naming the environment.
 12. Only §3's permitted files changed.
-13. FORK-S and FORK-T recorded; §8.1, §8.2, §8.4, §8.5, §8.6 each answered with evidence or
-    escalated.
+13. FORK-S and FORK-T recorded; §8.1, §8.2, §8.4, §8.6 each answered with evidence or escalated
+    (§8.5 is resolved — do not reopen it).
 14. RED-first demonstrated: for F1–F8, state that the test failed before the fix and name it.
 15. `DECISIONS.md` records the FORK-2 resolution, §1.1 verbatim, and §6's gate verbatim.
 
@@ -404,7 +440,9 @@ an HTTP client would actually connect to. A parser/client disagreement here is a
 - `classify_target`'s taxonomy and detection order as implemented, plus how effective port and
   scheme are derived.
 - FORK-S and FORK-T choices with reasons.
-- An answer to each of §8.1, §8.2, §8.4, §8.5, §8.6 — including an honest "cannot be decided
-  safely" where that is the truth, and §8.5 left provisional unless the operator has confirmed.
+- An answer to each of §8.1, §8.2, §8.4, §8.6 — including an honest "cannot be decided safely"
+  where that is the truth. §8.5 is ratified, not open.
+- Explicit confirmation that §1.1 rule 7's shape asymmetry is implemented as specified and that no
+  code path unifies address-shaped and hostname-shaped allow semantics.
 - The live X-score line and exit code, or the BLOCKED / INCOMPLETE report.
 - Whether issue #2's five gate conditions are met or explicitly not met.
