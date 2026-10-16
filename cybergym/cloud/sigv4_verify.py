@@ -32,6 +32,23 @@ class MalformedAuthHeader(ValueError):
     mismatch" (the user's requirement: these must be distinguishable)."""
 
 
+# SPEC_BRIEF7 §3.1a, case M1 ONLY: the AWS4-HMAC-SHA256 algorithm token and
+# a Credential= component are present, but the required SignedHeaders= and
+# Signature= components are absent. This is the one malformed shape this
+# brief puts under contract (400 AuthorizationHeaderMalformed) — every
+# other malformed shape (a fully absent header, a different auth scheme
+# entirely, other partial shapes) is deliberately unspecified here and
+# keeps whatever outcome `parse_authorization_header` already gives it.
+_CASE_M1_RE = re.compile(r"^AWS4-HMAC-SHA256\s+Credential=[^/]+/\d{8}/[^/]+/[^/]+/aws4_request$")
+
+
+def is_case_m1_malformed(auth_header: str) -> bool:
+    """True only for case M1 (SPEC_BRIEF7 §3.1a) — see `_CASE_M1_RE`. Does
+    NOT imply a general "any unparseable header is M1" rule; callers must
+    not generalize from this to other malformed shapes."""
+    return bool(_CASE_M1_RE.match(auth_header.strip()))
+
+
 @dataclass(frozen=True)
 class ParsedAuth:
     access_key: str
