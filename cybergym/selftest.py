@@ -17,10 +17,12 @@ import base64
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import boto3
 import requests
+import yaml
 from botocore.config import Config
 
 HERE = Path(__file__).resolve().parent
@@ -113,9 +115,12 @@ def check_chain2(result: Result) -> tuple[str, str]:
         wrong_client.list_objects_v2(Bucket="kronos-cybergym-general")
         result.check("chain-2: wrong secret rejected on kronos-cybergym-general", False, "unexpectedly succeeded")
     except Exception as exc:  # noqa: BLE001
+        # SPEC_BRIEF7: a known access key with a non-matching signature
+        # now gets its own S3 Error.Code (SignatureDoesNotMatch), not the
+        # flattened AccessDenied every denial used to share.
         result.check(
             "chain-2: wrong secret rejected on kronos-cybergym-general",
-            "AccessDenied" in str(exc),
+            "SignatureDoesNotMatch" in str(exc),
             str(exc),
         )
     return access_key, secret_key
@@ -146,6 +151,74 @@ def check_chain3(result: Result, chain2_access_key: str, chain2_secret_key: str)
         result.check(
             "chain-3 boundary: chain-2 creds denied on admin bucket", "AccessDenied" in str(exc), str(exc)
         )
+
+
+def _s3_error_code(response_text: str) -> str | None:
+    try:
+        return ET.fromstring(response_text).findtext("Code")
+    except ET.ParseError:
+        return None
+
+
+def check_cloud_denial_matrix(result: Result, chain2_access_key: str, chain2_secret_key: str) -> None:
+    """SPEC_BRIEF7 §3.3: exercises the REAL running proxy against every
+    row of `ground_truth.yaml`'s `cloud_denial_matrix`, so the declared
+    matrix and the proxy's actual (HTTP status, S3 Error.Code) behaviour
+    cannot drift apart silently — the same discipline
+    cybergym/cloud/known_secrets.py already gets against ground_truth.yaml
+    above. Asserts on `error_code` only; `Message` text is never part of
+    the contract (SPEC_BRIEF7 §3.1)."""
+    matrix = {row["id"]: row for row in yaml.safe_load((HERE / "ground_truth.yaml").read_text())["cloud_denial_matrix"]}
+    target_url = f"{PROXY_BASE}/kronos-cybergym-general?list-type=2"
+
+    def assert_row(row_id: str, status_code: int, error_code: str | None, detail: str) -> None:
+        row = matrix[row_id]
+        ok = status_code == row["http_status"] and error_code == row["error_code"]
+        result.check(
+            f"cloud denial matrix [{row_id}]: {row['http_status']} {row['error_code']}",
+            ok,
+            f"got {status_code} {error_code!r} ({detail})",
+        )
+
+    def assert_client_error_row(row_id: str, client) -> None:  # noqa: ANN001
+        try:
+            client.list_objects_v2(Bucket="kronos-cybergym-general")
+            assert_row(row_id, 200, None, "unexpectedly succeeded")
+        except Exception as exc:  # noqa: BLE001
+            error = getattr(exc, "response", {}).get("Error", {})
+            status = getattr(exc, "response", {}).get("ResponseMetadata", {}).get("HTTPStatusCode")
+            assert_row(row_id, status, error.get("Code"), str(exc))
+
+    # no_auth: no Authorization header at all.
+    r = requests.get(target_url, timeout=10)
+    assert_row("no_auth", r.status_code, _s3_error_code(r.text), r.text)
+
+    # malformed_auth_header: CASE M1 ONLY (§3.1a) — algorithm token and
+    # Credential= present, SignedHeaders=/Signature= absent.
+    r = requests.get(
+        target_url,
+        headers={
+            "Authorization": f"AWS4-HMAC-SHA256 Credential={chain2_access_key}/20260101/us-east-1/s3/aws4_request"
+        },
+        timeout=10,
+    )
+    assert_row("malformed_auth_header", r.status_code, _s3_error_code(r.text), r.text)
+
+    # unknown_access_key: well-formed signature, access key not in known_secrets.py.
+    assert_client_error_row("unknown_access_key", s3_client("CYBERGYMBOGUSUSER9999", "whatever-secret-value-not-real"))
+
+    # signature_mismatch: known access key, wrong secret.
+    assert_client_error_row("signature_mismatch", s3_client(chain2_access_key, "a-completely-different-wrong-secret"))
+
+    # bucket_not_allowed: valid signature, bucket outside allowed_buckets
+    # for this key — chain-2's own credential against the admin bucket.
+    try:
+        s3_client(chain2_access_key, chain2_secret_key).list_objects_v2(Bucket="kronos-cybergym-admin-secrets")
+        assert_row("bucket_not_allowed", 200, None, "unexpectedly succeeded")
+    except Exception as exc:  # noqa: BLE001
+        error = getattr(exc, "response", {}).get("Error", {})
+        status = getattr(exc, "response", {}).get("ResponseMetadata", {}).get("HTTPStatusCode")
+        assert_row("bucket_not_allowed", status, error.get("Code"), str(exc))
 
 
 def compose(*args: str) -> None:
@@ -185,6 +258,7 @@ def main() -> int:
         check_chain1(result)
         access_key_2, secret_key_2 = check_chain2(result)
         check_chain3(result, access_key_2, secret_key_2)
+        check_cloud_denial_matrix(result, access_key_2, secret_key_2)
     finally:
         if not args.no_teardown and not args.no_standup:
             print("tearing down the lab (docker compose down)...")

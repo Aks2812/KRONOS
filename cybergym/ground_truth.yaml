@@ -17,6 +17,49 @@ k: 3
 scope_manifest: scope_manifest.yaml
 scope_manifest_pubkey: scope_manifest_pubkey.pem
 
+# SPEC_BRIEF7 "CyberGym denial fidelity" §3.1/§3.3 — the AWS-faithful S3
+# error codes cybergym/cloud/sigv4_proxy.py must return for each denial
+# condition (previously every denial flattened to 403 AccessDenied).
+# `error_code` is the S3 `Error.Code` the matrix is graded on; `Message`
+# text is deliberately NOT part of this contract (no reader may match on
+# it). selftest.py's check_cloud_denial_matrix() exercises the REAL
+# running proxy against this declared matrix on every live run, so this
+# file and the proxy's actual behaviour cannot drift apart silently — the
+# same discipline cybergym/cloud/known_secrets.py already gets above.
+#
+# The `no_auth` and `bucket_not_allowed` rows deliberately share the same
+# (403, AccessDenied) outcome — this is faithful to real AWS (anonymous
+# access to a private resource looks identical to a valid-but-unauthorized
+# credential) and is NOT a bug. It is harmless here because a validator
+# always knows which arm it sent. See cybergym/README.md "Cloud tier
+# enforcement model" for the full rationale.
+#
+# `malformed_auth_header` covers CASE M1 ONLY (SPEC_BRIEF7 §3.1a): the
+# AWS4-HMAC-SHA256 algorithm token and a Credential= component present,
+# SignedHeaders=/Signature= absent. Other malformed Authorization header
+# shapes are deliberately unspecified and are NOT covered by this entry.
+cloud_denial_matrix:
+  - id: no_auth
+    condition: "no Authorization header at all"
+    http_status: 403
+    error_code: AccessDenied
+  - id: malformed_auth_header
+    condition: "Authorization header present but unparseable — CASE M1 ONLY, see §3.1a"
+    http_status: 400
+    error_code: AuthorizationHeaderMalformed
+  - id: unknown_access_key
+    condition: "well-formed header, access key not in known_secrets.py"
+    http_status: 403
+    error_code: InvalidAccessKeyId
+  - id: signature_mismatch
+    condition: "known access key, signature does not match its real secret"
+    http_status: 403
+    error_code: SignatureDoesNotMatch
+  - id: bucket_not_allowed
+    condition: "valid signature, bucket not in that key's allowed_buckets"
+    http_status: 403
+    error_code: AccessDenied
+
 chains:
   - id: chain-1
     stresses: plaintext secret, undocumented API endpoint

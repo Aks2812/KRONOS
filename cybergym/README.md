@@ -81,6 +81,60 @@ express. Keep this in mind when reading an X-score run against this lab —
 it measures KRONOS's chain-discovery/validation logic faithfully, not a
 full cloud-IAM-policy-engine interaction.
 
+### Denial matrix (SPEC_BRIEF7 "CyberGym denial fidelity")
+
+Before this brief, every denial condition flattened to the same `403
+AccessDenied`, differing only in free-text `Message` — real AWS S3 returns
+distinct `Error.Code` values for these conditions, so a validator tuned
+against the old flattened behaviour would not transfer to a real target.
+The proxy now emits the codes real AWS would:
+
+| Condition | HTTP | S3 `Error.Code` |
+|---|---|---|
+| No `Authorization` header at all | 403 | `AccessDenied` |
+| `Authorization` header present but unparseable (**case M1 only** — see below) | 400 | `AuthorizationHeaderMalformed` |
+| Well-formed header, unknown access key | 403 | `InvalidAccessKeyId` |
+| Known access key, signature mismatch | 403 | `SignatureDoesNotMatch` |
+| Valid signature, bucket not in `allowed_buckets` | 403 | `AccessDenied` |
+| Authorized | upstream status | — (forwarded, unchanged) |
+
+The full matrix, as data, lives in `ground_truth.yaml`'s `cloud_denial_matrix`;
+`selftest.py`'s `check_cloud_denial_matrix()` exercises the **real running
+proxy** against every row on each live run, so this table and the proxy's
+actual behaviour cannot drift apart silently.
+
+`Message` text is human-readable only and is **never** part of the
+contract — no test, and no future validator, may match on it. Only
+`(HTTP status, Error.Code)` is load-bearing.
+
+**Deliberate, documented ambiguity — do not "fix" this:** *no-auth* and
+*bucket-not-allowed* both yield `403 AccessDenied`. This is faithful to
+real AWS (anonymous access to a private resource looks identical to a
+valid-but-unauthorized credential) and is harmless here because a
+validator always knows which arm it sent — the arm identity disambiguates
+the two cases, not the response.
+
+**The `400 AuthorizationHeaderMalformed` row covers CASE M1 ONLY:** the
+`AWS4-HMAC-SHA256` algorithm token and a `Credential=` component present,
+but the required `SignedHeaders=` and `Signature=` components absent —
+e.g. `Authorization: AWS4-HMAC-SHA256
+Credential=CYBERGYMGENERALUSER0001/20260101/us-east-1/s3/aws4_request`.
+This brief does **not** assert that every malformed or unexpected
+`Authorization` header maps to `400`; other shapes (a different auth
+scheme entirely, other partial shapes) are deliberately **unspecified**
+and keep whatever outcome the parser already gave them before this brief.
+Do not generalize the single M1 test into a broader rule.
+
+**FORK-H (machine-readable discriminator header):** the DEFAULT was
+taken — AWS-faithful codes only, **no custom header**. A header like
+`x-cybergym-deny-reason` would be a signal that exists only in this lab;
+the point of this brief is that the signal `src/kronos/validate/`'s next
+brief reads must transfer to a real target, so the fix is the codes
+themselves, not a lab-only shortcut. A mechanical guard test
+(`cybergym/cloud/test_denial_matrix.py::test_src_kronos_never_references_the_fixture_only_discriminator_header`)
+asserts no file under `src/kronos/` ever references that header name,
+regardless of which FORK-H option is taken in the future.
+
 ## Running the SigV4 and chain tests directly
 
 ```bash
@@ -88,8 +142,14 @@ full cloud-IAM-policy-engine interaction.
 # from kronos's own (fastapi/uvicorn/boto3/pyyaml/cryptography/pydantic)
 .venv/bin/pip install -r cybergym/requirements.txt
 
-PYTHONPATH=. .venv/bin/pytest -q cybergym/cloud/test_sigv4_verify.py
+PYTHONPATH=. .venv/bin/pytest -q cybergym/cloud/test_sigv4_verify.py cybergym/cloud/test_denial_matrix.py
 ```
+
+`test_denial_matrix.py` is hermetic (SPEC_BRIEF7 §3.4) — it exercises the
+proxy app directly via FastAPI's `TestClient` with a stubbed upstream, so
+it runs without Docker or network. The full docker-backed run
+(`selftest.py` / `kronos_validation_run.py`) remains the integration
+check that the stub harness and the real stack agree.
 
 (`pyproject.toml`'s `testpaths = ["tests"]` scopes plain `pytest` to
 KRONOS's own test suite only — cybergym's tests are run explicitly like

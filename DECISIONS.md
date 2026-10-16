@@ -1348,3 +1348,192 @@ new `budget` parameter and no new charge call anywhere. The old
 ad-hoc `finally: compose("down", "-v")` in
 `cybergym/kronos_validation_run.py` is gone — there is exactly one
 teardown path left in that script now, the `CleanupRegistry`.
+
+## Brief #7 — CyberGym denial fidelity
+
+Fixture-only brief: the real `cybergym/cloud/sigv4_proxy.py`, driven across
+six arms, was found to flatten all four denial conditions to identical
+`403 AccessDenied`, differing only in free-text `Message`. Real AWS S3
+returns distinct `Error.Code` values for these conditions, so a validator
+tuned against the flattened behaviour would not transfer to a real
+target — and fixing `src/kronos/validate/` first would have baked in
+prose-matching against fixture text. This brief fixes only the range,
+emitting the AWS-faithful codes real S3 returns, before the next brief
+(the negative-control validator) is written against it.
+
+### Implemented matrix (compare against SPEC_BRIEF7 §3.1 line by line)
+
+| Condition | HTTP | S3 `Error.Code` |
+|---|---|---|
+| No `Authorization` header at all | 403 | `AccessDenied` |
+| `Authorization` header present but unparseable (case M1 only, §3.1a) | 400 | `AuthorizationHeaderMalformed` |
+| Well-formed header, unknown access key | 403 | `InvalidAccessKeyId` |
+| Known access key, signature mismatch | 403 | `SignatureDoesNotMatch` |
+| Valid signature, bucket not in `allowed_buckets` | 403 | `AccessDenied` |
+| Authorized | upstream status | — (forwarded, unchanged) |
+
+`cybergym/cloud/sigv4_proxy.py`: the `Authorization` header is now checked
+in three stages before any lookup — absent (403 `AccessDenied`), case-M1
+malformed (400 `AuthorizationHeaderMalformed`, via the new
+`sigv4_verify.is_case_m1_malformed`), then the existing
+`parse_authorization_header`/`MalformedAuthHeader` path for every other
+malformed shape (unchanged). Unknown access key now reports
+`InvalidAccessKeyId`; signature mismatch now reports
+`SignatureDoesNotMatch`. Bucket-not-allowed and the forwarded success path
+are byte-for-byte unchanged.
+
+### The deliberate ambiguity (not a bug)
+
+`no_auth` and `bucket_not_allowed` both yield `(403, AccessDenied)`. This
+is faithful to real AWS — anonymous access to a private resource looks
+identical to a valid-but-unauthorized credential — and is harmless because
+a validator always knows which arm it sent. Documented in
+`cybergym/README.md` "Denial matrix" so a later reader does not "fix" it.
+
+### Case M1 scope (§3.1a) — not a general rule
+
+`is_case_m1_malformed` matches only the one specified shape: the
+`AWS4-HMAC-SHA256` algorithm token and a `Credential=` component present,
+`SignedHeaders=`/`Signature=` absent. No test asserts or implies a general
+"any unparseable header is 400" rule; every other malformed shape (a
+different auth scheme entirely, other partial shapes) falls through to
+the pre-existing `MalformedAuthHeader` handling, unchanged from before
+this brief — nothing else needed changing, so nothing else was touched.
+
+### FORK-H — DEFAULT taken: AWS-faithful codes only, no custom header
+
+No `x-cybergym-deny-reason` (or any other fixture-only discriminator)
+header was added. Rationale (unchanged from the brief): the whole point
+is that the signal the next brief's validator reads must transfer to a
+real target; a lab-only header would be the lazy path that passes this
+benchmark and fails in production. The anti-leak guard test exists and
+passes regardless:
+`cybergym/cloud/test_denial_matrix.py::test_src_kronos_never_references_the_fixture_only_discriminator_header`
+walks every file under `src/kronos/` and asserts none contains the string
+`x-cybergym-deny-reason` (case-insensitive).
+
+### Guardrail confirmation
+
+- **`src/kronos/` zero-line diff** — confirmed via `git diff --stat main
+  -- src/kronos/` (empty) at every point during this brief. Only files
+  inside SPEC_BRIEF7 §2's allowlist changed:
+  `cybergym/cloud/sigv4_proxy.py`, `cybergym/cloud/sigv4_verify.py`,
+  `cybergym/ground_truth.yaml`, `cybergym/selftest.py`, the new
+  `cybergym/cloud/test_denial_matrix.py`, `cybergym/README.md`, and this
+  file. `cybergym/cloud/sigv4_verify.py` was touched only because
+  distinguishing case M1 from every other malformed shape needed new
+  parsing-domain logic (`is_case_m1_malformed`) — exactly the "only if
+  splitting absent from malformed requires it" allowance in §2.
+- **`known_secrets.py` unchanged** — zero-line diff; same keys, same
+  secrets, same `allowed_buckets`. Only the representation of a denial
+  changed.
+- **Authorized-path behaviour unchanged** —
+  `test_row_authorized_request_is_forwarded_unchanged` proves a signed,
+  authorized request still reaches the (stubbed) upstream and returns its
+  status/body untouched.
+- **No test asserts on `Message` text** — every denial-matrix assertion,
+  hermetic and live, compares only `(HTTP status, Error.Code)`.
+- **No new runtime dependencies, egress, or exposed ports** —
+  `cybergym/requirements.txt` and `docker-compose.yml` are untouched;
+  `is_case_m1_malformed` is pure-Python regex matching on data already in
+  hand.
+
+### Ground truth / self-test consistency (§3.3)
+
+`cybergym/ground_truth.yaml` gains a `cloud_denial_matrix` list (one entry
+per §3.1 row, `id`/`condition`/`http_status`/`error_code`).
+`cybergym/selftest.py`'s new `check_cloud_denial_matrix()` loads that list
+and exercises the **real running proxy** against every row — two raw
+`requests` calls for the header-shape rows (absent, case-M1), three
+`boto3` calls (asserting the structured `ClientError.response["Error"]["Code"]`
+and `ResponseMetadata["HTTPStatusCode"]`, not a string-matched exception)
+for the credential/bucket rows — so the declared matrix and the proxy's
+actual behaviour cannot drift apart silently, the same discipline
+`known_secrets.py` already gets against `ground_truth.yaml`. The
+pre-existing chain-2 wrong-secret check was updated to assert
+`SignatureDoesNotMatch` (previously asserted the now-obsolete flattened
+`AccessDenied` substring); the chain-3 boundary check (bucket-not-allowed)
+needed no change since that row's code is unchanged.
+
+### Test results
+
+**Hermetic (`cybergym/cloud/`): 16 passed** — the 4 pre-existing
+`test_sigv4_verify.py` tests (unmodified, still green: no regression on
+well-formed-header parsing or the existing malformed/wrong-secret
+distinctions) plus 12 new in `cybergym/cloud/test_denial_matrix.py`: one
+parsing-regression test, one absent-vs-malformed-now-diverge test, six
+one-per-row matrix tests (asserting `(HTTP status, Error.Code)` only),
+three parametrized determinism tests (same arm repeated twice yields the
+same pair), and the anti-leak guard test. All run via FastAPI's
+`TestClient` against the real `sigv4_proxy.app` with the upstream
+`requests.request` call stubbed (§3.4) — no Docker, no network.
+
+**KRONOS's own suite (`tests/`, scoped by `pyproject.toml`'s
+`testpaths`): unchanged at 140 passed, 1 skipped, 0 failed** — expected,
+since `src/kronos/` has a zero-line diff.
+
+### Live docker-backed run — BLOCKED / INCOMPLETE
+
+The live run and X-score 3/3 criterion is **unverified**. `docker compose
+up -d --build` (invoked by both `cybergym/selftest.py` and
+`cybergym/kronos_validation_run.py`) fails during the `sigv4-proxy` and
+`init-buckets` image builds:
+
+```
+RUN pip install --no-cache-dir -r /app/requirements.txt
+...
+WARNING: Retrying ... after connection broken by 'SSLError(SSLCertVerificationError(1,
+  '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate
+  in certificate chain (_ssl.c:1010)'))': /simple/fastapi/
+...
+Could not fetch URL https://pypi.org/simple/fastapi/: ...
+ERROR: Could not find a version that satisfies the requirement fastapi==0.143.0
+ERROR: process "/bin/sh -c pip install --no-cache-dir -r /app/requirements.txt" did not
+  complete successfully: exit code: 1
+target sigv4-proxy: failed to solve: process "/bin/sh -c pip install --no-cache-dir
+  -r /app/requirements.txt" did not complete successfully: exit code: 1
+```
+
+**Blocker:** this build environment's outbound HTTPS is intercepted by a
+policy-enforcing egress proxy whose CA is trusted on the host (host-level
+`pip install -r cybergym/requirements.txt` succeeds — confirmed) but is
+**not** trusted inside the Docker build's network namespace, so `pip`
+inside the `sigv4-proxy`/`init-buckets` build steps gets a self-signed
+certificate it cannot verify and every PyPI fetch fails. Confirmed this is
+not an invocation-flag problem: `docker build --network host` and
+`DOCKER_BUILDKIT=0` (legacy builder) were both tried as read-only
+diagnostics (no file changes) against `cloud/Dockerfile` directly and hit
+the identical SSL error. The documented fix (`/root/.ccr/README.md`,
+"docker build / docker run") is to copy the proxy's CA bundle into the
+build context and install it in an early image layer — which requires
+editing `cybergym/cloud/Dockerfile` / `cybergym/cloud/init.Dockerfile` /
+`cybergym/api/Dockerfile`, none of which are in SPEC_BRIEF7 §2's
+allowlist. Per the brief's own instruction, this is reported as
+**BLOCKED / INCOMPLETE** rather than substituting the hermetic result or
+relaxing the criterion. Diagnostic commands run, for the record:
+
+```
+docker compose up -d --build                      # the real command; fails as above
+docker build --network host -f cloud/Dockerfile .  # diagnostic only, same SSL error
+DOCKER_BUILDKIT=0 docker build --network host \
+  -f cloud/Dockerfile .                            # diagnostic only, same SSL error
+```
+
+All diagnostic images/containers were removed afterward;
+`docker ps -a` / `docker network ls` / `docker volume ls` show nothing
+left behind beyond Docker's own built-in `bridge`/`host`/`none` networks.
+**The X-score and the live denial-matrix-against-the-running-range
+criterion (§4/§5.5) are therefore unverified by this PR.** The hermetic
+tests above do not and cannot stand in for them. The PR is left open and
+marked incomplete pending either a build-environment fix outside this
+brief's scope, or an explicit go-ahead to widen scope to the Dockerfiles
+(which would itself need to go back through the FORK process, since §2
+does not list them).
+
+### Unchanged (confirmed, not re-litigated)
+
+Brief #6's `CleanupRegistry`/`TeardownReport` machinery is untouched —
+this brief adds no cleanup-registered resource and no new teardown path;
+the one `docker compose down -v` registration in
+`kronos_validation_run.py` is exactly as Brief #6 left it. Brief #5's
+budget governance is likewise untouched.

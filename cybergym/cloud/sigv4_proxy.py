@@ -13,6 +13,12 @@ NOT a general AWS IAM policy engine. It proves the chaining logic (does
 this key cryptographically open this resource, yes/no); it does not
 replicate real IAM's policy language, conditions, or resource ARNs
 matching beyond the bucket name.
+
+SPEC_BRIEF7 "CyberGym denial fidelity": each denial condition now emits
+the distinct S3 `Error.Code` real AWS would return for it (previously
+every denial flattened to 403 `AccessDenied`) — see the matrix in
+cybergym/README.md and cybergym/ground_truth.yaml. `Message` text is
+never part of the contract; only `(HTTP status, Error.Code)` is.
 """
 
 from __future__ import annotations
@@ -23,7 +29,12 @@ import requests
 from fastapi import FastAPI, Request, Response
 
 from cybergym.cloud.known_secrets import KNOWN_SECRETS
-from cybergym.cloud.sigv4_verify import MalformedAuthHeader, parse_authorization_header, verify_signature
+from cybergym.cloud.sigv4_verify import (
+    MalformedAuthHeader,
+    is_case_m1_malformed,
+    parse_authorization_header,
+    verify_signature,
+)
 
 LOCALSTACK_URL = os.environ.get("LOCALSTACK_URL", "http://localhost:4566")
 
@@ -54,6 +65,28 @@ async def proxy(full_path: str, request: Request) -> Response:
     auth_header = headers.get("authorization", "")
     amz_date = headers.get("x-amz-date", "")
 
+    if not auth_header:
+        # No Authorization header at all — matches real AWS for
+        # anonymous access to a private resource (SPEC_BRIEF7 §3.1).
+        # Deliberately the same Error.Code as the bucket-not-allowed
+        # case below; see cybergym/README.md for why that's correct.
+        return Response(
+            content=_s3_error_xml("AccessDenied", "Missing AWS SigV4 Authorization header"),
+            status_code=403,
+            media_type="application/xml",
+        )
+
+    if is_case_m1_malformed(auth_header):
+        # Case M1 ONLY (SPEC_BRIEF7 §3.1a) — real AWS distinguishes a
+        # malformed header from an absent one. Other malformed shapes
+        # fall through to the generic MalformedAuthHeader handling below,
+        # unchanged from before this brief.
+        return Response(
+            content=_s3_error_xml("AuthorizationHeaderMalformed", "The authorization header you provided is not valid."),
+            status_code=400,
+            media_type="application/xml",
+        )
+
     try:
         parsed = parse_authorization_header(auth_header)
     except MalformedAuthHeader:
@@ -66,7 +99,7 @@ async def proxy(full_path: str, request: Request) -> Response:
     secret_entry = KNOWN_SECRETS.get(parsed.access_key)
     if secret_entry is None:
         return Response(
-            content=_s3_error_xml("AccessDenied", "Unknown access key"),
+            content=_s3_error_xml("InvalidAccessKeyId", "Unknown access key"),
             status_code=403,
             media_type="application/xml",
         )
@@ -86,7 +119,7 @@ async def proxy(full_path: str, request: Request) -> Response:
         # the signature doesn't match what it should be for that key's
         # real secret (e.g. the caller used the wrong secret).
         return Response(
-            content=_s3_error_xml("AccessDenied", "SignatureDoesNotMatch"),
+            content=_s3_error_xml("SignatureDoesNotMatch", "The request signature we calculated does not match the signature you provided."),
             status_code=403,
             media_type="application/xml",
         )
