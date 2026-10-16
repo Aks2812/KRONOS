@@ -257,7 +257,7 @@ def test_reconcile_in_pipeline_never_shortcuts_or_changes_reachability(tmp_path,
     assert g.get_node("SECRET", survivor_id)["status"] == "extracted"
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_validate:
-        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200")
+        mock_validate.return_value = ValidationOutcome(live=True, evidence=b"proof", detail="200", classification="live_discriminated", discriminated=True)
         run_validation_pass(g, engagement_dir)
 
     # the real validation pass is what earns reachable — exactly once,

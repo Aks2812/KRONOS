@@ -201,8 +201,34 @@ def test_src_kronos_never_references_the_fixture_only_discriminator_header() -> 
     next is one that transfers to a real target, not a lab-only shortcut.
     Mirrors the budget-exemption grep guard in tests/test_cleanup.py."""
     offenders = []
+    scanned = 0
     for path in (REPO_ROOT / "src" / "kronos").rglob("*.py"):
+        scanned += 1
         text = path.read_text()
         if "x-cybergym-deny-reason" in text.lower():
             offenders.append(str(path.relative_to(REPO_ROOT)))
+    assert scanned > 0, "guard scanned zero files — src/kronos/ path resolution is broken, not clean"
     assert offenders == [], f"src/kronos/ must never reference the fixture-only discriminator header: {offenders}"
+
+
+# --- Guard: M1 scope (mechanical) -------------------------------------------
+
+
+def test_non_m1_malformed_header_does_not_return_400_authorization_header_malformed(
+    client: TestClient,
+) -> None:
+    """SPEC_BRIEF7 §3.1a scopes the 400 AuthorizationHeaderMalformed status
+    to case M1 ONLY (see `_CASE_M1_RE`) — every other malformed shape keeps
+    whatever `parse_authorization_header` already gives it (403
+    AccessDenied, via the `MalformedAuthHeader` except branch in
+    sigv4_proxy.py). This header is deliberately NOT M1: "Credential=" is
+    missing entirely, so `is_case_m1_malformed` is False, yet it is still
+    not a well-formed SigV4 header. Protects against a future widening of
+    `_CASE_M1_RE` silently reclassifying non-M1 malformed shapes as M1."""
+    response = _get(
+        client,
+        GENERAL_BUCKET,
+        headers={"Authorization": "AWS4-HMAC-SHA256 totally-not-even-the-right-shape"},
+    )
+    assert response.status_code == 403
+    assert _error_code(response.text) == "AccessDenied"

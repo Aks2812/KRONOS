@@ -3,8 +3,10 @@
 verifies against Brief #1's own verifier, verifies all 3 planted chains
 are genuinely live (correct secret -> accept; wrong secret -> reject),
 verifies the chain-3 over-privilege boundary is real (chain-2's
-credential must be denied on chain-3's bucket), and tears the lab back
-down (SPEC_BRIEF05 "leave nothing running or exposed after teardown").
+credential must be denied on chain-3's bucket), verifies SPEC_BRIEF7's
+denial matrix and SPEC_BRIEF8's negative-control differential against
+the REAL running range (not a stub), and tears the lab back down
+(SPEC_BRIEF05 "leave nothing running or exposed after teardown").
 
 Run from the repo root: `.venv/bin/python cybergym/selftest.py`
 (or `cybergym/selftest.py --no-teardown` to inspect the running lab after).
@@ -30,6 +32,8 @@ REPO_ROOT = HERE.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from kronos.manifest import load_and_verify  # noqa: E402
+from kronos.validate.cloud_validator import validate_cloud_credential  # noqa: E402
+from kronos.validate.http_validator import validate_api_token  # noqa: E402
 
 from cryptography.hazmat.primitives import serialization  # noqa: E402
 
@@ -221,6 +225,40 @@ def check_cloud_denial_matrix(result: Result, chain2_access_key: str, chain2_sec
         assert_row("bucket_not_allowed", status, error.get("Code"), str(exc))
 
 
+def check_negative_control_differential(result: Result, chain2_access_key: str, chain2_secret_key: str) -> None:
+    """SPEC_BRIEF8 §5.3 — the live, Docker-backed proof that the §0 false
+    positive is actually closed on a REAL target, not just a stub:
+
+    1. The real `kronos.validate.http_validator.validate_api_token`,
+       pointed at the running range's own `/health` (no auth required,
+       200 to everything) with a deliberately bogus secret, must abstain
+       (`classification == "indiscriminate_target"`, `live is False`) —
+       exactly the FP SPEC_BRIEF8 §0 names as reproducible against this
+       exact range.
+    2. The real `kronos.validate.cloud_validator.validate_cloud_credential`,
+       run against the live SigV4 proxy with chain-2's genuine fixture
+       credential, must discriminate (`classification ==
+       "live_discriminated"`, `live is True`) — proving the differential
+       doesn't just abstain on everything, it still recognizes a real
+       credential on a real target.
+    """
+    http_outcome = validate_api_token("totally-bogus-secret-not-real", f"{API_BASE}/health")
+    result.check(
+        "negative-control differential: live /health abstains (indiscriminate_target)",
+        http_outcome.classification == "indiscriminate_target" and http_outcome.live is False,
+        f"classification={http_outcome.classification!r} live={http_outcome.live!r} ({http_outcome.detail})",
+    )
+
+    cloud_outcome = validate_cloud_credential(
+        f"{chain2_access_key}:{chain2_secret_key}", "kronos-cybergym-general", PROXY_BASE
+    )
+    result.check(
+        "negative-control differential: live genuine cloud credential discriminates (live_discriminated)",
+        cloud_outcome.classification == "live_discriminated" and cloud_outcome.live is True,
+        f"classification={cloud_outcome.classification!r} live={cloud_outcome.live!r} ({cloud_outcome.detail})",
+    )
+
+
 def compose(*args: str) -> None:
     subprocess.run(["docker", "compose", *args], cwd=HERE, check=True)
 
@@ -259,6 +297,7 @@ def main() -> int:
         access_key_2, secret_key_2 = check_chain2(result)
         check_chain3(result, access_key_2, secret_key_2)
         check_cloud_denial_matrix(result, access_key_2, secret_key_2)
+        check_negative_control_differential(result, access_key_2, secret_key_2)
     finally:
         if not args.no_teardown and not args.no_standup:
             print("tearing down the lab (docker compose down)...")
