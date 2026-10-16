@@ -1690,3 +1690,99 @@ above does not and cannot stand in for them.
 Validation now costs **2× `tool_invocations` per HTTP candidate, 3× per
 cloud candidate** (`validation_attempts` is unchanged at 1 per
 candidate) — `_ARM_COUNT_BY_KIND` in `src/kronos/validate/runner.py`.
+
+## Brief #9 — Ingestion contract, canonical keys, owned event stream (S2)
+
+### Schema prerequisite done first, per FORK-P's DEFAULT
+
+Added `merged_into STRING` to `WEB_ENDPOINT`, `PARAMETER`, `SERVICE` and
+their `NODE_COLUMNS` entries — nothing else. `NODE_PROPS_FORBIDDEN`
+already forbade `merged_into` globally (Brief #4), so the column stays
+reconcile-only without any further change. Without this, the three new
+canonical-key functions would be completely inert (Brief #4's exact
+defect, knowingly avoidable here).
+
+### Two entry points for the mobile ingester, not one
+
+SPEC_BRIEF9 §3 asks for a conforming source to return an `IngestPlan`.
+Changing `ingest_mobile_static`'s own return type to that would break
+`cybergym/kronos_validation_run.py`'s `ingest(APK_PATH, "mobile_static",
+graph)` -> `apply_upserts(graph, upserts)` call, expecting a bare
+`list[NodeUpsert | EdgeUpsert]` — and `cybergym/` is explicitly out of
+this brief's §2 allowlist. Resolution: one shared extraction core
+(`_ingest_mobile_static_core`, logic byte-for-byte unchanged from Brief
+#2 except for declined-tracking/event-emission plumbing), two thin
+public faces — `ingest_mobile_static` (legacy bare-list, used by
+`ingest()`/cybergym, untouched signature and return shape) and
+`ingest_mobile_static_plan` (the new `IngestionSource`-conforming
+entry point). This is the brief's own anticipated shape of "stop and
+report rather than restructure" applied narrowly: the *external*
+contract for the one caller outside the allowlist doesn't change; the
+*internal* plumbing is adapted, not rewritten, and both faces share one
+implementation so there is nothing to keep in sync.
+
+`apply_plan` (in `contract.py`) and `apply_upserts` (in `__init__.py`,
+pre-existing) are jointly the sole graph-writing chokepoint under
+`ingest/` for the same reason — `apply_plan` delegates to
+`apply_upserts` rather than duplicating its write logic, so there is
+still exactly one place `upsert_node`/`upsert_edge` are called from,
+just reached via two names (the guard in `test_ingest_contract.py`
+exempts `__init__.py` specifically, documenting why).
+
+### `host_key`/`parent_key` are raw ids, not re-derived canonical keys
+
+§4.2/§4.3 describe `PARAMETER`/`SERVICE`'s compound keys as embedding
+"the parent endpoint's own canonical key" / "the host's own canonical
+key." Implemented literally, this makes §5's ordering rule
+**unenforceable and untestable**: `canonical_key_for_host`,
+`canonical_key_for_web_endpoint`, and `canonical_key_for_api_endpoint`
+are all pure functions of a node's own text (id, or method+url) —
+nothing about computing them depends on whether a merge has run. Two
+genuine parent-level duplicates always produce the identical canonical
+key regardless of merge order, by construction (that's literally the
+criterion that made them duplicates). Using those functions here would
+mean the reverse merge order can never actually produce a wrong answer
+to test against.
+
+Resolution (not one of FORK-N/O/P/Q/R, a narrower in-flight call,
+logged here per the Balanced autonomy contract): `runner.py`'s
+`_group_services`/`_group_parameters` pass the parent's RAW node id
+(whichever `HOST`/`WEB_ENDPOINT`/`API_ENDPOINT` the current edge names)
+into the compound key functions, not a freshly recomputed canonical
+key. This only converges to one shared value across two SERVICE/
+PARAMETER duplicates' parent edges once the parent-type merge has
+actually run and re-pointed those edges onto the survivor — making the
+ordering rule genuinely load-bearing, and
+`test_service_merge_requires_host_merged_first_fails_under_reverse_order`
+an honest proof rather than a vacuous one (verified by temporarily
+reverting to the canonical-key design and confirming that test's
+"reverse order fails" assertion itself fails against it — i.e. the
+vacuous design merges correctly regardless of order, so a test that
+only ever observes correct behavior would not have caught the defect
+class §5 exists to prevent).
+
+### `reconcile_skipped_uncertain_key` scope
+
+Emitted once per active node (of any mergeable type) whose canonical
+key resolves to `None` — not per merge-group, and not throttled or
+sampled. This can be verbose on a graph with many non-duplicate nodes
+(most nodes never have a duplicate at all), but SPEC_BRIEF9 §8 test 9
+only requires the event exist with the right fields and never carry
+secret/raw-output material, not that it be sparse; a future brief can
+add filtering if the volume becomes an operational problem.
+
+### FORK choices taken (all DEFAULT, per the brief's own resolution)
+
+- **FORK-N** (DEFAULT: no path templating for `WEB_ENDPOINT`) — taken
+  as specified; `canonical_key_for_web_endpoint` never templates a
+  path segment.
+- **FORK-O** (DEFAULT: `None` parent/host propagates to `None` child
+  key) — taken as specified for both `PARAMETER` and `SERVICE`.
+- **FORK-P** (DEFAULT: schema addition done in this brief, first) —
+  taken; see "Schema prerequisite" above.
+- **FORK-Q** (DEFAULT: append-only JSONL file, not a Kùzu table) —
+  taken; `src/kronos/events.py`'s `emit(stream, kind, **fields)`.
+- **FORK-R** (DEFAULT: wire the new types into the reconcile runner now,
+  with real-duplicate tests required) — taken; see
+  `tests/test_reconcile.py`'s `WEB_ENDPOINT`/`PARAMETER`/`SERVICE`
+  real-duplicate tests.

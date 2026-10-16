@@ -490,3 +490,214 @@ def test_reconcile_never_calls_advance_secret_status():
             f"{path} calls advance_secret_status — reconciliation must only ever "
             "write status via lifecycle.set_secret_status_from_evidence"
         )
+
+
+# --- SPEC_BRIEF9 §8 test 6: real duplicates of the three new types --------
+# (the test that proves §4.0's schema addition actually took effect — a
+# passing key function with no completed merge is a no-op proof, exactly
+# the defect Brief #4 caught once already.)
+
+
+def test_web_endpoint_real_duplicate_merges_and_tombstones(tmp_path, manifest_factory, signing_keypair):
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+    url = "https://acme.example.com/blog/post-1"
+    g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"})
+    g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"})
+    g.upsert_node("HOST", "h1", {"source": "test"})
+    g.upsert_edge("exposes", "h1", "HOST", "web:1", "WEB_ENDPOINT")
+    g.upsert_edge("exposes", "h1", "HOST", "web:2", "WEB_ENDPOINT")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    merges = [r for r in report.merges if r.node_type == "WEB_ENDPOINT"]
+    assert len(merges) == 1
+    survivor_id, loser_id = sorted(["web:1", "web:2"])
+    assert merges[0].survivor_id == survivor_id
+    assert merges[0].merged_ids == (loser_id,)
+
+    assert _edge_count_touching(g, "WEB_ENDPOINT", loser_id) == 0
+    assert g.get_node("WEB_ENDPOINT", loser_id)["merged_into"] == survivor_id
+
+    result = g.execute("MATCH (h:HOST {id:'h1'})-[:exposes]->(e:WEB_ENDPOINT {id: $id}) RETURN count(*)", {"id": survivor_id})
+    assert result.get_next()[0] == 1
+
+    paths = find_paths(g, "HOST", "WEB_ENDPOINT")
+    found_ids = {node_id for path in paths for node_id in path["nodes"]}
+    assert survivor_id in found_ids
+    assert loser_id not in found_ids
+
+
+def test_web_endpoint_distinct_pages_never_merge(tmp_path, manifest_factory, signing_keypair):
+    g = _graph(tmp_path, manifest_factory, signing_keypair)
+    url_a = "https://acme.example.com/blog/post-1"
+    url_b = "https://acme.example.com/blog/post-2"
+    g.upsert_node("WEB_ENDPOINT", "web:a", {"url": url_a, "method": "GET", "source": "test"})
+    g.upsert_node("WEB_ENDPOINT", "web:b", {"url": url_b, "method": "GET", "source": "test"})
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    assert [r for r in report.merges if r.node_type == "WEB_ENDPOINT"] == []
+    assert g.get_node("WEB_ENDPOINT", "web:a")["merged_into"] is None
+    assert g.get_node("WEB_ENDPOINT", "web:b")["merged_into"] is None
+
+
+def test_service_real_duplicate_merges_keyed_off_single_host(tmp_path, manifest_factory, signing_keypair):
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"})
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "nmap"})
+    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "masscan"})
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:1", "SERVICE")
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    merges = [r for r in report.merges if r.node_type == "SERVICE"]
+    assert len(merges) == 1
+    survivor_id, loser_id = sorted(["svc:1", "svc:2"])
+    assert merges[0].survivor_id == survivor_id
+    assert merges[0].merged_ids == (loser_id,)
+
+    assert _edge_count_touching(g, "SERVICE", loser_id) == 0
+    assert g.get_node("SERVICE", loser_id)["merged_into"] == survivor_id
+    result = g.execute(
+        "MATCH (h:HOST {id:'api.acme.example.com'})-[:hosts]->(s:SERVICE {id: $id}) RETURN count(*)", {"id": survivor_id}
+    )
+    assert result.get_next()[0] == 1
+
+
+def test_service_different_port_never_merges(tmp_path, manifest_factory, signing_keypair):
+    g = _graph(tmp_path, manifest_factory, signing_keypair)
+    g.upsert_node("HOST", "h1", {"source": "test"})
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"})
+    g.upsert_node("SERVICE", "svc:2", {"port": 8443, "protocol": "tcp", "source": "test"})
+    g.upsert_edge("hosts", "h1", "HOST", "svc:1", "SERVICE")
+    g.upsert_edge("hosts", "h1", "HOST", "svc:2", "SERVICE")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    assert [r for r in report.merges if r.node_type == "SERVICE"] == []
+
+
+def test_parameter_real_duplicate_merges_keyed_off_parent_endpoint(tmp_path, manifest_factory, signing_keypair):
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+    url = "https://api.acme.example.com/users"
+    g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"})
+    g.upsert_node("PARAMETER", "param:1", {"name": "id", "param_type": "query", "source": "static"})
+    g.upsert_node("PARAMETER", "param:2", {"name": "id", "param_type": "query", "source": "dynamic"})
+    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:1", "PARAMETER")
+    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:2", "PARAMETER")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    merges = [r for r in report.merges if r.node_type == "PARAMETER"]
+    assert len(merges) == 1
+    survivor_id, loser_id = sorted(["param:1", "param:2"])
+    assert merges[0].survivor_id == survivor_id
+    assert merges[0].merged_ids == (loser_id,)
+    assert _edge_count_touching(g, "PARAMETER", loser_id) == 0
+    assert g.get_node("PARAMETER", loser_id)["merged_into"] == survivor_id
+
+
+def test_parameter_same_name_different_endpoint_never_merges(tmp_path, manifest_factory, signing_keypair):
+    """FORK-O's worst-failure-mode guard, proven on a real pair: `?id=`
+    on two genuinely different endpoints must never collapse, even
+    though the bare name/type match."""
+    g = _graph(tmp_path, manifest_factory, signing_keypair)
+    url_a = "https://api.acme.example.com/users"
+    url_b = "https://api.acme.example.com/products"
+    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"})
+    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"})
+    g.upsert_node("PARAMETER", "param:a", {"name": "id", "param_type": "query", "source": "test"})
+    g.upsert_node("PARAMETER", "param:b", {"name": "id", "param_type": "query", "source": "test"})
+    g.upsert_edge("has_param", url_a, "API_ENDPOINT", "param:a", "PARAMETER")
+    g.upsert_edge("has_param", url_b, "API_ENDPOINT", "param:b", "PARAMETER")
+
+    report = run_reconciliation_pass(g, tmp_path)
+
+    assert [r for r in report.merges if r.node_type == "PARAMETER"] == []
+    assert g.get_node("PARAMETER", "param:a")["merged_into"] is None
+    assert g.get_node("PARAMETER", "param:b")["merged_into"] is None
+
+
+# --- SPEC_BRIEF9 §8 test 7: merge ordering (parents before children) -------
+
+
+def test_service_merge_requires_host_merged_first_fails_under_reverse_order(tmp_path, manifest_factory, signing_keypair):
+    """SPEC_BRIEF9 §5: two duplicate HOSTs each expose their own
+    duplicate SERVICE. `run_reconciliation_pass` merges HOST before
+    SERVICE, so both services' `hosts` edges are re-pointed onto the
+    SAME survivor host id before SERVICE is grouped, and the two
+    services correctly merge. This is written to actually demonstrate
+    the failure under the reverse order (not just assert a comment):
+    calling the SERVICE grouping+merge step directly, BEFORE any HOST
+    merge has run, reproduces exactly the bug the ordering rule
+    prevents — the two services are missed as duplicates because each
+    still names its own (as yet unmerged) host literally."""
+    from kronos.reconcile.runner import _group_services, _merge_type
+
+    g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+    # Two HOST duplicates — same real host, different literal id text
+    # (case), so `canonical_key_for_host` groups them, but each one's
+    # raw id is textually distinct until that merge actually runs.
+    g.upsert_node("HOST", "API.ACME.EXAMPLE.COM", {"source": "test"})
+    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"})
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"})
+    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "test"})
+    g.upsert_edge("hosts", "API.ACME.EXAMPLE.COM", "HOST", "svc:1", "SERVICE")
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE")
+
+    # REVERSE order: group+merge SERVICE before HOST has ever been
+    # merged — reproduces the exact defect class §5 exists to prevent.
+    reverse_records: list = []
+    _merge_type(g, tmp_path, "SERVICE", _group_services(g, tmp_path), "reverse_order_repro", reverse_records)
+    assert reverse_records == [], (
+        "SERVICE merged correctly even with HOST unmerged first — this test no longer "
+        "demonstrates the ordering rule; it must fail under the reverse order"
+    )
+    assert g.get_node("SERVICE", "svc:1")["merged_into"] is None
+    assert g.get_node("SERVICE", "svc:2")["merged_into"] is None
+
+    # CORRECT order, via the real pipeline entry point: HOST merges
+    # first, then SERVICE — on a fresh graph (the reverse-order repro
+    # above intentionally left svc:1/svc:2 unmerged, so re-running the
+    # real pass on the SAME graph proves the correct order recovers).
+    report = run_reconciliation_pass(g, tmp_path)
+    service_merges = [r for r in report.merges if r.node_type == "SERVICE"]
+    assert len(service_merges) == 1
+    survivor_id, loser_id = sorted(["svc:1", "svc:2"])
+    assert service_merges[0].survivor_id == survivor_id
+    assert service_merges[0].merged_ids == (loser_id,)
+
+
+# --- SPEC_BRIEF9 §8 test 10: determinism -----------------------------------
+
+
+def test_reconciliation_is_deterministic_across_two_identical_runs(tmp_path, manifest_factory, signing_keypair):
+    """Same input twice (two separately-built, identically-shaped
+    graphs) -> identical node ids, identical canonical keys, identical
+    merge outcomes (timestamps excepted)."""
+
+    def _build(path):
+        g = _graph(path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
+        url = "https://acme.example.com/blog/post-1"
+        g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"})
+        g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"})
+        return g
+
+    import os
+
+    path_a = tmp_path / "a"
+    path_b = tmp_path / "b"
+    os.makedirs(path_a, exist_ok=True)
+    os.makedirs(path_b, exist_ok=True)
+
+    g_a = _build(path_a)
+    g_b = _build(path_b)
+
+    report_a = run_reconciliation_pass(g_a, path_a)
+    report_b = run_reconciliation_pass(g_b, path_b)
+
+    def _shape(report):
+        return [(r.node_type, r.canonical_key, r.survivor_id, r.merged_ids) for r in report.merges]
+
+    assert _shape(report_a) == _shape(report_b)

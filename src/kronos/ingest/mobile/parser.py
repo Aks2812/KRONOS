@@ -28,7 +28,9 @@ from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
 
 from kronos.evidence import store_evidence
+from kronos.events import emit
 from kronos.ingest import EdgeUpsert, NodeUpsert
+from kronos.ingest.contract import DeclinedItem, IngestPlan, SourceDescriptor, build_report
 from kronos.ingest.mobile import light_extractors
 from kronos.ingest.mobile.manifest_parser import ManifestParseError, parse_manifest
 from kronos.ingest.mobile.mobsf_client import MobSFClient
@@ -38,6 +40,15 @@ if TYPE_CHECKING:  # pragma: no cover
 
 _APKTOOL_TIMEOUT = 120
 _JADX_TIMEOUT = 120
+
+# SPEC_BRIEF9 §3: a stable identity for this source. `name` is written
+# into each planned node's `source` column EXACTLY as it already was
+# ("static", unchanged since Brief #2) — proof requirement §8.3/acceptance
+# #3 is that conforming to the contract must not change a single planned
+# node's id or props, so the version is reported alongside the plan
+# (`IngestReport.source.version`, and the `ingest_started`/`ingest_finished`
+# events) rather than folded into the `source` string itself.
+MOBILE_STATIC_SOURCE = SourceDescriptor(name="static", version="1")
 
 
 def _run_apktool_decode(apk_path: Path, out_dir: Path) -> None:
@@ -104,14 +115,25 @@ def _secret_node_id(value: str) -> str:
     return f"secret:{hashlib.sha256(value.encode()).hexdigest()[:16]}"
 
 
-def ingest_mobile_static(
+def _ingest_mobile_static_core(
     apk_path: str | Path,
     engagement: "EngagementGraph",
     mobsf_client: MobSFClient | None = None,
-) -> list[NodeUpsert | EdgeUpsert]:
+) -> tuple[list[NodeUpsert | EdgeUpsert], list[DeclinedItem]]:
+    """The real extraction logic — UNCHANGED from Brief #2 except for the
+    declined-tracking and event-emission plumbing threaded through
+    (SPEC_BRIEF9 §3: "adapt, don't rewrite"). Both public entry points
+    below (`ingest_mobile_static`, the legacy bare-list contract still
+    depended on by `ingest()`/`cybergym/kronos_validation_run.py`, and
+    `ingest_mobile_static_plan`, the new `IngestionSource`-conforming
+    wrapper) call this exact same function — there is exactly one
+    extraction code path, never two to keep in sync."""
     apk_path = Path(apk_path)
     engagement_dir = engagement.db_path.parent
     upserts: list[NodeUpsert | EdgeUpsert] = []
+    declined: list[DeclinedItem] = []
+
+    emit(engagement_dir, "ingest_started", source_name=MOBILE_STATIC_SOURCE.name, source_version=MOBILE_STATIC_SOURCE.version)
 
     with TemporaryDirectory(prefix="kronos-mobile-") as tmp:
         tmp_path = Path(tmp)
@@ -127,7 +149,22 @@ def ingest_mobile_static(
             # A manifest we can't parse means we can't safely identify the
             # app at all — nothing to ingest, but this must not crash the
             # whole run (hostile/malformed input is expected to occur).
-            return []
+            # Declining is a first-class, recorded outcome (SPEC_BRIEF9
+            # §3), not a silent drop.
+            declined_item = DeclinedItem(
+                reason="unparseable_manifest", detail="AndroidManifest.xml failed to parse"
+            )
+            declined.append(declined_item)
+            emit(engagement_dir, "ingest_declined", reason=declined_item.reason, detail=declined_item.detail)
+            emit(
+                engagement_dir,
+                "ingest_finished",
+                source_name=MOBILE_STATIC_SOURCE.name,
+                node_count=0,
+                edge_count=0,
+                declined_count=len(declined),
+            )
+            return upserts, declined
 
         bundle_id = manifest.bundle_id
         upserts.append(
@@ -239,4 +276,46 @@ def ingest_mobile_static(
             upserts.append(NodeUpsert("API_ENDPOINT", found.url, {"source": "static"}))
             upserts.append(EdgeUpsert("references", bundle_id, found.url))
 
+    emit(
+        engagement_dir,
+        "ingest_finished",
+        source_name=MOBILE_STATIC_SOURCE.name,
+        node_count=sum(1 for u in upserts if isinstance(u, NodeUpsert)),
+        edge_count=sum(1 for u in upserts if isinstance(u, EdgeUpsert)),
+        declined_count=len(declined),
+    )
+    return upserts, declined
+
+
+def ingest_mobile_static(
+    apk_path: str | Path,
+    engagement: "EngagementGraph",
+    mobsf_client: MobSFClient | None = None,
+) -> list[NodeUpsert | EdgeUpsert]:
+    """Legacy bare-list entry point (Brief #2's original contract),
+    unchanged in signature and return shape — `ingest()`'s dispatcher and
+    `cybergym/kronos_validation_run.py` (out of this brief's allowlist)
+    both depend on getting exactly `list[NodeUpsert | EdgeUpsert]` back,
+    not an `IngestPlan`. See `ingest_mobile_static_plan` below for the
+    SPEC_BRIEF9 `IngestionSource`-conforming entry point; both call the
+    identical extraction core, so this is an adaptation (two thin faces
+    on one implementation), not two parsers to keep in sync."""
+    upserts, _declined = _ingest_mobile_static_core(apk_path, engagement, mobsf_client)
     return upserts
+
+
+def ingest_mobile_static_plan(
+    apk_path: str | Path,
+    engagement: "EngagementGraph",
+    mobsf_client: MobSFClient | None = None,
+) -> IngestPlan:
+    """SPEC_BRIEF9 §3's `IngestionSource`-conforming entry point: same
+    extraction core as `ingest_mobile_static`, wrapped into the formal
+    `IngestPlan` (upserts + `IngestReport`) shape. Holds no graph handle
+    beyond the single call — `engagement` is read only for its
+    `db_path.parent` (where evidence blobs/events live), never stored,
+    and nothing here ever calls `upsert_node`/`upsert_edge` directly
+    (that's `apply_plan`'s job alone, see `ingest/contract.py`)."""
+    upserts, declined = _ingest_mobile_static_core(apk_path, engagement, mobsf_client)
+    report = build_report(MOBILE_STATIC_SOURCE, upserts, declined)
+    return IngestPlan(upserts=tuple(upserts), report=report)

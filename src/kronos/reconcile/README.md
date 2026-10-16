@@ -20,13 +20,26 @@ and touches nothing.
 ## Modules
 
 - **`canonical.py`** — pure canonical-key functions, one per mergeable
-  node type (`SECRET`, `API_ENDPOINT`, `HOST`, `MOBILE_APP`, `FINDING`).
+  node type (`SECRET`, `API_ENDPOINT`, `HOST`, `MOBILE_APP`, `FINDING`,
+  and as of SPEC_BRIEF9: `WEB_ENDPOINT`, `PARAMETER`, `SERVICE`).
   No graph access. `None` means "can't produce a confident key" — that
   node is never merged (conservative bias: a missed merge is a cheap,
   self-correcting duplicate; a false merge can hide a real finding).
   Never collapses across identifier shapes (an FQDN and an IP get
   different canonical-key prefixes by construction, even if they're the
   same real host).
+
+  `PARAMETER` and `SERVICE` are **compound**: their key embeds an
+  identifier for their parent (`parent_key`/`host_key`). That identifier
+  is the parent's own RAW node id, as `runner.py`'s grouping functions
+  currently resolve it via the graph — deliberately NOT a freshly
+  recomputed `canonical_key_for_*` on the parent. Those functions are
+  pure (a function of the parent's own text alone), so two genuine
+  parent duplicates always produce the same canonical key regardless of
+  merge state — using one here would make SPEC_BRIEF9 §5's ordering
+  rule untestable by construction (see `tests/test_reconcile.py`'s
+  ordering test, which fails under the reverse merge order precisely
+  because it uses the raw id instead).
 - **`merge.py`** — the actual merge: picks a deterministic survivor
   (lexicographic `min()` of the group's ids), carries over every edge a
   loser participates in (every label/pair in `schema.EDGE_PAIRS`, via
@@ -45,7 +58,17 @@ and touches nothing.
 - **`runner.py`** — `run_reconciliation_pass(graph, engagement_dir) ->
   MergeReport`, the one entry point other code calls. Groups every
   active (non-tombstoned) node of each mergeable type by its canonical
-  key and merges every group with more than one member.
+  key and merges every group with more than one member. As of
+  SPEC_BRIEF9 §5, **parents merge strictly before children**: `HOST`
+  fully merges before `SERVICE` is even grouped, and
+  `WEB_ENDPOINT`/`API_ENDPOINT` fully merge before `PARAMETER` is —
+  enforced by call order (each type's group-then-merge step runs to
+  completion before the next grouping function is called), not by a
+  comment. Also as of SPEC_BRIEF9 §6: every successful merge emits a
+  `reconcile_merged` event, and every node whose canonical key resolved
+  to `None` emits a `reconcile_skipped_uncertain_key` event
+  (`kronos.events`), so a reviewer can audit why something didn't
+  merge without re-deriving the key logic by hand.
 
 ## Why status can't be laundered through a merge
 
