@@ -34,17 +34,17 @@ CREATE NODE TABLE IF NOT EXISTS HOST(
 );
 CREATE NODE TABLE IF NOT EXISTS SERVICE(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    port INT64, protocol STRING,
+    port INT64, protocol STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS WEB_ENDPOINT(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    url STRING, method STRING,
+    url STRING, method STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS PARAMETER(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
-    name STRING, param_type STRING,
+    name STRING, param_type STRING, merged_into STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS API_ENDPOINT(
@@ -221,9 +221,9 @@ NODE_PROPS_FORBIDDEN: set[str] = {"id", "in_scope", "confidence", "scope_note", 
 NODE_COLUMNS: dict[str, set[str]] = {
     "ENGAGEMENT": {"id", "client", "authorized_by", "window_start", "window_end", "destructive_allowed", "in_scope", "created_at"},
     "HOST": {"id", "in_scope", "created_at", "source", "merged_into"},
-    "SERVICE": {"id", "in_scope", "created_at", "source", "port", "protocol"},
-    "WEB_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method"},
-    "PARAMETER": {"id", "in_scope", "created_at", "source", "name", "param_type"},
+    "SERVICE": {"id", "in_scope", "created_at", "source", "port", "protocol", "merged_into"},
+    "WEB_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method", "merged_into"},
+    "PARAMETER": {"id", "in_scope", "created_at", "source", "name", "param_type", "merged_into"},
     "API_ENDPOINT": {"id", "in_scope", "created_at", "source", "url", "method", "merged_into"},
     "MOBILE_APP": {"id", "in_scope", "created_at", "source", "bundle_id", "platform", "merged_into"},
     "MOBILE_COMPONENT": {"id", "in_scope", "created_at", "source", "component_type", "name", "exported"},
