@@ -323,13 +323,16 @@ def test_config_fallback_reason_is_recorded_on_the_ledger_for_the_audit_trail(tm
 # Re-pinned from tests/test_reconcile.py's own guardrail-1 test — this
 # brief must re-confirm scope_guard.py is STILL a zero-line diff, not
 # just trust that an earlier brief's pin still holds.
-_SCOPE_GUARD_SHA256 = "41e56781c2f05fa28b4071e616364223094804d8f6d99fe0985414787ae7bde0"
+#
+# Re-pinned again by SPEC_BRIEF10 (the dedicated FORK-2 brief) after its
+# deliberate, in-scope rewrite of scope_guard.py; see tests/test_reconcile.py.
+_SCOPE_GUARD_SHA256 = "affcf9df4c7cc0780abaed4a2bf453afacbc3c8a126f79acde2ca3bc7c6f32b5"
 
 
 def test_scope_guard_still_has_zero_line_diff():
     scope_guard_path = Path(kronos.__file__).parent / "scope_guard.py"
     digest = hashlib.sha256(scope_guard_path.read_bytes()).hexdigest()
-    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — FORK-2 must stay untouched"
+    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — re-pin or get sign-off (SPEC_BRIEF10 already re-pinned once)"
 
 
 def test_budget_module_never_calls_advance_secret_status():

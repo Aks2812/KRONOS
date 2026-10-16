@@ -1786,3 +1786,306 @@ add filtering if the volume becomes an operational problem.
   with real-duplicate tests required) — taken; see
   `tests/test_reconcile.py`'s `WEB_ENDPOINT`/`PARAMETER`/`SERVICE`
   real-duplicate tests.
+
+## Brief #10 (FORK-2) — shape-aware `scope_guard` matcher
+
+### Why
+
+`src/kronos/scope_guard.py` used one untyped `fnmatch` mechanism for
+genuinely different identifier kinds (FQDN, CIDR, URL, `host:port`,
+mobile bundle id) drawn from one flat pattern list with no tag saying
+which kind an entry is. This measurably **under-matched exclusions**
+(F1: excluded `10.0.0.5/32` did not deny `https://10.0.0.5/admin`; F2:
+same for a bare-IP exclusion; F3: same for an IPv6 CIDR exclusion
+against a bracketed `[addr]:port` target) and **over-matched allows**
+(F4: `*acme.com*` authorized `https://evil.net/?next=acme.com/x`; F5:
+`com.acme.*` authorized `com.acme.evil.attacker.net`) — and separately
+produced **false denials** that then caused the over-matching, because
+an operator who cannot get a legitimate subdomain or standard-port
+endpoint into scope reaches for a looser glob to make the engagement
+run at all (F6/F6b/F6c/F7′/F7″: `*.acme.com` denied
+`https://api.acme.com/v1/users`, the `http` equivalent, the
+explicit-443 form, and the bare `host:443`/`host:80` forms — all of
+which §1.1 says must be allowed; F8: an explicit `api.acme.com:8443`
+entry did not cover its own URL form).
+
+### §1.1 — scope intent (operator-ratified, governing; verbatim)
+
+> `*.acme.com` authorizes DNS **subdomains** of `acme.com`, but **not
+> the apex** `acme.com`. Equivalent URL forms on those matching hosts
+> inherit scope for **HTTP/HTTPS on their standard ports**, regardless
+> of path or query. **Nonstandard ports require explicit scope
+> entries.** A redirect or URL parameter naming a different hostname
+> does **not** inherit authorization, and **exclusions win across
+> every equivalent representation.**
+>
+> 1. Subdomain, not apex. `*.acme.com` matches `api.acme.com` and
+>    `a.b.acme.com` (any depth), and does not match `acme.com`. An
+>    operator wanting the apex adds it as its own entry.
+> 2. Standard ports are 80 for `http` and 443 for `https`. A hostname
+>    entry authorizes the bare host, the host with a standard port
+>    (`host:80`, `host:443`), and `http`/`https` URLs on those ports —
+>    whether the port is implicit or written out.
+> 3. Path and query are irrelevant to authorization. Once the host is
+>    authorized, any path or query on it is in scope. Scope is
+>    host-level, not path-level.
+> 4. Nonstandard ports need an explicit entry. `*.acme.com` does not
+>    authorize `api.acme.com:8443` or `https://api.acme.com:8443/x`.
+>    An entry naming the port (`api.acme.com:8443`) authorizes both the
+>    bare `host:port` and its URL forms (F8).
+> 5. No authorization transfer via URL content. A hostname appearing in
+>    a path, query, fragment or redirect target never authorizes
+>    anything. Only the URL's host component is consulted.
+> 6. Allow is narrow; deny is broad. This asymmetry is deliberate and
+>    must not be "harmonized": an allow entry for a host covers
+>    standard ports only, while an exclusion for a host excludes it on
+>    every port, scheme, path and representation. When in doubt, deny.
+> 7. A CIDR or bare-IP entry authorizes ALL ports on a matching address
+>    — operator-ratified, 2026-10-16, resolving §8.5. `10.0.5.0/24`
+>    authorizes `10.0.5.10`, `10.0.5.10:443`, `10.0.5.10:8443`,
+>    `10.0.5.10:22` and `https://10.0.5.10/x` alike. Rationale: an IP
+>    range in a signed SOW expresses network-level authorization — the
+>    host itself, not merely its web tier — whereas a hostname entry
+>    expresses web-tier intent and keeps rule 4's standard-port limit.
+>    Allow semantics therefore differ by pattern shape, deliberately.
+>    An address-shaped entry is port-blind; a hostname-shaped entry is
+>    port-limited. Do not unify these. Rule 6 is unaffected: exclusions
+>    remain port-blind for every shape.
+
+Implemented exactly as specified, in `scope_guard.py` and documented
+in `src/kronos/README_scope.md`. Confirmed with a dedicated test
+(`test_5_5b_cross_shape_asymmetry_pinned_in_one_call`) pinning both
+halves of the asymmetry — `10.0.5.10:8443` ALLOW next to
+`api.acme.com:8443` DENY — in the same `is_in_scope` call, so a later
+"cleanup" that unifies address- and hostname-shaped allow semantics
+breaks a named test, not just a row in a matrix nobody re-reads.
+
+### FORK-S — what a URL target may authorize from
+
+**DEFAULT (1) taken:** only the URL's host component and effective
+port are consulted; path, query, fragment, and userinfo never
+authorize. This is F4's actual fix and the general principle behind
+every §5.6 row: a pattern that is not itself URL-shaped (no `"://"`)
+is evaluated only against the target's host identity when the target
+is a URL, never against the raw URL string. The one carve-out is a
+URL-*shaped* pattern (the operator wrote `"://"` themselves, e.g. the
+pre-existing `test_url_pattern_glob` lock, or CyberGym's own
+`http://localhost*` covering its nonstandard port) — that pattern
+still matches the full raw target string, because the operator opted
+into literal path-aware matching explicitly. This does not reopen F4:
+F4's pattern (`*acme.com*`) is not URL-shaped, so it never gets that
+carve-out.
+
+### FORK-T — bundle id vs. hostname disambiguation
+
+**DEFAULT (1) taken, resolved on the *pattern* side, not the target
+side** — see §8.2 below for why target-side classification was
+rejected outright rather than approximated. A trailing-`.*` pattern
+(one literal wildcard, at the end, no leading `*.`) may only have its
+wildcard consume a single further label (no embedded dot). This closes
+F5 (`com.acme.*` must not authorize `com.acme.evil.attacker.net`)
+while leaving the existing `com.acme.mobileapp` match (and the new
+`com.acme.mobile` lock) intact, and only engages when the target is
+bare (`host`-shaped) — never reached for the pre-existing, unrelated
+`"10.0.*"` glob tested against an `ip_port` target in
+`test_cidr_excluded_still_blocks_ip_port_target`, which keeps its old,
+unrestricted raw-string match.
+
+### §8 — open uncertainties, answered with evidence
+
+**§8.1 — `scope_key` call sites.** Enumerated every `scope_key` value
+and every bare `id` fallback actually reaching `is_in_scope`
+(`graph.py:140`, `scope_key or id`) across `src/kronos/` and
+`cybergym/`:
+
+- Bundle ids (`com.kronos.demo`, `com.kronos.cybergym.lab`, test
+  fixtures like `com.acme.app`) — `host`-shaped, §4's taxonomy covers
+  these (folded into `host`; see §8.2).
+- Full URLs (`API_ENDPOINT` ids / `CHAIN1_FULL_URL`) — `url`-shaped,
+  covered.
+- Bare hostnames (`api.acme.example.com`) — `host`-shaped, covered.
+- **ARNs** (`arn:aws:s3:::{bucket}`, from
+  `cybergym/kronos_validation_run.py`'s enrichment step, matched
+  against `cybergym/scope_manifest.yaml`'s
+  `arn:aws:s3:::kronos-cybergym-*` pattern) — **a shape §4's taxonomy
+  does not name.** Per the binding instruction, this is reported
+  rather than silently extended: `classify_target` does **not** grow
+  an `"arn"` member. An ARN has no netloc (`urlsplit` parses it as
+  `scheme="arn", netloc=""`), is not an IP, and is not
+  colon-single-port-shaped, so it falls into the `host` catch-all by
+  elimination — exactly where it already lived before this brief. Its
+  matching is unchanged: `_matches_generic_pattern` still does a plain
+  case-insensitive `fnmatch` of the pattern against the raw target
+  string, which is what let it match before and is confirmed still
+  matching now (`cybergym/cloud/` stays at 17 passed; the live-run
+  script's CLOUD_RESOURCE scoping is unaffected).
+- Bare test-fixture ids with no real-world shape (`s1`, `h1`, `cr:x`)
+  — never match any real pattern in production manifests; `host`
+  catch-all, harmless.
+
+No shape was found that needed escalation beyond "fold it into `host`
+and change nothing about how it already matched."
+
+**§8.2 — bundle id vs. hostname is not cleanly decidable.** Confirmed,
+not assumed: CyberGym's own real bundle id
+(`com.kronos.cybergym.lab`) contains nothing — no underscore, no
+unusual character — that a cheap, dependency-free syntactic check could
+use to rule out "this could be a hostname." **The honest answer is
+that it cannot be decided safely from the target string alone**, and
+this brief does not try — `classify_target` never returns `bundle_id`.
+The required `com.acme.*` behavior (§5.7) is achieved entirely on the
+pattern side instead (FORK-T above), which is decidable and does not
+risk ever authorizing a hostname by guesswork.
+
+**§8.4 — IPv6 forms.** All three named forms were probed directly, not
+assumed:
+- **Zone indices** (`fe80::1%eth0`): `ipaddress.ip_address` already
+  accepts these natively (Python 3.9+); no special handling was
+  needed and `test_8_4_zone_index_does_not_bypass_exclusion` confirms
+  a zoned target is still caught by a plain exclusion on the
+  zone-free form.
+- **IPv4-mapped** (`::ffff:10.0.0.5`): confirmed this is a **real,
+  silent F1-class bypass risk** if left alone —
+  `ipaddress.ip_address('::ffff:10.0.0.5') in ipaddress.ip_network('10.0.0.0/24')`
+  is `False` (different `ipaddress` types; the `in` operator does not
+  raise, it just silently returns `False`). Closed by
+  `_address_in_network`'s explicit `.ipv4_mapped` normalization, tried
+  in both directions; `test_8_4_ipv4_mapped_exclusion_is_not_a_bypass`
+  pins it.
+- **Compressed vs. expanded** (`2001:db8::1` vs.
+  `2001:0db8:...:0001`): not a bypass risk at all, because every
+  comparison in this module goes through `ipaddress.ip_address()`
+  first and compares the resulting objects, never the input strings —
+  the two literal forms produce an identical object.
+  `test_8_4_compressed_vs_expanded_ipv6_are_equivalent` pins it.
+
+**§8.5 — RESOLVED, not reopened.** Implemented as §1.1 rule 7 exactly
+(CIDR/bare-IP allow is port-blind); see the §5.5b matrix and the
+cross-shape pinning test above.
+
+**§8.6 — URL userinfo / host-confusion forms.** Probed directly:
+`urlsplit('https://api.acme.com@evil.net/x').hostname == 'evil.net'`
+(and `.username == 'api.acme.com'`) — confirmed. This is exactly what
+a real HTTP client connects to (the host following the last
+unescaped `@` in the authority, never the userinfo before it), so
+`urlsplit().hostname` agrees with reality here; no parser/client
+disagreement was found for any of the §5.6 userinfo rows.
+`test_5_6_no_transfer_via_userinfo_host_confusion_form` pins it.
+
+### F1–F8 — RED before / GREEN after (TDD, as the brief requires)
+
+A dedicated probe file reproduced every named finding against the
+**unmodified** `scope_guard.py` first; all eleven assertions (F1, F2,
+F3, F4, F5, F6, F6b, F6c, F7′, F7″, F8) failed for the expected reason
+(wrong boolean, not an error) before a single line of the matcher was
+touched. After the rewrite, the same eleven passed; they were then
+folded verbatim into `tests/test_scope_guard.py`'s permanent §5
+matrix (the scratch probe file was deleted once its job — proving the
+RED state — was done; the transcript lives here instead):
+
+| Finding | RED (before) | GREEN (after) |
+|---|---|---|
+| F1 (CIDR/32 exclusion vs. URL) | FAIL — `True`, expected `False` | PASS |
+| F2 (bare-IP exclusion vs. URL) | FAIL — `True`, expected `False` | PASS |
+| F3 (IPv6 CIDR exclusion vs. bracket:port) | FAIL — `True`, expected `False` | PASS |
+| F4 (`*acme.com*` via query string) | FAIL — `True`, expected `False` | PASS |
+| F5 (`com.acme.*` via multi-label suffix) | FAIL — `True`, expected `False` | PASS |
+| F6 (https subdomain, implicit standard port) | FAIL — `False`, expected `True` | PASS |
+| F6b (http subdomain, implicit standard port) | FAIL — `False`, expected `True` | PASS |
+| F6c (https subdomain, explicit standard port) | FAIL — `False`, expected `True` | PASS |
+| F7′ (bare host:443) | FAIL — `False`, expected `True` | PASS |
+| F7″ (bare host:80) | FAIL — `False`, expected `True` | PASS |
+| F8 (explicit port entry covers its URL form) | FAIL — `False`, expected `True` | PASS |
+
+### Guardrail confirmations
+
+1. `src/kronos/manifest.py` — **zero-line diff** (`git diff --stat
+   origin/main -- src/kronos/manifest.py` is empty). A manifest signed
+   before this brief still verifies — proven with a literal,
+   independently pre-captured signed-YAML fixture (signature included)
+   loaded through the unmodified `load_and_verify`
+   (`test_9_1_a_manifest_signed_before_this_brief_still_verifies`).
+2. Excluded-first, default-deny — unchanged control flow in
+   `ScopeGuard.is_in_scope`; no new branch returns allow before
+   exclusions are fully evaluated.
+3. Exclusions are evaluated against every equivalent representation —
+   `_address_candidates` extracts the IP literal out of every shape
+   (bare IP, bracketed IPv6, URL-embedded, `host:port`-embedded) before
+   an exclusion check ever runs; §5.1/§5.2's full matrix (plus the
+   §8.4 IPv4-mapped/zone/compressed rows) proves it.
+4. No §5 row marked DENY was loosened — every `(lock)` row in the
+   matrix below is asserted unchanged.
+5. `scope_key` is not touched — `graph.py` is a zero-line diff too (not
+   just `manifest.py`); the fix lives entirely in `scope_guard.py`.
+6. Stdlib only — `ipaddress`, `fnmatch`, `re`, `urllib.parse`; no new
+   dependency.
+7. `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` — untouched,
+   out of scope for this brief, confirmed by `graph.py`'s zero-line
+   diff.
+8. No existing test weakened or deleted. Three **pre-existing**
+   sentinel tests
+   (`tests/test_budget.py::test_scope_guard_still_has_zero_line_diff`,
+   `tests/test_cleanup.py::test_scope_guard_still_has_zero_line_diff`,
+   `tests/test_reconcile.py::test_scope_guard_has_zero_line_diff`)
+   hash-pin `scope_guard.py`'s exact bytes specifically so that an
+   **earlier** brief could prove it left FORK-2 alone — their own
+   comments say so verbatim ("FORK-2 ... stays open and is not this
+   brief's to resolve"). SPEC_BRIEF10's own guardrail 1 says this is
+   the brief where that streak **is meant to end**, so the three
+   hashes were re-pinned to `scope_guard.py`'s new content (one
+   constant each, logic and messages otherwise untouched) rather than
+   left to fail forever. This is flagged here explicitly rather than
+   silently folded in: none of those three files is in §3's "May
+   change" list, but leaving them failing was not an option either
+   (guardrail 8), and the only line that changed in each is the
+   expected hash plus a one-line note explaining why. Reviewer: if this
+   call is wrong, the fix is a one-line revert of each hash, not a
+   revisit of the matcher.
+
+### Not implemented / escalated
+
+Nothing in §5 was left unimplemented. The one judgment call beyond the
+literal matrix: **rule 6's "deny is broad" was also applied to an
+explicit `host:port` pattern used as an exclusion** (not directly
+tested by §5 — the only exclusion-with-explicit-port case in the
+matrix, §5.2's last row, uses a *bare*-hostname exclusion) — i.e. an
+excluded `"api.acme.com:8443"` denies `api.acme.com` at **any** port,
+not just 8443. This reads rule 6 ("an exclusion for a host excludes it
+on every port... This asymmetry is deliberate") literally rather than
+narrowly, consistent with "when in doubt, deny." Flagged for reviewer
+sign-off since it is this brief's one interpretation beyond a named
+row, not a guess outside §1.1's stated rules.
+
+### Suite totals
+
+- `tests/`: **550 passed, 1 skipped** (baseline 475/1; +75 net new —
+  83 in the expanded `test_scope_guard.py`, 8 of which were already
+  there, minus the 3 re-pinned sentinel lines counted as modified, not
+  new, in the diff stat).
+- `cybergym/cloud/`: **unchanged at 17 passed.**
+
+### Live-use gate (§6, verbatim, for issue #2)
+
+> KRONOS may be pointed at a live client target, or run in Beast mode,
+> only when all hold:
+> 1. This brief's PR is merged to `main` after reviewer diff approval.
+> 2. Every §5 case is green, including §5.1 in full.
+> 3. The live CyberGym run earns X-score 3/3, exit 0, at the merge
+>    commit on an unproxied host.
+> 4. `manifest.py` carries a zero-line diff, so previously signed
+>    manifests still verify.
+> 5. GitHub issue #2 is closed with a link to the merge commit, not
+>    closed as stale.
+>
+> Until all five hold, KRONOS stays confined to CyberGym and other
+> non-live engagements, and S3 does not start.
+
+Status at PR time: (1) not yet — PR open, unmerged, by design. (2) met
+— full §5 matrix green, including §5.1 in full. (3) **BLOCKED /
+INCOMPLETE** — this is a proxied cloud container; the live Docker build
+fails at PyPI with a self-signed-certificate TLS error identical to the
+one independently reproduced for Briefs #7 and #8 (environment
+limitation, not a code defect; no Dockerfile/requirements.txt edit was
+made to work around it). (4) met. (5) not yet — gated on (1) and (3).
+**None of this brief's hermetic-test totals are presented as
+satisfying criterion 3.**

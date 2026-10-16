@@ -461,13 +461,18 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # work began — SPEC_BRIEF4 guardrail 1 requires a ZERO-line diff on this
 # file. If this assertion ever fails, scope_guard.py was touched; FORK-2
 # (GitHub Aks2812/KRONOS#2) stays open and is not this brief's to resolve.
-_SCOPE_GUARD_SHA256 = "41e56781c2f05fa28b4071e616364223094804d8f6d99fe0985414787ae7bde0"
+#
+# Re-pinned by SPEC_BRIEF10, the dedicated FORK-2 brief: this is the one
+# brief chartered to end the zero-diff streak (its own guardrail 1 says
+# so explicitly), so the pin now protects the NEW matcher from further
+# undiscussed changes rather than protecting the old one.
+_SCOPE_GUARD_SHA256 = "affcf9df4c7cc0780abaed4a2bf453afacbc3c8a126f79acde2ca3bc7c6f32b5"
 
 
 def test_scope_guard_has_zero_line_diff():
     scope_guard_path = Path(kronos.__file__).parent / "scope_guard.py"
     digest = hashlib.sha256(scope_guard_path.read_bytes()).hexdigest()
-    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — FORK-2 must stay untouched (guardrail 1)"
+    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — re-pin or get sign-off (SPEC_BRIEF10 is FORK-2's resolution; it already re-pinned once)"
 
 
 def test_advance_secret_status_still_called_only_by_the_validation_runner():
