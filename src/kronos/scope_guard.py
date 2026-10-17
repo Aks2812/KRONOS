@@ -445,10 +445,11 @@ def _simple_trailing_host_glob_in_url_pattern(pattern: str) -> tuple[str, str] |
     §1.1 boundary rule as a bare `localhost*` entry, instead of the
     literal whole-string glob `_matches_url_pattern` uses for an
     explicit path glob. `rest` must carry no colon either: an entry
-    that already pins an explicit port before the star (e.g. an
-    existing `http://host:8091*`) is unambiguous as written and stays
-    on the literal whole-string path unchanged -- this helper only
-    ever claims the bare-host case Option A's port-widening is about."""
+    that already pins an explicit port before the star (e.g.
+    `http://host:8091*`) is handled separately, structurally, by
+    `_simple_explicit_port_host_glob_in_url_pattern` below -- this
+    helper only ever claims the bare-host case Option A's
+    port-widening is about."""
     scheme, sep, rest = pattern.partition("://")
     if not sep or not scheme:
         return None
@@ -457,6 +458,70 @@ def _simple_trailing_host_glob_in_url_pattern(pattern: str) -> tuple[str, str] |
     if rest.count("*") != 1 or not rest.endswith("*") or len(rest) <= 1:
         return None
     return scheme.lower(), rest[:-1]
+
+
+def _simple_explicit_port_host_glob_in_url_pattern(pattern: str) -> tuple[str, str, int] | None:
+    """`scheme://host:port*` and nothing else -- SPEC_BRIEF10.2's fix.
+    Brief #10.1 left this shape on `_matches_url_pattern`'s literal
+    whole-string path, which matches by raw character prefix: a target
+    with userinfo (`http://localhost:8091@evil.net/x` -- the real host
+    is `evil.net`), a lookalike suffix on the "port"
+    (`http://localhost:8091.attacker.net/x`,
+    `http://localhost:8091evil.net/x`), or simply a different numeric
+    port that happens to share the same leading digits
+    (`http://localhost:80915/x`) all shared that literal prefix and so
+    were all wrongly in scope.
+
+    Parsing mirrors `_host_port_pattern`'s own host:port split (reject
+    an empty host, reject a non-digit port) so this helper only ever
+    claims a pattern that is genuinely unambiguous as written; anything
+    else (more than one colon, a non-digit port, a path before the
+    star) falls through to the old literal path unchanged, never
+    raising."""
+    scheme, sep, rest = pattern.partition("://")
+    if not sep or not scheme:
+        return None
+    if "/" in rest or "?" in rest or "[" in rest:
+        return None
+    if rest.count("*") != 1 or not rest.endswith("*") or len(rest) <= 1:
+        return None
+    host_port = rest[:-1]
+    if host_port.count(":") != 1:
+        return None
+    host, _, port_str = host_port.rpartition(":")
+    if not host or not port_str.isdigit():
+        return None
+    return scheme.lower(), host.lower(), int(port_str)
+
+
+def _matches_explicit_port_url_pattern(
+    pattern_scheme: str,
+    pattern_host: str,
+    pattern_port: int,
+    target: str,
+    shape: TargetShape,
+    *,
+    is_exclusion: bool,
+) -> bool:
+    """SPEC_BRIEF10.2 §1: a `scheme://host:port*` pattern means that
+    scheme, that host, that EXACT port, any path/query/fragment --
+    compared structurally via `_host_port_scheme`'s
+    `urlsplit().hostname` (so userinfo resolves to the real host, H1a)
+    and `urlsplit().port` (so an unparseable "port" -- H1b/H1c/H1d --
+    is simply `None` and therefore never matches), never by raw string
+    prefix. Only a url-shaped target even has these three components to
+    compare; anything else can't possibly satisfy a pattern that names
+    all three. As an exclusion, rule 6 still wins: host-only,
+    port-blind AND scheme-blind -- the same breadth every other shape's
+    exclusion side already gets."""
+    if shape != "url":
+        return False
+    host, port, scheme = _host_port_scheme(target, shape)
+    if host != pattern_host:
+        return False
+    if is_exclusion:
+        return True
+    return scheme == pattern_scheme and port is not None and port == pattern_port
 
 
 def _matches_trailing_host_glob(
@@ -535,6 +600,12 @@ def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
         )
 
     if "://" in pattern:
+        simple_port_glob = _simple_explicit_port_host_glob_in_url_pattern(pattern)
+        if simple_port_glob is not None:
+            pattern_scheme, pattern_host, pattern_port = simple_port_glob
+            return _matches_explicit_port_url_pattern(
+                pattern_scheme, pattern_host, pattern_port, target, shape, is_exclusion=is_exclusion
+            )
         if not is_exclusion:
             simple_url_glob = _simple_trailing_host_glob_in_url_pattern(pattern)
             if simple_url_glob is not None:

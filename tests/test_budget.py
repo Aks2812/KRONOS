@@ -330,7 +330,12 @@ def test_config_fallback_reason_is_recorded_on_the_ledger_for_the_audit_trail(tm
 # Re-pinned again by SPEC_BRIEF10.1 (amends PR #12, pre-merge) after its
 # own deliberate, in-scope trailing-glob boundary-rule rewrite of
 # scope_guard.py; see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "e974da1f1af512859908eb2f3929166210497fe4c31d8fa30263e54ceb335080"
+#
+# Re-pinned again by SPEC_BRIEF10.2 (amends PR #12, pre-merge) after its
+# own deliberate, in-scope fix routing scheme://host:port* URL patterns
+# through a structural host/port comparison instead of raw-string
+# prefix matching; see tests/test_reconcile.py.
+_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
 
 
 def test_scope_guard_still_has_zero_line_diff():

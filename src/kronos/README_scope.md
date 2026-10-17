@@ -1,4 +1,4 @@
-# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule)
+# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns)
 
 `scope_guard.py` is the ONLY scope-authorization mechanism (SPEC.md
 "SCOPE GUARD"). Every node gets `in_scope` stamped on it at creation by
@@ -193,6 +193,51 @@ rule; a `bucket_name`/`arn`-shaped target keeps free glob expansion, as
 before this amendment. A bucket/ARN pattern can never authorize a
 hostname-shaped target as a result — its glob expansion is never even
 attempted against one.
+
+## SPEC_BRIEF10.2 — `scheme://host:port*` means exactly that host, that port
+
+A trailing `*` in a pattern that already names an explicit port
+(`http://localhost:8091*`, the shape CyberGym's own 8091/4566
+nonstandard ports made necessary) is **not** the same shape as the
+bare-host trailing glob in §1.2 above, and §10.1's build left it on
+`_matches_url_pattern`'s literal whole-string `fnmatch` — matching by
+raw character prefix, which an attacker can satisfy without ever
+owning `localhost`: a userinfo form
+(`http://localhost:8091@evil.net/x`, where `evil.net` is the real
+host), a lookalike "port" (`http://localhost:8091.attacker.net/x`,
+`http://localhost:8091evil.net/x`), or a different numeric port that
+merely shares the same leading digits (`http://localhost:80915/x`) all
+share that literal prefix.
+
+**The fix:** `scheme://host:port*` means that scheme, that host, that
+**exact** port, any path/query/fragment — compared structurally, never
+by raw string prefix:
+
+- The target's host comes from `urlsplit().hostname`, so userinfo
+  resolves to the real host — the same structural comparison
+  `_matches_explicit_port_pattern` already used for the non-URL
+  `host:port` pattern shape, routed through the identical
+  `_host_port_scheme` helper.
+- The port must equal the pattern's port exactly. A target whose
+  "port" fails to parse (`8091.attacker.net`, `8091evil.net`, or simply
+  out of range like `80915`) has no port at all under
+  `urlsplit().port` and therefore never matches.
+- The scheme must also match exactly (`https://` never satisfies an
+  `http://...*` entry).
+- Path, query and fragment stay unrestricted once scheme, host and
+  port all match (§1.1 rule 3 — scope is host-level).
+- **As an exclusion**, this pattern stays port-blind and scheme-blind
+  (§1.1 rule 6, deny is broad): `excluded = ["http://localhost:8091*"]`
+  still denies `http://localhost:9091/x` and `http://localhost/x`, not
+  only the exact-port form.
+
+**H2 — out of scope, deliberately.** The same brief that reported this
+also measured that every single-label bare hostname (`localhost`,
+`kronos-cybergym-general-secrets`) gets `classify_target`'s
+`bucket_name` shape, which is a separate, broader defect needing
+`graph.py` in its file allowlist. SPEC_BRIEF10.2 fixes the
+explicit-port URL pattern shape only; H2 has its own, not-yet-written
+brief, and **FORK-2/issue #2 stays open** until it also closes.
 
 ## FORK-U — a pattern with wildcards at both ends
 

@@ -470,7 +470,12 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # Re-pinned again by SPEC_BRIEF10.1 (amends PR #12, pre-merge): its own
 # deliberate, in-scope trailing-glob boundary-rule fix to scope_guard.py
 # (classify_target's new arn/bucket_name shapes, the §1.1 boundary rule).
-_SCOPE_GUARD_SHA256 = "e974da1f1af512859908eb2f3929166210497fe4c31d8fa30263e54ceb335080"
+#
+# Re-pinned again by SPEC_BRIEF10.2 (amends PR #12, pre-merge): its own
+# deliberate, in-scope fix routing scheme://host:port* URL patterns
+# through a structural host/port comparison instead of raw-string
+# prefix matching.
+_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
 
 
 def test_scope_guard_has_zero_line_diff():

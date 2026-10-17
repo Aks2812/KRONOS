@@ -2217,3 +2217,97 @@ own §5 (G1-G6, §5.2-§5.7) is green in full; the live CyberGym run on
 this local, unproxied Kali host earned the required X-score (reported
 separately in the PR); `manifest.py` zero-line diff holds; issue #2
 stays open pending merge + reviewer sign-off.
+
+## Brief #10.2 (amends PR #12, pre-merge) — explicit-port URL patterns
+
+### Why
+
+Brief #10.1's `_simple_trailing_host_glob_in_url_pattern` deliberately
+excluded any pattern whose host part carried a colon (an explicit
+port), leaving `scheme://host:port*` (e.g. CyberGym's own
+`http://localhost:8091*`-shaped operator habit) on
+`_matches_url_pattern`'s literal whole-string `fnmatch` — matching by
+raw character prefix. Measured on `d0e5232` with
+`in_scope = ['http://localhost:8091*']`, four targets were wrongly in
+scope:
+
+| # | target | real host | why the literal prefix matched |
+|---|---|---|---|
+| H1a | `http://localhost:8091@evil.net/x` | `evil.net` | `localhost:8091` is userinfo, not host |
+| H1b | `http://localhost:8091.attacker.net/x` | `localhost` | the "port" is `8091.attacker.net` |
+| H1c | `http://localhost:80915/x` | `localhost` | port 80915, not 8091 — shares the leading digits |
+| H1d | `http://localhost:8091evil.net/x` | `localhost` | the "port" is `8091evil.net` |
+
+Blast radius was measured and found contained: CyberGym's signed
+manifest uses `http://localhost*`/`http://127.0.0.1*` with no port
+(already boundary-rule-protected by Brief #10.1), so the live X-score
+was never at risk — this was a latent defect in a pattern shape
+operators and the test suite both write, not a break of the range.
+
+### The fix
+
+A `scheme://host:port*` pattern means that scheme, that host, that
+**exact** port, any path/query/fragment — compared structurally,
+never by raw string prefix. `_matches_explicit_port_pattern` (Brief
+#10) already did exactly this structured comparison for the non-URL
+`host:port` pattern shape, via `_host_port_scheme`'s
+`urlsplit().hostname` (resolves userinfo to the real host) and
+`urlsplit().port` (an unparseable "port" string raises `ValueError`,
+caught and treated as no port at all — never a match). The fix adds
+`_simple_explicit_port_host_glob_in_url_pattern` (detects the pattern
+shape, mirroring `_host_port_pattern`'s own parsing) and
+`_matches_explicit_port_url_pattern` (the comparison itself, adding a
+scheme check `_matches_explicit_port_pattern` didn't need since that
+function never saw a scheme at all), and routes `scheme://host:port*`
+through it on **both** the allow and the exclusion side — unlike
+Brief #10.1's bare-trailing-star case, the exclusion side needed
+fixing too: the old literal-fnmatch exclusion path required an exact
+port match even to deny, which is backwards (§1.1 rule 6: deny is
+broad, port-blind). The new exclusion comparison is host-only,
+ignoring port and scheme entirely.
+
+**Verified, not assumed** (per the brief's own instruction): the nine
+pre-existing tests using `http://localhost:8091*`
+(`tests/test_negative_controls.py` ×2, `tests/test_validate_candidates.py`
+×1, `tests/test_validate_runner.py` ×6) all target exactly
+`http://localhost:8091` or a path under it — host/port/scheme all
+match the pattern exactly — and all nine pass completely unmodified.
+
+### H2 — explicitly out of scope
+
+The dot-free-host `bucket_name` classification (every single-label
+hostname, not only a genuine bucket name, gets free-glob semantics —
+SPEC_BRIEF10.1's own `classify_target` change) is a separate, broader
+defect that needs `graph.py` in its file allowlist to fix properly and
+was not attempted here. **FORK-2 remains incomplete and GitHub issue
+#2 stays open** until H2's own brief also lands.
+
+### Files changed
+
+Exactly SPEC_BRIEF10.2 §4's permitted list: `src/kronos/scope_guard.py`,
+`tests/test_scope_guard.py`, `src/kronos/README_scope.md`,
+`DECISIONS.md` (this entry), and the three `_SCOPE_GUARD_SHA256`
+re-pins (constant + comment only, guards/messages intact) in
+`tests/test_budget.py`, `tests/test_cleanup.py`,
+`tests/test_reconcile.py`. `manifest.py`: zero-line diff. `cybergym/`:
+zero-line diff. `graph.py`, `lifecycle.py`, `schema.py`, `validate/`,
+`reconcile/`, `ingest/`, `budget/`, `cleanup/`, `events.py`: all
+zero-diff (confirmed via `git diff`).
+
+### Totals
+
+- `tests/`: **620 passed, 1 skipped** (branch baseline 591/1 + 29 net
+  new in `test_scope_guard.py`).
+- `cybergym/cloud/`: **unchanged at 17 passed.**
+- The nine pre-existing explicit-port tests: unmodified, all pass.
+
+### Live-use gate (§6, unchanged, restated)
+
+Same five conditions as Brief #10/#10.1's entries, now reading "PR #12
+(including this amendment)" for condition 1. Status at push time: PR
+#12 remains open and unmerged by design; G1-G6 and every Brief
+#10/#10.1 matrix section stay green; the live CyberGym run on this
+local, unproxied Kali host earned the required X-score (reported
+separately in the PR); `manifest.py` zero-line diff holds; issue #2
+stays open — not only pending merge, but explicitly because H2 has not
+yet closed.

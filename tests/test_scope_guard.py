@@ -691,3 +691,134 @@ def test_b101_fork_u_both_ends_wildcard_is_not_a_host_pattern():
 # --- §5.7 structural/robustness — carried forward from SPEC_BRIEF10 §5.8
 # unchanged (see test_5_8_* above); re-run as part of the full suite, not
 # duplicated here.
+
+
+# =============================================================================
+# SPEC_BRIEF10.2 (amends PR #12) — explicit-port URL patterns must obey the
+# structural host/port comparison, not raw-string prefix. Prefixed
+# test_b102_ to avoid colliding with SPEC_BRIEF10/10.1's own §-numbered names
+# above, which number different documents.
+# =============================================================================
+
+
+# --- H1a-H1d — measured against d0e5232 (RED before this brief's fix, GREEN
+# after). in_scope = ['http://localhost:8091*'] for every H1 case.
+
+
+def test_b102_h1a_userinfo_resolves_to_the_real_host():
+    m = _m(["http://localhost:8091*"], [])
+    assert scope_guard("http://localhost:8091@evil.net/x", m) is False
+
+
+def test_b102_h1b_lookalike_suffix_on_the_port_is_not_a_port():
+    m = _m(["http://localhost:8091*"], [])
+    assert scope_guard("http://localhost:8091.attacker.net/x", m) is False
+
+
+def test_b102_h1c_different_numeric_port_sharing_a_prefix_is_not_the_same_port():
+    m = _m(["http://localhost:8091*"], [])
+    assert scope_guard("http://localhost:80915/x", m) is False
+
+
+def test_b102_h1d_trailing_garbage_on_the_port_is_not_a_port():
+    m = _m(["http://localhost:8091*"], [])
+    assert scope_guard("http://localhost:8091evil.net/x", m) is False
+
+
+# --- §2 — the whole specification, both tables, as parametrized matrices.
+
+
+@pytest.mark.parametrize(
+    "target,expected",
+    [
+        ("http://localhost:8091/internal/v1/export", True),  # lock — chain 1
+        ("http://localhost:8091/health", True),  # lock
+        ("http://localhost:8091/x?q=1#f", True),  # path/query/fragment unrestricted
+        ("http://localhost:8091", True),  # bare, port matches
+        ("http://localhost:8091@evil.net/x", False),  # H1a
+        ("http://localhost:8091.attacker.net/x", False),  # H1b
+        ("http://localhost:80915/x", False),  # H1c
+        ("http://localhost:8091evil.net/x", False),  # H1d
+        ("http://localhost:9091/x", False),  # different port
+        ("http://localhost/x", False),  # a port entry does not authorize the portless form
+        ("https://localhost:8091/x", False),  # scheme must match
+        ("http://127.0.0.1:8091/x", False),  # different host
+    ],
+)
+def test_b102_section2_allow_table(target, expected):
+    assert scope_guard(target, _m(["http://localhost:8091*"], [])) is expected
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "http://localhost:8091/x",
+        "http://localhost:9091/x",  # exclusions are port-blind (rule 6)
+        "http://localhost/x",  # exclusions are representation-blind
+    ],
+)
+def test_b102_section2_exclusion_table(target):
+    assert scope_guard(target, _m(["*"], ["http://localhost:8091*"])) is False
+
+
+# --- The nine pre-existing tests using http://localhost:8091* (listed in the
+# brief: tests/test_negative_controls.py (2), tests/test_validate_candidates.py
+# (1), tests/test_validate_runner.py (6)) are NOT duplicated or modified here
+# — this brief's acceptance criteria require them to pass completely
+# unmodified, verified by running the full suite (see report).
+
+
+# --- G1-G6 re-run (SPEC_BRIEF10.1) — must still all DENY.
+
+
+def test_b102_g1_still_denies():
+    m = _m(["api.acme.com*"], [])
+    assert scope_guard("api.acme.com.attacker.net", m) is False
+    assert scope_guard("https://api.acme.com.attacker.net/x", m) is False
+
+
+def test_b102_g2_still_denies():
+    m = _m(["api.acme.com*"], [])
+    assert scope_guard("api.acme.com-evil.net", m) is False
+    assert scope_guard("api.acme.comevil.net", m) is False
+
+
+def test_b102_g3_still_denies():
+    m = _m(["localhost*"], [])
+    assert scope_guard("localhost.attacker.net", m) is False
+    assert scope_guard("localhosted.attacker.net", m) is False
+
+
+def test_b102_g4_still_denies():
+    assert scope_guard("127.0.0.1.attacker.net", _m(["127.0.0.1*"], [])) is False
+
+
+def test_b102_g5_still_denies():
+    assert scope_guard("http://localhost.attacker.net/x", _m(["http://localhost*"], [])) is False
+
+
+def test_b102_g6_still_denies():
+    m = _m(["kronos-cybergym-*"], [])
+    assert scope_guard("kronos-cybergym-x.attacker.net", m) is False
+    assert scope_guard("kronos-cybergym-x.attacker.net", _m(["arn:aws:s3:::kronos-cybergym-*"], [])) is False
+
+
+# --- Robustness: a malformed explicit-port-glob pattern must stay a boolean,
+# never raise, and never ALLOW a target whose real host differs from the
+# pattern's.
+
+
+@pytest.mark.parametrize(
+    "pattern",
+    [
+        "http://localhost:*",
+        "http://:8091*",
+        "http://localhost:abc*",
+        "http://localhost:8091:9091*",
+    ],
+)
+def test_b102_robustness_malformed_explicit_port_glob_pattern(pattern):
+    m = _m([pattern], [])
+    assert scope_guard("http://localhost:8091/x", m) in (True, False)
+    assert scope_guard("http://evil.net:8091/x", m) is False
+    assert scope_guard("http://localhost:9091/x", m) in (True, False)
