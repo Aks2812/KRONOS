@@ -475,3 +475,219 @@ def test_9_1_a_manifest_signed_before_this_brief_still_verifies():
     assert scope_guard("secret.acme.com", manifest) is False  # excluded wins
     assert scope_guard("10.0.5.10:8443", manifest) is True  # CIDR, port-blind
     assert scope_guard("api.acme.com:8443", manifest) is False  # nonstandard port, no entry
+
+
+# =============================================================================
+# SPEC_BRIEF10.1 (amends PR #12, pre-merge) — the trailing-glob boundary rule.
+# Everything above this line (SPEC_BRIEF10's own §5.1-§9.1) is unmodified.
+# These tests are prefixed test_b101_ to avoid colliding with SPEC_BRIEF10's
+# own §-numbered names above, which number a different document.
+# =============================================================================
+
+from kronos.scope_guard import classify_target  # noqa: E402
+
+
+# --- G1-G6 — measured against PR #12 @ fa6285f (RED before this brief's fix,
+# GREEN after). See SPEC_BRIEF10.1.md §0/§5.1.
+
+
+def test_b101_g1_trailing_glob_does_not_cross_a_dns_label():
+    m = _m(["api.acme.com*"], [])
+    assert scope_guard("api.acme.com.attacker.net", m) is False
+    assert scope_guard("https://api.acme.com.attacker.net/x", m) is False
+
+
+def test_b101_g2_trailing_glob_does_not_expand_mid_label():
+    m = _m(["api.acme.com*"], [])
+    assert scope_guard("api.acme.com-evil.net", m) is False
+    assert scope_guard("api.acme.comevil.net", m) is False  # mid-label, no separator at all
+
+
+def test_b101_g3_localhost_trailing_glob_does_not_cross_a_dns_label():
+    m = _m(["localhost*"], [])
+    assert scope_guard("localhost.attacker.net", m) is False
+    assert scope_guard("localhosted.attacker.net", m) is False  # mid-label
+
+
+def test_b101_g4_ip_trailing_glob_does_not_cross_a_dns_label():
+    m = _m(["127.0.0.1*"], [])
+    assert scope_guard("127.0.0.1.attacker.net", m) is False
+
+
+def test_b101_g5_url_pattern_trailing_host_glob_does_not_cross_a_dns_label():
+    m = _m(["http://localhost*"], [])
+    assert scope_guard("http://localhost.attacker.net/x", m) is False
+
+
+def test_b101_g6_bucket_glob_pattern_never_authorizes_a_hostname_shaped_target():
+    m = _m(["kronos-cybergym-*"], [])
+    assert scope_guard("kronos-cybergym-x.attacker.net", m) is False
+    # and an ARN-shaped version of the same pattern/target pairing:
+    assert scope_guard("kronos-cybergym-x.attacker.net", _m(["arn:aws:s3:::kronos-cybergym-*"], [])) is False
+
+
+# --- §5.2 — trailing-glob port semantics (§1.2 Option A). Rows 3 and 6 are
+# pinned together in one test per the brief: "the host* vs host distinction
+# cannot be flattened later."
+
+
+def test_b101_5_2_trailing_glob_locks():
+    m = _m(["api.acme.com*"], [])
+    assert scope_guard("api.acme.com", m) is True
+    assert scope_guard("api.acme.com:443", m) is True
+    assert scope_guard("https://api.acme.com:8443/x", m) is True
+
+
+def test_b101_5_2_trailing_glob_grants_all_ports_bare_host_does_not():
+    assert scope_guard("api.acme.com:8443", _m(["api.acme.com*"], [])) is True  # row 3
+    assert scope_guard("api.acme.com:22", _m(["api.acme.com*"], [])) is True  # documented consequence
+    assert scope_guard("api.acme.com:8443", _m(["api.acme.com"], [])) is False  # row 6
+    assert scope_guard("api.acme.com:8443", _m(["*.acme.com"], [])) is False  # row 7
+
+
+# --- §5.3 — CyberGym's real manifest, as a permanent regression test. The
+# in_scope list below is a literal copy of cybergym/generate_scope_manifest.py's
+# MANIFEST_DICT["scope"]["in_scope"] (not imported — that file stays
+# untouched and off-limits). If that list is ever edited, this copy must be
+# updated by hand so it keeps proving the real range, not a stale one.
+
+_CYBERGYM_IN_SCOPE = [
+    "com.kronos.cybergym.*",
+    "localhost*",
+    "127.0.0.1*",
+    "http://localhost*",
+    "http://127.0.0.1*",
+    "kronos-cybergym-*",
+    "arn:aws:s3:::kronos-cybergym-*",
+]
+
+
+@pytest.mark.parametrize(
+    "target,expected",
+    [
+        ("http://localhost:8091/internal/v1/export", True),  # chain 1 — a DENY here means X-score 0/3
+        ("http://localhost:8091/health", True),  # S1's abstention arm
+        ("http://127.0.0.1:8091/internal/v1/export", True),
+        ("localhost:4566", True),  # LocalStack
+        ("127.0.0.1:4566", True),
+        ("localhost", True),
+        ("kronos-cybergym-general-secrets", True),  # bucket, mid-label expansion
+        ("kronos-cybergym-admin-secrets", True),
+        ("arn:aws:s3:::kronos-cybergym-admin-secrets", True),
+        ("localhost.attacker.net", False),
+        ("127.0.0.1.attacker.net", False),
+        ("kronos-cybergym-x.attacker.net", False),
+        ("http://localhost.attacker.net:8091/x", False),
+    ],
+)
+def test_b101_5_3_cybergym_real_manifest_matrix(target, expected):
+    assert scope_guard(target, _m(_CYBERGYM_IN_SCOPE, [])) is expected
+
+
+def test_b101_5_3_cybergym_chain_1_target_explicitly():
+    """Called out per the brief: this single row IS the live X-score."""
+    assert scope_guard("http://localhost:8091/internal/v1/export", _m(_CYBERGYM_IN_SCOPE, [])) is True
+
+
+# --- §5.4 — exclusion precedence across equivalent representations. Deny
+# stays broad/port-blind/boundary-rule-free; the boundary rule is allow-only.
+# Each row is checked twice: WITH the exclusion (must DENY) and with the
+# exclusion removed (must ALLOW), proving the deny came from the exclusion.
+
+
+@pytest.mark.parametrize(
+    "in_scope,excluded,target",
+    [
+        (["api.acme.com*"], "api.acme.com", "api.acme.com:8443"),
+        (["api.acme.com*"], "api.acme.com", "https://api.acme.com/x"),
+        (["localhost*"], "localhost", "localhost:4566"),
+        (["kronos-cybergym-*"], "kronos-cybergym-admin-secrets", "kronos-cybergym-admin-secrets"),
+        (
+            ["arn:aws:s3:::kronos-cybergym-*"],
+            "arn:aws:s3:::kronos-cybergym-admin-secrets",
+            "arn:aws:s3:::kronos-cybergym-admin-secrets",
+        ),
+    ],
+)
+def test_b101_5_4_exclusion_precedence_attributed_to_exclusion(in_scope, excluded, target):
+    assert scope_guard(target, _m(in_scope, [excluded])) is False
+    assert scope_guard(target, _m(in_scope, [])) is True  # same target, exclusion removed -> allow
+
+
+def test_b101_5_4_f1_un_regressed():
+    assert scope_guard("https://10.0.0.5/admin", _m(["*"], ["10.0.0.5/32"])) is False
+
+
+def test_b101_5_4_f3_un_regressed():
+    assert scope_guard("[2001:db8::1]:443", _m(["*"], ["2001:db8::1/128"])) is False
+
+
+# --- §5.6 — every caller shape reaching ScopeGuard, as a permanent test.
+# `graph.py:140` (`self.scope.is_in_scope(scope_key or id)`) is the only
+# call site in the tree (grep-verified against this branch head). The
+# target string it receives depends on node type:
+#
+#   HOST            — the hostname/IP text itself (canonical.py's own
+#                      documented convention) -> "host" or "ip".
+#   MOBILE_APP       — the bundle id (dotted) -> "host" (§8.2/FORK-T:
+#                      indistinguishable from a hostname by design).
+#   SECRET           — scope_key=bundle_id, always, in every real ingester
+#                      path (ingest/__init__.py, ingest/mobile/parser.py) ->
+#                      same as MOBILE_APP, "host". The SECRET's own id
+#                      (a sha256-derived token) is never the scope target.
+#   API_ENDPOINT     — id=found.url, a full URL (ingest/mobile/parser.py:276)
+#                      -> "url".
+#   WEB_ENDPOINT     — no production ingester yet; same URL convention as
+#                      API_ENDPOINT (SPEC_BRIEF9 §4.1) -> "url".
+#   SERVICE          — no production ingester yet; SPEC.md's host:port dedup
+#                      convention -> "host_port" or "ip_port".
+#   PARAMETER        — no production ingester yet; compound raw id
+#                      (e.g. "param:<parent>:<name>:<type>") has multiple
+#                      colons, no scheme, and typically embeds a dotted
+#                      parent -> falls through to "host" (opaque, never
+#                      meaningfully glob-targeted by a host pattern).
+#   FINDING          — no production ingester yet; an opaque id with no
+#                      dot (hash/uuid-shaped) -> "bucket_name" — accepted:
+#                      this is exactly its pre-SPEC_BRIEF10.1 (and
+#                      pre-SPEC_BRIEF10) free-glob behavior, unchanged,
+#                      since no legitimate pattern is ever written to
+#                      host-boundary-match a FINDING id.
+#   CLOUD_RESOURCE   — a bucket name or an ARN (validate/candidates.py's
+#                      `_all_cloud_resources`) -> "bucket_name" or "arn".
+#
+# No shape appears here outside classify_target's taxonomy.
+
+
+@pytest.mark.parametrize(
+    "target,expected_shape,in_scope_pattern,expected_verdict",
+    [
+        ("api.acme.com", "host", "*.acme.com", True),  # HOST, dotted
+        ("10.0.0.5", "ip", "10.0.0.0/24", True),  # HOST, bare IP
+        ("com.kronos.demo", "host", "com.kronos.*", True),  # MOBILE_APP / SECRET scope_key
+        ("https://api.acme.com/v1/x", "url", "api.acme.com*", True),  # API_ENDPOINT / WEB_ENDPOINT
+        ("api.acme.com:8443", "host_port", "api.acme.com*", True),  # SERVICE, host:port
+        ("10.0.5.10:443", "ip_port", "10.0.5.0/24", True),  # SERVICE, ip:port
+        ("param:api.acme.com:id:query", "host", "api.acme.com*", False),  # PARAMETER, opaque compound
+        ("finding:9f1c2b3a4d5e6f70", "bucket_name", "finding:*", True),  # FINDING, opaque dot-free
+        ("kronos-cybergym-admin-secrets", "bucket_name", "kronos-cybergym-*", True),  # CLOUD_RESOURCE
+        ("arn:aws:s3:::kronos-cybergym-admin-secrets", "arn", "arn:aws:s3:::kronos-cybergym-*", True),
+    ],
+)
+def test_b101_5_6_caller_shape_enumeration(target, expected_shape, in_scope_pattern, expected_verdict):
+    assert classify_target(target) == expected_shape
+    assert scope_guard(target, _m([in_scope_pattern], [])) is expected_verdict
+
+
+# --- FORK-U — a pattern with wildcards at both ends. DEFAULT: (1), PR #12's
+# current verdict unchanged — such a pattern is NOT treated as a host
+# pattern for trailing-glob purposes, so it keeps denying a nonstandard port
+# rather than being harmonized with §1.2's "any port" rule.
+
+
+def test_b101_fork_u_both_ends_wildcard_is_not_a_host_pattern():
+    assert scope_guard("api.acme.com:8443", _m(["*.acme.com*"], [])) is False
+
+
+# --- §5.7 structural/robustness — carried forward from SPEC_BRIEF10 §5.8
+# unchanged (see test_5_8_* above); re-run as part of the full suite, not
+# duplicated here.

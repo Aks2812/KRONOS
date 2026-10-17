@@ -1,4 +1,4 @@
-# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching)
+# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule)
 
 `scope_guard.py` is the ONLY scope-authorization mechanism (SPEC.md
 "SCOPE GUARD"). Every node gets `in_scope` stamped on it at creation by
@@ -25,30 +25,43 @@ plain strings forever; all the new intelligence is in how a string is
 ## The taxonomy (`classify_target`)
 
 ```
-TargetShape = "url" | "ip" | "ip_port" | "host" | "host_port" | "bundle_id" | "unknown"
+TargetShape = "url" | "ip" | "ip_port" | "host" | "host_port"
+            | "bundle_id" | "arn" | "bucket_name" | "unknown"
 ```
 
 Detection order (each step rules out every later one):
 
 1. Empty/whitespace-only → `unknown`.
-2. `[addr]` or `[addr]:port`, `addr` a valid IP literal (zone indices
+2. Starts with the literal `"arn:"` → `arn` (SPEC_BRIEF10.1 §1.3).
+   Unambiguous — no hostname, IP, or bundle id is ever spelled this
+   way — checked before any of the shapes below are even attempted.
+3. `[addr]` or `[addr]:port`, `addr` a valid IP literal (zone indices
    and IPv4-mapped forms included — `ipaddress` accepts both natively)
    → `ip_port` if a port follows, else `ip`.
-3. Exactly one `:`, left side alone a valid IP, right side all digits
+4. Exactly one `:`, left side alone a valid IP, right side all digits
    → `ip_port` (the `"ip:port"` node-id shape SPEC.md's own dedup
    convention produces; never fires for a bare IPv6 literal, which has
    more than one colon).
-4. The whole string parses directly as an IP address → `ip`.
-5. `urlsplit()` gives an `http`/`https` scheme with a non-empty
+5. The whole string parses directly as an IP address → `ip`.
+6. `urlsplit()` gives an `http`/`https` scheme with a non-empty
    `netloc` → `url`. (A string like `"api.acme.com:443"` is *not*
    mistaken for a URL here — `urlsplit` happily treats `"api.acme.com"`
    as a bogus scheme, which the explicit `scheme in ("http", "https")`
    check rejects.)
-6. Exactly one `:`, right side all digits (the left side is never an IP
+7. Exactly one `:`, right side all digits (the left side is never an IP
    by this point) → `host_port`.
-7. Contains `"://"` but `urlsplit` found no netloc (`"http://"`,
+8. Contains `"://"` but `urlsplit` found no netloc (`"http://"`,
    `"://"`) → `unknown`.
-8. Anything else → `host`.
+9. No `"."` at all → `bucket_name` (SPEC_BRIEF10.1 §1.3). The one shape
+   this module can tell apart from a multi-label hostname/lookalike
+   domain by the string alone: every lookalike this module denies
+   introduces its new label with a literal `.` (an attacker always
+   registers `<something>.attacker.net`), so "no dot anywhere" is a
+   safe, conservative signal that a trailing-glob pattern may keep
+   expanding freely against this target — it only ever *relaxes*
+   matching back to the module's pre-SPEC_BRIEF10.1 behavior, never
+   narrows an existing allow or exclusion.
+10. Anything else → `host`.
 
 `classify_target` never returns `bundle_id`, even though it stays in
 the taxonomy. See **FORK-T** below for why.
@@ -133,6 +146,66 @@ match it always used. This is a deliberate, narrower implementation of
 option (1) than "classify the target as bundle_id" — it reaches the
 exact same acceptance-matrix outcomes without ever guessing whether a
 given string "really" is a bundle id.
+
+## SPEC_BRIEF10.1 — the trailing-glob boundary rule
+
+PR #12 (the section above) still matched a trailing `*` on a
+host-shaped pattern by raw character prefix: `api.acme.com*` matched
+`api.acme.com.attacker.net` and `api.acme.com-evil.net` alike — an
+attacker-registerable domain, authorized by a pattern the operator
+wrote thinking it meant "this one host." This is the one pattern
+shape CyberGym's own signed manifest actually uses
+(`localhost*`/`127.0.0.1*`/`http://localhost*`, to cover its
+nonstandard 8091/4566 ports with no manifest edit), so it's the shape
+most likely to be written by a real operator too.
+
+**§1.1 — the boundary rule (operator-ratified, governing).** A
+trailing `*` on a hostname/URL/IP-shaped target expands only at a
+delimiter boundary: `:` (port), `/` (path), or end-of-string. It
+never expands across a `.` into another DNS label, and never
+mid-label. `api.acme.com*` covers `api.acme.com`,
+`api.acme.com:<port>`, `https://api.acme.com/...`, and
+`https://api.acme.com:<port>/...` — and nothing else.
+
+**§1.2 — port semantics, Option A (operator-ratified DEFAULT).** A
+trailing `*` after a complete host means *"this host, any port, any
+path"* — deliberately wider than a bare host entry (rule 2 above,
+standard ports only). The operator gets all-ports authorization by
+typing `*`, never by accident, and the widening is bounded to that one
+host by the boundary rule. **This is the documented meaning of a
+trailing `*`:** writing `api.acme.com*` also authorizes `:22`, `:3389`,
+`:5432` on that host — a real widening, taken on purpose so CyberGym's
+own in-scope entries keep working with zero manifest edits. A bare
+`api.acme.com` (no trailing `*`) still denies `:8443`, unchanged.
+
+Option B (a trailing `*` is standard-port-only too, like a bare host)
+was rejected: it breaks CyberGym's range (`localhost*` would stop
+matching `:8091`), and recovering it needs `generate_scope_manifest.py`
+edited and the manifest re-signed — both off-limits here.
+
+**§1.3 — buckets and ARNs stay distinct from hostnames.**
+`kronos-cybergym-*` must keep matching
+`kronos-cybergym-general-secrets` — mid-label expansion, correct for a
+bucket name, forbidden for a hostname. The boundary rule is therefore
+selected by the *target's* shape (`classify_target`), never the
+pattern's text: a hostname/URL/IP-shaped target gets §1.1's boundary
+rule; a `bucket_name`/`arn`-shaped target keeps free glob expansion, as
+before this amendment. A bucket/ARN pattern can never authorize a
+hostname-shaped target as a result — its glob expansion is never even
+attempted against one.
+
+## FORK-U — a pattern with wildcards at both ends
+
+`*.acme.com*` (leading subdomain wildcard AND a trailing one).
+**DEFAULT (1) taken, unchanged:** PR #12's existing verdict is pinned
+as-is — it already denies `api.acme.com:8443` (the `*.`-prefix path
+checks for a literal trailing `*` in the hostname, which never occurs
+in a real target, so it always falls through to deny) — and such a
+pattern is **not** treated as a host pattern for trailing-glob
+purposes; §1.2's "any port" rule does not apply to it. Option (2),
+harmonizing it with §1.2 so it behaves like `api.acme.com*`, was
+rejected: it is a widening with no demonstrated need, and widening is
+the dangerous direction here.
 
 ## Exclusion vs. allow: the one asymmetry that must never be unified
 

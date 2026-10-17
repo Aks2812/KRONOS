@@ -2089,3 +2089,131 @@ limitation, not a code defect; no Dockerfile/requirements.txt edit was
 made to work around it). (4) met. (5) not yet — gated on (1) and (3).
 **None of this brief's hermetic-test totals are presented as
 satisfying criterion 3.**
+
+## Brief #10.1 (amends PR #12, pre-merge) — trailing-glob boundary rule
+
+### Why
+
+Reviewer probing of PR #12 (Brief #10) at branch head `fa6285f` found
+that a trailing `*` on a host-shaped pattern (`api.acme.com*`,
+`localhost*`, a `host*` inside a literal URL pattern) was still matched
+by raw character prefix: `api.acme.com*` authorized the
+attacker-registerable `api.acme.com.attacker.net`. This is the one
+pattern shape CyberGym's own signed manifest actually uses
+(`localhost*`/`127.0.0.1*`/`http://localhost*`, to cover its
+nonstandard 8091/4566 ports without a manifest edit) — the shape most
+likely to be hand-written by a real operator too — and the live gate
+would **not** have caught it: running PR #12's matcher against
+CyberGym's real `in_scope` list, all nine range targets passed, so
+X-score would have held at 3/3 while the leak sat in the exact path
+the range depends on. SPEC_BRIEF10's own §5 matrix never covered a
+*trailing* glob, so this was a gap in the brief as much as in the
+code.
+
+### §1.1 — the boundary rule (operator-ratified, governing; verbatim)
+
+> A trailing `*` on a host-shaped pattern expands only at a delimiter
+> boundary. The permitted boundaries are `:` (port), `/` (path), and
+> end-of-string. It must never expand across a `.` into another DNS
+> label, and never mid-label. So `api.acme.com*` covers `api.acme.com`,
+> `api.acme.com:<port>`, `https://api.acme.com/...` and
+> `https://api.acme.com:<port>/...` — and nothing else.
+> `api.acme.com.attacker.net` crosses a label; `api.acme.com-evil.net`
+> expands mid-label. Both deny.
+
+### §1.2 — port semantics (Option A, operator-ratified DEFAULT)
+
+**The conflict.** `api.acme.com*` (and `localhost*`) must admit
+nonstandard ports — CyberGym's API is on 8091, LocalStack on 4566 —
+while SPEC_BRIEF10 §1.1 rule 4 says a *bare* hostname entry authorizes
+standard ports only. Both cannot be true of the same pattern unless
+the trailing `*` itself carries meaning.
+
+**Option A (taken):** a trailing `*` after a complete host means "this
+host, any port, any path." Preserves every CyberGym target with no
+manifest edit and no re-signing; makes all-ports authorization an
+explicit operator act (you get it by typing `*`, never by accident);
+bounded by §1.1 to one host's ports, never another host's. Cost: an
+operator writing `api.acme.com*` meaning "the website" also authorizes
+`:22`/`:3389`/`:5432` — a real, now-documented widening
+(`README_scope.md`).
+
+**Option B (rejected):** a trailing `*` stays standard-port-only too,
+like a bare host. Tighter, but breaks the range —
+`localhost*`/`127.0.0.1*` stop matching `:8091`/`:4566`, X-score falls
+to 0/3, and recovering it needs `generate_scope_manifest.py` edited and
+the manifest re-signed, both off-limits in this brief's §3 file list
+anyway.
+
+### §1.3 — buckets and ARNs stay distinct from hostnames
+
+`kronos-cybergym-*` must keep matching
+`kronos-cybergym-general-secrets` (mid-label expansion — correct for a
+bucket name, forbidden for a hostname) while `kronos-cybergym-*` must
+never authorize `kronos-cybergym-x.attacker.net` (G6). Resolved by
+selecting the boundary rule on the **target's** shape
+(`classify_target`), never the pattern's text: a hostname/URL/IP-shaped
+target gets §1.1's boundary rule; a `bucket_name`/`arn`-shaped target
+keeps free glob expansion, as before this amendment.
+`classify_target` gained two new explicit shapes to make this concrete
+— `arn` (a string starting with the literal `"arn:"`) and
+`bucket_name` (a bare token with no `.` anywhere at all).
+
+**Judgment call, not a FORK:** this "no dot anywhere" signal is also
+applied to the host *extracted from a url-shaped target*, not only to
+a bare target's own top-level shape. `classify_target` only ever
+returns `"url"` for a scheme+netloc string, never `"bucket_name"` — so
+without this, a dot-free embedded host (e.g. a bare test endpoint
+`http://ep-0`) would always take the boundary path even though the
+identical bare text `ep-0` on its own gets `bucket_name`'s free
+expansion. Checked empirically: this single alignment is what fixed
+every real-suite regression this brief's first pass introduced
+(`tests/test_budget.py`'s `http://ep-*` fixture, several
+`http://localhost:8091*`-shaped fixtures across `tests/test_budget.py`,
+`tests/test_validate_runner.py`, `tests/test_negative_controls.py`,
+`tests/test_validate_candidates.py`) without weakening or deleting any
+of them. The second category — a pattern with an **explicit port**
+before the trailing star (`http://host:8091*`) — is deliberately left
+on the pre-existing literal-whole-string `_matches_url_pattern` path
+entirely unchanged, rather than taught the new boundary rule: an
+operator who already wrote the port out is unambiguous, that shape
+isn't in SPEC_BRIEF10.1's G1-G6 list, and extending the boundary rule
+to it was guessing past what's written here (the brief's own
+instruction: "stop and report rather than guessing").
+
+### FORK-U — a pattern with wildcards at both ends
+
+`*.acme.com*`. **DEFAULT (1) taken:** PR #12's existing verdict is
+pinned unchanged — it already denies `api.acme.com:8443` (the
+`*.`-prefix path's suffix check requires a literal trailing `*`
+character inside a real hostname, which never occurs, so it always
+falls through to deny), and such a pattern is not treated as a host
+pattern for trailing-glob purposes; §1.2's "any port" rule does not
+apply to it. Option (2) — harmonizing it with §1.2 — was rejected as a
+widening with no demonstrated need.
+
+### Files changed
+
+Exactly SPEC_BRIEF10.1 §3's permitted list: `src/kronos/scope_guard.py`,
+`tests/test_scope_guard.py`, `src/kronos/README_scope.md`,
+`DECISIONS.md` (this entry), and the three `_SCOPE_GUARD_SHA256`
+re-pins (constant + comment only) in `tests/test_budget.py`,
+`tests/test_cleanup.py`, `tests/test_reconcile.py`. `manifest.py`:
+zero-line diff (confirmed via `git diff`). `cybergym/`: zero-line diff
+(confirmed via `git diff`, including `generate_scope_manifest.py`).
+
+### Totals
+
+- `tests/`: **591 passed, 1 skipped** (branch baseline 551/1 + 40 net
+  new in `test_scope_guard.py`).
+- `cybergym/cloud/`: **unchanged at 17 passed.**
+
+### Live-use gate (§6, unchanged from SPEC_BRIEF10, restated)
+
+Same five conditions as Brief #10's entry above, now reading "this
+brief's PR (#12, including this amendment)" for condition 1. Status at
+push time: PR #12 remains open and unmerged by design; this brief's
+own §5 (G1-G6, §5.2-§5.7) is green in full; the live CyberGym run on
+this local, unproxied Kali host earned the required X-score (reported
+separately in the PR); `manifest.py` zero-line diff holds; issue #2
+stays open pending merge + reviewer sign-off.

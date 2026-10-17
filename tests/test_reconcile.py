@@ -466,7 +466,11 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # brief chartered to end the zero-diff streak (its own guardrail 1 says
 # so explicitly), so the pin now protects the NEW matcher from further
 # undiscussed changes rather than protecting the old one.
-_SCOPE_GUARD_SHA256 = "affcf9df4c7cc0780abaed4a2bf453afacbc3c8a126f79acde2ca3bc7c6f32b5"
+#
+# Re-pinned again by SPEC_BRIEF10.1 (amends PR #12, pre-merge): its own
+# deliberate, in-scope trailing-glob boundary-rule fix to scope_guard.py
+# (classify_target's new arn/bucket_name shapes, the §1.1 boundary rule).
+_SCOPE_GUARD_SHA256 = "e974da1f1af512859908eb2f3929166210497fe4c31d8fa30263e54ceb335080"
 
 
 def test_scope_guard_has_zero_line_diff():

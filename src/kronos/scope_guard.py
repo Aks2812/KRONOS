@@ -46,6 +46,49 @@ scope intent this module implements:
    it does not inherit the hostname rule's standard-port limit.
    Address-shaped and hostname-shaped allow semantics are NOT unified;
    that asymmetry is the specification, not an inconsistency.
+
+SPEC_BRIEF10.1 (amends PR #12, pre-merge): the trailing-glob boundary
+rule. PR #12 (per the rules above) still matched a trailing `*` on a
+host-shaped pattern (`api.acme.com*`, `localhost*`, a `host*` in a
+literal URL pattern) by raw character prefix, so `api.acme.com*`
+authorized the attacker-registerable `api.acme.com.attacker.net` --
+the exact class SPEC_BRIEF10 exists to close, surviving in the one
+pattern shape CyberGym's own signed manifest actually uses. §1.1
+below (operator-ratified) is the fix; it governs every trailing-`*`
+match in this module from here on.
+
+§1.1 The boundary rule (SPEC_BRIEF10.1, governing). A trailing `*` on
+a hostname/URL/IP-shaped target expands only at a delimiter boundary:
+`:` (port), `/` (path), or end-of-string. It never expands across a
+`.` into another DNS label, and never mid-label. So `api.acme.com*`
+covers `api.acme.com`, `api.acme.com:<port>`,
+`https://api.acme.com/...` and `https://api.acme.com:<port>/...` --
+and nothing else; `api.acme.com.attacker.net` crosses a label and
+`api.acme.com-evil.net` expands mid-label, so both deny.
+
+§1.2 Port semantics for a trailing `*` (SPEC_BRIEF10.1, Option A,
+operator-ratified DEFAULT). A trailing `*` after a complete host
+means "this host, any port, any path" -- deliberately wider than a
+bare host entry (§1.1 rule 2 above, standard ports only): the operator
+gets all-ports authorization by typing `*`, never by accident, and it
+is bounded to that one host by the boundary rule. This is what
+preserves CyberGym's `localhost*`/`127.0.0.1*`/`http://localhost*`
+entries (covering its nonstandard 8091/4566 ports) with no manifest
+edit. A bare `api.acme.com` still denies `:8443` per §1.1 rule 4,
+unchanged -- the widening is an explicit act, the trailing `*` itself.
+
+§1.3 Buckets and ARNs stay distinct from hostnames (SPEC_BRIEF10.1).
+`kronos-cybergym-*` must keep matching `kronos-cybergym-general-secrets`
+-- mid-label expansion, correct for a bucket name, forbidden for a
+hostname. So the boundary rule is selected by the *target's* shape,
+not the pattern's text: a hostname/URL/IP-shaped target gets the
+boundary rule above; a `bucket_name`- or `arn`-shaped target keeps
+free glob expansion, exactly as before this amendment. A bucket/ARN
+pattern can therefore never authorize a hostname-shaped target (its
+glob expansion is never even attempted against one -- see
+`classify_target`'s new `bucket_name`/`arn` shapes below), and a
+hostname pattern still never authorizes a bundle id (SPEC_BRIEF10
+§5.7, unaffected).
 """
 
 from __future__ import annotations
@@ -58,7 +101,9 @@ from urllib.parse import urlsplit
 
 from kronos.manifest import ScopeManifest
 
-TargetShape = Literal["url", "ip", "ip_port", "host", "host_port", "bundle_id", "unknown"]
+TargetShape = Literal[
+    "url", "ip", "ip_port", "host", "host_port", "bundle_id", "arn", "bucket_name", "unknown"
+]
 
 _STANDARD_PORTS = {"http": 80, "https": 443}
 
@@ -111,16 +156,36 @@ def classify_target(target: str) -> TargetShape:
        is never an IP) with an all-digit right side -> "host_port".
     7. A malformed URL-like fragment -- contains "://" but `urlsplit`
        found no netloc (e.g. "http://" or "://" alone) -> "unknown".
-    8. Anything else -- a bare hostname, an apex domain, a bundle id, an
-       ARN, or any other opaque token -- is "host". §8.2: this module
-       never attempts to tell a bundle id apart from a hostname from the
-       string alone (it is not safely decidable -- see FORK-T); every
-       bare dotted-or-not token folds into "host" by default rather than
-       guess. `TargetShape` keeps "bundle_id" for the taxonomy §4
-       specifies, but `classify_target` never produces it.
+    8. Starts with the literal "arn:" -> "arn" (SPEC_BRIEF10.1 §1.3).
+       Unambiguous -- no hostname, IP, or bundle id is ever spelled this
+       way -- so it's checked before the final fallback, not guessed.
+    9. Anything else with no "." at all -> "bucket_name" (SPEC_BRIEF10.1
+       §1.3). A bare, dot-free token is the one shape this module can
+       tell apart from a multi-label hostname/lookalike-domain target
+       by the string alone: every lookalike this brief's G1-G6 close
+       introduces its new label via a literal "." (an attacker always
+       registers `<something>.attacker.net`), so "no dot at all" is a
+       safe, conservative signal for "free glob expansion is fine
+       here" -- it only ever *relaxes* matching back to this module's
+       pre-SPEC_BRIEF10.1 behavior for such a target, never narrows an
+       existing allow or exclusion. A genuinely single-label hostname
+       (`localhost`) is unaffected in practice: every existing
+       standard-port/exact-match/host:port code path below still
+       produces the same verdict for it regardless of which of these
+       two shape names it carries (see `README_scope.md`).
+    10. Anything else -- a bare hostname, an apex domain, or a bundle id
+        -- is "host". §8.2 (SPEC_BRIEF10): this module never attempts to
+        tell a bundle id apart from a hostname from the string alone (it
+        is not safely decidable -- see FORK-T); every dotted bare token
+        folds into "host" by default rather than guess. `TargetShape`
+        keeps "bundle_id" for the taxonomy §4 specifies, but
+        `classify_target` never produces it.
     """
     if not target or not target.strip():
         return "unknown"
+
+    if target.startswith("arn:"):
+        return "arn"
 
     bracketed = _parse_bracketed_ip(target)
     if bracketed is not None:
@@ -146,6 +211,9 @@ def classify_target(target: str) -> TargetShape:
 
     if "://" in target:
         return "unknown"
+
+    if "." not in target:
+        return "bucket_name"
 
     return "host"
 
@@ -346,6 +414,104 @@ def _matches_generic_pattern(pattern: str, target: str, shape: TargetShape) -> b
     return fnmatch.fnmatchcase(candidate.lower(), pattern.lower())
 
 
+_HOST_SHAPES_FOR_BOUNDARY: tuple[TargetShape, ...] = ("url", "host", "host_port", "ip", "ip_port")
+
+
+def _is_simple_trailing_glob(pattern: str) -> bool:
+    """A pattern that is exactly `<something>*` -- one wildcard, at the
+    very end, and no other glob metacharacter anywhere (`?`, `[`), and
+    not the bare `*` alone (that already means "match everything" and
+    stays on its existing, unrestricted path -- SPEC_BRIEF10 §5.8).
+    This is the only pattern shape SPEC_BRIEF10.1 §1.1's boundary rule
+    applies to; every other glob shape (`*.sub`, `name.*`, an explicit
+    `scheme://host/path*`, `ho?t`, `[abc]*`, ...) is untouched and
+    keeps its pre-existing, already-reviewed matching path."""
+    return (
+        len(pattern) > 1
+        and pattern.endswith("*")
+        and pattern.count("*") == 1
+        and "?" not in pattern
+        and "[" not in pattern
+    )
+
+
+def _simple_trailing_host_glob_in_url_pattern(pattern: str) -> tuple[str, str] | None:
+    """`scheme://host*` and nothing else -- no explicit path before the
+    star (that's an operator-written path glob, SPEC_BRIEF10's
+    documented `_matches_url_pattern` case, left untouched), no other
+    wildcard. Returns `(scheme, host_prefix)` or `None`. This is what
+    lets CyberGym's own `http://localhost*` entry (covering its
+    nonstandard 8091 port with no manifest edit) go through the same
+    §1.1 boundary rule as a bare `localhost*` entry, instead of the
+    literal whole-string glob `_matches_url_pattern` uses for an
+    explicit path glob. `rest` must carry no colon either: an entry
+    that already pins an explicit port before the star (e.g. an
+    existing `http://host:8091*`) is unambiguous as written and stays
+    on the literal whole-string path unchanged -- this helper only
+    ever claims the bare-host case Option A's port-widening is about."""
+    scheme, sep, rest = pattern.partition("://")
+    if not sep or not scheme:
+        return None
+    if "/" in rest or "?" in rest or "[" in rest or ":" in rest:
+        return None
+    if rest.count("*") != 1 or not rest.endswith("*") or len(rest) <= 1:
+        return None
+    return scheme.lower(), rest[:-1]
+
+
+def _matches_trailing_host_glob(
+    prefix: str, target: str, shape: TargetShape, *, required_scheme: str | None = None
+) -> bool:
+    """SPEC_BRIEF10.1 §1.1/§1.3: does `prefix` + `*` legally match
+    `target`? Selected by the *target's* shape, never the pattern's
+    text (§1.3): a hostname/URL/IP-shaped target (`_HOST_SHAPES_FOR_BOUNDARY`)
+    may only match at a delimiter boundary -- `:`, `/`, or
+    end-of-string -- never across a `.` or mid-label; a
+    `bucket_name`/`arn`-shaped target (or anything else) keeps free
+    glob expansion, exactly as this module always has (so
+    `kronos-cybergym-*` still matches `kronos-cybergym-general-secrets`
+    unchanged). `required_scheme`, when given (the
+    `scheme://host*`-pattern case), is only ever satisfiable by a
+    url-shaped target carrying that exact scheme -- a schemeless target
+    or the other scheme never matches, so an explicit `http://host*`
+    entry can't be stretched into authorizing `https://`.
+
+    For a url-shaped target specifically, the dot check below runs
+    against the *extracted host*, not the target's own top-level shape:
+    `classify_target` only ever returns "url" for a scheme+netloc
+    string, never "bucket_name", so a dot-free embedded host (a bare
+    test endpoint like `http://ep-0`) would otherwise always take the
+    boundary path even though a dot-free bare target with the exact
+    same text would get `bucket_name`'s free expansion (§1.3's own
+    "no dot at all" signal) -- checking the extracted host directly
+    keeps the two consistent."""
+    if required_scheme is not None:
+        if shape != "url":
+            return False
+        host, _, scheme = _host_port_scheme(target, shape)
+        if not host or scheme != required_scheme:
+            return False
+        if "." not in host:
+            return fnmatch.fnmatchcase(host.lower(), (prefix + "*").lower())
+        candidate = host
+    elif shape == "url":
+        host, _, _ = _host_port_scheme(target, shape)
+        if host and "." not in host:
+            return fnmatch.fnmatchcase(host.lower(), (prefix + "*").lower())
+        candidate = host or ""
+    elif shape in _HOST_SHAPES_FOR_BOUNDARY:
+        candidate = target
+    else:
+        # bucket_name / arn / unknown: free expansion, as today.
+        return fnmatch.fnmatchcase(target.lower(), (prefix + "*").lower())
+
+    prefix_l, candidate_l = prefix.lower(), candidate.lower()
+    if not candidate_l.startswith(prefix_l):
+        return False
+    remainder = candidate_l[len(prefix_l) :]
+    return remainder == "" or remainder[0] in (":", "/")
+
+
 def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
     shape = classify_target(target)
 
@@ -369,6 +535,13 @@ def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
         )
 
     if "://" in pattern:
+        if not is_exclusion:
+            simple_url_glob = _simple_trailing_host_glob_in_url_pattern(pattern)
+            if simple_url_glob is not None:
+                pattern_scheme, host_prefix = simple_url_glob
+                return _matches_trailing_host_glob(
+                    host_prefix, target, shape, required_scheme=pattern_scheme
+                )
         return _matches_url_pattern(pattern, target)
 
     if not any(ch in pattern for ch in "*?[") and shape in ("url", "host", "host_port"):
@@ -378,6 +551,16 @@ def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
         # falls through to the plain literal comparison below, exactly
         # as it always has.
         return _matches_hostname_pattern(pattern, target, shape, is_exclusion=is_exclusion)
+
+    if not is_exclusion and _is_simple_trailing_glob(pattern):
+        # SPEC_BRIEF10.1 §1.1/§1.2: the boundary rule and Option A's
+        # "any port, any path" both apply to the allow side only --
+        # guardrail §2's "exclusions stay port-blind, representation-
+        # blind, boundary-rule-free" (deny is broad on purpose). An
+        # exclusion written as `host*` keeps the old, unrestricted
+        # glob below, which is the *more* permissive-to-deny direction,
+        # never a narrowing of what gets excluded.
+        return _matches_trailing_host_glob(pattern[:-1], target, shape)
 
     return _matches_generic_pattern(pattern, target, shape)
 
