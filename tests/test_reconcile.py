@@ -461,13 +461,27 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # work began — SPEC_BRIEF4 guardrail 1 requires a ZERO-line diff on this
 # file. If this assertion ever fails, scope_guard.py was touched; FORK-2
 # (GitHub Aks2812/KRONOS#2) stays open and is not this brief's to resolve.
-_SCOPE_GUARD_SHA256 = "41e56781c2f05fa28b4071e616364223094804d8f6d99fe0985414787ae7bde0"
+#
+# Re-pinned by SPEC_BRIEF10, the dedicated FORK-2 brief: this is the one
+# brief chartered to end the zero-diff streak (its own guardrail 1 says
+# so explicitly), so the pin now protects the NEW matcher from further
+# undiscussed changes rather than protecting the old one.
+#
+# Re-pinned again by SPEC_BRIEF10.1 (amends PR #12, pre-merge): its own
+# deliberate, in-scope trailing-glob boundary-rule fix to scope_guard.py
+# (classify_target's new arn/bucket_name shapes, the §1.1 boundary rule).
+#
+# Re-pinned again by SPEC_BRIEF10.2 (amends PR #12, pre-merge): its own
+# deliberate, in-scope fix routing scheme://host:port* URL patterns
+# through a structural host/port comparison instead of raw-string
+# prefix matching.
+_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
 
 
 def test_scope_guard_has_zero_line_diff():
     scope_guard_path = Path(kronos.__file__).parent / "scope_guard.py"
     digest = hashlib.sha256(scope_guard_path.read_bytes()).hexdigest()
-    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — FORK-2 must stay untouched (guardrail 1)"
+    assert digest == _SCOPE_GUARD_SHA256, "scope_guard.py changed — re-pin or get sign-off (SPEC_BRIEF10 is FORK-2's resolution; it already re-pinned once)"
 
 
 def test_advance_secret_status_still_called_only_by_the_validation_runner():
