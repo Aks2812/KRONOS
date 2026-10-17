@@ -107,6 +107,90 @@ TargetShape = Literal[
 
 _STANDARD_PORTS = {"http": 80, "https": 443}
 
+# SPEC_BRIEF10.3 §1.2: every scope-gated node type's permitted target
+# shape family, owned here (the guard owns scope policy; `graph.py`
+# only reports what kind of node it is holding -- §4). A type absent
+# from this mapping, or present with an empty frozenset, denies
+# unconditionally (§1.1's fail-closed rule) before any pattern is even
+# consulted -- there is no permissive default.
+#
+# Evidence for each row, gathered against this branch's actual source
+# (not assigned by analogy -- FORK-W):
+#
+# - HOST / SERVICE: `canonical.py` documents HOST node ids as the bare
+#   hostname/IP text; SERVICE has no production ingester yet, but the
+#   `"ip:port"`/`"host:port"` dedup convention `classify_target` itself
+#   already special-cases is its established id shape (SPEC.md).
+#   Boundary-rule-governed; dot-free is a hostname here, never a
+#   bucket (H2's whole point).
+# - WEB_ENDPOINT / API_ENDPOINT: `ingest/mobile/parser.py:276` upserts
+#   API_ENDPOINT with `id=found.url`, a full URL; WEB_ENDPOINT has no
+#   production ingester yet but shares the same URL convention
+#   (SPEC_BRIEF9 §4.1, `canonical_key_for_web_endpoint`'s own
+#   docstring).
+# - CLOUD_RESOURCE: `validate/candidates.py`'s `_all_cloud_resources`
+#   reads bucket-name and ARN ids directly off real CLOUD_RESOURCE
+#   nodes (CyberGym's own enrichment: `kronos-cybergym-*` bucket names,
+#   `arn:aws:s3:::*` ARNs). The **only** type that keeps free mid-token
+#   glob expansion -- that is what lets `kronos-cybergym-*` keep
+#   matching `kronos-cybergym-general-secrets` while `localhost*`
+#   stops over-matching under HOST.
+# - MOBILE_APP / MOBILE_COMPONENT: `ingest/mobile/parser.py` upserts
+#   MOBILE_APP with `id=bundle_id` (dotted reverse-DNS, e.g.
+#   `com.kronos.demo`) and MOBILE_COMPONENT with
+#   `id=f"{bundle_id}/{component.name}"`. Both are dotted-bare-token
+#   text that `classify_target` resolves to `"host"` (it never actually
+#   produces the literal `"bundle_id"` shape -- §8.2/FORK-T, not safely
+#   decidable from the string alone) -- so their permitted family is
+#   `{"host"}`, same shape `classify_target` already gives them, with
+#   the dot-free override (below) also folding a theoretical dot-free
+#   bundle id to `"host"` rather than `"bucket_name"`.
+# - SECRET: every real call site (`ingest/__init__.py:56`,
+#   `ingest/mobile/parser.py:253`) sets `scope_key=bundle_id`
+#   unconditionally, so `graph.py`'s `scope_key or id` ALWAYS resolves
+#   to the bundle id, never to the SECRET's own sha256-derived id, in
+#   every production path this repo has. Its effective shape family is
+#   therefore identical to MOBILE_APP's: `{"host"}`.
+# - PARAMETER: §1.4 -- an opaque name with no network identity of its
+#   own; it has no production ingester, and even if it did, a
+#   PARAMETER id was never meant to be glob-matched against anything.
+#   Empty family: never allow-authorized by any pattern, regardless of
+#   shape. (It still inherits scope in practice via its parent
+#   endpoint's own in_scope stamp at enrichment time, which is a
+#   separate mechanism from this gate -- not this brief's concern.)
+# - IDENTITY / TECHNOLOGY / FINDING: grep-verified zero production
+#   `upsert_node` call sites anywhere in `src/` or `cybergym/` for all
+#   three (unlike SECRET, which IS upserted in production code).
+#   `IDENTITY` and `TECHNOLOGY` have never had an id convention
+#   established at all; `FINDING`'s only documented id shape
+#   (`canonical_key_for_finding`'s `f"{finding_class}:{affected_asset_id}:{location_sig}"`)
+#   is itself unreachable today, since no ingester populates
+#   `finding_class`/`location_sig` (`reconcile/canonical.py`'s own
+#   docstring says so). FORK-W (2): with no real evidence to assign a
+#   family from, denying is the safer answer, not a guess by analogy.
+#   If any of the three ever gets a real ingester, this table is the
+#   place to revisit with that evidence.
+# - ENGAGEMENT / EVIDENCE: deliberately absent. `graph.py`'s
+#   `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` already bypass
+#   `is_in_scope` entirely for both (unchanged by this brief -- §2.3),
+#   so neither ever reaches this mapping in practice; omitting them
+#   means a direct call with either type still fails closed, which is
+#   the correct behavior for a type that should never be asked here.
+NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {
+    "HOST": frozenset({"host", "ip", "host_port", "ip_port"}),
+    "SERVICE": frozenset({"host", "ip", "host_port", "ip_port"}),
+    "WEB_ENDPOINT": frozenset({"url"}),
+    "API_ENDPOINT": frozenset({"url"}),
+    "CLOUD_RESOURCE": frozenset({"bucket_name", "arn"}),
+    "MOBILE_APP": frozenset({"host"}),
+    "MOBILE_COMPONENT": frozenset({"host"}),
+    "SECRET": frozenset({"host"}),
+    "PARAMETER": frozenset(),
+    "IDENTITY": frozenset(),
+    "TECHNOLOGY": frozenset(),
+    "FINDING": frozenset(),
+}
+
 _BRACKETED_RE = re.compile(r"^\[(?P<addr>.+)\](?::(?P<port>\d+))?$")
 
 
@@ -218,11 +302,43 @@ def classify_target(target: str) -> TargetShape:
     return "host"
 
 
+def _effective_shape(target: str, node_type: str) -> TargetShape:
+    """SPEC_BRIEF10.3 §4/H2: `classify_target` keeps its own pure,
+    type-blind shape detection unchanged -- including step 9's
+    "dot-free -> bucket_name" fallback -- but the ALLOW side never acts
+    on that fallback for anything except `CLOUD_RESOURCE`. Both
+    `localhost*` -> `localhostevil` (must deny, a hostname) and
+    `kronos-cybergym-*` -> `kronos-cybergym-general-secrets` (must
+    allow, a bucket) are dot-free and therefore identical strings to
+    `classify_target`; the node type is the only signal that tells
+    them apart, so it's applied here, once, right before the type gate
+    and the matcher both see it -- never inferred from the string.
+    Every other shape passes through unchanged; this only ever
+    *narrows* a dot-free non-CLOUD_RESOURCE target back to `"host"`'s
+    boundary-rule-governed matching, never widens anything."""
+    shape = classify_target(target)
+    if shape == "bucket_name" and node_type != "CLOUD_RESOURCE":
+        return "host"
+    return shape
+
+
 def _host_port_scheme(target: str, shape: TargetShape) -> tuple[str | None, int | None, str | None]:
     """(host, explicit_port, scheme) for the shapes that carry a host
     component (url/host/host_port); (None, None, None) otherwise. `host`
     is always lowercased; `port` is only the *explicit* port (None when
-    none was written, even for a URL whose scheme implies one)."""
+    none was written, even for a URL whose scheme implies one).
+
+    SPEC_BRIEF10.3 §1.3/H3: `"bucket_name"` is treated the same as
+    `"host"` here -- the whole token IS the host text, there is no
+    port to extract. This only ever matters on the exclusion path:
+    there, `shape` is the *raw*, node-type-independent
+    `classify_target` result (never the allow side's type-corrected
+    `_effective_shape`), so a dot-free bare exclusion target like
+    `excluded = ["http://localhost:8091*"]` denying the bare
+    `localhost` form of the same host needs this -- without it, the
+    exclusion's own host-identity comparison (`_matches_explicit_port_url_pattern`,
+    `_matches_trailing_host_glob`) would see `"bucket_name"`, not
+    `"host"`, and silently never match."""
     if shape == "url":
         split = urlsplit(target)
         host = split.hostname
@@ -234,7 +350,7 @@ def _host_port_scheme(target: str, shape: TargetShape) -> tuple[str | None, int 
     if shape == "host_port":
         host, _, port_str = target.rpartition(":")
         return (host.lower(), int(port_str), None)
-    if shape == "host":
+    if shape in ("host", "bucket_name"):
         return (target.lower(), None, None)
     return (None, None, None)
 
@@ -377,8 +493,11 @@ def _matches_explicit_port_pattern(
     exactly -- never a different port, and (rule: "a port entry does
     not authorize the bare host") never a target with no port at all.
     As an exclusion, rule 6 still wins: broad, port-blind, for this
-    shape too."""
-    if shape not in ("url", "host", "host_port"):
+    shape too -- and (SPEC_BRIEF10.3 §1.3/H3) also accepts a raw
+    `"bucket_name"` shape (a dot-free bare target like `localhost`),
+    which `_host_port_scheme` now treats as a plain host identity."""
+    host_shapes = ("url", "host", "host_port", "bucket_name") if is_exclusion else ("url", "host", "host_port")
+    if shape not in host_shapes:
         return False
     host, port, _scheme = _host_port_scheme(target, shape)
     if host != pattern_host:
@@ -415,6 +534,14 @@ def _matches_generic_pattern(pattern: str, target: str, shape: TargetShape) -> b
 
 
 _HOST_SHAPES_FOR_BOUNDARY: tuple[TargetShape, ...] = ("url", "host", "host_port", "ip", "ip_port")
+
+# SPEC_BRIEF10.3 §1.3/H3: the exclusion-only widening of the shapes
+# above -- a dot-free bare target's RAW shape is "bucket_name"
+# (classify_target never node-type-corrects it on the exclusion path),
+# but for exclusion-identity comparison it must still be treated as a
+# potential host, exactly like "host" itself: deny is broad, and the
+# alternative (silently never matching) is precisely H3's under-match.
+_HOST_SHAPES_FOR_EXCLUSION: tuple[TargetShape, ...] = _HOST_SHAPES_FOR_BOUNDARY + ("bucket_name",)
 
 
 def _is_simple_trailing_glob(pattern: str) -> bool:
@@ -513,19 +640,38 @@ def _matches_explicit_port_url_pattern(
     compare; anything else can't possibly satisfy a pattern that names
     all three. As an exclusion, rule 6 still wins: host-only,
     port-blind AND scheme-blind -- the same breadth every other shape's
-    exclusion side already gets."""
+    exclusion side already gets.
+
+    SPEC_BRIEF10.3 §1.3/H3: an exclusion also crosses *shape*
+    boundaries, not just scheme/port/representation within the URL
+    shape -- `excluded = ["http://localhost:8091*"]` must deny the bare
+    `localhost:8091` and `localhost` forms of the same host too, since
+    an exclusion computes every identity a target carries, regardless
+    of how either side was written (Brief #10 §1.1 rule 6). So on the
+    exclusion path only, this accepts any host-ish shape, not only
+    `"url"`, and never checks scheme or port at all -- the old
+    `shape != "url": return False` gate (still the allow side's rule
+    below) is exactly the under-match H3 measured."""
+    if is_exclusion:
+        if shape not in _HOST_SHAPES_FOR_EXCLUSION:
+            return False
+        host, _, _ = _host_port_scheme(target, shape)
+        return host == pattern_host
     if shape != "url":
         return False
     host, port, scheme = _host_port_scheme(target, shape)
     if host != pattern_host:
         return False
-    if is_exclusion:
-        return True
     return scheme == pattern_scheme and port is not None and port == pattern_port
 
 
 def _matches_trailing_host_glob(
-    prefix: str, target: str, shape: TargetShape, *, required_scheme: str | None = None
+    prefix: str,
+    target: str,
+    shape: TargetShape,
+    *,
+    required_scheme: str | None = None,
+    is_exclusion: bool = False,
 ) -> bool:
     """SPEC_BRIEF10.1 §1.1/§1.3: does `prefix` + `*` legally match
     `target`? Selected by the *target's* shape, never the pattern's
@@ -549,7 +695,22 @@ def _matches_trailing_host_glob(
     boundary path even though a dot-free bare target with the exact
     same text would get `bucket_name`'s free expansion (§1.3's own
     "no dot at all" signal) -- checking the extracted host directly
-    keeps the two consistent."""
+    keeps the two consistent.
+
+    SPEC_BRIEF10.3 §1.3/H3: on the exclusion path, `required_scheme`
+    is dropped entirely (scheme-blind, same as every other shape's
+    exclusion side) and any host-ish shape qualifies, not only
+    `"url"` -- `excluded = ["http://localhost*"]` must also deny the
+    bare `localhost:8091` form of the same host. The comparison
+    becomes a plain host-identity equality (prefix *is* the complete
+    host under Option A, never a partial needing further glob
+    matching), ignoring port/path/boundary entirely -- deny stays
+    broad."""
+    if is_exclusion and required_scheme is not None:
+        if shape not in _HOST_SHAPES_FOR_EXCLUSION:
+            return False
+        host, _, _ = _host_port_scheme(target, shape)
+        return host is not None and host.lower() == prefix.lower()
     if required_scheme is not None:
         if shape != "url":
             return False
@@ -577,8 +738,15 @@ def _matches_trailing_host_glob(
     return remainder == "" or remainder[0] in (":", "/")
 
 
-def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
-    shape = classify_target(target)
+def _matches(pattern: str, target: str, *, is_exclusion: bool, shape: TargetShape | None = None) -> bool:
+    """SPEC_BRIEF10.3 §4: `shape`, when given, is the caller's
+    already-computed shape -- the allow side passes `_effective_shape`
+    (the node-type-gated one, H2), the exclusion side passes nothing
+    and this computes the plain, type-blind `classify_target` itself
+    (§1.3: exclusions are independent of node type, and the un-narrowed
+    shape is the more-permissive-to-deny one anyway)."""
+    if shape is None:
+        shape = classify_target(target)
 
     network = _network_from_pattern(pattern)
     if network is not None:
@@ -606,13 +774,12 @@ def _matches(pattern: str, target: str, *, is_exclusion: bool) -> bool:
             return _matches_explicit_port_url_pattern(
                 pattern_scheme, pattern_host, pattern_port, target, shape, is_exclusion=is_exclusion
             )
-        if not is_exclusion:
-            simple_url_glob = _simple_trailing_host_glob_in_url_pattern(pattern)
-            if simple_url_glob is not None:
-                pattern_scheme, host_prefix = simple_url_glob
-                return _matches_trailing_host_glob(
-                    host_prefix, target, shape, required_scheme=pattern_scheme
-                )
+        simple_url_glob = _simple_trailing_host_glob_in_url_pattern(pattern)
+        if simple_url_glob is not None:
+            pattern_scheme, host_prefix = simple_url_glob
+            return _matches_trailing_host_glob(
+                host_prefix, target, shape, required_scheme=pattern_scheme, is_exclusion=is_exclusion
+            )
         return _matches_url_pattern(pattern, target)
 
     if not any(ch in pattern for ch in "*?[") and shape in ("url", "host", "host_port"):
@@ -643,14 +810,43 @@ class ScopeGuard:
         self.excluded = list(manifest.excluded)
         self.in_scope = list(manifest.in_scope)
 
-    def is_in_scope(self, target: str) -> bool:
+    def is_in_scope(self, target: str, *, node_type: str) -> bool:
+        """SPEC_BRIEF10.3 §1.1: `node_type` is a REQUIRED keyword
+        argument -- no default, no permissive fallback, so no call
+        site can forget it (the compiler enforces what a convention
+        would not; a permissive-by-omission path is exactly how H2
+        happened). Exclusions are checked first and are completely
+        independent of `node_type` (§1.3) -- a type mismatch, or even
+        an unrecognised type, must never cause an exclusion to be
+        skipped. Only the allow side is gated on type, and fails
+        closed, before any allow pattern is even consulted: an
+        unrecognised, empty, or `None` `node_type` -- or a recognised
+        one whose permitted-shape family doesn't include this target's
+        (type-aware) effective shape -- denies unconditionally."""
         if any(_matches(pattern, target, is_exclusion=True) for pattern in self.excluded):
             return False
-        if any(_matches(pattern, target, is_exclusion=False) for pattern in self.in_scope):
+        permitted_shapes = NODE_TYPE_SHAPES.get(node_type)
+        if not permitted_shapes:
+            return False
+        effective_shape = _effective_shape(target, node_type)
+        if effective_shape not in permitted_shapes:
+            return False
+        if any(
+            _matches(pattern, target, is_exclusion=False, shape=effective_shape) for pattern in self.in_scope
+        ):
             return True
         return False
 
 
-def scope_guard(target: str, manifest: ScopeManifest) -> bool:
-    """Exact spec-named entry point: excluded-first, default-deny."""
-    return ScopeGuard(manifest).is_in_scope(target)
+def scope_guard(target: str, manifest: ScopeManifest, *, node_type: str) -> bool:
+    """Exact spec-named entry point: excluded-first, default-deny.
+
+    SPEC_BRIEF10.3 FORK-V (DEFAULT 1): `node_type` is a required kwarg
+    here too, matching `ScopeGuard.is_in_scope` -- fail-closed by
+    construction beats a second, permissive-by-omission path with its
+    own rules, which is exactly how H2 happened. This is a documented
+    signature conflict with SPEC.md's "SCOPE GUARD" section, which
+    still reads `scope_guard(target, manifest)` (two positional
+    arguments, no type) -- SPEC.md is outside this brief's §3 file
+    list, so it is reported here rather than edited."""
+    return ScopeGuard(manifest).is_in_scope(target, node_type=node_type)

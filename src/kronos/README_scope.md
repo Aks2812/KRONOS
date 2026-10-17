@@ -1,4 +1,4 @@
-# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns)
+# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns; SPEC_BRIEF10.3: node-type-aware dispatch, FORK-2's final piece)
 
 `scope_guard.py` is the ONLY scope-authorization mechanism (SPEC.md
 "SCOPE GUARD"). Every node gets `in_scope` stamped on it at creation by
@@ -238,6 +238,105 @@ also measured that every single-label bare hostname (`localhost`,
 `graph.py` in its file allowlist. SPEC_BRIEF10.2 fixes the
 explicit-port URL pattern shape only; H2 has its own, not-yet-written
 brief, and **FORK-2/issue #2 stays open** until it also closes.
+
+## SPEC_BRIEF10.3 (FORK-2's final piece) — node-type-aware dispatch
+
+Two defects remained after #10.2, both traced to one root cause: the
+matcher only ever had the *target string* to classify, and a dot-free
+bare token (`localhost`, `kronos-cybergym-general-secrets`) is
+genuinely ambiguous from the string alone -- both get `classify_target`'s
+`"bucket_name"` shape (§1.3), which is correct for a bucket and wrong
+for a hostname. `localhost*` wrongly authorized `localhostevil` and
+`localhost-evil` (**H2**); `jenkins*` would do the same to
+`jenkins-prod` for any internal single-label hostname. Separately,
+`excluded = ["http://localhost:8091*"]` denied the URL form of that
+host but not its bare `localhost:8091`/`localhost` forms (**H3**) --
+Brief #10 §1.1 rule 6 ("every port, scheme, path, *and
+representation*") was under-implemented across shape boundaries.
+
+**The fix: `node_type` is now a required keyword argument** on both
+`ScopeGuard.is_in_scope` and the module-level `scope_guard` -- the one
+signal that *does* disambiguate `localhost` (a `HOST`) from
+`kronos-cybergym-general-secrets` (a `CLOUD_RESOURCE`), carried from
+`graph.py`'s own `upsert_node(type, id, props, scope_key)` call, which
+already has it. No default, no permissive fallback: an unrecognised,
+empty, or `None` `node_type` denies unconditionally, before any
+pattern is even consulted (`NODE_TYPE_SHAPES.get(node_type)` falsy ->
+immediate `False`). A permissive-by-omission path is exactly how H2
+happened, so this one has none.
+
+**`NODE_TYPE_SHAPES`** (owned by `scope_guard.py`, not `graph.py` --
+the guard owns scope policy, the graph only reports what kind of node
+it is holding) is each node type's permitted target-shape family:
+
+| node type | permitted shapes | evidence |
+|---|---|---|
+| `HOST` | `host`, `ip`, `host_port`, `ip_port` | `canonical.py`: HOST ids ARE the hostname/IP text |
+| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | SPEC.md's `host:port`/`ip:port` dedup convention |
+| `WEB_ENDPOINT` | `url` | SPEC_BRIEF9 §4.1, shares API_ENDPOINT's URL convention |
+| `API_ENDPOINT` | `url` | `ingest/mobile/parser.py:276`: `id=found.url` |
+| `CLOUD_RESOURCE` | `bucket_name`, `arn` | `validate/candidates.py`'s `_all_cloud_resources`; **the only type with free mid-token glob expansion** |
+| `MOBILE_APP` | `host` | `id=bundle_id`, a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
+| `MOBILE_COMPONENT` | `host` | `id=f"{bundle_id}/{component.name}"`, same dotted-token shape |
+| `SECRET` | `host` | every real ingester sets `scope_key=bundle_id` unconditionally -- the SECRET's own id is never the scope target |
+| `PARAMETER` | *(none)* | §1.4: an opaque name, never glob-authorized regardless of shape |
+| `IDENTITY` | *(none)* | FORK-W(2): zero production `upsert_node` call sites, no id convention ever established |
+| `TECHNOLOGY` | *(none)* | FORK-W(2): same |
+| `FINDING` | *(none)* | FORK-W(2): same -- and its one documented id formula (`canonical_key_for_finding`) is itself unreachable today, no ingester populates it |
+| `ENGAGEMENT` / `EVIDENCE` | *(absent)* | `graph.py`'s `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` bypass this guard entirely, unchanged |
+
+`classify_target` itself is untouched -- still a pure, node-type-blind
+function. `_effective_shape(target, node_type)` is the new, thin layer
+in front of it: a dot-free raw `"bucket_name"` shape is corrected back
+to `"host"` for every node type except `CLOUD_RESOURCE`. This is what
+lets `kronos-cybergym-*` keep matching
+`kronos-cybergym-general-secrets` under `CLOUD_RESOURCE` while
+`localhost*` stops over-matching under `HOST` -- the exact two cases
+H2 could not tell apart from the string alone.
+
+**Exclusions stay completely independent of `node_type`** (§1.3) --
+checked first, before the type gate even runs, so a type mismatch (or
+an unrecognised type) never causes an exclusion to be skipped. Fixing
+H3 meant widening the *exclusion* side of the two pattern shapes that
+had a hard `shape != "url"` gate (`_matches_explicit_port_url_pattern`,
+`_matches_trailing_host_glob`'s `scheme://host*` case) to accept any
+host-ish shape and compare host identity alone, scheme- and
+port-blind -- including the dot-free `"bucket_name"` raw shape, which
+needed `_host_port_scheme` taught to treat it as a plain host text too
+(exclusion-only; the allow side never sees `"bucket_name"` as `shape`
+at all, since it is always pre-corrected by `_effective_shape` first).
+
+**FORK-V (DEFAULT 1, taken):** the module-level `scope_guard(target,
+manifest)` helper also gained a required `node_type` kwarg, matching
+`is_in_scope` -- fail-closed by construction beats a second,
+permissive-by-omission path with its own rules. This is a **documented
+conflict with SPEC.md's "SCOPE GUARD" section**, which still reads
+`scope_guard(target, manifest)` (two positional arguments, no type);
+SPEC.md is outside this brief's file list, so the conflict is recorded
+here rather than resolved by editing it.
+
+**FORK-W (DEFAULT 1 with evidence, but (2) taken for all three
+candidates):** `SECRET`/`IDENTITY`/`TECHNOLOGY`/`FINDING` were each
+checked against this branch's actual source rather than assigned a
+family by analogy. `SECRET` has real evidence (see table) and got a
+family; `IDENTITY`/`TECHNOLOGY`/`FINDING` have none at all -- zero
+production `upsert_node` call sites, grep-verified -- so each denies
+unconditionally rather than guessing.
+
+### The live-use gate (§6, verbatim)
+
+> FORK-2 is complete, and issue #2 may close, when **all** hold:
+> 1. This PR is merged to `main` after independent reviewer diff approval.
+> 2. Every case from Briefs #10, #10.1, #10.2 and this brief is green, including §5.4's generated
+>    product with zero undeclared cells.
+> 3. Live CyberGym X-score 3/3, exit 0, at the merge commit on an unproxied host.
+> 4. `manifest.py` zero-line diff; a pre-Brief-#10 signed manifest still verifies.
+> 5. Issue #2 closed **with a link to the merge commit**.
+> 6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, and that
+>    `CLOUD_RESOURCE` is the only type with free mid-token expansion.
+>
+> Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
+> **S3** start.
 
 ## FORK-U — a pattern with wildcards at both ends
 

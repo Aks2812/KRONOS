@@ -335,7 +335,11 @@ def test_config_fallback_reason_is_recorded_on_the_ledger_for_the_audit_trail(tm
 # own deliberate, in-scope fix routing scheme://host:port* URL patterns
 # through a structural host/port comparison instead of raw-string
 # prefix matching; see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
+#
+# Re-pinned again by SPEC_BRIEF10.3 (FORK-2's final piece): node_type
+# threading (H2), cross-shape exclusions (H3), and the §5.4 generated
+# matrix; see tests/test_reconcile.py.
+_SCOPE_GUARD_SHA256 = "5e25262aa7434bb37d21a17b94b0b1368128a53d6449a5a66a1d4205b200db2a"
 
 
 def test_scope_guard_still_has_zero_line_diff():
