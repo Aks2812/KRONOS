@@ -2311,3 +2311,174 @@ local, unproxied Kali host earned the required X-score (reported
 separately in the PR); `manifest.py` zero-line diff holds; issue #2
 stays open — not only pending merge, but explicitly because H2 has not
 yet closed.
+
+## Brief #10.3 (FORK-2's final piece) — node-type-aware scope dispatch
+
+### Why
+
+Two defects remained after #10.2, both tracing to the same root cause
+as every prior round in this series (§0.3 of the brief itself, "the
+method defect"): `classify_target` only ever has the target *string*
+to go on, and a dot-free bare token is genuinely ambiguous from the
+string alone. `localhost*` wrongly authorized `localhostevil` and
+`localhost-evil` (**H2**) — not a `localhost`-specific bug; any
+internal single-label hostname (`jenkins`, `intranet`, `dc01`) has the
+same exposure, and S3 (infra ingestion) is exactly where those arrive.
+Separately, `excluded = ["http://localhost:8091*"]` denied the URL
+form of a host but not its bare `localhost:8091`/`localhost` forms
+(**H3**) — Brief #10 §1.1 rule 6's "every port, scheme, path, *and
+representation*" was under-implemented across shape boundaries, not
+just within one shape.
+
+### The fix (H2): `node_type` becomes a required argument
+
+`ScopeGuard.is_in_scope` and the module-level `scope_guard` both gained
+a required keyword-only `node_type` parameter — no default, no
+permissive fallback, so no call site can forget it (a permissive
+default is exactly how H2 happened). `graph.py:140` passes the `type`
+it already has at the `upsert_node` call site; this is the one
+approved change to that file (§2.3), one line.
+
+`NODE_TYPE_SHAPES` (owned by `scope_guard.py`) maps each of the 12
+scope-gated node types to its permitted target-shape family —
+`src/kronos/README_scope.md`'s own table has the full list with
+evidence. The critical row: **`CLOUD_RESOURCE` is the only type with
+free mid-token glob expansion** — `_effective_shape(target, node_type)`
+corrects `classify_target`'s raw `"bucket_name"` shape back to
+`"host"` for every other type, which is what lets `kronos-cybergym-*`
+keep matching `kronos-cybergym-general-secrets` under `CLOUD_RESOURCE`
+while `localhost*`/`jenkins*` stop over-matching under `HOST` — the
+exact two cases H2 could not separate from the string alone. The type
+gate runs **before any pattern is even consulted**: an unrecognised,
+empty, or `None` `node_type` denies unconditionally
+(`NODE_TYPE_SHAPES.get(node_type)` falsy), and so does a recognised
+type whose family doesn't include the target's effective shape (e.g. a
+bucket glob under `HOST` — tested explicitly, SPEC_BRIEF10.3 §5.1's
+last row).
+
+### The fix (H3): exclusions cross shape boundaries too
+
+`_matches_explicit_port_url_pattern` and `_matches_trailing_host_glob`'s
+`scheme://host*` case both had a hard `shape != "url": return False`
+gate — correct for the allow side (an explicit scheme genuinely
+requires a URL to compare against), but wrong for exclusion, which
+must be port-, scheme-, *and representation*-blind. Both now accept
+any host-ish shape on the exclusion path and compare host identity
+alone. A second gap surfaced only once the §5.4 generated matrix was
+run end to end (see below): `excluded = ["http://localhost:8091*"]`
+still failed to deny the bare `localhost` form, because on the
+exclusion path `shape` is always the *raw*, node-type-independent
+`classify_target` result — `"bucket_name"` for a dot-free bare token,
+never `"host"` — and the exclusion-side comparisons didn't recognise
+that shape at all. Fixed by teaching `_host_port_scheme` to treat
+`"bucket_name"` as a plain host text (exclusion-only in practice: the
+allow side never sees `"bucket_name"` as `shape`, since
+`_effective_shape` has already corrected it by the time `_matches` is
+called) and widening the two gates' accepted-shapes tuple
+(`_HOST_SHAPES_FOR_EXCLUSION`) to include it.
+
+### §5.4 — the generated matrix, and what it caught
+
+The brief's own method-fix: 13 pattern shapes × 14 target shapes,
+declared as a literal data table (not computed from `scope_guard.py`),
+run once for the allow side under `node_type="HOST"` and once for the
+exclusion side (type-independent, via `_matches(..., is_exclusion=True)`
+directly — `is_in_scope`'s own type gate would otherwise confound an
+"excluded" `True` with a "denied by type mismatch" `True` for the
+url/arn/bucket_name target columns, which a HOST-typed allow check can
+never tell apart). 364 cells total (182 × 2), every one present —
+`dict[pattern][target]` indexing with no `.get()` default, so an
+undeclared cell raises `KeyError` and fails the test rather than
+silently passing. **This is exactly what caught the second H3 gap
+above** — the `localhost` exclusion cell failed on the first run,
+before the `_host_port_scheme`/`_HOST_SHAPES_FOR_EXCLUSION` fix. Scope
+decision, reported rather than silently reduced: the allow grid runs
+once, under `node_type="HOST"`, not once per node type — `CLOUD_RESOURCE`'s
+bucket/ARN pattern families are exercised by the dedicated H2/G6 lock
+tests instead of a second full 182-cell grid, which would mostly
+duplicate the same structural coverage at this scale.
+
+### FORK-V — module-level `scope_guard` helper
+
+DEFAULT (1) taken: `node_type` is a required kwarg here too, matching
+`is_in_scope` — a second, permissive-by-omission path is exactly how
+H2 happened. This is a **documented conflict with SPEC.md**, whose
+"SCOPE GUARD" section still reads `scope_guard(target, manifest)` (two
+positional arguments, no type); SPEC.md is outside this brief's file
+list, so the conflict is reported here, not resolved by editing it.
+
+### FORK-W — SECRET/IDENTITY/TECHNOLOGY/FINDING
+
+Checked against this branch's actual source, not assigned by analogy.
+`SECRET`: every real ingester (`ingest/__init__.py:56`,
+`ingest/mobile/parser.py:253`) sets `scope_key=bundle_id`
+unconditionally, so its effective shape family is identical to
+`MOBILE_APP`'s (`{"host"}`) — real evidence, DEFAULT (1).
+`IDENTITY`/`TECHNOLOGY`/`FINDING`: grep-verified zero production
+`upsert_node` call sites for all three anywhere in `src/` or
+`cybergym/`, and no id convention has ever been established for any
+of them (`FINDING`'s one documented formula,
+`canonical_key_for_finding`, is itself unreachable today per
+`reconcile/canonical.py`'s own docstring — no ingester populates
+`finding_class`/`location_sig`). Option (2) taken for all three: deny
+unconditionally rather than guess a family with no evidence behind it.
+If any of the three ever gets a real ingester, `NODE_TYPE_SHAPES` is
+the place to revisit with that evidence.
+
+### PARAMETER (§1.4)
+
+Empty permitted-shape family: never allow-authorized by any pattern,
+regardless of the target's apparent shape. It has no production
+ingester either; it inherits scope in practice via its parent
+endpoint's own stamp at enrichment time, a separate mechanism from
+this gate.
+
+### Out-of-§3 test regressions — reported, not edited
+
+Six pre-existing tests, all outside this brief's file list, broke
+under the correct, newly-added type gate because their fixtures used a
+non-representative id/scope_key shape for their node type — a bare
+hostname standing in for a URL on `API_ENDPOINT`/`WEB_ENDPOINT`
+(`"api.acme.example.com"`, `"web:1"`/`"web:2"`), or a hostname string
+standing in for a bucket name/ARN on `CLOUD_RESOURCE`'s `scope_key`
+(`"api.acme.example.com"`). Per the brief's own guardrail ("stop and
+report rather than broaden"), none of the six were edited:
+
+- `tests/test_schema_graph.py::test_upsert_node_stamps_in_scope_via_scope_guard`
+- `tests/test_invariants.py::test_invariant_out_of_scope_secret_cannot_anchor_finding`
+- `tests/test_invariants.py::test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain`
+- `tests/test_query.py::test_find_paths_returns_seeded_mobile_to_cloud_chain`
+- `tests/test_query.py::test_find_paths_only_in_scope_excludes_out_of_scope_hop`
+- `tests/test_reconcile.py::test_web_endpoint_real_duplicate_merges_and_tombstones`
+
+### Files changed
+
+Exactly SPEC_BRIEF10.3 §3's permitted list: `src/kronos/scope_guard.py`,
+`src/kronos/graph.py` (one line, §2.3's limit — the `node_type=type`
+passthrough only), `tests/test_scope_guard.py`, `src/kronos/README_scope.md`,
+`DECISIONS.md` (this entry), and the three `_SCOPE_GUARD_SHA256`
+re-pins (constant + comment only) in `tests/test_budget.py`,
+`tests/test_cleanup.py`, `tests/test_reconcile.py`. `manifest.py`:
+zero-line diff. `cybergym/`: zero-line diff. `lifecycle.py`,
+`schema.py`, `validate/`, `reconcile/`, `ingest/`, `budget/`,
+`cleanup/`, `events.py`: all zero-diff (confirmed via `git diff`).
+
+### Totals
+
+- `tests/`: **1023 passed, 1 skipped**, plus the 6 reported (not
+  fixed) pre-existing failures above (branch baseline 620/1 + the
+  §5.4 generated matrix's 364 new cases + the rest of this brief's own
+  tests).
+- `cybergym/cloud/`: **unchanged at 17 passed.**
+
+### Live-use gate (§6, verbatim, restated in `README_scope.md` too)
+
+Status at PR time: PR open and unmerged, by design. Every case from
+Briefs #10/#10.1/#10.2 and this brief is green, including §5.4's
+generated product with zero undeclared cells (364/364). Live CyberGym
+X-score reported separately in the PR. `manifest.py` zero-line diff
+holds; a pre-Brief-#10 signed manifest still verifies
+(`test_9_1_a_manifest_signed_before_this_brief_still_verifies`). Issue
+#2 may close once this PR merges with reviewer approval and the merge
+commit is linked — H2 is now closed, which was the last open item
+blocking it.

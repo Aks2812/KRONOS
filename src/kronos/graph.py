@@ -137,7 +137,7 @@ class EngagementGraph:
             if type in _ALWAYS_IN_SCOPE_TYPES:
                 in_scope = True
             else:
-                in_scope = self.scope.is_in_scope(scope_key or id)
+                in_scope = self.scope.is_in_scope(scope_key or id, node_type=type)
             in_scope_clause = f"n.in_scope = {_literal(in_scope)}"
             create_clauses.append(in_scope_clause)
             match_clauses.append(in_scope_clause)
