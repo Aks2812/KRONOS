@@ -1612,3 +1612,227 @@ pending_action:
   seq: 16
   action: "await the independent review verdict; then report it and STOP at GATE-2 for the merge decision"
   outcome: pending
+
+## SEQ 17 — INDEPENDENT REVIEW: FAIL / DO NOT MERGE. ORCHESTRATOR §8 VERDICT CORRECTED.
+
+seq: 17
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: GATE-2 (merge decision) — verdict is DO NOT MERGE
+
+seq16_pending_action_outcome: "review returned FAIL; reported; stopped at GATE-2 without proposing a merge"
+
+review:
+  reviewer: "general-purpose subagent pinned to claude-opus-5, fresh context, diff + brief only, not a fork"
+  inputs_withheld_confirmed: "builder hand-back, orchestrator VERIFY, §8 verdict, Finding A probes, all session reasoning"
+  head_reviewed: 2a676a8426c8aa4f8a49c03ee7651bc80c7249bd
+  pr: 15
+  verdict: FAIL
+  recommendation: "DO NOT MERGE"
+  section_8_tally: "10 PASS, 2 FAIL (criteria 4 and 6), 1 PARTIAL (14), 2 UNVERIFIABLE (12, 15)"
+  section_6_tally: "2 of 7 met, 3 not yet possible, 2 not met"
+
+## ORCHESTRATOR SELF-CORRECTION — seq 13/14's §8 VERDICT WAS WRONG
+
+what_I_said: "seq 13: criterion 4 PASS, criterion 6 PASS, criterion 14 PASS; seq 14: 14 of 15 PASS, then 15 of 15 after the amendment"
+what_is_true: "criteria 4 and 6 FAIL; criterion 14 fails on its own literal wording"
+how_the_error_happened:
+  criterion_4: >
+    I verified that the TABLE had the right VALUES (WEB_ENDPOINT/SECRET frozenset(), etc.) and
+    that a test asserts no schema type is silently absent. I did NOT verify that each row's
+    CITATION actually supports it. §1.2 is a rule about provenance, not about values, so
+    checking values was the wrong test for it.
+  criterion_6: >
+    I accepted the builder's reported cell count (382, 0 undeclared) and the presence of two
+    count tests. I did not check the four MANDATORY corrections §5.4 enumerates. The count was
+    true and the corrections were mostly absent — the count was never the criterion.
+  criterion_14: >
+    I ran `grep -c 'FORK-2 is complete'` and got 1 and 1. That proves the sentence EXISTS in
+    both files. Criterion 14 says "verbatim". A presence grep cannot test verbatim-ness, and I
+    treated it as though it could.
+  common_root: >
+    In all three I tested a proxy that was cheap to measure instead of the property the
+    criterion names. This is the same class of defect as §0.1's "expectation derived from
+    observed behaviour" — substituting what is easy to measure for what was specified. The
+    independent review is what caught it, which is the argument for the control existing.
+
+## ORCHESTRATOR-CORROBORATED FINDINGS (each re-measured from the branch, not accepted on report)
+
+F1_host_service_citations:
+  claim: "HOST and SERVICE rows violate §1.2 rules 1 and 3; no production producer for either"
+  status: CONFIRMED
+  my_measurement: >
+    `grep -rhoE '(NodeUpsert|upsert_node)\(\s*"(HOST|SERVICE)"' src/ cybergym/` returns NOTHING.
+    The only literal-typed producers in src/+cybergym/ are API_ENDPOINT and MOBILE_APP.
+    SERVICE's own citation reads "SERVICE has no production ingester yet, but the ip:port /
+    host:port dedup convention ... is its established id shape (SPEC.md)" — which is
+    "a documented convention that no code implements", the exact thing §1.2 rule 3 forbids.
+  severity: high
+  why_it_matters: >
+    Not a runtime bug — keeping 10.3's HOST/SERVICE families preserves today's behaviour and
+    setting them to frozenset() would deny almost everything, which is plainly not intended.
+    The defect is procedural and it is the SAME defect 10.4 exists to eliminate: §1.2's last
+    line says a row that cannot be assigned under rules 1-4 is a PAUSE-DECISION. The string
+    "PAUSE-DECISION" appears nowhere in DECISIONS.md. The required action was report-and-stop.
+
+F2_section_5_4_extended_not_rebuilt:
+  claim: "three of §5.4's four mandatory corrections not made"
+  status: CONFIRMED on all three
+  my_measurement:
+    allow_per_node_type: >
+      NOT MET — tests/test_scope_guard.py:1147 `test_b103_5_4_generated_allow_matrix_host`
+      still calls `_sg(target, _m([pattern], []), "HOST")`. One node type, not every type in
+      the table. §5.4(3) says "for every node type in the table — not one".
+    public_api: >
+      NOT MET — line 1156 asserts `_matches(pattern, target, is_exclusion=True)`, a private
+      matcher. §5.4(4) says "never a private matcher".
+    prose_citations: >
+      NOT MET for the 364 inherited cells — the only grid change between d2ad51e and HEAD is
+      the two exclusion rows _P8_URL_NO_PORT and _P9_URL_WITH_PORT going from [_F]*14 to the
+      host-identity values. The new 9-row id/scope_key axis DOES carry a per-row `why`, which
+      is the right pattern and is exactly what should have been applied to the whole grid.
+    path_bearing_patterns: "MET — _P8/_P9 exercised on both sides"
+  severity: high
+  why_it_matters: >
+    §0.1 names the grid-fitted-to-behaviour defect "the fourth occurrence in this series" and
+    §5.4 was the remedy. Carrying 364 uncited cells forward leaves the defect in place. The
+    reviewer also found one cell 10.4's prose cannot resolve — _P4_BOTH_ENDS_GLOB
+    (`*.acme.com*`) declared False against _T1_HOST (`api.acme.com`) on BOTH sides, i.e. a
+    both-ends glob denying the exact host it names, including as an exclusion where rule 6
+    says deny broad. That is predecessor scope and undetermined by 10.4's prose — which is
+    precisely why §5.4(1) demanded per-cell clause references.
+
+F3_exclusions_not_shape_blind_for_IP_targets:
+  claim: "§1.3 deny-side under-match for ip / ip_port shapes"
+  status: CONFIRMED, and BROADER than the reviewer stated
+  my_measurement: |
+    excl 'http://10.0.0.5/admin/*'      vs '10.0.0.5'          -> denies=False  (§1.3 requires deny)
+    excl 'http://10.0.0.5/admin/*'      vs '10.0.0.5:8443'     -> denies=False  (§1.3 requires deny)
+    excl 'http://10.0.0.5*'             vs '10.0.0.5'          -> denies=False  <-- PATH-FREE, so H3 itself already required deny
+    excl 'http://[2001:db8::1]:443/x/*' vs '[2001:db8::1]:443' -> denies=False
+    name-shaped control 'http://localhost:8091/internal/*' vs 'localhost:8091' -> denies=True
+  cause: "_host_port_scheme returns (None, None, None) for ip and ip_port, while _HOST_SHAPES_FOR_EXCLUSION includes both, so every exclusion host-identity branch bails out for address-shaped targets"
+  severity: medium-high
+  pre_existing: >
+    Identical at dcbdba9, so it is a gap in 10.3's H3, not a 10.4 regression. But the
+    path-FREE case failing means H3 was never satisfied for address shapes at all, and 10.4's
+    §5.1 table probes hostnames only, so neither the builder nor I probed it. I did run the
+    allow/deny probe in seq 13 — with name-shaped hosts only. That was my blind spot too.
+  live_safety: >
+    An operator who excludes http://10.0.0.5/admin/* would reasonably believe 10.0.0.5 is out
+    of scope. It is not. FORK-2 exists to close exactly this class before live use, so this
+    should be closed before the §6 gate, whatever is decided about merging.
+
+F4_negative_control_weakened:
+  status: CONFIRMED as described
+  detail: >
+    tests/test_schema_graph.py — the positive node became https://api.acme.example.com while
+    the control stayed the bare host api.evil.com. At dcbdba9 the control proved PATTERN
+    denial; at HEAD it is denied by the API_ENDPOINT->{url} family filter before any pattern
+    is consulted, so it would still pass with the pattern logic broken. §5.6(a) required
+    "proof the assertion is no weaker"; for this one it is weaker.
+  fix: "make the control a full URL on an out-of-scope host (https://api.evil.com) — restores discriminating power without touching the test's subject"
+  severity: low-medium
+
+F5_cloud_resource_bucket_scope_keys_now_denied:
+  status: "CONFIRMED, and prose-authorized — not a defect"
+  detail: >
+    _scope_key_shape folds bucket_name -> host, so a bucket-name scope_key no longer matches a
+    bucket glob. This is a NARROWING, permitted by guardrail 9, and §1.1's own worked example
+    authorizes it explicitly. CyberGym unaffected (ARN-form scope_keys). Worth documenting in
+    README_scope.md for future ingesters; not merge-blocking.
+
+F6_decisions_md_totals_stale:
+  status: CONFIRMED
+  detail: "DECISIONS.md:2669 still reports '1067 passed, 1 failed (the out-of-§3 regression above), 1 skipped' — the pre-amendment state. HEAD measures 1068 passed, 0 failed, 1 skipped. The amendment commit fixed the code and not this paragraph."
+  severity: low
+
+F7_spec_md_signature_conflict:
+  status: "CONFIRMED as correctly handled"
+  detail: "SPEC.md's SCOPE GUARD section still shows scope_guard(target, manifest); the real signature now requires node_type and target_kind. SPEC.md is outside §3 and was reported, not edited — correct under guardrail 12. Maintainer follow-up."
+
+criterion_14_not_verbatim:
+  status: CONFIRMED
+  my_measurement: >
+    Brief §6 item 1: "This PR is merged to `main` after independent reviewer diff approval."
+    Both docs render: "The PR is merged to `main` after independent reviewer diff approval."
+    Also item 4 "manifest.py zero-line diff" -> "manifest.py IS zero-line diff"; item 5
+    "Issue #2 closed" -> "Issue #2 IS closed"; items 2 and 3 drop the brief's bold emphasis.
+    DECISIONS.md:2676 even labels the block "(§6, verbatim, restated in README_scope.md too)"
+    while not being verbatim — the claim is self-contradicting.
+  substance: "faithful — all 7 items present, in order, in BOTH files, which is still a real improvement on 10.3's criterion-11 failure where DECISIONS.md lacked the gate entirely"
+  severity: low  # wording, but criterion 14 says grep for it, so it fails on the letter
+
+reviewer_claims_I_could_not_confirm:
+  criterion_12: >
+    The reviewer marked it UNVERIFIABLE (read-only, no docker) and offered an indirect
+    measurement instead. I HAD already measured it directly: X-SCORE: 3/3, exit 0 at 1fa5bad
+    (seq 14). 2a676a8 differs from 1fa5bad only in tests/test_reconcile.py and
+    SPEC_BRIEF10.4.md, with scope_guard.py byte-identical, so the live result carries. I treat
+    criterion 12 as PASS on my own measurement, not on the reviewer's indirect one. This is the
+    one criterion where I am better positioned than the reviewer, by tooling rather than by judgment.
+  criterion_15: >
+    Reviewer correctly declined to query PR state, having been told not to touch any PR.
+    Orchestrator-measured: PR 15 OPEN, draft true, auto_merge null; PR 13 OPEN, draft true,
+    head d2ad51e, auto_merge null. Criterion 15 PASS.
+
+## RECONCILED §8 VERDICT
+
+pass: [1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 15]
+fail: [4, 6]
+partial_fail_on_letter: [14]
+verdict: "12 PASS, 2 FAIL, 1 PARTIAL. ACCEPTANCE NOT MET."
+note_on_criterion_5: >
+  PASS for the rows §5.1 enumerates, and the reviewer's independent allow-side measurement is
+  stronger than mine: 19 patterns x 22 targets = 418 allow-side pairs across dcbdba9 /
+  d2ad51e / HEAD with ZERO differences, and 42 exclusion-side differences all False->True,
+  never a narrowing. Plus a 1080-cell is_in_scope probe showing neither path is ever wider
+  than dcbdba9. Guardrail 9 is firmly established. F3 is a COVERAGE gap in the rule's
+  implementation for address shapes, not a widening.
+
+## MERGE GATE — RE-MEASURED THIS TURN, NOT PROPOSED
+
+1. main protected: pass (ruleset 25333712, bypass_actors empty)
+2. PR not draft: FAIL — PR 15 draft=true (correct; marking ready is the maintainer's)
+3. PR open and unmerged: pass (PR 15 OPEN)
+4. head equals an authorized SHA: FAIL — no merge authorization exists for PR 15 at all
+5. independent review PASS: FAIL — review returned FAIL / DO NOT MERGE
+6. CI green or "ci: none": acknowledged ("ci: none; local evidence only")
+7. local test evidence in checkpoint: pass (1068/0/1, 17, X-SCORE 3/3 exit 0 — recorded)
+8. mergeable_state clean, head not ancestor of main: pass
+9. merge_authorization present and granted this turn: FAIL — none
+10. clean tree, stale branches recorded: pass
+result: "four of ten fail (2, 4, 5, 9). DO NOT MERGE. No merge command proposed or executed."
+
+standing_merge_authorization_note: >
+  The only standing authorization names PR #13, which does NOT contain this work. PR 15 has no
+  authorization and the old one does not transfer. Nothing may be merged either way while the
+  review stands at FAIL.
+
+## WHAT CLOSING THIS REQUIRES — proposed SPEC_BRIEF10.5 / 10.4.1 scope
+
+must_fix_to_pass_section_8:
+  - "F1 — raise the HOST/SERVICE citation problem as the PAUSE-DECISION §1.2 mandates, and have the maintainer rule: evidence the rows, apply rule 2, or carve a documented exception for never-ingested-but-core types"
+  - "F2 — give the 364 inherited cells prose-clause references; run the allow grid per node type; move the exclusion grid onto the public API (in_scope=['*'] with target_kind='scope_key' gives unconfounded exclusion semantics, so the in-code 'type gate makes this impossible' justification does not hold)"
+  - "criterion 14 — make both gate copies byte-verbatim, or have the maintainer accept the paraphrase in writing"
+should_fix_before_the_section_6_live_gate:
+  - "F3 — exclusion shape-blindness for ip / ip_port (one-line fix in _host_port_scheme plus the bracketed-IPv6 case); this is a live-safety gap and FORK-2 exists to close this class"
+  - "F4 — restore the negative control's discriminating power"
+housekeeping:
+  - "F6 — refresh DECISIONS.md totals to 1068/0/1"
+  - "F5 — document the bucket-name-scope_key narrowing in README_scope.md"
+  - "F7 — SPEC.md signature, maintainer follow-up, outside §3"
+
+state:
+  pr_15: "OPEN, draft true, head 2a676a8, auto_merge null, base main"
+  pr_13: "OPEN, draft true, head d2ad51e, auto_merge null — untouched all session"
+  issue_2: "OPEN — untouched"
+  main: "dcbdba9 — untouched"
+  fork_2: "does not close"
+  s3: "stays blocked"
+  scope: "CyberGym only; no live targets; no scope change"
+
+pending_action:
+  seq: 17
+  action: "await maintainer at GATE-2: authorize a follow-up brief for F1/F2/criterion-14 (+F3/F4), or rule otherwise. No merge is proposed. Marking PR 15 ready for review and closing issue #2 both remain maintainer-only actions."
+  outcome: pending
