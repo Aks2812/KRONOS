@@ -495,7 +495,7 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
 # re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
 # path-blind exclusions (§1.3).
-_SCOPE_GUARD_SHA256 = "50f15aafc96427fec229253efd93b0ae191707dac2004e68e8f532dcdc868093"
+_SCOPE_GUARD_SHA256 = "0ef7de531c2a86d132d34d9528760f6b304e7a199261e6f5ed12b8cb19b3e9d6"
 
 
 def test_scope_guard_has_zero_line_diff():

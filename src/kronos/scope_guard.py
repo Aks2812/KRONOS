@@ -244,7 +244,8 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #   means a direct call with either type still fails closed, which is
 #   the correct behavior for a type that should never be asked here.
 # SPEC_BRIEF10.5 §1.1 RULE 5 (re-derivation, per-row citation + rule):
-# when no production producer exists for a type (rule 1 unsatisfiable),
+# when NEITHER a production producer NOR a ratified predecessor-brief
+# prose decision exists for a type (rule 1 unsatisfiable by either),
 # the family is derived from schema.py: if the schema gives the type no
 # identity-bearing column other than `id` (or only qualifiers such as
 # port/protocol), identity lives in the id and the id's shape family
@@ -252,10 +253,18 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 # the id is not required to carry it and the family is frozenset().
 # Rule 1 outranks rule 5; rules 3 and 4 still bind (no row by analogy;
 # canonical/merge key is never evidence of id production).
-#   HOST           rule 5  schema.py:223 NODE_COLUMNS (id/source/
-#                          merged_into only; NODE_PROPS_ALWAYS :165
-#                          {source}) -- identity is the id, and no
-#                          `port` column -> {host, ip}.
+#   HOST           rule 1  Brief #10.3 §1.2's RATIFIED prose table assigns
+#                          HOST `host, ip, host_port, ip_port` ("boundary
+#                          rule applies"), and test_b103_h2[HOST-localhost*-
+#                          localhost:8091-True] locks it. A ratified
+#                          predecessor prose decision IS rule-1 evidence, so
+#                          rule 5 is never reached for this row. FORK-AB:
+#                          narrowing to {host, ip} from schema.py:223's
+#                          missing `port` column was PROPOSED AND REJECTED --
+#                          a missing port COLUMN does not forbid a
+#                          port-bearing ID (SERVICE stores a port separately
+#                          AND carries one in its id). See SPEC_BRIEF10.5
+#                          §1.1 and DECISIONS.md.
 #   SERVICE        rule 5  schema.py:224 NODE_COLUMNS (+port, protocol
 #                          qualifiers; NODE_PROPS_ALWAYS :166) -> identity
 #                          in the id -> {host, ip, host_port, ip_port}.
@@ -266,7 +275,7 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #                          id=found.url (schema.py:227 also has url/method
 #                          but rule 1 outranks rule 5) -> {url}.
 NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {
-    "HOST": frozenset({"host", "ip"}),
+    "HOST": frozenset({"host", "ip", "host_port", "ip_port"}),
     "SERVICE": frozenset({"host", "ip", "host_port", "ip_port"}),
     "WEB_ENDPOINT": frozenset(),
     "API_ENDPOINT": frozenset({"url"}),

@@ -2709,3 +2709,25 @@ out-of-§3 regression above is resolved (by a follow-up brief
 authorizing the `test_secret_real_duplicate_*` fixture's scope_key
 correction, or by an explicit, written acceptance that it is not
 blocking).
+
+### SPEC_BRIEF10.5 FORK-AB — HOST narrowing proposed and REJECTED
+
+§1.1 originally derived `HOST`'s family as `{host, ip}` under rule 5, reasoning from
+`schema.py:223`, where `NODE_COLUMNS["HOST"]` carries no `port` column.
+
+**Measured result: 21 tests failed.** Fourteen were ratified cases — `test_5_5_lock_*`,
+`test_5_5b_lock_*`, `test_b101_5_2_trailing_glob_locks`, four
+`test_b103_5_4_generated_allow_matrix_host` cells, and
+`test_b103_h2[HOST-localhost*-localhost:8091-True]`, which **is** Brief #10.3's own H2 table row.
+One was `test_9_1_a_manifest_signed_before_this_brief_still_verifies`, guardrail §2.1's
+signed-manifest proof.
+
+**Disposition: rejected, and rule 5's precedence corrected.** Brief #10.3 §1.2's prose table
+already assigns `HOST` `host, ip, host_port, ip_port` with "boundary rule applies", reviewer-
+verified. A ratified predecessor-brief prose decision is rule-1 evidence, so rule 5 — which governs
+only where neither a producer nor a ratified prose decision exists — is never reached for `HOST`.
+The absence of a port *column* does not forbid a port-bearing *id*; `SERVICE` stores a port
+separately **and** carries one in its id.
+
+Retyping the 20 lock tests to `SERVICE` was considered and rejected: it would overwrite decisions an
+independent reviewer already approved, on the strength of an inference those decisions contradict.

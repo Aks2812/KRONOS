@@ -53,7 +53,8 @@ is derived from schema evidence instead. **GATE-1 may reject it; it is not maint
 
 Add to §1.2 of SPEC_BRIEF10.4:
 
-> **Rule 5.** When no production producer exists for a type (so rule 1 cannot be satisfied), the
+> **Rule 5.** When **neither** a production producer **nor a ratified predecessor-brief prose
+> decision** exists for a type (so rule 1 cannot be satisfied by either), the
 > permitted family is derived from `schema.py`, and only from whether the schema gives that type a
 > column carrying its **network identity**:
 >
@@ -73,7 +74,7 @@ Applied, with the evidence for each (`schema.py` `NODE_COLUMNS` :223-226, `NODE_
 
 | Type | Columns beyond `id` | Identity lives in | Family | Rule |
 |---|---|---|---|---|
-| `HOST` | `source`, `merged_into` | **the id** | `{host, ip}` | 5 |
+| `HOST` | `source`, `merged_into` | **the id** | `{host, ip, host_port, ip_port}` | **1** (ratified #10.3 §1.2) |
 | `SERVICE` | `+ port`, `protocol` (qualifiers) | **the id** | `{host, ip, host_port, ip_port}` | 5 |
 | `WEB_ENDPOINT` | `+ url`, `method` | the `url` column | `frozenset()` | 5 |
 | `PARAMETER` | `+ name`, `param_type` | the `name` column | `frozenset()` | 5 |
@@ -82,11 +83,11 @@ Applied, with the evidence for each (`schema.py` `NODE_COLUMNS` :223-226, `NODE_
 `API_ENDPOINT` carries `url`/`method` columns too, yet keeps `{url}`, because a producer exists and
 rule 1 outranks rule 5. That is the one case proving the two rules do not collide.
 
-**`HOST` keeps `{host, ip}` — NOT 10.4's `{host, ip, host_port, ip_port}`.** `HOST` has no `port`
-column, so nothing in the schema supports a port-bearing id for it; `SERVICE` is the type that
-carries ports. This is a **narrowing** of 10.4's `HOST` row and is therefore permitted by
-guardrail §9. If any Brief #10/#10.1/#10.2 case depends on a `host_port`-shaped `HOST` id, that is
-a PAUSE-DECISION — report it, do not widen the row back.
+**`HOST` keeps all four shapes — `{host, ip, host_port, ip_port}` — under rule 1, not rule 5.**
+Brief #10.3 §1.2's ratified prose table already assigns them, and `test_b103_h2` locks the
+`localhost*` → `localhost:8091` row. The narrowing to `{host, ip}` derived from the missing
+`port` column is **rejected**; see FORK-AB. Rule 5 is not consulted for a row a predecessor
+brief has already settled in prose.
 
 Each row's citation must name the schema line, not a docstring and not a convention.
 
@@ -239,7 +240,9 @@ current behaviour exactly. This is what proves §1.2 did not leak into the allow
 
 ### 5.2 §1.1 — rule 5 and the re-derived table (RED first)
 
-1. `HOST` with a `host_port`-shaped id (`web-01:8080`) **denies** — `HOST` has no `port` column.
+1. `HOST` with a `host_port`-shaped id (`web-01:8080`) **is allowed** — `HOST`'s family is
+   settled by **rule 1** via Brief #10.3 §1.2's ratified table, locked by `test_b103_h2`, so
+   rule 5 never applies to it (FORK-AB).
    (Passes today; must fail after the narrowing is wrong, so state the expectation from §1.1's
    prose and assert it.)
 2. `HOST` with `host` and with `ip` ids in scope behaves per its family.
@@ -328,8 +331,12 @@ unmeasurable before a merge exists; condition 7 is a maintainer action.
 
 - **FORK-AA —** rule 5's discriminator. DEFAULT: identity-bearing columns, as §1.1 derives. The
   rejected alternative (live reconcile machinery) is recorded in §1.1 with the reason it fails.
-- **FORK-AB —** `HOST` narrowing to `{host, ip}`. DEFAULT: narrow. If a predecessor case depends on
-  a `host_port`-shaped `HOST` id, PAUSE-DECISION rather than widening back.
+- **FORK-AB —** `HOST` narrowing to `{host, ip}`. **PROPOSED AND REJECTED.** Derived from
+  `schema.py:223` lacking a `port` column; it broke 21 tests, 14 of them ratified *lock*/H2/grid
+  cases from Briefs #10, #10.1 and #10.3, plus guardrail §2.1's own signed-manifest proof.
+  #10.3 §1.2's prose table already assigns all four shapes and `test_b103_h2` locks it, so the
+  row is settled by rule 1. A missing port *column* does not forbid a port-bearing *id*:
+  `SERVICE` stores a port separately **and** carries one in its id.
 - **FORK-AC —** whether the allow side should also learn address identities from path-bearing URL
   patterns. DEFAULT: **no** — that would widen the allow side, which guardrail §9 forbids. Record
   as deliberately declined.
@@ -345,7 +352,8 @@ Record each with its reason in `DECISIONS.md`.
 2. `NODE_TYPE_SHAPES` is re-derived with a **per-row citation naming a `schema.py` line or a
    producer call site**, and the rule number (1 or 5) recorded per row. No row cites a docstring,
    a convention, or another type.
-3. `HOST` is `{host, ip}`; `SERVICE` is `{host, ip, host_port, ip_port}`; `WEB_ENDPOINT` and
+3. `HOST` is `{host, ip, host_port, ip_port}` under **rule 1** (ratified #10.3 §1.2, locked by
+   `test_b103_h2`); `SERVICE` is `{host, ip, host_port, ip_port}`; `WEB_ENDPOINT` and
    `PARAMETER` are `frozenset()`; `API_ENDPOINT` is `{url}` under rule 1.
 4. §5.1's address-shaped exclusion rows **all deny**, bracketed IPv6 included, **and** the
    allow-side controls prove CIDR and bare-IP allow matching is unchanged.

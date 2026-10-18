@@ -1490,12 +1490,16 @@ _B105_ALL_SHAPES = {
 }
 
 
-def test_b105_5_2_1_host_port_shaped_host_id_denies():
-    """§1.1: HOST has no `port` column (schema.py NODE_COLUMNS) so a
-    port-bearing HOST id is not in its family: denies."""
-    assert NODE_TYPE_SHAPES["HOST"] == frozenset({"host", "ip"})
-    assert _sg("web-01:8080", _m(["*"], []), "HOST", "id") is False
-    assert _sg("10.0.0.5:8080", _m(["*"], []), "HOST", "id") is False
+def test_b105_5_2_1_host_port_shaped_host_id_is_allowed_rule_1():
+    """§1.1 as amended (FORK-AB rejected): HOST's family is settled by
+    rule 1 -- Brief #10.3 §1.2's ratified prose table assigns
+    `host, ip, host_port, ip_port`, locked by test_b103_h2. Rule 5 is
+    never reached for this row, so a port-bearing HOST id IS in family.
+    The expectation here is derived from that prose, not from the
+    matcher's behaviour."""
+    assert NODE_TYPE_SHAPES["HOST"] == frozenset({"host", "ip", "host_port", "ip_port"})
+    assert _sg("web-01:8080", _m(["*"], []), "HOST", "id") is True
+    assert _sg("10.0.0.5:8080", _m(["*"], []), "HOST", "id") is True
 
 
 def test_b105_5_2_2_host_host_and_ip_ids_follow_family():
