@@ -1541,3 +1541,74 @@ pending_action:
     the substituted reviewer with diff + brief ONLY; (7) STOP at GATE-2 for the merge
     decision. No merge is proposed or executed this turn.
   outcome: pending
+
+## SEQ 16 — AMENDMENT APPLIED, §8.7 GREEN, DRAFT PR #15 OPENED, REVIEW DISPATCHED
+
+seq: 16
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: REVIEW in flight
+
+seq15_pending_action_outcome: "items (1)-(6) complete; (7) GATE-2 not reached — review in flight"
+
+amendment_applied:
+  file: tests/test_reconcile.py
+  change: >
+    `_secret_with_material` takes an optional `scope_key=None` threaded to upsert_node, and
+    the two call sites of
+    test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent
+    pass scope_key="app1" — the MOBILE_APP bundle id already present in that test, mirroring
+    production's scope_key=bundle_id.
+  why_not_unconditional: >
+    The helper has 16 callers. Setting a scope_key inside it unconditionally would change
+    in_scope for all of them. Defaulting to None keeps the other 15 byte-for-byte identical,
+    so only the test whose subject IS traversal changes behaviour.
+  brief_amended_at: "§3 (AMENDMENT paragraph) and §5.6(d); §8.7 updated to name the amendment case"
+  fork_y_unchanged: true
+  implemented_by: "orchestrator — kronos-builder agent type was withdrawn mid-session; scope limited to exactly what the amendment names"
+  scope_guard_untouched: "confirmed — git diff 1fa5bad -- src/kronos/scope_guard.py is empty, so the three _SCOPE_GUARD_SHA256 pins remain valid and were NOT re-pinned"
+
+suites_after_amendment:
+  tests: "1068 passed, 1 skipped, 0 FAILED"
+  cybergym_cloud: "17 passed"
+  section_8_7: "now PASS"
+  guardrails_rechecked: "manifest.py, cybergym/, .claude/, .github/ all still zero-diff vs d2ad51e"
+
+section_8_status: "15 of 15 PASS, pending independent review (criterion 5's own basis is the review, which is in flight)"
+
+pr_15:
+  number: 15
+  url: "https://github.com/Aks2812/KRONOS/pull/15"
+  base: main
+  head: 2a676a8426c8aa4f8a49c03ee7651bc80c7249bd
+  draft: true
+  auto_merge: null
+  state: OPEN
+  body_records: "draft deliberately; no merge authorization exists for this PR; the standing authorization names PR #13 and does NOT transfer; a fresh one naming PR 15 and its head SHA is required"
+  pr_13_after: "OPEN, draft true, head d2ad51e, auto_merge null — verified untouched"
+
+review_dispatch:
+  agent: "general-purpose subagent pinned to claude-opus-5 (substitution ruling A, kronos-reviewer type withdrawn)"
+  fork: false
+  inputs_given: "the diff (dcbdba9..HEAD) and SPEC_BRIEF10.4.md only"
+  inputs_WITHHELD: >
+    the builder's hand-back report, the orchestrator's seq 13/14 VERIFY results, the §8
+    verdict, the Finding A probe results, and all session reasoning. Independence preserved.
+  instructed: >
+    verify the brief's sha256; walk §8 one criterion at a time with measured evidence; never
+    round UNVERIFIABLE up to PASS; re-run both suites; verify the zero-diff guardrails itself;
+    spot-check at least two §1.2 citations by opening the cited file and line; probe BOTH
+    sides of the §1.3 path-bearing exclusion cases to confirm the allow side did not move;
+    check §5.4 expectations trace to PROSE and hunt for cells fitted to behaviour; verify the
+    §5.6(c) test is genuinely unedited; report §6 separately from §8; give a merge
+    recommendation and any findings outside the brief.
+  section_discipline: "told explicitly that §8 is acceptance and §6 is the live-use gate, and to trust the brief's own headings over any instruction that conflates them"
+
+merge_gate: >
+  NOT re-measured and NOT proposed. No merge authorization exists for PR 15. Do not merge.
+  GATE-2 is the maintainer's and comes after the review returns.
+
+pending_action:
+  seq: 16
+  action: "await the independent review verdict; then report it and STOP at GATE-2 for the merge decision"
+  outcome: pending
