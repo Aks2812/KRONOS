@@ -1236,3 +1236,60 @@ pending_action:
   seq: 11
   action: "await GATE-1 approval or rejection of docs/loop/SPEC_BRIEF10.4.draft.md; on approval, dispatch kronos-builder (claude-sonnet-5) in FOREGROUND against the approved brief only"
   outcome: pending
+
+## SEQ 12 — GATE-1 APPROVED; WRITE-AHEAD FOR BUILD STAGE
+
+seq: 12
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: BUILD
+
+seq11_pending_action_outcome: "GATE-1 APPROVED by maintainer this turn"
+
+gate_1:
+  status: APPROVED
+  brief: docs/loop/SPEC_BRIEF10.4.draft.md
+  brief_sha256_at_approval: 041c183b9c271dd16344d84bd372f92b2ee52dd403ad3d815c19f3eac95f63cd
+  authority: "maintainer, this turn, verbatim: 'GATE-1 approved — dispatch the builder'"
+
+branch_decision:
+  branch: claude/scope-key-dispatch-brief10-4
+  cut_from: d2ad51e611927525780b9069db2bc16b0a7209b2
+  reasoning: >
+    10.4 repairs code that exists only at PR #13's head. A branch cut from main dcbdba9
+    would not contain 10.3's scope_guard.py at all, so the brief's §1.1/§1.2/§1.3 changes
+    would have nothing to modify. The approved brief itself says it lands "on a fresh
+    claude/* feature branch", and the only base at which that is coherent is d2ad51e.
+  pr13_untouched: >
+    PR #13's branch is NOT pushed to and its head SHA does NOT move. The contract pins
+    pr.draft true and pr.auto_merge null and re-derives the head every turn; mutating it
+    would trip STEP 2e. 10.3's PR stays exactly as reviewed.
+
+PAUSE-DECISION 3 — which PR carries 10.4 (RAISED, NOT ACTED ON)
+  status: "deferred; does not block the build"
+  issue: >
+    The merge policy says "merge PR #13, and nothing else" and "No other PR may be merged
+    under any circumstances." A new draft PR for 10.4 could therefore never be merged under
+    the authorization now standing, and PR #13 cannot carry the fix without its head moving.
+  options:
+    A: "open a new draft PR from this branch to main; it supersedes #13 in content and needs a fresh merge authorization naming its number and SHA when the time comes"
+    B: "fast-forward PR #13's branch onto this work, updating #13 in place; keeps a single mergeable PR but moves #13's head, which the checkpoint pins and STEP 2e asserts"
+    C: "hold the branch with no PR until the maintainer decides"
+  handling_this_turn: >
+    The builder is dispatched to implement, commit and push the FEATURE BRANCH only, and is
+    explicitly instructed NOT to open a PR. Creating a draft PR is otherwise pre-authorized,
+    but the choice between A and B is scope-sensitive and interacts with the merge
+    authorization, so it goes to the maintainer rather than being settled by the loop.
+
+builder_dispatch:
+  agent: kronos-builder
+  model_pin: claude-sonnet-5 (frontmatter; do not substitute)
+  mode: FOREGROUND (never a fork; a background subagent dies with the process)
+  inputs: "the approved brief only"
+  sections_named_explicitly: "§8 = acceptance criteria; §6 = live-use gate; never conflated"
+  forbidden: "manifest.py, .claude/, .github/, cybergym/ (including requirements.txt), any file outside §3, opening or touching any PR, touching issue #2 or main"
+
+pending_action:
+  seq: 12
+  action: "dispatch kronos-builder in foreground against approved SPEC_BRIEF10.4; builder implements RED-first, commits, pushes claude/scope-key-dispatch-brief10-4, opens NO PR; then orchestrator VERIFIES against §8 and dispatches kronos-reviewer with diff + brief only"
+  outcome: pending
