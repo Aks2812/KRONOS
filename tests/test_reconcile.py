@@ -479,7 +479,12 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # Re-pinned again by SPEC_BRIEF10.3 (FORK-2's final piece): node_type
 # threading (H2), cross-shape exclusions (H3), and the §5.4 generated
 # matrix.
-_SCOPE_GUARD_SHA256 = "5e25262aa7434bb37d21a17b94b0b1368128a53d6449a5a66a1d4205b200db2a"
+#
+# Re-pinned again by SPEC_BRIEF10.4 (FORK-2's closing piece): the
+# scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
+# re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
+# path-blind exclusions (§1.3).
+_SCOPE_GUARD_SHA256 = "7909d7cdc5e6996dea24b4669d8d871d5d06c49650fe8baab01a71105f139724"
 
 
 def test_scope_guard_has_zero_line_diff():
@@ -519,8 +524,21 @@ def test_reconcile_never_calls_advance_secret_status():
 def test_web_endpoint_real_duplicate_merges_and_tombstones(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
     url = "https://acme.example.com/blog/post-1"
-    g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"})
-    g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"})
+    # SPEC_BRIEF10.4 §5.6(b): WEB_ENDPOINT's id-shape family is now
+    # frozenset() (§1.2 -- no production WEB_ENDPOINT ingester, no
+    # evidenced id convention). "web:1"/"web:2" are canonical merge
+    # keys, not URLs, so they never matched any id-shape family even
+    # before this brief, and would deny unconditionally on the id
+    # path now. §1.1 is what makes this test's subject (WEB_ENDPOINT
+    # dedup/merge) work at all: give each node the scope_key its real
+    # host identity actually is, gated on its own shape, independent
+    # of WEB_ENDPOINT's (empty) id table.
+    g.upsert_node(
+        "WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"}, scope_key="acme.example.com"
+    )
+    g.upsert_node(
+        "WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"}, scope_key="acme.example.com"
+    )
     g.upsert_node("HOST", "h1", {"source": "test"})
     g.upsert_edge("exposes", "h1", "HOST", "web:1", "WEB_ENDPOINT")
     g.upsert_edge("exposes", "h1", "HOST", "web:2", "WEB_ENDPOINT")

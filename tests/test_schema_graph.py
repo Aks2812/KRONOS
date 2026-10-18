@@ -37,9 +37,16 @@ def test_upsert_node_merges_not_duplicates(tmp_path, manifest_factory, signing_k
 def test_upsert_node_stamps_in_scope_via_scope_guard(tmp_path, manifest_factory, signing_keypair):
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)  # in_scope=["*.acme.example.com"]
-    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {})
+    # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
+    # shape, a full URL (§0.2) -- this test's subject (upsert_node's
+    # in-scope stamping) is unchanged; only the node id's shape is.
+    # `api.evil.com` stays a bare host, deliberately: it is the
+    # out-of-scope control and was never broken by this correction (a
+    # bare-host API_ENDPOINT id already failed the url-shape family
+    # filter before and after this brief).
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
     g.upsert_node("API_ENDPOINT", "api.evil.com", {})
-    assert g.get_node("API_ENDPOINT", "api.acme.example.com")["in_scope"] is True
+    assert g.get_node("API_ENDPOINT", "https://api.acme.example.com")["in_scope"] is True
     assert g.get_node("API_ENDPOINT", "api.evil.com")["in_scope"] is False
 
 
