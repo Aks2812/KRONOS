@@ -939,3 +939,179 @@ pending_action:
     GATE-1. No code is written and no PR is touched.
   not_permitted_in_this_action: "cybergym/, .claude/, .github/, manifest; PR #13; issue #2; main"
   outcome: pending
+
+## SEQ 9 — X-SCORE 3/3 AT HEAD; TWO SEQ-7 DETERMINATIONS CORRECTED; PD-2 PREMISE FALSIFIED
+
+seq: 9
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: RESEARCH reopened; brief 10.4 NOT authored
+
+seq8_pending_action_outcome: >
+  Items (1)-(3) done. Item (4) brief authoring HALTED: verifying the builder's own §1.2
+  evidence block falsified the premise of PAUSE-DECISION 2 and reversed the seq 7
+  determination for four of the six regressions. Authoring on a falsified premise would
+  be the §0.3 method defect in its purest form. Returning to the maintainer.
+
+## X-SCORE — NOW MEASURED, NOT BLOCKED
+
+pin_installed:
+  requested: "httpx2==2.13.1"
+  installed_verbatim: "httpx2-2.13.1"
+  transitive_also_installed: ["httpcore2-2.13.1", "truststore-0.10.5"]
+  note: >
+    SPEC_BRIEF7.1 pinned only httpx2. Two transitive packages came with it. 10.4 should
+    pin all three if the environment is to be reproducible.
+  starlette_version_observed: "1.7.0"
+  cybergym_requirements_NOT_edited: >
+    Correct per contract — cybergym/ is never editable by the loop. The pin is installed
+    in the venv but recorded NOWHERE in the repo. This remains a maintainer action and is
+    an environment-reproducibility gap, not a loop-closable one.
+
+cybergym_cloud_at_head: "17 passed"
+baseline_17_resolved: >
+  The stage instruction's "17" is NOT stale and NOT unsourced — SPEC_BRIEF10.3 §5.5
+  (brief line 232-233) states the baseline as "620 passed / 1 skipped in tests/, 17 passed
+  in cybergym/cloud/". Both figures are prose-sourced. Only 591 was stale. Correcting the
+  seq 6 record, which treated 17 as unverified.
+
+live_x_score:
+  commit: d2ad51e611927525780b9069db2bc16b0a7209b2 (PR #13 head)
+  host: "unproxied for HTTP — no http_proxy/https_proxy/all_proxy set; ANTHROPIC_BASE_URL proxies the MODEL API only and carries no lab traffic"
+  verbatim_line: "X-SCORE: 3/3 chains validated end-to-end"
+  exit_code: 0
+  teardown: "TEARDOWN: all clear — [ok] docker 'docker compose down -v (CyberGym range)' -> done"
+  lab: "script brought the range up and down itself; images already present locally"
+  consequence_for_section_8_criterion_9: >
+    FLIPS from UNVERIFIABLE-treated-as-FAIL to PASS. §8.9 asks for "Live X-score 3/3 exit
+    0, or BLOCKED/INCOMPLETE naming the environment". 3/3 and exit 0 are now recorded with
+    the verbatim line at the PR head.
+  why_it_passes_while_six_tests_fail:
+    measured: >
+      The live range never exercises the shapes the six tests use. CyberGym's own
+      validation run sets CLOUD_RESOURCE scope_key to ARN form
+      (f"arn:aws:s3:::{BUCKET}", kronos_validation_run.py:255,260) and mobile scope_key to
+      the bundle id (:266,:273) — all within their permitted families. Production
+      API_ENDPOINT ids are full URLs. So §5.5's live check genuinely did not narrow
+      anything live, and the six failures are confined to shapes only the tests construct.
+    significance: >
+      This is the opposite of the usual reading. The live green does NOT vindicate the
+      table against the tests; it shows live and test id production disagree, and the live
+      path simply never touches the disputed cells.
+
+## CORRECTION 1 — Finding G is WITHDRAWN as framed
+
+seq7_claim: "the builder applied §1.2's verification clause selectively; verified mobile, did not verify endpoints"
+status: WRONG — withdrawn
+evidence_against_it: >
+  scope_guard.py lines 116-178 carry a per-type evidence block headed "Evidence for each
+  row, gathered against this branch's actual source (not assigned by analogy -- FORK-W)".
+  It cites, per type, the real producing call site. For API_ENDPOINT it cites
+  ingest/mobile/parser.py:276. VERIFIED THIS TURN at that line:
+  `upserts.append(NodeUpsert("API_ENDPOINT", found.url, {"source": "static"}))`
+  — the id IS a full URL in the one production ingester that exists. The builder did the
+  verification §1.2 ordered, reported it, and did not assign endpoints by analogy to
+  mobile. The seq 7 inference from table-shape asymmetry was unsound.
+
+## CORRECTION 2 — four of the six regressions REVERSE their determination
+
+affected_tests:
+  - "tests/test_invariants.py::test_invariant_out_of_scope_secret_cannot_anchor_finding"
+  - "tests/test_schema_graph.py::test_upsert_node_stamps_in_scope_via_scope_guard"
+  - "tests/test_invariants.py::test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain (API_ENDPOINT half)"
+  - "tests/test_query.py::test_find_paths_returns_seeded_mobile_to_cloud_chain (API_ENDPOINT half)"
+seq7_verdict: "IN-SCOPE — NODE_TYPE_SHAPES over-narrowed; fix the table"
+corrected_verdict: "OUT-OF-SCOPE — the tests encode an id shape production never generates"
+basis: >
+  §1.2's operative clause is "how that type's ids are ACTUALLY PRODUCED". Measured: the
+  sole production API_ENDPOINT producer emits id=found.url, a full URL. The six tests hand-
+  construct API_ENDPOINT nodes with bare-host ids (api.acme.example.com). That shape is
+  test-local. So {url} is EVIDENCED, not over-narrowed, and a bare-host API_ENDPOINT id is
+  correctly out of family.
+action_per_contract_rule: >
+  "prose says out-of-scope -> the old test encoded permissive behaviour FORK-2 exists to
+  remove; fix the test, and record a FINDING." These tests are to be FIXED (use URL-form
+  API_ENDPOINT ids, or carry the network identity on a scope_key), not the table.
+guardrail_note: >
+  The builder was CORRECT to report rather than edit them (§8.8). All four sit outside §3's
+  permitted files, so 10.4 must name them explicitly in its own §3 to allow the edits.
+
+## PAUSE-DECISION 2 — PREMISE FALSIFIED, RULING MUST BE REVISITED
+
+ruling_granted_seq8: "A — treat an opaque WEB_ENDPOINT id by §1.4's PARAMETER principle"
+premise_I_gave: "real WEB_ENDPOINT ids are opaque synthetic keys with the URL in an attribute"
+premise_status: FALSE
+measured_truth:
+  - "There is NO production WEB_ENDPOINT ingester at all. The builder states this and grep confirms it."
+  - '`web:1`/`web:2` in test_reconcile are TEST-LOCAL synthetic ids, not a production convention.'
+  - >
+    canonical_key_for_web_endpoint returns f"web:{method}:{scheme}://{host}[:{port}]{path}"
+    — e.g. 'web:GET:http://localhost:8091/internal/v1/admin/export'. It EMBEDS the URL
+    behind a prefix rather than being opaque.
+  - >
+    That real canonical key classifies as **unknown**, NOT url. So if a WEB_ENDPOINT id
+    were ever set to its canonical key, the assigned family {url} would DENY it.
+  - >
+    Canonical keys are MERGE keys, not node ids (reconcile/runner.py:84 computes one for
+    dedup). So WEB_ENDPOINT id production is genuinely UNESTABLISHED, not opaque.
+the_real_finding:
+  id: G-revised
+  severity: high
+  finding: >
+    WEB_ENDPOINT is the ONE row the builder did assign by analogy — "WEB_ENDPOINT has no
+    production ingester yet but shares the same URL convention" — which contradicts the
+    FORK-W rule stated in that same comment block ("not assigned by analogy"), and
+    contradicts how the builder handled IDENTITY/TECHNOLOGY/FINDING, where no production
+    ingester led to an EMPTY family and a deny, explicitly reasoned as "with no real
+    evidence to assign a family from, denying is the safer answer, not a guess by analogy."
+    WEB_ENDPOINT has no production ingester either, so the builder's own stated principle
+    yields frozenset() for it, not {url}.
+  consequence: >
+    Under the builder's own principle, test_reconcile's WEB_ENDPOINT case denies either
+    way, and the brief's §1.2 row is internally inconsistent rather than over-narrow.
+options_for_re_ruling:
+  A_prime: >
+    Apply the builder's own FORK-W principle consistently: WEB_ENDPOINT gets frozenset()
+    (deny, no evidence), exactly like IDENTITY/TECHNOLOGY/FINDING. test_reconcile's node
+    then needs a scope_key to be in scope — same remedy as the API_ENDPOINT tests, and it
+    keeps the table evidence-driven with no analogy anywhere. RECOMMENDED.
+  B_prime: >
+    Establish WEB_ENDPOINT id production as a decision in 10.4 (ids are full URLs, matching
+    API_ENDPOINT) and keep {url}, making the analogy an explicit, authorized DECISION rather
+    than an unevidenced inference. Defensible, but it legislates an id convention for a type
+    nothing produces yet — scope creep beyond FORK-2.
+  C_prime: "original ruling A — inherit via §1.4 PARAMETER principle. Now unsupported: the id is not opaque and no parent-inheritance mechanism exists for WEB_ENDPOINT."
+recommendation: A_prime
+
+## PAUSE-DECISION 1 — RULING A STANDS, premise verified
+
+status: "A remains well-founded"
+verification: >
+  §1.2's table is confirmed to be about IDS by the builder's own evidence block, which is
+  precisely the ground ruling A rests on. Independently, the builder's SECRET row shows it
+  already treats `scope_key or id` as the gated string and chose SECRET's family {host} to
+  match the SCOPE_KEY's shape rather than the id's — i.e. it worked around the same defect
+  ruling A fixes properly, one row at a time. Under A, SECRET's {host} becomes moot and the
+  CLOUD_RESOURCE host-scope_key regressions resolve.
+live_consistency: "the live range's ARN-shaped scope_keys pass under A exactly as they do today"
+
+## REVISED SPLIT OF THE SIX
+
+- fix_the_tests_not_the_table: 4   # all API_ENDPOINT bare-host cases (CORRECTION 2)
+- resolved_by_PD1_ruling_A: 2      # CLOUD_RESOURCE host-shaped scope_key (seeded chain + only_in_scope hop)
+- blocked_on_PD2_re_ruling: 1      # test_reconcile WEB_ENDPOINT
+note: "the two seeded-chain tests appear in two buckets because each has two independent causes"
+
+## STATE UNCHANGED
+
+pr13: "OPEN, draft true, unmerged, head d2ad51e, auto_merge null — untouched"
+issue2: OPEN
+main: dcbdba9
+merge_gate: >
+  Item 7's local evidence is now richer but item 7 still FAILS on the six regressions.
+  §8.9 flips to PASS. Items 2, 5, 9 unchanged. Do not merge.
+
+pending_action:
+  seq: 9
+  action: "await PD-2 re-ruling (recommend A') and confirmation of the fix-the-tests direction for the four API_ENDPOINT cases, then author SPEC_BRIEF10.4 and stop for GATE-1"
+  outcome: pending
