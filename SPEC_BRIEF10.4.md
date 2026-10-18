@@ -244,6 +244,12 @@ and §5.6(b) name. `tests/test_query.py::test_find_paths_only_in_scope_excludes_
 **Hash pins (constant + comment only):** `tests/test_budget.py` · `tests/test_cleanup.py` ·
 `tests/test_reconcile.py`
 
+**AMENDMENT (maintainer-approved after the first build):** one further edit to
+`tests/test_reconcile.py` is permitted — threading a `scope_key` through the
+`_secret_with_material` helper and passing it at the call sites of
+`test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent`.
+See §5.6(d). FORK-Y is unchanged: `SECRET`'s id family stays `frozenset()`.
+
 Any other file: **stop and report** with the file and the reason.
 
 ---
@@ -389,6 +395,24 @@ still fails after §1.1 lands, §1.1 is implemented wrongly — do not edit the 
 Its deliberately out-of-scope hop `api.evil.com` **stays out of scope** in every case. That node is
 the test's control and must not be "fixed" in any of the three groups above.
 
+**(d) One amendment edit — authorized after the first build, not in the original brief:**
+
+- `tests/test_reconcile.py::test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent`
+
+Implementing §1.2 correctly — `SECRET` → `frozenset()`, FORK-Y's own default — makes this
+test fail, because its `_secret_with_material` helper upserts SECRET with **no `scope_key`**,
+unlike every real ingester, which always sets `scope_key=bundle_id`. FORK-Y's reasoning rests
+on that production fact and the original brief did not extend §3 to the one test fixture the
+default would break. **That is a defect in this brief, not in the build**, and the first
+builder was correct to report rather than edit it.
+
+Remedy, same shape as (b): thread an optional `scope_key` through the helper, defaulting to
+`None` so the helper's other callers keep their behaviour byte-for-byte, and pass
+`scope_key="app1"` at this test's two call sites — `app1` being the MOBILE_APP bundle id
+already in that test, which mirrors production's `scope_key=bundle_id` exactly. The helper
+has 16 callers; changing its default would alter `in_scope` for all of them, so it must not
+be changed unconditionally.
+
 Note the two seeded-chain tests have **two** independent causes each (a bare-host `API_ENDPOINT`
 and a host-shaped `CLOUD_RESOURCE` scope_key). Only the first needs an edit; the second is
 restored by §1.1.
@@ -454,7 +478,7 @@ Record each with its reason in `DECISIONS.md`.
    node type, includes the id/scope_key axis, and asserts through the public API. Cell count
    reported.
 7. The six regressions are gone: `tests/` is **0 failed**, 1 skipped, at 620 + this brief's new
-   cases. `cybergym/cloud/` is 17 passed.
+   cases, **including §5.6(d)'s amendment case**. `cybergym/cloud/` is 17 passed.
 8. Every Brief #10 / #10.1 / #10.2 / #10.3 case green — F1–F8, G1–G6, H1, H2's nine rows, H3's
    seven rows, §5.5b, the CyberGym table as signed.
 9. `manifest.py` zero-diff; pre-#10 signed manifest verifies; **nothing under `cybergym/`

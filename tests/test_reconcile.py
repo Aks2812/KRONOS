@@ -38,11 +38,22 @@ def _graph(tmp_path, manifest_factory, signing_keypair, **manifest_overrides):
     return EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_text, pub)
 
 
-def _secret_with_material(graph, engagement_dir, node_id, material: bytes, *, kind="api_key", status="extracted"):
+def _secret_with_material(
+    graph, engagement_dir, node_id, material: bytes, *, kind="api_key", status="extracted", scope_key=None
+):
+    # SPEC_BRIEF10.4 amendment (§3/§5.6, maintainer-approved): SECRET's id
+    # family is `frozenset()` under §1.2/FORK-Y, because a SECRET id is
+    # sha256-derived and matches no shape family -- every real ingester
+    # (`ingest/__init__.py:56`, `ingest/mobile/parser.py:253`) carries scope
+    # on a `scope_key=bundle_id` instead. `scope_key` is threaded through
+    # here, defaulting to None, so callers that do not assert on `in_scope`
+    # or on traversal keep their existing behaviour exactly; only the test
+    # whose subject IS traversal passes one.
     info = store_evidence(engagement_dir, material, kind="mobile_secret")
     graph.upsert_node(
         "SECRET", node_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": kind, "status": status, "source": "test"},
+        scope_key=scope_key,
     )
 
 
@@ -331,7 +342,7 @@ def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_a
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
     engagement_dir = tmp_path
 
-    _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material")
+    _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material", scope_key="app1")
     advance_secret_status(g, "secret:aaa", "validated")
     evidence_id = attach_evidence(
         g, engagement_dir, b"real-dup-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa"
@@ -340,7 +351,7 @@ def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_a
     g.upsert_node("CLOUD_RESOURCE", "cr1", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"})
     g.upsert_edge("authenticates_to", "secret:aaa", "SECRET", "cr1", "CLOUD_RESOURCE")
 
-    _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material")  # extracted, no evidence
+    _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material", scope_key="app1")  # extracted, no evidence
     g.upsert_node("MOBILE_APP", "app1", {"bundle_id": "app1", "platform": "android", "source": "test"})
     g.upsert_edge("leaks", "app1", "MOBILE_APP", "secret:bbb", "SECRET")
 
