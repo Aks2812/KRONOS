@@ -1,0 +1,72 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "deny": [
+      "Edit(src/kronos/manifest.py)",
+      "Edit(cybergym/**)",
+      "Edit(.github/**)",
+      "Edit(.claude/**)",
+      "Read(.env)",
+      "Read(**/.env)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.claude.json)",
+      "Bash(gh pr merge --admin *)",
+      "Bash(gh pr merge * --admin)",
+      "Bash(gh pr merge * --admin *)",
+      "Bash(gh pr merge --auto *)",
+      "Bash(gh pr merge * --auto)",
+      "Bash(gh pr merge * --auto *)",
+      "Bash(gh pr merge --disable-auto *)",
+      "Bash(gh pr merge * --disable-auto)",
+      "Bash(gh pr merge * --disable-auto *)",
+      "Bash(gh api *pulls/*/merge*)",
+      "Bash(git push --force *)",
+      "Bash(git push * --force)",
+      "Bash(git push * --force *)",
+      "Bash(git push --delete *)",
+      "Bash(git push * --delete)",
+      "Bash(git push * --delete *)",
+      "Agent(isolation:*)"
+    ],
+    "ask": [
+      "Bash(gh pr merge *)",
+      "Bash(gh pr ready *)",
+      "Bash(gh issue close *)",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "allow": [
+      "Bash(pytest *)",
+      "Bash(python -I *)",
+      "Bash(sha256sum *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch *)",
+      "Bash(git merge-base *)",
+      "Bash(git show *)",
+      "Bash(git push origin *:refs/heads/kronos/loop-state)",
+      "Bash(gh pr create --draft *)",
+      "Bash(gh api repos/Aks2812/KRONOS/branches/main *)",
+      "Bash(gh api repos/Aks2812/KRONOS/pulls/13 *)",
+      "Bash(gh api repos/Aks2812/KRONOS/pulls/13/reviews *)",
+      "Bash(gh api repos/Aks2812/KRONOS/commits/*/check-runs *)",
+      "Bash(gh api repos/Aks2812/KRONOS/issues/2 *)",
+      "Bash(docker compose -f cybergym/docker-compose.yml *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/brief-scope.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
