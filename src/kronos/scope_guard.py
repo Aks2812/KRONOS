@@ -165,84 +165,6 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 # unconditionally (§1.1's fail-closed rule) before any pattern is even
 # consulted -- there is no permissive default.
 #
-# Evidence for each row, gathered against this branch's actual source
-# (not assigned by analogy -- FORK-W):
-#
-# - HOST / SERVICE: `canonical.py` documents HOST node ids as the bare
-#   hostname/IP text; SERVICE has no production ingester yet, but the
-#   `"ip:port"`/`"host:port"` dedup convention `classify_target` itself
-#   already special-cases is its established id shape (SPEC.md).
-#   Boundary-rule-governed; dot-free is a hostname here, never a
-#   bucket (H2's whole point).
-# - API_ENDPOINT: `ingest/mobile/parser.py:276` upserts API_ENDPOINT
-#   with `id=found.url`, a full URL -- {"url"} is directly evidenced.
-# - WEB_ENDPOINT (SPEC_BRIEF10.4 §1.2, FORK-W generalised): there is
-#   no production WEB_ENDPOINT ingester anywhere in `src/` or
-#   `cybergym/`, so it has no id convention to cite. Its only
-#   documented key, `canonical_key_for_web_endpoint`
-#   (`f"web:{method}:{scheme}://{host}[:{port}]{path}"`), is a *merge*
-#   key consumed by `reconcile/runner.py:84`, never a node id -- and
-#   that key's own shape classifies as `"unknown"` (it starts
-#   `"web:"`, not a URL scheme), not `"url"`, so even citing it would
-#   not support `{"url"}`. 10.3's row assigned `{"url"}` to WEB_ENDPOINT
-#   by analogy to API_ENDPOINT's real evidence (FORK-W's exact
-#   violation, §0.3 D2); corrected here to `frozenset()`, which also
-#   denies that merge key's `"unknown"` shape, so nothing is lost by
-#   the correction.
-# - CLOUD_RESOURCE: `validate/candidates.py`'s `_all_cloud_resources`
-#   reads bucket-name and ARN ids directly off real CLOUD_RESOURCE
-#   nodes (CyberGym's own enrichment: `kronos-cybergym-*` bucket names,
-#   `arn:aws:s3:::*` ARNs). The **only** type that keeps free mid-token
-#   glob expansion -- that is what lets `kronos-cybergym-*` keep
-#   matching `kronos-cybergym-general-secrets` while `localhost*`
-#   stops over-matching under HOST.
-# - MOBILE_APP / MOBILE_COMPONENT: `ingest/mobile/parser.py` upserts
-#   MOBILE_APP with `id=bundle_id` (dotted reverse-DNS, e.g.
-#   `com.kronos.demo`) and MOBILE_COMPONENT with
-#   `id=f"{bundle_id}/{component.name}"`. Both are dotted-bare-token
-#   text that `classify_target` resolves to `"host"` (it never actually
-#   produces the literal `"bundle_id"` shape -- §8.2/FORK-T, not safely
-#   decidable from the string alone) -- so their permitted family is
-#   `{"host"}`, same shape `classify_target` already gives them, with
-#   the dot-free override (below) also folding a theoretical dot-free
-#   bundle id to `"host"` rather than `"bucket_name"`.
-# - SECRET (SPEC_BRIEF10.4 §1.1/§1.2, FORK-Y DEFAULT): 10.3 assigned
-#   `{"host"}` here, but by its own admission (§0.3 D1) that was fitted
-#   to make the scope_key path work, not evidence about SECRET's *id*
-#   -- every real call site (`ingest/__init__.py:56`,
-#   `ingest/mobile/parser.py:253`) sets `scope_key=bundle_id`
-#   unconditionally, never relying on this row at all. Now that
-#   `is_in_scope` tells id and scope_key apart (§1.1), that
-#   justification is gone, and SECRET's own id is sha256-derived,
-#   matching no shape family this module has -- so this row is
-#   `frozenset()`, the §1.2-consistent answer. This denies nothing in
-#   production: scope always arrives via `scope_key` in every real
-#   path, which bypasses this row entirely.
-# - PARAMETER: §1.4 -- an opaque name with no network identity of its
-#   own; it has no production ingester, and even if it did, a
-#   PARAMETER id was never meant to be glob-matched against anything.
-#   Empty family: never allow-authorized by any pattern, regardless of
-#   shape. (It still inherits scope in practice via its parent
-#   endpoint's own in_scope stamp at enrichment time, which is a
-#   separate mechanism from this gate -- not this brief's concern.)
-# - IDENTITY / TECHNOLOGY / FINDING: grep-verified zero production
-#   `upsert_node` call sites anywhere in `src/` or `cybergym/` for all
-#   three (unlike SECRET, which IS upserted in production code).
-#   `IDENTITY` and `TECHNOLOGY` have never had an id convention
-#   established at all; `FINDING`'s only documented id shape
-#   (`canonical_key_for_finding`'s `f"{finding_class}:{affected_asset_id}:{location_sig}"`)
-#   is itself unreachable today, since no ingester populates
-#   `finding_class`/`location_sig` (`reconcile/canonical.py`'s own
-#   docstring says so). FORK-W (2): with no real evidence to assign a
-#   family from, denying is the safer answer, not a guess by analogy.
-#   If any of the three ever gets a real ingester, this table is the
-#   place to revisit with that evidence.
-# - ENGAGEMENT / EVIDENCE: deliberately absent. `graph.py`'s
-#   `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` already bypass
-#   `is_in_scope` entirely for both (unchanged by this brief -- §2.3),
-#   so neither ever reaches this mapping in practice; omitting them
-#   means a direct call with either type still fails closed, which is
-#   the correct behavior for a type that should never be asked here.
 # SPEC_BRIEF10.5 §1.1 RULE 5 (re-derivation, per-row citation + rule):
 # when NEITHER a production producer NOR a ratified predecessor-brief
 # prose decision exists for a type (rule 1 unsatisfiable by either),
@@ -253,6 +175,12 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 # the id is not required to carry it and the family is frozenset().
 # Rule 1 outranks rule 5; rules 3 and 4 still bind (no row by analogy;
 # canonical/merge key is never evidence of id production).
+#   Per-row evidence and rule. SPEC_BRIEF10.5 §8.2 requires BOTH a
+#   citation naming a schema.py line or a producer call site, AND the
+#   rule number, for EVERY row. The machine-readable form is
+#   NODE_TYPE_SHAPE_EVIDENCE below, which a test asserts against
+#   NODE_TYPE_SHAPES -- the claim is enforced, not merely written down.
+#   No row cites a docstring, a convention, or another type.
 #   HOST           rule 1  Brief #10.3 §1.2's RATIFIED prose table assigns
 #                          HOST `host, ip, host_port, ip_port` ("boundary
 #                          rule applies"), and test_b103_h2[HOST-localhost*-
@@ -274,6 +202,24 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #   API_ENDPOINT   rule 1  ingest/mobile/parser.py:276 upserts
 #                          id=found.url (schema.py:227 also has url/method
 #                          but rule 1 outranks rule 5) -> {url}.
+# SPEC_BRIEF10.5 §8.2: (rule, citation) per row. Rule 1 = a production
+# producer call site. Rule 5 = derived from schema.py because neither a
+# producer nor a ratified predecessor-brief prose decision exists.
+NODE_TYPE_SHAPE_EVIDENCE: dict[str, tuple[int, str]] = {
+    "HOST": (1, "SPEC_BRIEF10.3 §1.2 ratified prose table; locked by test_b103_h2 (FORK-AB)"),
+    "SERVICE": (5, "schema.py:224 NODE_COLUMNS (+port, protocol are qualifiers); NODE_PROPS_ALWAYS:166"),
+    "WEB_ENDPOINT": (5, "schema.py:225 NODE_COLUMNS -- `url` column carries the network identity"),
+    "API_ENDPOINT": (1, "src/kronos/ingest/mobile/parser.py:276 -- NodeUpsert(\"API_ENDPOINT\", found.url)"),
+    "CLOUD_RESOURCE": (1, "cybergym/kronos_validation_run.py:252,257 -- NodeUpsert(\"CLOUD_RESOURCE\", bucket/ARN ids)"),
+    "MOBILE_APP": (1, "src/kronos/ingest/mobile/parser.py:171 and src/kronos/ingest/__init__.py:46 -- NodeUpsert(\"MOBILE_APP\", bundle_id)"),
+    "MOBILE_COMPONENT": (1, "src/kronos/ingest/mobile/parser.py:177 -- NodeUpsert(\"MOBILE_COMPONENT\", f\"{bundle_id}/{name}\")"),
+    "SECRET": (1, "NodeUpsert(\"SECRET\", ...) at src/kronos/ingest/mobile/parser.py:258 and src/kronos/ingest/__init__.py:47 -- id is sha256-derived and matches no shape family, so the family is empty and scope arrives via scope_key (FORK-Y)"),
+    "PARAMETER": (5, "schema.py:226 NODE_COLUMNS -- `name` column carries the identity; §1.4"),
+    "IDENTITY": (5, "schema.py:231 NODE_COLUMNS -- `name`/`provider` columns carry the identity; no producer"),
+    "TECHNOLOGY": (5, "schema.py:233 NODE_COLUMNS -- `name`/`version` columns carry the identity; no producer"),
+    "FINDING": (5, "schema.py:234 NODE_COLUMNS -- `title`/`severity` columns carry the identity; no producer"),
+}
+
 NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {
     "HOST": frozenset({"host", "ip", "host_port", "ip_port"}),
     "SERVICE": frozenset({"host", "ip", "host_port", "ip_port"}),

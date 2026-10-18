@@ -1431,6 +1431,32 @@ _B104_ID_SCOPE_KEY_AXIS = [
 ]
 
 
+def test_b105_8_2_every_row_records_a_citation_and_a_rule_number():
+    """SPEC_BRIEF10.5 §8.2 / §5.2 item 6: the per-row citation and rule
+    number are ENFORCED, not merely written in a comment. Every
+    NODE_TYPE_SHAPES row must appear in NODE_TYPE_SHAPE_EVIDENCE with a
+    rule of 1 or 5 and a non-empty citation, and no citation may rest on
+    a docstring, a convention, or another node type (§1.2 rules 3/4)."""
+    from kronos.scope_guard import NODE_TYPE_SHAPE_EVIDENCE as EV
+
+    assert set(EV) == set(NODE_TYPE_SHAPES), (
+        "every row needs evidence: missing=%s extra=%s"
+        % (sorted(set(NODE_TYPE_SHAPES) - set(EV)), sorted(set(EV) - set(NODE_TYPE_SHAPES))))
+    for node_type, (rule, citation) in EV.items():
+        assert rule in (1, 5), (node_type, rule)
+        assert citation.strip(), node_type
+        low = citation.lower()
+        assert "docstring" not in low, (node_type, "cites a docstring -- §1.2 rule 3 forbids it")
+        assert "convention" not in low, (node_type, "cites a convention -- §1.2 rule 3 forbids it")
+        # rule 1 must name a producer call site or a ratified brief;
+        # rule 5 must name a schema.py line.
+        if rule == 5:
+            assert "schema.py:" in citation, (node_type, "rule 5 must cite a schema.py line")
+        else:
+            assert ("NodeUpsert" in citation) or ("SPEC_BRIEF" in citation), (
+                node_type, "rule 1 must name a producer call site or a ratified brief decision")
+
+
 def test_b104_5_4_id_scope_key_axis_cell_count():
     assert len(_B104_ID_SCOPE_KEY_AXIS) == 9
 
@@ -1595,12 +1621,12 @@ def _row(default, overrides=None):
 # string reads as a hostname -- SPEC_BRIEF10.3 H2).
 _CORE_ALLOW = {
     _P1_BARE_HOST: _row((_F, "10.r4"), {
-        _t1: (_T, "10.r1"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
+        _t1: (_T, "10.r2"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
         _t7: (_F, "10.r4"), _t2: (_F, "10.r4"),
         _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
     }),
     _P2_LEADING_GLOB: _row((_F, "10.r1"), {
-        _t1: (_T, "10.r1"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
+        _t1: (_T, "10.r2"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
         _t7: (_F, "10.r4"), _t2: (_F, "10.r4"),
         _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
     }),

@@ -2747,8 +2747,8 @@ the standing differential test (`test_b105_5_5_differential_allow_side_unchanged
 
 ### SPEC_BRIEF10.5 — totals (measured at the head that carries this entry)
 
-- `tests/`: **3445 passed, 0 failed, 1 skipped** (baseline 1083/0/1 at `72fb71d`; the increase is
-  the rebuilt §5.4 grid -- 2366 declared cells, 2359 asserted -- plus the byte-verbatim and
+- `tests/`: **3457 passed, 0 failed, 1 skipped** (baseline 1083/0/1 at `72fb71d`; the increase is
+  the rebuilt §5.4 grid -- 2366 declared cells, **2366 asserted, 0 deferred** -- plus the byte-verbatim and
   differential tests).
 - `cybergym/cloud/`: **17 passed.**
 - Rebuilt §5.4 grid: 12 node types x 13 patterns x 14 targets (allow) + 13 x 14 (exclusion) = 2366
@@ -2780,3 +2780,47 @@ by guardrail §9 and proven non-widening on the allow side by the §5.5 standing
 The legacy #10.3 exclusion grid row for this pattern held all-`False` and is superseded; its
 `_EXCL_HOSTISH` positions now deny. The three `_SCOPE_GUARD_SHA256` pins were re-pinned because
 `scope_guard.py` changed.
+
+### SPEC_BRIEF10.5 FORK-AA — rule 5's discriminator
+
+**DEFAULT taken: identity-bearing columns.** Rule 5 asks which permitted shape family a type gets
+when rule 1 cannot be satisfied. The discriminator is whether `schema.py` gives that type a column
+carrying its **network identity**: if it gives none beyond `id`, or only qualifiers on an identity
+(a port, a protocol), the identity must live in the id and the id's shape family applies; if it
+gives a column that carries the identity (a `url`, a `name`), the id is not required to carry it
+and the family is `frozenset()`, with scope arriving via a `scope_key`.
+
+**Rejected alternative: "schema-complete with live reconcile machinery retains its schema-derived
+family."** It does not discriminate. `reconcile/runner.py` consumes `WEB_ENDPOINT` (`:82`, `:268`),
+`HOST` (`:94`, `:270`) and `SERVICE` (`:133`, `:274`) alike, so that test would have swept
+`WEB_ENDPOINT` back into a non-empty family and silently reversed the maintainer's ruling that it
+is `frozenset()`. It was withdrawn before reaching the brief.
+
+**Precedence, corrected during the build (see FORK-AB):** rule 5 is consulted only where *neither*
+a production producer *nor a ratified predecessor-brief prose decision* exists. A ratified prose
+decision is rule-1 evidence.
+
+### SPEC_BRIEF10.5 §1.1 — behavioural no-op, stated for the record
+
+`NODE_TYPE_SHAPES`'s **values are byte-identical** between `2a676a8` and the §1.1 work. Once
+FORK-AB rejected the `HOST` narrowing, the entire re-derivation became a citation and provenance
+exercise with **zero behavioural effect**, and §5.2's RED-first was not achievable for those rows —
+only §5.1's address-shaped exclusion cases were genuinely RED. Recorded so no later reader mistakes
+§1.1 for a semantic change, and because it means the per-row citation discipline is the *whole* of
+what §1.1 delivered.
+
+### SPEC_BRIEF10.5 §8.11 — out-of-scope file, orchestrator's own breach
+
+`docs/loop/PROGRESS.md` was added to this feature branch by commit `72fb71d`, the orchestrator's
+FORK-AB fix, which used `git add -A` from the repo root and swept up an untracked directory
+belonging to the `kronos/loop-state` branch. It is not in §3 under any heading. The builder did not
+do this. It has been removed from the branch index. Rule adopted: never `git add -A` on a
+brief-scoped branch; add the §3 paths explicitly.
+
+### SPEC_BRIEF10.5 §5.7 — why the totals went stale twice
+
+They were refreshed at `526092b`, went stale when PD-5 promoted 11 deferred cells to asserted
+(3445 -> 3456), were refreshed again, and went stale a third time within the same edit when the
+§8.2 enforcement test was added (3456 -> 3457). The cause is ordering, not carelessness: a total
+measured before the last test lands is always wrong. **Refresh the totals as the final edit of a
+change, after the suite has been run for the last time.**

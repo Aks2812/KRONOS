@@ -271,18 +271,18 @@ it is holding) is each node type's permitted target-shape family:
 
 | node type | permitted shapes | evidence |
 |---|---|---|
-| `HOST` | `host`, `ip`, `host_port`, `ip_port` | `canonical.py`: HOST ids ARE the hostname/IP text |
-| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | SPEC.md's `host:port`/`ip:port` dedup convention |
-| `WEB_ENDPOINT` | *(none)* | SPEC_BRIEF10.4 §1.2/FORK-W: corrected from 10.3's `{"url"}`, which was assigned by analogy to API_ENDPOINT (§0.3 D2) -- no production ingester exists, and its only documented key (`canonical_key_for_web_endpoint`) is a *merge* key (`reconcile/runner.py:84`), never a node id, classifying as `"unknown"` anyway |
-| `API_ENDPOINT` | `url` | `ingest/mobile/parser.py:276`: `id=found.url` |
-| `CLOUD_RESOURCE` | `bucket_name`, `arn` | `validate/candidates.py`'s `_all_cloud_resources`; **the only type with free mid-token glob expansion** |
-| `MOBILE_APP` | `host` | `id=bundle_id`, a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
-| `MOBILE_COMPONENT` | `host` | `id=f"{bundle_id}/{component.name}"`, same dotted-token shape |
-| `SECRET` | *(none)* | SPEC_BRIEF10.4 §1.1/§1.2/FORK-Y: corrected from 10.3's `{"host"}`, which was fitted to make the scope_key path work rather than evidence about SECRET's own id (§0.3 D1) -- now that `is_in_scope` tells id and scope_key apart, SECRET's own sha256-derived id matches no shape family here; every real call site sets `scope_key=bundle_id` regardless, so this denies nothing in production |
-| `PARAMETER` | *(none)* | §1.4: an opaque name, never glob-authorized regardless of shape |
-| `IDENTITY` | *(none)* | FORK-W(2): zero production `upsert_node` call sites, no id convention ever established |
-| `TECHNOLOGY` | *(none)* | FORK-W(2): same |
-| `FINDING` | *(none)* | FORK-W(2): same -- and its one documented id formula (`canonical_key_for_finding`) is itself unreachable today, no ingester populates it |
+| `HOST` | `host`, `ip`, `host_port`, `ip_port` | **rule 1** -- SPEC_BRIEF10.3 §1.2's ratified prose table, locked by `test_b103_h2` (FORK-AB) |
+| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | **rule 5** -- `schema.py:224` `NODE_COLUMNS` (`port`/`protocol` are qualifiers on a host identity, not a replacement for it); `NODE_PROPS_ALWAYS:166` |
+| `WEB_ENDPOINT` | *(none)* | **rule 5** -- `schema.py:225` `NODE_COLUMNS`: the `url` column carries the network identity, so the id need not. Corrected from 10.3's `{"url"}`, which was assigned by analogy to `API_ENDPOINT` (§0.3 D2) |
+| `API_ENDPOINT` | `url` | **rule 1** -- `NodeUpsert("API_ENDPOINT", found.url)` at `ingest/mobile/parser.py:276` |
+| `CLOUD_RESOURCE` | `bucket_name`, `arn` | **rule 1** -- `NodeUpsert("CLOUD_RESOURCE", ...)` at `cybergym/kronos_validation_run.py:252,257` (bucket-name and ARN ids); **the only type with free mid-token glob expansion** |
+| `MOBILE_APP` | `host` | **rule 1** -- `NodeUpsert("MOBILE_APP", bundle_id)` at `ingest/mobile/parser.py:171` and `ingest/__init__.py:46`; a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
+| `MOBILE_COMPONENT` | `host` | **rule 1** -- `NodeUpsert("MOBILE_COMPONENT", f"{bundle_id}/{name}")` at `ingest/mobile/parser.py:177`; same dotted-token shape |
+| `SECRET` | *(none)* | **rule 1** -- `NodeUpsert("SECRET", ...)` at `ingest/mobile/parser.py:258` and `ingest/__init__.py:47`: the id is sha256-derived and matches no shape family, and every real call site sets `scope_key=bundle_id`, so this denies nothing in production (FORK-Y) |
+| `PARAMETER` | *(none)* | **rule 5** -- `schema.py:226` `NODE_COLUMNS`: the `name` column carries the identity; §1.4 an opaque name is never glob-authorized |
+| `IDENTITY` | *(none)* | **rule 5** -- `schema.py:231` `NODE_COLUMNS`: `name`/`provider` carry the identity; no producer call site exists |
+| `TECHNOLOGY` | *(none)* | **rule 5** -- `schema.py:233` `NODE_COLUMNS`: `name`/`version` carry the identity; no producer call site exists |
+| `FINDING` | *(none)* | **rule 5** -- `schema.py:234` `NODE_COLUMNS`: `title`/`severity` carry the identity; no producer call site exists |
 | `ENGAGEMENT` / `EVIDENCE` | *(absent)* | `graph.py`'s `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` bypass this guard entirely, unchanged |
 
 `classify_target` itself is untouched -- still a pure, node-type-blind
@@ -494,7 +494,10 @@ brief closes.
   gives a column that carries the network identity (`url`, `name`), the family is `frozenset()` and
   scope arrives via a `scope_key` (`WEB_ENDPOINT`, `PARAMETER`). Every `NODE_TYPE_SHAPES` row cites
   a `schema.py` line or a producer call site and records its rule number; no row cites a docstring,
-  a convention or another type. `HOST` keeps all four shapes under rule 1 (Brief #10.3 §1.2).
+  a convention or another type. This is **enforced**, not asserted: `NODE_TYPE_SHAPE_EVIDENCE` carries
+  the `(rule, citation)` pair per row and
+  `test_b105_8_2_every_row_records_a_citation_and_a_rule_number` fails if a row is missing, carries a
+  rule other than 1 or 5, cites a docstring or a convention, or (rule 5) omits a `schema.py` line. `HOST` keeps all four shapes under rule 1 (Brief #10.3 §1.2).
 - **Address-shaped exclusions.** An exclusion matches an address-shaped target (`ip`, `ip_port`,
   including bracketed, zone-indexed and IPv4-mapped IPv6) by its address, ignoring port, scheme
   and path, exactly as for name-shaped hosts. The allow side is unchanged.
