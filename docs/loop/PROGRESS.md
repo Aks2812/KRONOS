@@ -3010,3 +3010,76 @@ pending_action:
   seq: 30
   action: "record the X-score, then dispatch ONE re-review of abfe531 (diff + brief only, fresh context) covering the four previously-failed criteria and the whole §8; then STOP at GATE-2"
   outcome: pending
+
+## SEQ 31 — v7 ROLE ARCHITECTURE ADOPTED (5 steps, Haiku gate, orchestrator final review)
+
+seq: 31
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: VERIFY (re-review of abfe531 still pending)
+
+maintainer_direction:
+  adopted: "the 5-step structure, verbatim as specified"
+  doc: "docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md, 124 lines, sha256 6447ccadc3ab1fb63b4e4c6c3bf46cc14feb330d288e84e317ad087a79070feb"
+  supersedes: "v6's ROLE MODEL only. v6's merge authorization, ten-item MERGE-GATE, pauses, halts and state rules are unchanged and still binding."
+  steps:
+    1: "Opus orchestrator — parse, write lean todo.md, set up workspace"
+    2: "Sonnet researcher — cited facts into context.txt, terminate"
+    3: "Sonnet builder — consume todo.md + context.txt, edit, terminate"
+    4: "Haiku test runner (Gate 1) — suite/linters/compilers, pass/fail + logs, terminate"
+    5: "Opus orchestrator — final semantic review, todo.md compliance, request human approval (Gate 2)"
+  short_circuit: "Haiku FAIL -> back to step 3 with raw logs, Opus untouched, circuit breaker 3 attempts then HALT. Haiku PASS -> step 5."
+  circuit_breaker_mapping: "the 3-attempt Haiku<->builder cycle IS v6's BUILD iteration bound; exhausting it is a PAUSE-DECISION, not a retry"
+
+## WHAT v7 REMOVES AND WHAT REPLACES IT — recorded without softening
+
+removed: "the separate independent Opus reviewer. Step 5 is the orchestrator reviewing its own loop's output."
+evidence_against_that_choice_from_this_repo:
+  - "10.4: orchestrator declared §8 15/15; independent reviewer found 3 failures"
+  - "10.5: orchestrator declared §8 15/15; independent reviewer found 4 failures, one of them docs/loop/PROGRESS.md — an out-of-§3 file the ORCHESTRATOR had committed via git add -A"
+  - "at 7fc1863 the suite was GREEN (3456 passed, 0 failed) and the review still returned FAIL — a pass/fail gate cannot replace semantic review, only run in front of one"
+structural_limit: "a self-review cannot catch the orchestrator's own breach, because the orchestrator already believes it is fine"
+compensating_controls_now_MANDATORY:
+  1: "every review finding becomes a test — precedent: NODE_TYPE_SHAPE_EVIDENCE + test_b105_8_2_*, which caught the orchestrator's own incomplete citation within a minute"
+  2: "full-window file audit as a hard gate: `git diff --name-only <base>..HEAD`, assert every path is in §3, not just the expected ones. This is the check that would have caught §8.11."
+  3: "explicit-path staging; never `git add -A` on a brief-scoped branch"
+  4: "totals refreshed as the FINAL edit after the last suite run (they went stale 3x on one brief)"
+  5: "claims must be enforced by a test or softened to what ships — an assertion the shipped file contradicts is worse than silence"
+  6: "the MAINTAINER is now the remaining independent check. GATE-2 IS the review, not a second opinion on top of one. Step 5 must hand up MEASURED EVIDENCE — verbatim counts, verbatim lines, file:line — not conclusions."
+escape_hatch_retained: "the orchestrator may request a one-off independent Opus review when it has materially changed code it is about to review, or when a brief's central deliverable is a judgment rather than a behaviour. Requesting it is never a failure."
+
+factual_correction_issued_to_maintainer:
+  claim: "step 5 saves up to 40% by eliminating a redundant Opus initialization sequence"
+  assessment: NOT SUPPORTED
+  reason: >
+    The reviewer's 266k was spent MEASURING — two suite runs, a 12,168-cell differential harness,
+    an in-memory matcher break, opening cited file:lines — not initializing. Moving that work to
+    the orchestrator moves its cost; it does not remove it. Realistic saving from merging the
+    steps is one agent spin-up plus duplicated suite runs, nearer 10-15%.
+  what_IS_a_large_certain_saving: "the Haiku short-circuit — it avoids a ~266k review every time the suite is red. At 7fc1863's predecessor state (21 failures) it would have cost pennies instead of a full verification pass."
+
+## SEQUENCING RECOMMENDATION — one narrow ask
+
+issue: >
+  abfe531 is mid-verification. The orchestrator personally applied all five fixes to it this
+  turn. Under v7 step 5, the orchestrator would review its own fixes to the four criteria an
+  independent reviewer had just failed.
+recommendation: >
+  Let abfe531 close under the v6 structure with ONE final independent review, then adopt v7 from
+  the NEXT brief. This is not a re-litigation of v7 — it is that the orchestrator is the worst
+  available reviewer of changes it wrote minutes ago, and this specific diff is the one case where
+  that matters most.
+if_the_maintainer_declines: "the orchestrator performs step 5 on abfe531 and hands up measured evidence per control 6, with the self-review limitation stated in the hand-up"
+
+state:
+  pr_15: "OPEN, draft true, branch at abfe531, auto_merge null"
+  pr_13: "OPEN, draft true, head d2ad51e"
+  issue_2: OPEN
+  main: dcbdba9
+  suite_at_abfe531: "3457 passed, 0 failed, 1 skipped; cybergym/cloud 17 passed; X-SCORE 3/3 exit 0"
+  merge_gate: "not re-measured, not proposed. Do not merge."
+
+pending_action:
+  seq: 31
+  action: "await the maintainer on the sequencing ask: one final independent review of abfe531 under v6 (recommended), or orchestrator step-5 review under v7. Then STOP at GATE-2."
+  outcome: pending
