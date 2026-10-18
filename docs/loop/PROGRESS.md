@@ -2316,3 +2316,50 @@ pending_action:
     constants, confirm 0 failed, then continue §5.3/§5.4/§5.5/§5.6/§5.7 of the brief.
   outcome: pending
   continuation_guideline: "unchanged from seq 21 — still current, still the resume path"
+
+## SEQ 23 — DISPATCH HELD BY MAINTAINER UNTIL USAGE RESET
+
+seq: 23
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: HELD — no work in flight
+
+seq22_pending_action_outcome: >
+  No FORK-AB ruling yet. Maintainer instead instructed, verbatim: "hold the dispatch until
+  reset." No builder and no reviewer dispatched. Nothing is in flight.
+
+HOLD — BINDING ON ANY RESUMING SESSION:
+  do_not_dispatch: >
+    A resuming session must NOT dispatch a builder or a reviewer on its own initiative, even
+    though the brief is approved and the next step is mechanically obvious. The maintainer holds
+    the dispatch until the usage limit resets (reported ~21:40 local, 2026-10-18) and will
+    trigger it manually.
+  what_a_resuming_session_may_do: >
+    Read state, re-derive the remote facts, and report. Nothing else without an instruction.
+  what_is_still_needed_from_the_maintainer:
+    1: "the FORK-AB ruling — A (revert the HOST narrowing, amend rule 5's precedence), B (retype 20 lock tests), or C (accept 21 red). Orchestrator recommends A."
+    2: "an explicit go-ahead to dispatch."
+
+state_frozen_at_hold:
+  loop_state_branch: bfb2b97
+  feature_branch: "claude/scope-key-dispatch-brief10-4 @ 0649822 — suite RED, 21 failed / 1062 passed / 1 skipped"
+  approved_brief: "SPEC_BRIEF10.5.md @ repo root on that branch, 385 lines, verified intact"
+  pr_15: "OPEN, draft true, auto_merge null"
+  pr_13: "OPEN, draft true, head d2ad51e"
+  issue_2: OPEN
+  main: dcbdba9
+  merge_gate: "unchanged, suite RED. Do not merge."
+  work_in_flight: none
+
+on_resume_if_FORK_AB_is_A: >
+  Short sequence, in this order: revert the HOST row in NODE_TYPE_SHAPES to
+  {host, ip, host_port, ip_port}; amend §1.1 so rule 5 is consulted only when neither a producer
+  NOR a ratified predecessor prose decision exists; record FORK-AB as proposed-and-rejected with
+  its reason; re-pin the three _SCOPE_GUARD_SHA256 constants; confirm tests/ is 0 failed; THEN
+  continue §5.3, §5.4, §5.5, §5.6, §5.7. Dispatch only once the maintainer says so.
+
+pending_action:
+  seq: 23
+  action: "HELD at maintainer's instruction. Await (1) the FORK-AB ruling and (2) an explicit dispatch go-ahead, after the usage reset."
+  outcome: pending
+  continuation_guideline: "seq 21's guideline remains current and unchanged"
