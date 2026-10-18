@@ -2363,3 +2363,72 @@ pending_action:
   action: "HELD at maintainer's instruction. Await (1) the FORK-AB ruling and (2) an explicit dispatch go-ahead, after the usage reset."
   outcome: pending
   continuation_guideline: "seq 21's guideline remains current and unchanged"
+
+## SEQ 24 — HOLD LIFTED; PROCEEDING ON FORK-AB OPTION A UNDER STATED ASSUMPTION
+
+seq: 24
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: BUILD resumed
+
+seq23_pending_action_outcome: >
+  Maintainer reported the usage reset and instructed: install the playwright CLI, then
+  "continue our R&D phase." That is the dispatch go-ahead (item 2 of seq 23). The FORK-AB
+  ruling (item 1) was NOT explicitly named.
+
+fork_ab_disposition:
+  status: "PROCEEDING UNDER STATED ASSUMPTION — option A"
+  basis: >
+    The maintainer said "continue" immediately after being presented with A/B/C and the
+    orchestrator's recommendation of A. Read in context that is a go-ahead on the
+    recommendation. Recorded as an ASSUMPTION, not an explicit ruling, and surfaced in the
+    reply so it can be corrected.
+  why_A_is_the_safe_default_to_assume: >
+    A is a revert plus re-pins; it touches no test. All 20 ratified lock tests stay untouched,
+    so option B remains fully available afterwards at no cost. B would rewrite reviewer-approved
+    decisions from Briefs #10/#10.1/#10.3 and is not reversible as cheaply. C is non-viable
+    under §8.7. Assuming the reversible option is the correct posture when the instruction is
+    ambiguous.
+  reversibility: "complete — if the maintainer rules B, revert this revert and retype the 20 tests"
+
+scratchpad_loss_note: >
+  The usage reset cleared the scratchpad, destroying the local kronos/loop-state worktree. It
+  was recreated from origin at 854c513 with all 21 prior SEQ entries intact. This is the
+  write-ahead rule working as designed: no checkpoint lived only on disk. Recorded as evidence
+  that local scratch loss is not a state-loss event.
+
+## TOOLING — playwright CLI installed (outside the loop, outside the repo)
+
+request: "set up the plugin at https://github.com/microsoft/playwright-cli.git for token efficiency with RTK and Headroom"
+finding: >
+  That repo EXISTS and is reachable (HEAD b85c7a73, newest branch release-0.180) but is the
+  deprecated standalone CLI from the 0.x era; Playwright core is at 1.64.1. It carries no plugin
+  manifest, so it is not a Claude Code plugin either. Installing it was declined in favour of
+  the live successor, and the maintainer was told why before anything was installed.
+installed_instead:
+  package: "playwright@1.64.1"
+  location: "/home/void/.local/share/playwright-cli (user prefix — global install needed root; sudo was NOT used)"
+  on_path: "/home/void/.local/bin/playwright -> node_modules/.bin/playwright"
+  browser: "chromium only (chromium-1248 + chromium_headless_shell-1248, ~120 MiB). firefox/webkit deliberately NOT installed."
+  verified: "headless screenshot produced a 12497-byte PNG; scripted textContent extraction returned title/h1/p correctly. Both against a LOCAL file:// page."
+token_efficiency_rationale: >
+  Bash output passes through RTK condensation; MCP tool results do not. A CLI driven through
+  Bash is therefore the token-cheap route, and an @playwright/mcp server would be the expensive
+  one since it returns full accessibility snapshots into context. This supports the maintainer's
+  instinct for using a CLI.
+scope_note:
+  - "nothing added to the KRONOS repo — no package.json, no requirements file, no .claude/ change"
+  - "verification used a local file:// page only. Playwright must NOT be pointed at live targets; CyberGym-only still binds."
+  - "relevance is prospective: S5 (web ingestion) and S6 (web validation) would use it. Both unstarted, both behind FORK-2."
+
+pending_action:
+  seq: 24
+  action: >
+    Apply FORK-AB option A: revert the HOST row in NODE_TYPE_SHAPES to
+    {host, ip, host_port, ip_port} with a rule-1 citation to Brief #10.3's ratified §1.2 table
+    and its locked H2 row; amend SPEC_BRIEF10.5.md §1.1 so rule 5 is consulted only when neither
+    a producer NOR a ratified predecessor prose decision exists; record FORK-AB as
+    proposed-and-rejected in DECISIONS.md; re-pin the three _SCOPE_GUARD_SHA256 constants;
+    confirm tests/ is 0 failed. THEN dispatch the builder for §5.3-§5.7 from a green baseline.
+    No PR touched, no merge.
+  outcome: pending
