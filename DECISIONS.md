@@ -2756,3 +2756,27 @@ the standing differential test (`test_b105_5_5_differential_allow_side_unchanged
   `_P4_BOTH_ENDS_GLOB` x `_T1_HOST` on the allow side for HOST/SERVICE/MOBILE_APP/MOBILE_COMPONENT, and
   `_P4_BOTH_ENDS_GLOB` x {api.acme.com, :8443, both URL forms, userinfo URL, lookalike, mid-label} on the
   exclusion side. No prose in #10..#10.5 determines them.
+
+### SPEC_BRIEF10.5 PD-5 — the `*.acme.com*` both-ends glob, 11 cells, maintainer-ruled
+
+The rebuilt §5.4 grid referred 11 cells as PAUSE-DECISION rather than copying the legacy #10.3
+grid's `False` values forward: 4 on the allow side (`_P4` × `_T1_HOST` under HOST, SERVICE,
+MOBILE_APP, MOBILE_COMPONENT) and 7 on the exclusion side (`_P4` against every host-ish
+representation of `api.acme.com`). Refusing to copy them was correct — doing so is the §0.1
+behaviour-fitting defect.
+
+**Ruling: allow side denies; exclusion side is DENY-BROAD.**
+
+*Allow side* is consistent with SPEC_BRIEF10.1 FORK-U, which already holds that a both-ends
+wildcard is not a host pattern, plus allow-narrow.
+
+*Exclusion side* required a code change. `_matches` routes a `*.`-leading pattern to
+`_matches_hostname_pattern`, which took `pattern[2:]` (`"acme.com*"`) as a literal suffix, so
+`"api.acme.com".endswith(".acme.com*")` was False and the pattern failed to exclude the exact host
+it names. On the exclusion side the comparison is now a glob match against the **host identity
+only** (FORK-S: never path, query, fragment or userinfo). This is a deny-side widening, permitted
+by guardrail §9 and proven non-widening on the allow side by the §5.5 standing differential.
+
+The legacy #10.3 exclusion grid row for this pattern held all-`False` and is superseded; its
+`_EXCL_HOSTISH` positions now deny. The three `_SCOPE_GUARD_SHA256` pins were re-pinned because
+`scope_guard.py` changed.

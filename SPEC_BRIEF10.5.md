@@ -138,10 +138,21 @@ rows. The remaining three are **normative here**:
    gate makes public-API exclusion testing impossible — **does not hold**: `in_scope=['*']` with
    `target_kind='scope_key'` yields unconfounded exclusion semantics. Use it.
 
-**One cell is already known to be prose-undetermined** and must be reported rather than guessed:
-`_P4_BOTH_ENDS_GLOB` (`*.acme.com*`) is declared `False` against `_T1_HOST` (`api.acme.com`) on
-**both** sides — a both-ends glob denying the exact host it names, including as an exclusion where
-rule 6 says deny broad. It is predecessor scope and no prose in #10–#10.5 determines it.
+**PD-5 (maintainer-ruled, now normative prose).** The `_P4_BOTH_ENDS_GLOB` pattern `*.acme.com*`
+against `api.acme.com` and its representations is decided as follows, and the ruling applies to
+all 11 cells that were deferred:
+
+- **Allow side: denies.** Allow-narrow, and SPEC_BRIEF10.1 **FORK-U** already holds that a
+  both-ends wildcard is not a host pattern.
+- **Exclusion side: DENY-BROAD — it denies.** §1.3 states exclusions are *"strictly broader than
+  the allow side and that asymmetry is the specification"*. A pattern that names `api.acme.com`
+  and fails to exclude it is the under-match class FORK-2 exists to close. The comparison is a
+  glob match against the **host identity only** (FORK-S: never path, query, fragment or
+  userinfo), so it widens the deny side and cannot widen the allow side.
+
+This required a routing change: the `*.`-leading branch treated `pattern[2:]` as a literal
+suffix, so `"api.acme.com".endswith(".acme.com*")` was False. The legacy #10.3 exclusion grid's
+all-`False` row for this pattern is superseded by this ruling.
 
 ### 1.4 The §6 gate must be byte-verbatim (criterion 14)
 

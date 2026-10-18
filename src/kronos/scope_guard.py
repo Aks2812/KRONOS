@@ -573,8 +573,24 @@ def _matches_hostname_pattern(pattern: str, target: str, shape: TargetShape, *, 
         return False
 
     if pattern.startswith("*."):
-        suffix = pattern[2:].lower()
-        host_ok = host != suffix and host.endswith("." + suffix)
+        if is_exclusion and pattern.endswith("*"):
+            # SPEC_BRIEF10.5 §1.3 (PD-5, maintainer-ruled): a both-ends
+            # glob such as `*.acme.com*` used as an EXCLUSION is
+            # deny-broad. The strict `*.`-suffix rule below treats
+            # pattern[2:] ("acme.com*") as a literal suffix, so it fails
+            # to deny `api.acme.com` -- the exact host the pattern names.
+            # That is the under-match class FORK-2 exists to close, and
+            # §1.3's "strictly broader than the allow side and that
+            # asymmetry is the specification" governs. The comparison is
+            # against the HOST identity only (FORK-S: never the path,
+            # query, fragment or userinfo), so this widens the deny side
+            # and cannot widen the allow side. SPEC_BRIEF10.1 FORK-U
+            # still governs the ALLOW side, where a both-ends glob is
+            # not a host pattern and denies (§1.3, allow-narrow).
+            host_ok = fnmatch.fnmatchcase(host, pattern.lower())
+        else:
+            suffix = pattern[2:].lower()
+            host_ok = host != suffix and host.endswith("." + suffix)
     else:
         host_ok = host == pattern.lower()
 

@@ -233,7 +233,7 @@ def test_teardown_report_round_trips_through_json(tmp_path):
 # scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
 # re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
 # path-blind exclusions (§1.3); see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "0ef7de531c2a86d132d34d9528760f6b304e7a199261e6f5ed12b8cb19b3e9d6"
+_SCOPE_GUARD_SHA256 = "266381ac7d64348a371edf7db86b5fb4ccfef875bf39c94819d62cdfff6c2ea3"
 
 
 def test_scope_guard_still_has_zero_line_diff():

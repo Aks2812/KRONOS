@@ -1104,7 +1104,9 @@ _EXCLUSION_EXPECTATIONS: dict[str, dict[str, bool]] = {
     _P1_BARE_HOST: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
     _P2_LEADING_GLOB: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
     _P3_TRAILING_GLOB: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _T, _T, _F, _F, _F])),
-    _P4_BOTH_ENDS_GLOB: dict(zip(_TARGETS, [_F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
+    # SPEC_BRIEF10.5 §1.3 (PD-5): deny-broad. _EXCL_HOSTISH positions
+    # (T1, T2, T6, T7, T8, T10, T11) now deny; the rest are unchanged.
+    _P4_BOTH_ENDS_GLOB: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _T, _T, _F, _F, _F])),
     _P5_BARE_IP: dict(zip(_TARGETS, [_F, _F, _T, _T, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
     _P6_CIDR: dict(zip(_TARGETS, [_F, _F, _T, _T, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
     _P7_HOST_PORT: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
@@ -1571,7 +1573,8 @@ _CL = {
     "10.3.1.3": "SPEC_BRIEF10.3 §1.3: exclusions are representation-blind across shapes and independent of node_type",
     "10.4.1.3": "SPEC_BRIEF10.4 §1.3: exclusion discards a URL pattern's path/port/scheme and compares host identity; allow side stays literal and path-aware",
     "10.5.1.2": "SPEC_BRIEF10.5 §1.2: address-shaped targets yield their address as exclusion identity (port/scheme/path ignored)",
-    "10.5.1.3": "SPEC_BRIEF10.5 §1.3: _P4_BOTH_ENDS_GLOB cells -- no prose in #10..#10.5 determines the value (PAUSE-DECISION)",
+    "10.5.pd5a": "SPEC_BRIEF10.5 §1.3 (PD-5): both-ends glob ALLOW side denies -- allow-narrow, and SPEC_BRIEF10.1 FORK-U already holds that a both-ends wildcard is not a host pattern",
+    "10.5.pd5e": "SPEC_BRIEF10.5 §1.3 (PD-5): both-ends glob EXCLUSION side is DENY-BROAD -- host-identity glob match, per §1.3 'strictly broader than the allow side and that asymmetry is the specification'",
 }
 
 _T_ALL = _TARGETS  # alias for readability
@@ -1607,7 +1610,7 @@ _CORE_ALLOW = {
         _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
     }),
     _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {
-        _t1: (_PAUSE, "10.5.1.3"),
+        _t1: (_F, "10.5.pd5a"),
         _t2: (_F, "10.1.U"),
     }),
     _P5_BARE_IP: _row((_F, "10.r7"), {_t3: (_T, "10.r7"), _t4: (_T, "10.r7")}),
@@ -1679,7 +1682,7 @@ _EXCLUSION_GRID = {
     _P3_TRAILING_GLOB: _row((_F, "10.r6"), dict(
         {t: (_T, "10.r6") for t in _H_SAME},
         **{_t10: (_T, "10.1.2.2"), _t11: (_T, "10.1.2.2")})),
-    _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {t: (_PAUSE, "10.5.1.3") for t in _EXCL_HOSTISH}),
+    _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {t: (_T, "10.5.pd5e") for t in _EXCL_HOSTISH}),
     _P5_BARE_IP: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
     _P6_CIDR: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
     _P7_HOST_PORT: _row((_F, "10.r6"), {t: (_T, "10.3.1.3") for t in _H_SAME}),
@@ -1734,11 +1737,12 @@ def test_b105_5_3_pause_decision_cells_are_exactly_the_reported_set():
     silent new gap) fails here. _P4_BOTH_ENDS_GLOB x _T1_HOST is the known
     one; the exclusion-side rows below are the same question (a both-ends
     glob vs the exact host / its representations) and are referred likewise."""
-    assert _PAUSE_ALLOW == sorted(
-        (nt, _P4_BOTH_ENDS_GLOB, _T1_HOST)
-        for nt in ("HOST", "SERVICE", "MOBILE_APP", "MOBILE_COMPONENT"))
-    assert _PAUSE_EXCL == sorted((_P4_BOTH_ENDS_GLOB, t) for t in _EXCL_HOSTISH)
-    assert len(_PAUSE_ALLOW) + len(_PAUSE_EXCL) == 11
+    # SPEC_BRIEF10.5 §1.3 (PD-5, maintainer-ruled): the 11 deferred cells
+    # are now decided -- allow side denies (allow-narrow, FORK-U),
+    # exclusion side is deny-broad. ZERO cells remain deferred, and this
+    # test pins that: a NEW prose gap appearing later fails here.
+    assert _PAUSE_ALLOW == []
+    assert _PAUSE_EXCL == []
 
 
 def test_b105_5_3_family_prose_matches_table():
