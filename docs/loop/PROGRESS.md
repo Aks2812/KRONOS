@@ -2222,3 +2222,97 @@ pending_action:
     no PR. Then orchestrator VERIFIES against §8 and dispatches an independent reviewer with diff
     + brief only. STOP at GATE-2.
   outcome: pending
+
+## SEQ 22 — BUILD STOPPED ON FORK-AB; RULE 5's HOST ROW IS WRONG; AMENDMENT NEEDED
+
+seq: 22
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: BUILD halted on PAUSE-DECISION (FORK-AB)
+
+seq21_pending_action_outcome: >
+  Builder ran, implemented §1.2 and §1.1, then STOPPED on the PAUSE-DECISION §1.1 itself
+  predicted. Incremental-push protocol worked: two commits are on origin and the handoff is
+  legible from git log alone. Build is INCOMPLETE and the suite is RED.
+
+build_state:
+  branch: claude/scope-key-dispatch-brief10-4
+  head: 0649822
+  commits: ["f439c7f — §5.1/§5.2 tests added, RED captured, implementation not started", "0649822 — §1.2 GREEN 8/8, §1.1 rule-5 table, 3 pins re-pinned, STOPPED on PAUSE-DECISION"]
+  done: ["§1.2 address-shaped exclusions — 8/8 cases green", "§1.1 rule-5 citation table", "3 _SCOPE_GUARD_SHA256 re-pins"]
+  not_done: ["§5.3 grid rebuild", "§5.4 byte-verbatim gate test + docs", "§5.5 differential proof", "§5.6 control restoration", "§5.7 README/DECISIONS", "FORK records in DECISIONS.md"]
+  suite: "21 failed, 1062 passed, 1 skipped — orchestrator-measured, matches builder's report"
+  zero_diff_verified: "manifest.py, schema.py, graph.py, cybergym/ all empty diff vs 2a676a8 — confirmed"
+  no_pr_touched: "PR #13 and PR #15 untouched"
+  builder_conduct: "CORRECT — §1.1 ordered a PAUSE-DECISION on exactly this, guardrail 11 forbade editing the tests, and it did neither. It also pushed incrementally as instructed."
+
+brief_integrity_check:
+  builder_claim: "§5.3, §5.7, FORK-AC and §8.10-13 garbled in its copy"
+  orchestrator_finding: >
+    FALSE ALARM on the file. SPEC_BRIEF10.5.md on the branch is intact — 385 lines, sha256
+    unchanged from the landed commit, and all named sections present. The garbling was in the
+    builder's own reading pipeline, not the artifact. No re-issue needed.
+
+## ORCHESTRATOR FINDING — §1.1's HOST ROW IS WRONG, NOT MERELY INCONVENIENT
+
+all_21_failures: "every one in tests/test_scope_guard.py, every one a node_type=HOST target with a host_port or ip_port id"
+decisive_evidence:
+  - "test_b103_h2[HOST-localhost*-localhost:8091-True] — this IS Brief #10.3's H2 table row. 10.3 §1.2's own prose table assigns HOST `host, ip, host_port, ip_port` with 'boundary rule applies'. That row was reviewer-verified and ratified."
+  - "test_5_5_lock_explicit_port_entry_allows_bare_host_port, test_5_5b_lock_cidr_allows_standard_port, test_b101_5_2_trailing_glob_locks — LOCK tests, i.e. deliberately ratified decisions from Briefs #10 and #10.1."
+  - "test_9_1_a_manifest_signed_before_this_brief_still_verifies — guardrail §2.1's OWN PROOF fails under the narrowing. A brief whose change breaks the signed-manifest verification test is not narrowing safely."
+  - "test_b103_5_4_generated_allow_matrix_host — 4 grid cells, i.e. the predecessor grid also pins HOST accepting ports."
+conclusion: >
+  Rule 5 says the schema governs WHEN NO PRODUCER EXISTS. But for HOST there is prose evidence
+  that is not a producer and that rule 5 never contemplated: a RATIFIED PREDECESSOR BRIEF's
+  §1.2 prose table, plus its locked H2 test row. That outranks the orchestrator's schema
+  inference. Rule 5 should never have been reached for HOST.
+my_error: >
+  I derived HOST -> {host, ip} from the absence of a port column in schema.py:223 and presented
+  it as rule 5's output. I did not check the predecessor's ratified §1.2 table or the lock tests
+  before writing it into an approved brief. The absence of a port COLUMN does not forbid a
+  port-bearing ID; SERVICE stores a port separately AND carries it in its id. This is the second
+  time this session my own derivation needed correcting by measurement rather than by reasoning.
+
+## AMENDMENT PROPOSED — needs GATE-1 ruling
+
+option_A_RECOMMENDED:
+  action: "revert the HOST narrowing to {host, ip, host_port, ip_port}; amend §1.1's rule 5 to state it is consulted only when NEITHER a producer NOR a ratified predecessor prose decision exists; record FORK-AB as 'narrowing proposed and REJECTED, with reason'."
+  cost: "zero test edits. All 21 failures vanish. §1.2's completed work and the 3 re-pins are unaffected."
+  why: >
+    It is the only option that does not edit ratified lock tests to fit an orchestrator
+    inference. Editing 20 lock tests to match my derivation would be the §0.1 method defect
+    inverted — fitting the SPEC to the code's convenience instead of fitting expectations to
+    prose, except worse, because it would overwrite decisions a reviewer already approved.
+option_B:
+  action: "retype the 20 tests to SERVICE and keep HOST at {host, ip}"
+  why_not: >
+    All 20 are inside §3's permitted files so it is mechanically allowed, but 14 of them are
+    lock/H2/grid tests encoding ratified decisions from Briefs #10, #10.1 and #10.3, and one is
+    guardrail §2.1's signed-manifest proof. Rewriting them changes what earlier briefs ratified,
+    on the strength of a derivation that has now been shown to conflict with that prose.
+option_C:
+  action: "keep HOST narrowed and accept 21 red tests"
+  why_not: "§8.7 requires 0 failed, and a red suite cannot support a merge gate."
+recommendation: A
+
+## OPEN ITEMS CARRIED FORWARD
+
+- "_P4_BOTH_ENDS_GLOB x _T1_HOST remains a PAUSE-DECISION, correctly left unfilled — currently declared False on both sides and no prose in #10..#10.5 determines it"
+- "FORK-AC not addressed by the builder; brief text is intact, so it is simply not yet done"
+- "§5.3/§5.4/§5.5/§5.6/§5.7 all still to build after the amendment is ruled"
+
+state:
+  pr_15: "OPEN, draft true, head 2a676a8 — the branch has moved to 0649822 but PR #15's recorded head is unchanged until it next syncs; verify on resume"
+  pr_13: "OPEN, draft true, head d2ad51e"
+  issue_2: OPEN
+  main: dcbdba9
+  merge_gate: "unchanged. Suite RED. Do not merge."
+
+pending_action:
+  seq: 22
+  action: >
+    Await GATE-1 amendment ruling on FORK-AB (recommend A — revert the HOST narrowing and
+    amend rule 5's precedence). On approval: revert the HOST row, re-pin the three SHA
+    constants, confirm 0 failed, then continue §5.3/§5.4/§5.5/§5.6/§5.7 of the brief.
+  outcome: pending
+  continuation_guideline: "unchanged from seq 21 — still current, still the resume path"
