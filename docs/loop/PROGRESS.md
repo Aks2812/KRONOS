@@ -639,3 +639,256 @@ pending_action:
     Then author SPEC_BRIEF10.4 draft, push it to kronos/loop-state, and STOP for GATE-1.
   scope: "repository reads and pytest only; no .claude/, .github/, cybergym/ or manifest edits; no network beyond gh repo reads and state-branch pushes"
   outcome: pending
+
+## SEQ 7 — FORK-2 RESEARCH OUTCOME; GATE-1 BLOCKED BY TWO PAUSE-DECISIONS
+
+seq: 7
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: RESEARCH complete, brief 10.4 NOT authored
+seq6_pending_action_outcome: >
+  Research items 1-4 completed read-only. SPEC_BRIEF10.4 deliberately NOT authored: two
+  of the six regressions turn on prose the brief does not contain, and the standing rule
+  makes that a PAUSE-DECISION rather than a judgment call. Authoring the §5.4 grid now
+  would require inventing the two cells, which is exactly the section 0.3 method defect.
+
+method:
+  trees: "both exported with git archive to a scratchpad; neither branch checked out"
+  base: dcbdba950a45253f2c417b0c95c6ccb6930e9221
+  head: d2ad51e611927525780b9069db2bc16b0a7209b2
+  probes: "pytest per failing test, plus direct classify_target/_effective_shape probes"
+  network: none
+
+## RESEARCH 1 — the six regressions, per-test, from PROSE
+
+governing_prose:
+  s1_2_scoping_clause:
+    citation: "SPEC_BRIEF10.3 §1.2, brief line 86-88"
+    text: >
+      "Enumerate every node type in schema.py and assign its permitted shape family.
+      Starting point — the builder verifies each against how that type's ids are actually
+      produced, and reports the finished table:"
+    reading: >
+      The §1.2 table is explicitly a STARTING POINT, and the same sentence orders it
+      verified against how each type's ids are ACTUALLY PRODUCED. The literal cell values
+      are therefore not normative; the verification clause is. A cell left at its starting
+      value without that verification is an unfinished instruction, not a specification.
+  s1_1_fail_closed:
+    citation: "SPEC_BRIEF10.3 §1.1, brief line 80-83"
+    scope: >
+      Fail-closed governs an unrecognised, empty or None NODE_TYPE. It says nothing about a
+      recognised type carrying a legitimately-produced target. It does not authorize denying
+      a known type whose real id shape is absent from the table.
+  s1_3: "exclusion side only; none of the six failures is an exclusion under-match"
+
+measured_root_cause:
+  call_site:
+    citation: "src/kronos/graph.py:140 at the PR head"
+    code: "in_scope = self.scope.is_in_scope(scope_key or id, node_type=type)"
+    consequence: >
+      The gated string is `scope_key or id` — the scope_key when one is present, the id
+      otherwise. §1.2's table is scoped by its own prose to IDS. Two different domains are
+      being gated by one id-shaped table. This is the structural defect behind 3 of the 6.
+  head_table_vs_starting_table:
+    endpoints: "WEB_ENDPOINT and API_ENDPOINT left at the literal starting value {url}"
+    mobile: "MOBILE_APP and MOBILE_COMPONENT changed from `bundle_id` to {host}"
+    secret: "SECRET assigned {host}; §1.2 asked for 'report what their ids actually are'"
+    finding: >
+      The builder applied §1.2's verification clause SELECTIVELY — it verified the mobile
+      family against real ids (com.acme.app classifies as `host`, so it substituted host
+      for the starting value bundle_id) and did NOT verify the endpoint family, leaving it
+      at the starting value. The inconsistency is itself the evidence that {url} is an
+      unverified starting value rather than a deliberate narrowing. Recorded as Finding G.
+
+per_test_determination:
+  - test: "tests/test_invariants.py::test_invariant_out_of_scope_secret_cannot_anchor_finding"
+    trigger: 'upsert_node("API_ENDPOINT", "api.acme.example.com") — a BARE HOST id'
+    measured: "classify_target=host; permitted={url}; host not in {url} -> deny"
+    prose_verdict: IN-SCOPE
+    basis: "§1.2 verification clause — API_ENDPOINT ids are actually produced as bare hosts"
+    action: "NODE_TYPE_SHAPES over-narrowed; FIX THE TABLE. Do not touch the test."
+  - test: "tests/test_schema_graph.py::test_upsert_node_stamps_in_scope_via_scope_guard"
+    trigger: 'same — API_ENDPOINT id "api.acme.example.com"'
+    measured: "same"
+    prose_verdict: IN-SCOPE
+    action: "same — fix the table"
+  - test: "tests/test_invariants.py::test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain"
+    trigger: >
+      TWO independent causes in one chain: API_ENDPOINT "api.acme.example.com" (bare host),
+      and CLOUD_RESOURCE "cr:acme-bucket" carrying scope_key="api.acme.example.com".
+    measured: >
+      The API_ENDPOINT denies as above. Separately the CLOUD_RESOURCE denies because the
+      gate receives its SCOPE_KEY (a host), and CLOUD_RESOURCE permits {bucket_name, arn};
+      its own id `cr:acme-bucket` classifies as bucket_name and would have passed.
+    prose_verdict: "IN-SCOPE for the API_ENDPOINT half; the scope_key half is PAUSE-DECISION 1"
+    action: "fix the table; the scope_key half cannot be decided from this brief's prose"
+  - test: "tests/test_query.py::test_find_paths_returns_seeded_mobile_to_cloud_chain"
+    trigger: "same seeded chain as above"
+    prose_verdict: "same split"
+    action: "same"
+  - test: "tests/test_query.py::test_find_paths_only_in_scope_excludes_out_of_scope_hop"
+    trigger: 'CLOUD_RESOURCE "cr:acme-bucket" with scope_key="api.acme.example.com"'
+    measured: >
+      Denies on the scope_key alone. The test's out-of-scope hop (api.evil.com) is
+      DELIBERATELY out of scope and behaves correctly; the failure is the assertion that
+      the only_in_scope=False traversal still returns >=1 path, which returns 0 because the
+      CLOUD_RESOURCE endpoint is denied and find_paths always checks endpoints.
+    prose_verdict: PAUSE-DECISION-1
+    action: "blocked — see below"
+  - test: "tests/test_reconcile.py::test_web_endpoint_real_duplicate_merges_and_tombstones"
+    trigger: 'upsert_node("WEB_ENDPOINT", "web:1", {"url": url, ...}) — OPAQUE SYNTHETIC id'
+    measured: >
+      classify_target("web:1") = host_port — "web" read as host, "1" as port — and
+      host_port is not in {url}, so it denies. WEB_ENDPOINT ids are NOT urls at all: the
+      id is an opaque synthetic key and the real URL lives in the `url` ATTRIBUTE.
+    prose_verdict: PAUSE-DECISION-2
+    action: "blocked — see below"
+
+split_summary:
+  fix_the_table: 2    # the two pure API_ENDPOINT cases
+  fix_the_table_plus_pause: 2    # the seeded chain, both halves present
+  pause_decision_only: 2
+  fix_the_test: 0
+  note: >
+    No test in the six encodes the permissive behaviour FORK-2 exists to remove. The old
+    tests are not the problem in any of the six. Nothing here warrants editing a test.
+
+## PAUSE-DECISION 1 — is a scope_key gated by its node type's ID shape family?
+
+status: BLOCKING GATE-1
+prose_state: "SILENT. §1.2 scopes its table to ids. No section addresses scope_key."
+why_not_a_judgment_call: >
+  Per the standing rule, prose silence where a §5.4 matrix cell needs a value is a
+  PAUSE-DECISION. Deciding it myself and writing the grid from that decision would be the
+  fourth instance of the §0.3 method defect.
+options:
+  A: >
+    A scope_key is an explicit in-scope identity assertion and is gated by its OWN shape,
+    independent of node_type — the id-shape table applies only when the gate falls through
+    to the id. Restores all three scope_key regressions. RECOMMENDED: it is the only option
+    consistent with §1.2's prose actually being about ids, and a scope_key is operator-
+    supplied, so it is already a deliberate narrowing rather than an inferred one.
+  B: >
+    Keep gating scope_key by the node type's family and widen CLOUD_RESOURCE to accept
+    host/url. Rejected in recommendation: it widens the one family §1.2 names as the ONLY
+    type with free mid-token glob expansion, which is the exact over-permission H2 exists
+    to close.
+  C: >
+    Declare scope_key-bearing nodes out of scope and change the three tests. Rejected:
+    nothing in the prose supports it and it would break the documented scope_key feature.
+recommendation: A
+
+## PAUSE-DECISION 2 — what family governs an OPAQUE synthetic id (WEB_ENDPOINT "web:N")?
+
+status: BLOCKING GATE-1
+prose_state: >
+  §1.2 assigns WEB_ENDPOINT -> url, but real WEB_ENDPOINT ids are opaque synthetic keys
+  with the URL in an attribute, so the starting value describes a shape that is never
+  produced. The nearest prose is §1.4's PARAMETER treatment ("an opaque name, not a
+  network identifier... inherits scope from its parent endpoint"), which is an ANALOGY for
+  a different type, not a ruling for WEB_ENDPOINT.
+options:
+  A: >
+    Treat an opaque WEB_ENDPOINT id by §1.4's PARAMETER principle — it inherits scope and
+    is never matched against a host/URL glob; require a scope_key (or the url attribute)
+    to carry the network identity. RECOMMENDED, and it composes with PAUSE-DECISION 1.A.
+  B: >
+    Gate WEB_ENDPOINT on its `url` attribute rather than its id. Clean semantically but it
+    changes what the chokepoint reads, which §1.1 calls the one approved change already
+    made; a second change to the chokepoint contract needs its own authorization.
+  C: "Add host_port to WEB_ENDPOINT's family. Rejected: it allows on a misclassification artifact."
+recommendation: A
+
+## RESEARCH 2 — Finding A disposition
+
+finding_a: "§1.3 only partly implemented — URL exclusion patterns carrying a PATH still route to the shape/port/scheme-bound matcher"
+disposition: SAME BRIEF (SPEC_BRIEF10.4)
+reasoning: >
+  It is the same defect class, the same function, and the same §1.3 prose as the work 10.4
+  must already do, and §1.3 is normative prose that 10.3 did not fully implement — so it is
+  unfinished 10.3 scope, not new scope. Splitting it would require a second brief touching
+  the same matcher, and two briefs editing one function serially invites a merge-order
+  hazard for no benefit. Decisive point: it is DENY-SIDE. Leaving it open while 10.4 widens
+  the ALLOW side would ship a net loosening of the guard in a single PR, which is the one
+  outcome FORK-2 exists to prevent. It must land with, or before, the allow-side widening.
+prose_is_unambiguous_here: >
+  Yes — §1.3 says an exclusion denies if ANY target identity matches "regardless of port,
+  scheme or path". The path-bearing case is named explicitly, so no PAUSE-DECISION arises;
+  this one is directly derivable and is RED-first testable.
+
+## RESEARCH 3 — Findings C, D, E triage
+
+- id: B
+  severity: high
+  disposition: "FIX IN 10.4 — the two §5.4 cells must be rebuilt from prose and must exercise a MATCHING path against the path-bearing exclusion patterns, which the current grid never does. Blocked on nothing; follows from Finding A's fix."
+- id: C
+  severity: medium
+  disposition: >
+    FIX IN 10.4. §5.4's own text requires running the product for the allow side per node
+    type; it was run for one type. Disclosed, not concealed. Now cheap and load-bearing:
+    with the table being corrected per node type, a per-type allow-side run is the only
+    thing that would catch a repeat of Finding G.
+- id: D
+  severity: minor
+  disposition: >
+    FIX IN 10.4, low cost. Assert through the public API (scope_guard / is_in_scope), not
+    the private matcher. A conformance grid that asserts through a private helper does not
+    test the contract any call site actually uses.
+- id: E
+  severity: minor
+  disposition: >
+    ACCEPT AS-IS, record only. The property was independently confirmed to hold for both
+    real candidate types, so this is test NAMING, not a gap. Rename opportunistically if
+    §5.3 is touched anyway; do not spend a RED-first cycle on it.
+- id: F
+  disposition: "no action — diff within §3 permitted files, confirmed again this turn"
+- id: G
+  severity: high
+  new_this_turn: true
+  finding: "see head_table_vs_starting_table — §1.2's verification clause applied selectively; mobile verified, endpoints not"
+  disposition: >
+    FIX IN 10.4, and 10.4 must require the finished table to be reported WITH the per-type
+    evidence of actual id production, so an unverified starting value cannot survive again.
+
+## RESEARCH 4 — X-SCORE
+
+verdict: BLOCKED
+environment_named: >
+  httpx2 is NOT installed in /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void/.venv
+  (ModuleNotFoundError confirmed this turn). cybergym/cloud/test_denial_matrix.py therefore
+  fails COLLECTION with "RuntimeError: The starlette.testclient requires httpx2"; 4 tests
+  collected, 1 collection error. So cybergym/cloud was not collected at the head.
+pin: "httpx2==2.13.1 (SPEC_BRIEF7.1 line 31, 'observed on the Kali verification run')"
+not_carried_forward: >
+  The 3/3 from a different commit is NOT carried forward and nothing was loosened to
+  recover it. No X-SCORE line is claimed.
+install_is_a_pause_decision: >
+  Yes, per the NETWORK rule — a package-registry fetch is neither a silent allow nor a
+  silent block. Not performed.
+blocking_conflict_recorded:
+  issue: >
+    SPEC_BRIEF7.1 line 39 states the remediation is to add the httpx2 pin to
+    `cybergym/requirements.txt`. The stage contract forbids editing cybergym/ outright.
+  consequence: >
+    The X-SCORE cannot be unblocked by the loop under any brief. Both halves — installing
+    the package and recording the pin in cybergym/ — are maintainer actions. 10.4 must
+    therefore carry X-SCORE as BLOCKED-BY-ENVIRONMENT with this conflict named, rather than
+    listing an acceptance criterion the loop is structurally unable to satisfy.
+  recommendation: >
+    Either the maintainer installs the pin and records it, or 10.4's §8 states X-SCORE is
+    out of the loop's reach and gates it at §6 (live-use) instead of §8 (acceptance).
+
+## STATE UNCHANGED THIS TURN
+
+pr13: "OPEN, draft true, unmerged, head d2ad51e, auto_merge null, mergeable_state CLEAN — untouched"
+issue2: "OPEN — untouched"
+main: "dcbdba9 — untouched"
+fork2: "does not close"
+s3: "stays blocked"
+scope: "CyberGym only; no live targets; no scope change"
+merge_gate: "unchanged from seq 5 — four of ten fail (2, 5, 7, 9). Do not merge."
+
+pending_action:
+  seq: 7
+  action: "await maintainer rulings on PAUSE-DECISION 1 and 2, then author SPEC_BRIEF10.4 and stop for GATE-1"
+  outcome: pending
