@@ -1530,3 +1530,250 @@ def test_b105_5_2_5_api_endpoint_keeps_url_under_rule_1():
     assert NODE_TYPE_SHAPES["API_ENDPOINT"] == frozenset({"url"})
     assert _sg("https://api.acme.example.com/x", _m(["*"], []), "API_ENDPOINT", "id") is True
     assert _sg("api.acme.example.com", _m(["*"], []), "API_ENDPOINT", "id") is False
+
+
+# =============================================================================
+# SPEC_BRIEF10.5 §1.3 / §5.3 -- THE REBUILT §5.4 GRID.
+#
+# Differences from the 10.3 grid above (which is kept, untouched, as a legacy
+# regression lock -- guardrail 11):
+#   (1) EVERY cell is a (value, clause) pair: `value` is True/False/_PAUSE and
+#       `clause` names the prose clause that determines it (registry _CL).
+#       Values are derived from the briefs' PROSE, never from running the
+#       code. A cell no prose determines is _PAUSE: it is reported, NOT
+#       filled, and NOT asserted.
+#   (2) The allow side runs for EVERY node type in the table (12 types), not
+#       HOST alone.
+#   (3) Both sides assert through the PUBLIC API (`scope_guard`). Exclusions:
+#       in_scope=['*'] + target_kind='scope_key' -- the scope_key path
+#       consults no node-type id-shape table, so a False can only come from
+#       the exclusion (unconfounded).
+# =============================================================================
+
+_PAUSE = "PAUSE-DECISION"
+
+_CL = {
+    "10.r1": "SPEC_BRIEF10 §1.1 r1: *.acme.com = subdomains, not apex",
+    "10.r2": "SPEC_BRIEF10 §1.1 r2: host entry authorizes bare host + std ports 80/443 + http/https URLs on them",
+    "10.r4": "SPEC_BRIEF10 §1.1 r4: nonstandard port needs an explicit entry; a port entry covers host:port and its URL forms (F8)",
+    "10.r5": "SPEC_BRIEF10 §1.1 r5: only the URL host component is consulted (userinfo/path/query never authorize)",
+    "10.r6": "SPEC_BRIEF10 §1.1 r6: allow narrow, exclusion broad (every port/scheme/path/representation); when in doubt, deny",
+    "10.r7": "SPEC_BRIEF10 §1.1 r7: CIDR / bare-IP entry authorizes all ports on a matching address",
+    "10.5.7": "SPEC_BRIEF10 §5.7: a hostname pattern never authorizes a bundle id / other-shaped target",
+    "10.1.1.1": "SPEC_BRIEF10.1 §1.1: trailing * expands only at ':' '/' end-of-string, never across '.' or mid-label",
+    "10.1.1.2": "SPEC_BRIEF10.1 §1.2 Option A: trailing * after a complete host = that host, any port, any path",
+    "10.1.1.3": "SPEC_BRIEF10.1 §1.3: bucket/ARN pattern never authorizes a hostname-shaped target; free expansion only for bucket/ARN targets",
+    "10.1.2.2": "SPEC_BRIEF10.1 §2.2: the boundary rule is allow-side only and must not narrow any exclusion",
+    "10.1.U": "SPEC_BRIEF10.1 FORK-U: a both-ends wildcard is not a host pattern; PR12 verdict (denies api.acme.com:8443) pinned",
+    "10.2.1": "SPEC_BRIEF10.2 §1: scheme://host:port* = that scheme, host and exact port, structural compare",
+    "10.3.1.2": "SPEC_BRIEF10.3 §1.2 / 10.5 §1.1: node-type shape family gate (type-blind classify_target, family = NODE_TYPE_SHAPES prose table)",
+    "10.3.1.2c": "SPEC_BRIEF10.3 §1.2: free mid-token glob expansion is CLOUD_RESOURCE-only (dot-free = hostname elsewhere, H2)",
+    "10.3.1.3": "SPEC_BRIEF10.3 §1.3: exclusions are representation-blind across shapes and independent of node_type",
+    "10.4.1.3": "SPEC_BRIEF10.4 §1.3: exclusion discards a URL pattern's path/port/scheme and compares host identity; allow side stays literal and path-aware",
+    "10.5.1.2": "SPEC_BRIEF10.5 §1.2: address-shaped targets yield their address as exclusion identity (port/scheme/path ignored)",
+    "10.5.1.3": "SPEC_BRIEF10.5 §1.3: _P4_BOTH_ENDS_GLOB cells -- no prose in #10..#10.5 determines the value (PAUSE-DECISION)",
+}
+
+_T_ALL = _TARGETS  # alias for readability
+(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11, _t12, _t13, _t14) = _TARGETS
+_H_SAME = [_t1, _t2, _t6, _t7, _t8]  # every representation of host api.acme.com
+
+
+def _row(default, overrides=None):
+    """-> {target: (value, clause_key)}; default is (value, clause)."""
+    out = {t: default for t in _TARGETS}
+    for t, cell in (overrides or {}).items():
+        out[t] = cell
+    return out
+
+
+# ---- CORE ALLOW SEMANTICS: pattern x target, assuming the node-type gate
+# ADMITS the target. Prose-derived; "native" reading (a dot-free ambiguous
+# string reads as a hostname -- SPEC_BRIEF10.3 H2).
+_CORE_ALLOW = {
+    _P1_BARE_HOST: _row((_F, "10.r4"), {
+        _t1: (_T, "10.r1"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
+        _t7: (_F, "10.r4"), _t2: (_F, "10.r4"),
+        _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
+    }),
+    _P2_LEADING_GLOB: _row((_F, "10.r1"), {
+        _t1: (_T, "10.r1"), _t6: (_T, "10.r2"), _t8: (_T, "10.r5"),
+        _t7: (_F, "10.r4"), _t2: (_F, "10.r4"),
+        _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
+    }),
+    _P3_TRAILING_GLOB: _row((_F, "10.1.1.1"), {
+        _t1: (_T, "10.1.1.2"), _t2: (_T, "10.1.1.2"), _t6: (_T, "10.1.1.2"),
+        _t7: (_T, "10.1.1.2"), _t8: (_T, "10.r5"),
+        _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
+    }),
+    _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {
+        _t1: (_PAUSE, "10.5.1.3"),
+        _t2: (_F, "10.1.U"),
+    }),
+    _P5_BARE_IP: _row((_F, "10.r7"), {_t3: (_T, "10.r7"), _t4: (_T, "10.r7")}),
+    _P6_CIDR: _row((_F, "10.r7"), {_t3: (_T, "10.r7"), _t4: (_T, "10.r7")}),
+    _P7_HOST_PORT: _row((_F, "10.r4"), {_t2: (_T, "10.r4"), _t7: (_T, "10.r4")}),
+    _P8_URL_NO_PORT: _row((_F, "10.4.1.3")),
+    _P9_URL_WITH_PORT: _row((_F, "10.4.1.3")),
+    _P10_URL_TRAILING_GLOB: _row((_F, "10.2.1"), {
+        _t6: (_T, "10.1.1.2"), _t7: (_T, "10.1.1.2"), _t8: (_T, "10.r5"),
+        _t10: (_F, "10.1.1.1"), _t11: (_F, "10.1.1.1"),
+    }),
+    _P11_BUCKET_GLOB: _row((_F, "10.1.1.3")),
+    _P12_ARN_GLOB: _row((_F, "10.1.1.3"), {_t13: (_T, "10.1.1.3")}),
+    _P13_BUNDLE_GLOB: _row((_F, "10.5.7"), {_t14: (_T, "10.5.7")}),
+}
+
+# CLOUD_RESOURCE reads a dot-free string as a bucket: free mid-token expansion
+# (SPEC_BRIEF10.3 §1.2 -- the ONLY type that gets it; SPEC_BRIEF10.1 §1.3).
+_CORE_ALLOW_CLOUD_OVERRIDE = {(_P11_BUCKET_GLOB, _t12): (_T, "10.3.1.2c")}
+
+# Effective shape of each target per node-type reading (prose: SPEC_BRIEF10.3
+# §1.2 + §4/H2 -- dot-free is a hostname except under CLOUD_RESOURCE).
+_SHAPE_NATIVE = {
+    _t1: "host", _t2: "host_port", _t3: "ip", _t4: "ip_port", _t5: "ip_port",
+    _t6: "url", _t7: "url", _t8: "url", _t9: "host", _t10: "host", _t11: "host",
+    _t12: "host", _t13: "arn", _t14: "host",
+}
+_SHAPE_CLOUD = dict(_SHAPE_NATIVE, **{_t9: "bucket_name", _t12: "bucket_name"})
+
+# The family table as the PROSE states it (SPEC_BRIEF10.5 §1.1 / 8.3 and
+# SPEC_BRIEF10.3 §1.2); declared here independently of scope_guard.py and
+# cross-checked against NODE_TYPE_SHAPES by test_b105_5_3_family_prose_matches_table.
+_FAMILY_PROSE = {
+    "HOST": {"host", "ip", "host_port", "ip_port"},
+    "SERVICE": {"host", "ip", "host_port", "ip_port"},
+    "WEB_ENDPOINT": set(),
+    "API_ENDPOINT": {"url"},
+    "CLOUD_RESOURCE": {"bucket_name", "arn"},
+    "MOBILE_APP": {"host"},
+    "MOBILE_COMPONENT": {"host"},
+    "SECRET": set(),
+    "PARAMETER": set(),
+    "IDENTITY": set(),
+    "TECHNOLOGY": set(),
+    "FINDING": set(),
+}
+_GRID_NODE_TYPES = list(_FAMILY_PROSE)
+
+
+def _allow_cell(node_type, pattern, target):
+    shapes = _SHAPE_CLOUD if node_type == "CLOUD_RESOURCE" else _SHAPE_NATIVE
+    if shapes[target] not in _FAMILY_PROSE[node_type]:
+        return (_F, "10.3.1.2")
+    if node_type == "CLOUD_RESOURCE" and (pattern, target) in _CORE_ALLOW_CLOUD_OVERRIDE:
+        return _CORE_ALLOW_CLOUD_OVERRIDE[(pattern, target)]
+    return _CORE_ALLOW[pattern][target]
+
+
+_ALLOW_GRID = {
+    (nt, p, t): _allow_cell(nt, p, t)
+    for nt in _GRID_NODE_TYPES for p in _PATTERNS for t in _TARGETS
+}
+
+# ---- EXCLUSION GRID (node-type independent: SPEC_BRIEF10.3 §1.3).
+_EXCL_HOSTISH = [_t1, _t2, _t6, _t7, _t8, _t10, _t11]
+_EXCLUSION_GRID = {
+    _P1_BARE_HOST: _row((_F, "10.r6"), {t: (_T, "10.r6") for t in _H_SAME}),
+    _P2_LEADING_GLOB: _row((_F, "10.r1"), {t: (_T, "10.r6") for t in _H_SAME}),
+    _P3_TRAILING_GLOB: _row((_F, "10.r6"), dict(
+        {t: (_T, "10.r6") for t in _H_SAME},
+        **{_t10: (_T, "10.1.2.2"), _t11: (_T, "10.1.2.2")})),
+    _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {t: (_PAUSE, "10.5.1.3") for t in _EXCL_HOSTISH}),
+    _P5_BARE_IP: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
+    _P6_CIDR: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
+    _P7_HOST_PORT: _row((_F, "10.r6"), {t: (_T, "10.3.1.3") for t in _H_SAME}),
+    _P8_URL_NO_PORT: _row((_F, "10.4.1.3"), {t: (_T, "10.4.1.3") for t in _H_SAME}),
+    _P9_URL_WITH_PORT: _row((_F, "10.4.1.3"), {t: (_T, "10.4.1.3") for t in _H_SAME}),
+    _P10_URL_TRAILING_GLOB: _row((_F, "10.4.1.3"), {t: (_T, "10.4.1.3") for t in _H_SAME}),
+    _P11_BUCKET_GLOB: _row((_F, "10.3.1.3"), {_t12: (_T, "10.3.1.3")}),
+    _P12_ARN_GLOB: _row((_F, "10.3.1.3"), {_t13: (_T, "10.3.1.3")}),
+    _P13_BUNDLE_GLOB: _row((_F, "10.3.1.3"), {_t14: (_T, "10.3.1.3")}),
+}
+
+_ALLOW_CELLS = [(nt, p, t) for nt in _GRID_NODE_TYPES for p in _PATTERNS for t in _TARGETS]
+_EXCL_CELLS = [(p, t) for p in _PATTERNS for t in _TARGETS]
+_ALLOW_ASSERTED = [c for c in _ALLOW_CELLS if _ALLOW_GRID[c][0] is not _PAUSE]
+_EXCL_ASSERTED = [c for c in _EXCL_CELLS if _EXCLUSION_GRID[c[0]][c[1]][0] is not _PAUSE]
+_PAUSE_ALLOW = sorted((nt, p, t) for (nt, p, t) in _ALLOW_CELLS if _ALLOW_GRID[(nt, p, t)][0] is _PAUSE)
+_PAUSE_EXCL = sorted((p, t) for (p, t) in _EXCL_CELLS if _EXCLUSION_GRID[p][t][0] is _PAUSE)
+
+
+def test_b105_5_3_grid_completeness_every_cell_declared_and_clause_referenced():
+    """Zero undeclared cells; EVERY cell (allow x 12 types, and exclusion)
+    carries a non-empty clause reference that exists in the registry."""
+    assert len(_GRID_NODE_TYPES) == 12 and len(_PATTERNS) == 13 and len(_TARGETS) == 14
+    undeclared = 0
+    cells = 0
+    for nt in _GRID_NODE_TYPES:
+        for p in _PATTERNS:
+            for t in _TARGETS:
+                cell = _ALLOW_GRID.get((nt, p, t))
+                if cell is None:
+                    undeclared += 1
+                    continue
+                cells += 1
+                assert cell[0] in (_T, _F, _PAUSE)
+                assert cell[1] in _CL, (nt, p, t, cell)
+    for p in _PATTERNS:
+        for t in _TARGETS:
+            cell = _EXCLUSION_GRID.get(p, {}).get(t)
+            if cell is None:
+                undeclared += 1
+                continue
+            cells += 1
+            assert cell[0] in (_T, _F, _PAUSE)
+            assert cell[1] in _CL, (p, t, cell)
+    assert undeclared == 0
+    assert cells == 12 * 13 * 14 + 13 * 14 == 2366
+
+
+def test_b105_5_3_pause_decision_cells_are_exactly_the_reported_set():
+    """The cells no prose in #10..#10.5 determines are NOT filled and NOT
+    asserted. This test pins exactly which they are, so a silent fill (or a
+    silent new gap) fails here. _P4_BOTH_ENDS_GLOB x _T1_HOST is the known
+    one; the exclusion-side rows below are the same question (a both-ends
+    glob vs the exact host / its representations) and are referred likewise."""
+    assert _PAUSE_ALLOW == sorted(
+        (nt, _P4_BOTH_ENDS_GLOB, _T1_HOST)
+        for nt in ("HOST", "SERVICE", "MOBILE_APP", "MOBILE_COMPONENT"))
+    assert _PAUSE_EXCL == sorted((_P4_BOTH_ENDS_GLOB, t) for t in _EXCL_HOSTISH)
+    assert len(_PAUSE_ALLOW) + len(_PAUSE_EXCL) == 11
+
+
+def test_b105_5_3_family_prose_matches_table():
+    from kronos.scope_guard import NODE_TYPE_SHAPES as table
+    for nt, fam in _FAMILY_PROSE.items():
+        assert set(table[nt]) == fam, nt
+    assert set(_FAMILY_PROSE) == set(table)
+
+
+def test_b105_5_3_legacy_host_row_and_exclusion_agree_with_rebuilt_grid():
+    """The legacy 10.3 grid (kept, unedited) must agree with the rebuilt
+    grid everywhere the rebuilt grid asserts."""
+    for p in _PATTERNS:
+        for t in _TARGETS:
+            v = _ALLOW_GRID[("HOST", p, t)][0]
+            if v is not _PAUSE:
+                assert _ALLOW_HOST_EXPECTATIONS[p][t] is v, ("allow", p, t)
+            e = _EXCLUSION_GRID[p][t][0]
+            if e is not _PAUSE:
+                assert _EXCLUSION_EXPECTATIONS[p][t] is e, ("excl", p, t)
+
+
+@pytest.mark.parametrize("node_type,pattern,target", _ALLOW_ASSERTED)
+def test_b105_5_3_allow_grid_per_node_type_public_api(node_type, pattern, target):
+    expected, clause = _ALLOW_GRID[(node_type, pattern, target)]
+    got = scope_guard(target, _m([pattern], []), node_type=node_type, target_kind="id")
+    assert got is expected, _CL[clause]
+
+
+@pytest.mark.parametrize("pattern,target", _EXCL_ASSERTED)
+def test_b105_5_3_exclusion_grid_public_api(pattern, target):
+    """in_scope=['*'] + target_kind='scope_key': unconfounded exclusion
+    semantics (no id-shape family table is consulted on the scope_key path),
+    so a False here can only come from the exclusion. expected True ==
+    the exclusion denies."""
+    expected_excluded, clause = _EXCLUSION_GRID[pattern][target]
+    got = scope_guard(target, _m(["*"], [pattern]), node_type="HOST", target_kind="scope_key")
+    assert (got is False) is expected_excluded, _CL[clause]
