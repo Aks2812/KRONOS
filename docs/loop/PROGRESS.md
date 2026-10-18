@@ -2432,3 +2432,47 @@ pending_action:
     confirm tests/ is 0 failed. THEN dispatch the builder for §5.3-§5.7 from a green baseline.
     No PR touched, no merge.
   outcome: pending
+
+## SEQ 25 — FORK-AB OPTION A APPLIED; SUITE GREEN; BUILD RESUMING FOR §5.3-§5.7
+
+seq: 25
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: BUILD (green baseline restored)
+
+seq24_pending_action_outcome: "complete — option A applied, suite green, nothing ratified was edited"
+
+applied:
+  head: 72fb71d
+  host_row: "reverted to frozenset({host, ip, host_port, ip_port}), re-cited as RULE 1 (ratified Brief #10.3 §1.2 table + locked test_b103_h2), not rule 5"
+  rule_5_precedence_corrected: >
+    Both in SPEC_BRIEF10.5.md §1.1 and in scope_guard.py's citation block: rule 5 is consulted
+    only when NEITHER a production producer NOR a ratified predecessor-brief prose decision
+    exists. This is the substantive fix — the original rule 5 had no notion that a ratified
+    prose decision is itself rule-1 evidence.
+  fork_ab: "recorded in DECISIONS.md and in the brief's §7 as PROPOSED AND REJECTED, with the 21-failure evidence and the reason"
+  brief_5_2_case_1_inverted: >
+    This brief's OWN new case asserted that a port-bearing HOST id denies. The amendment makes
+    that expectation wrong, so it was inverted to 'is allowed', derived from the amended prose
+    and explicitly documented as prose-derived rather than behaviour-derived. It is a 10.5 test,
+    not a ratified one.
+  pins: "3 _SCOPE_GUARD_SHA256 constants updated to 0ef7de531c2a86d132d34d9528760f6b304e7a199261e6f5ed12b8cb19b3e9d6"
+  ratified_tests_edited: NONE
+
+suites:
+  tests: "1083 passed, 0 FAILED, 1 skipped (baseline at 2a676a8 was 1068/0/1, so +15 new cases)"
+  cybergym_cloud: "17 passed"
+  guardrails: "manifest.py, schema.py, graph.py, cybergym/, .claude/, .github/ all zero-diff vs 2a676a8 — verified"
+
+section_8_progress:
+  done: ["§8.4 address-shaped exclusions 8/8 + allow-side controls", "§8.1/§8.2/§8.3 rule 5 + table with per-row citations and rule numbers", "§8.7 suite green"]
+  outstanding: ["§8.5 grid rebuild — per-cell prose refs, allow side per node type, public API both sides", "§8.6 byte-verbatim gate", "§8.8 differential allow-side proof as a standing test", "§8.11 §5.6 control restoration", "§8.13 FORK-AC", "§8.14 README/DECISIONS items from §5.7", "§8.12 live X-score (orchestrator runs it)"]
+
+pending_action:
+  seq: 25
+  action: >
+    Dispatch the builder from this green baseline for §5.3, §5.4, §5.5, §5.6, §5.7 and the
+    remaining §8 criteria. §1.1/§1.2 are DONE and must not be re-opened. FORK-AB is settled —
+    the builder must not re-propose the HOST narrowing. Then orchestrator runs the live X-score,
+    VERIFIES against §8, and dispatches an independent reviewer with diff + brief only.
+  outcome: pending
