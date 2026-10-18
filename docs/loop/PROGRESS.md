@@ -892,3 +892,50 @@ pending_action:
   seq: 7
   action: "await maintainer rulings on PAUSE-DECISION 1 and 2, then author SPEC_BRIEF10.4 and stop for GATE-1"
   outcome: pending
+
+## SEQ 8 — MAINTAINER RULINGS GRANTED; WRITE-AHEAD FOR PIN INSTALL AND BRIEF 10.4
+
+seq: 8
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: RESEARCH -> brief authoring
+
+seq7_pending_action_outcome: "resolved — maintainer ruled this turn"
+
+maintainer_rulings:
+  pause_decision_1:
+    ruling: A
+    normative_text: >
+      A scope_key is an explicit in-scope identity assertion and is gated by its OWN
+      shape, independent of node_type. The NODE_TYPE_SHAPES id-shape table applies only
+      when the gate falls through to the id (i.e. when no scope_key is present).
+    authority: "maintainer, this turn; becomes normative prose in SPEC_BRIEF10.4 §1.5"
+  pause_decision_2:
+    ruling: A
+    normative_text: >
+      An opaque synthetic id (WEB_ENDPOINT "web:N") is governed by §1.4's PARAMETER
+      principle: it is not a network identifier, is NEVER matched against a host, URL,
+      bucket or bundle-id glob, and inherits scope — the network identity must be carried
+      by a scope_key.
+    authority: "maintainer, this turn; becomes normative prose in SPEC_BRIEF10.4 §1.6"
+  network_pause_decision:
+    subject: "install httpx2==2.13.1 into the project .venv"
+    ruling: GRANTED
+    scope_of_grant: >
+      Package install into the local venv only. Does NOT extend to editing
+      cybergym/requirements.txt, which remains forbidden and a maintainer action, so the
+      pin will be installed but NOT recorded in cybergym/. 10.4 must name that gap.
+
+pending_action:
+  seq: 8
+  action: >
+    (1) pip install httpx2==2.13.1 into the project venv; (2) re-run cybergym/cloud at PR
+    head d2ad51e and record the verbatim X-SCORE line and exit code; (3) re-measure the
+    full suite at base dcbdba9 and head d2ad51e against the 620/1 baseline; (4) author
+    SPEC_BRIEF10.4 with the two rulings as normative prose, a §1.2 table rebuilt from
+    measured id production with per-type evidence, Finding A's deny-side fix, RED-first
+    cases, a §5.4 grid whose every cell derives from PROSE, §8 acceptance criteria and §6
+    live-use gate kept distinct; (5) push the draft to kronos/loop-state; (6) STOP for
+    GATE-1. No code is written and no PR is touched.
+  not_permitted_in_this_action: "cybergym/, .claude/, .github/, manifest; PR #13; issue #2; main"
+  outcome: pending
