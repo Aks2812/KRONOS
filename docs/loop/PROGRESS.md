@@ -2717,3 +2717,43 @@ pending_action:
   seq: 27
   action: "await the independent review verdict on 7fc1863; then report it and STOP at GATE-2"
   outcome: pending
+
+## SEQ 28 — STANDING INSTRUCTION: pytest runs through `rtk test`
+
+seq: 28
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: REVIEW still in flight (unchanged)
+
+maintainer_instruction: "switch pytest calls to rtk test from now on"
+status: ADOPTED — standing, applies to the orchestrator and to every dispatched builder
+
+form: "rtk test .venv/bin/python -m pytest tests/ -q"
+measured_basis: "raw pytest -q 3953 bytes vs rtk test 45 bytes on the KRONOS suite — 98.9% reduction, same information on a green run"
+safety_verified: "against a deliberately failing test, rtk test prints the FAILED line and the assertion message plus a `rtk recall <hash>`; it does not hide red"
+
+CRITICAL_CAVEAT_FOR_ANY_RESUMING_SESSION: >
+  `rtk test` returned EXIT 0 on a run containing a real failure. Decide pass/fail from the
+  `SUMMARY:` line, NEVER from `$?`. Any `&&` chain or automation gating on the exit code after
+  `rtk test` would silently treat a red suite as green — and the §8.7 acceptance criterion is
+  "0 failed", so that would corrupt a merge-gate input. When the full failure list is needed, use
+  the `rtk recall <hash>` it prints.
+
+also_adopted: >
+  rtk's other subcommands for the same reason (rtk diff, rtk err, rtk read, rtk grep, rtk json,
+  rtk git, rtk gh). NOT for exact code or table reads — rtk condensation mangled a markdown table
+  into JSON and garbled a comment block badly enough to break an edit regex this session. Use raw
+  python repr or base64 for those.
+
+builder_dispatch_note: >
+  Future builder prompts must carry the `rtk test` form and the exit-code caveat, since builders
+  run the suite repeatedly and are the heaviest token consumers in the loop.
+
+memory_written: "use-rtk-test-for-pytest (feedback) — persists across sessions, indexed in MEMORY.md"
+
+state_unchanged: "PR #15 draft at 7fc1863, PR #13 draft, issue #2 open, main dcbdba9, merge gate not re-measured. Review in flight."
+
+pending_action:
+  seq: 28
+  action: "await the independent review verdict on 7fc1863; then report and STOP at GATE-2"
+  outcome: pending
