@@ -1811,3 +1811,116 @@ def test_b105_5_4_gate_block_is_byte_identical_to_spec_section_6(rel):
     assert spec.startswith(b"FORK-2 is complete") and spec.rstrip().endswith(b"maintainer action.")
     assert b"This PR is merged" in spec and b"Issue #2 closed" in spec  # the very words 10.4 paraphrased
     assert _embedded_gate_bytes(_REPO / rel) == spec
+
+
+# --- SPEC_BRIEF10.5 §5.5 / §8.8 -- guardrail §9 as a STANDING differential.
+# The allow side is enumerated across the §5.4 pattern x target lists at
+# dcbdba9 (main, type-blind), 2a676a8 (PR #15 head before this brief) and the
+# current head. Old trees are exported read-only with `git archive` into a
+# temp dir (no branch is checked out). Required: ZERO allow-side differences,
+# and every exclusion-side difference is "allowed -> excluded" (False -> True
+# in "is excluded" terms).
+import importlib.util as _ilu
+import io as _io
+import subprocess as _sp
+import tarfile as _tarfile
+import tempfile as _tempfile
+
+_OLD_REFS = ("dcbdba9", "2a676a8")
+
+# The node type under which each target is a legitimate id (the type-blind
+# dcbdba9 has no type; the typed trees are evaluated under the type whose
+# prose family (SPEC_BRIEF10.3 §1.2) admits the target -- comparing a URL
+# under HOST would measure the SPEC_BRIEF10.3 type gate, not this brief).
+_DIFF_NODE_TYPE = {
+    _T1_HOST: "HOST", _T2_HOST_PORT: "HOST", _T3_IP: "HOST", _T4_IP_PORT: "HOST",
+    _T5_BRACKETED_IPV6_PORT: "HOST", _T6_URL_STD_PORT: "API_ENDPOINT",
+    _T7_URL_NONSTD_PORT: "API_ENDPOINT", _T8_URL_USERINFO: "API_ENDPOINT",
+    _T9_DOT_FREE_HOST: "HOST", _T10_LOOKALIKE: "HOST", _T11_MID_LABEL: "HOST",
+    _T12_BUCKET_NAME: "CLOUD_RESOURCE", _T13_ARN: "CLOUD_RESOURCE",
+    _T14_BUNDLE_ID: "MOBILE_APP",
+}
+
+
+def _load_old_scope_guard(ref, tmp):
+    try:
+        _sp.run(["git", "cat-file", "-e", f"{ref}^{{commit}}"], cwd=_REPO, check=True,
+                capture_output=True)
+    except (_sp.CalledProcessError, FileNotFoundError):
+        pytest.skip(f"{ref} not present in this checkout (shallow clone?)")
+    tar = _sp.run(["git", "archive", ref, "src/kronos/scope_guard.py"], cwd=_REPO,
+                  check=True, capture_output=True).stdout
+    with _tarfile.open(fileobj=_io.BytesIO(tar)) as tf:
+        tf.extractall(tmp, filter="data")
+    path = _pl.Path(tmp) / "src" / "kronos" / "scope_guard.py"
+    path.chmod(0o444)
+    spec = _ilu.spec_from_file_location(f"_old_scope_guard_{ref}", path)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+# §5.1's address-shaped patterns/targets join the enumeration so the
+# deny-ward §1.2 change is actually exercised by the differential.
+_DIFF_PATTERNS = _PATTERNS + [c[0] for c in _B105_ADDR_EXCLUSION_CASES]
+_DIFF_TARGETS = _TARGETS + [c[1] for c in _B105_ADDR_EXCLUSION_CASES]
+_DIFF_NODE_TYPE.update({c[1]: "HOST" for c in _B105_ADDR_EXCLUSION_CASES})
+
+
+def _verdicts(fn_allow, fn_excl):
+    allow, excl = {}, {}
+    for p in _DIFF_PATTERNS:
+        for t in _DIFF_TARGETS:
+            allow[(p, t)] = fn_allow(p, t)
+            excl[(p, t)] = fn_excl(p, t)
+    return allow, excl
+
+
+def _tree_verdicts(ref, tmp):
+    if ref == "HEAD":
+        mod = __import__("kronos.scope_guard", fromlist=["scope_guard"])
+        sg = mod.scope_guard
+        return _verdicts(
+            lambda p, t: sg(t, _m([p], []), node_type=_DIFF_NODE_TYPE[t], target_kind="id"),
+            lambda p, t: sg(t, _m(["*"], [p]), node_type="HOST", target_kind="scope_key") is False,
+        )
+    mod = _load_old_scope_guard(ref, tmp)
+    sg = mod.scope_guard
+    if ref == "dcbdba9":  # type-blind
+        return _verdicts(
+            lambda p, t: sg(t, _m([p], [])),
+            lambda p, t: sg(t, _m(["*"], [p])) is False,
+        )
+    return _verdicts(
+        lambda p, t: sg(t, _m([p], []), node_type=_DIFF_NODE_TYPE[t], target_kind="id"),
+        lambda p, t: sg(t, _m(["*"], [p]), node_type="HOST", target_kind="scope_key") is False,
+    )
+
+
+def test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens():
+    with _tempfile.TemporaryDirectory() as tmp:
+        trees = {}
+        for ref in (*_OLD_REFS, "HEAD"):
+            sub = _pl.Path(tmp) / ref
+            sub.mkdir()
+            trees[ref] = _tree_verdicts(ref, sub)
+    pairs = len(set(_DIFF_PATTERNS)) * len(set(_DIFF_TARGETS))
+    assert len(trees["HEAD"][0]) == pairs
+    head_allow, head_excl = trees["HEAD"]
+    for ref in _OLD_REFS:
+        old_allow, old_excl = trees[ref]
+        allow_diffs = [k for k in old_allow if old_allow[k] != head_allow[k]]
+        assert allow_diffs == [], (ref, allow_diffs)  # guardrail §9: ZERO allow-side differences
+        excl_diffs = [k for k in old_excl if old_excl[k] != head_excl[k]]
+        # every exclusion-side difference is not-excluded -> excluded
+        assert all(old_excl[k] is False and head_excl[k] is True for k in excl_diffs), (ref, excl_diffs)
+    # 2a676a8 -> head additionally: the address-shaped exclusion fix (§1.2) is
+    # a real, nonzero deny-ward change (else this test would prove nothing).
+    import sys as _sys
+    for ref in _OLD_REFS:
+        oa, oe = trees[ref]
+        print(f"DIFFERENTIAL {ref}->head: pairs={pairs} "
+              f"allow_diffs={sum(oa[k] != head_allow[k] for k in oa)} "
+              f"excl_diffs={sum(oe[k] != head_excl[k] for k in oe)}", file=_sys.stderr)
+    _, mid_excl = trees["2a676a8"]
+    assert [k for k in mid_excl if mid_excl[k] != head_excl[k]] != []
