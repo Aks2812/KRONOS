@@ -2476,3 +2476,121 @@ pending_action:
     the builder must not re-propose the HOST narrowing. Then orchestrator runs the live X-score,
     VERIFIES against §8, and dispatches an independent reviewer with diff + brief only.
   outcome: pending
+
+## SEQ 26 — BUILD COMPLETE AT 526092b; §8 MET; 11 GRID CELLS AWAIT A RULING
+
+seq: 26
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: VERIFY complete; REVIEW not yet dispatched (deliberately — see below)
+
+seq25_pending_action_outcome: "builder completed §5.3-§5.7 and all outstanding §8 items; 11 grid cells referred as PAUSE-DECISION"
+
+build:
+  head: 526092b
+  commits: 5 (incremental push protocol held; each message states DONE and NOT-YET-DONE)
+  files_changed: "DECISIONS.md, src/kronos/README_scope.md, tests/test_scope_guard.py, tests/test_schema_graph.py — all within §3"
+  scope_guard_untouched_this_run: "confirmed — so the three SHA pins remain valid and were correctly NOT re-pinned"
+
+orchestrator_verified_independently:
+  suite: "3445 passed, 0 FAILED, 1 skipped — re-run by orchestrator, matches builder"
+  cybergym_cloud: "17 passed"
+  guardrails: "manifest.py, schema.py, graph.py, cybergym/, .claude/, .github/ all zero-diff vs 2a676a8"
+  live_x_score:
+    commit: 526092b
+    verbatim_line: "X-SCORE: 3/3 chains validated end-to-end"
+    exit_code: 0
+    teardown: "all clear"
+    run_by: orchestrator
+  gate_byte_identity: >
+    VERIFIED as a real byte comparison, not a presence grep: the test asserts
+    `_embedded_gate_bytes(...) == spec` and additionally asserts the literal phrases
+    "This PR is merged" and "Issue #2 closed" — the two 10.4 paraphrased. This is the criterion
+    the orchestrator wrongly passed in 10.4 using `grep -c`; the method defect is now closed
+    by construction.
+  pause_cell_pin: "the 11-cell PAUSE-DECISION set is pinned by a passing test, so a silent fill fails"
+  differential_test: "runs and PASSES — did NOT skip. It self-skips on missing refs, so a pass is meaningful."
+
+grid:
+  total_cells: 2366
+  composition: "12 node types x 13 patterns x 14 targets allow (2184) + 13 x 14 exclusion (182)"
+  undeclared: 0
+  every_cell_is: "(value, clause) pair, with a test asserting each clause exists in a clause registry"
+  allow_side_per_node_type: "all 12 types — §5.4(3) satisfied"
+  public_api_both_sides: "yes; exclusion side via in_scope=['*'] + target_kind='scope_key', the route the brief named"
+  legacy_10_3_grid: "kept unedited as a legacy lock, and cross-checked against the rebuilt grid"
+
+differential_proof_section_8_8:
+  standing_test: test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens
+  method: "git archive exports of dcbdba9 and 2a676a8 into a temp dir; no branch checked out"
+  pairs: 340
+  dcbdba9_to_head: "allow-side differences 0; exclusion-side differences 25, ALL allowed -> excluded"
+  pr15_head_to_head: "allow-side differences 0; exclusion-side differences 12, ALL allowed -> excluded"
+  significance: "guardrail §9 now has a standing proof rather than a one-off review step. This was the single strongest piece of evidence in the PR #15 review and it is now a test."
+
+## §8 VERDICT — 15 of 15 MET (independent review still outstanding)
+
+- 1 rule 5 + precedence, rules 3/4 bind: PASS
+- 2 per-row citations naming a schema.py line or producer, rule number recorded: PASS
+- 3 HOST 4 shapes under rule 1; SERVICE 4; WEB_ENDPOINT/PARAMETER frozenset(); API_ENDPOINT {url}: PASS
+- 4 address-shaped exclusion rows deny + allow-side controls unchanged: PASS
+- 5 grid: 0 undeclared, every cell prose-referenced, allow per node type, public API both sides, count reported: PASS (11 cells REFERRED, which §1.3 orders rather than forbids)
+- 6 gate byte-identical by byte comparison: PASS
+- 7 0 failed: PASS (3445/0/1)
+- 8 differential proof, 0 allow-side differences: PASS
+- 9 every #10/#10.1/#10.2/#10.3/#10.4 case green: PASS
+- 10 manifest/schema/graph/cybergym zero-diff: PASS
+- 11 only §3 files; §5.6 control reported stronger: PASS
+- 12 live X-score 3/3 exit 0, verbatim line: PASS
+- 13 FORK-AA/AB/AC recorded: PASS
+- 14 README bucket-name note; DECISIONS totals refreshed: PASS
+- 15 PR left open, unmerged, not marked ready: PASS
+caveat: >
+  Criterion 5's own basis is the INDEPENDENT REVIEW, which has not run. The orchestrator's
+  15/15 is explicitly NOT a substitute — in 10.4 the orchestrator declared 15/15 and the
+  reviewer overturned three criteria. This verdict stands only until a reviewer tests it.
+
+## PAUSE-DECISION 5 — the `*.acme.com*` both-ends glob, 11 cells
+
+cells:
+  allow_side_4: "_P4_BOTH_ENDS_GLOB x _T1_HOST (api.acme.com) under HOST, SERVICE, MOBILE_APP, MOBILE_COMPONENT"
+  exclusion_side_7: "_P4 against every representation of api.acme.com — bare host, host:port, two URL forms, userinfo URL, lookalike host, mid-label host"
+builder_conduct: "CORRECT — it refused to copy the legacy grid's False values forward, which is exactly the §0.1 behaviour-fitting defect the brief exists to prevent. It expanded the known 1 cell to 11 because the same unanswered question recurs across types and representations."
+orchestrator_analysis_DERIVED_not_ruled:
+  mechanism: >
+    `*.acme.com*` starts with `*.`, so `_matches` routes it to the hostname-pattern branch,
+    which takes pattern[2:] = "acme.com*" as a literal suffix. "api.acme.com".endswith(".acme.com*")
+    is False, so it does not match. As a raw glob, fnmatch("api.acme.com", "*.acme.com*") WOULD
+    match. The routing, not the glob semantics, produces today's False.
+  the_conflict: >
+    §1.3 says exclusions are "strictly broader than the allow side and that asymmetry is the
+    specification", and rule 6 says deny broad. A pattern that names api.acme.com and fails to
+    exclude it is an under-match of exactly the class FORK-2 exists to close. But the allow side
+    should NOT authorize it, by allow-narrow.
+  recommendation_allow_side: "False (deny) — allow-narrow plus the boundary rule's purpose. Consistent with today's behaviour, but derived from prose, not copied from it."
+  recommendation_exclusion_side: >
+    True (deny) per rule 6 deny-broad. IMPORTANT CONSEQUENCE: this is NOT a grid fill. The
+    legacy grid holds False and the code produces False, so ruling deny-broad requires a CODE
+    CHANGE to route a `*.`-leading-AND-trailing glob differently on the exclusion side. That is
+    a deny-side widening, permitted by guardrail §9, but it is implementation work and would
+    change the diff.
+  caution: >
+    This is an orchestrator derivation. Two orchestrator derivations have already been
+    overturned this session (PD-2's premise, FORK-AB's HOST row). Flagged as derived.
+
+## REVIEW DELIBERATELY NOT DISPATCHED YET
+
+reason: >
+  If PAUSE-DECISION 5's exclusion side is ruled deny-broad, the diff changes — scope_guard.py
+  gains a routing change, the 7 exclusion cells flip, and the three SHA pins need re-pinning.
+  Dispatching an independent reviewer now would spend roughly 240k tokens reviewing a diff that
+  is about to move. The maintainer raised token efficiency explicitly, so the cheaper ordering
+  is: rule on the 11 cells, let any resulting code change land, THEN review once.
+recommended_order: "rule PD-5 -> implement if needed -> single independent review -> GATE-2"
+
+merge_gate: "not re-measured and not proposed. PR #15 is draft, no merge authorization exists, review has not run. Do not merge."
+
+pending_action:
+  seq: 26
+  action: "await (1) PD-5 ruling on the 11 cells and (2) go-ahead to dispatch the independent review. Orchestrator recommends ruling first to avoid reviewing a diff that will change."
+  outcome: pending
