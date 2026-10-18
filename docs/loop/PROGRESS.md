@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 3
-derived_at: 2026-10-18T05:40:00Z
+seq: 4
+derived_at: 2026-10-18T06:45:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v6.md
 stage: FORK-2
@@ -28,7 +28,11 @@ provider:
 
 main:
   head: dcbdba950a45253f2c417b0c95c6ccb6930e9221
-  protected: false
+  protected: true   # via ruleset 25333712; see branch_protection below
+
+brief:
+  path: SPEC_BRIEF10.3.md
+  sha256: 75a666d81a3bcce92915c51fba7e75a3d08ce389fc65458ff475a95bdf0d8938
 
 pr_13:
   state: open
@@ -62,14 +66,12 @@ tests:
 merge_authorization: null
 
 pending_action: >
-  SUPERSEDES seq 2. The scaffolding no longer goes to main by direct push. It is now
-  PR #14 off claude/loop-scaffolding at head 33a882f (draft). Commit 33a882f was never
-  amended, so the SHA seq 2 names still resolves. Two maintainer actions remain
-  outstanding and are NOT done as of this checkpoint: (a) branch protection on main is
-  still absent (verified: branches/main .protected == false, protection endpoint 404),
-  (b) the ask-tier mode guard is still absent from .claude/hooks/brief-scope.sh
-  (verified: zero matches for ASK_TIER_SUBJECT). PR #14 is held in draft until both land;
-  draft status, not the permission rails, is what currently blocks its merge.
+  PILOT A, STAGE FORK-2 — independent review only. Dispatch kronos-reviewer against
+  PR #13 at head d2ad51e611927525780b9069db2bc16b0a7209b2, judged against
+  SPEC_BRIEF10.3 section 6 criterion by criterion, working only from
+  `git diff origin/main...d2ad51e` and the brief. No builder report is passed to it.
+  Outcome to be written as seq 5. This turn will NOT merge, NOT mark any PR ready, and
+  NOT push to main.
 stale_branches:
   - claude/cybergym-denial-fidelity-brief7
   - claude/ingestion-contract-canonical-keys-brief9
@@ -327,9 +329,70 @@ rails_edits_not_made_by_agent:
     maintainer, or left unapplied. The indirection finding above means such a bypass was
     available and was deliberately not used.
 
+## SEQ 4 — STEP 2 ASSERTIONS AND BRANCH PROTECTION
+
+step2_assertions:
+  a_checkpoint_read: "pass — origin/kronos/loop-state at 71ecc07, read without checkout"
+  b_permission_mode:
+    observed: bypassPermissions
+    source: "session transcript, 61 occurrences, no other value"
+    handling: >
+      Recorded, not halted: FORK-2 is a read-only review stage, per the stage contract.
+      The only write this turn is the checkpoint push to kronos/loop-state, which matches
+      the allow rule `git push origin *:refs/heads/kronos/loop-state` — so no prompt was
+      ever expected for it and the inert ask tier does not change its authorization.
+      Any stage that writes to the repository still halts unless the mode is "default".
+  c_rails_unmodified: "pass — git diff --quiet HEAD -- .claude/ clean"
+  d_protection: "pass — see branch_protection"
+  e_rederive: "pass — all values match the expected set"
+  f_draft_and_automerge: "pass — pr.draft true, pr.auto_merge null"
+
+branch_protection:
+  status: LIVE
+  mechanism: "repository ruleset, NOT classic branch protection"
+  ruleset:
+    id: 25333712
+    name: void-rule-kronos
+    enforcement: active
+    target: branch
+    conditions: 'ref_name.include = ["~DEFAULT_BRANCH"], exclude = []'
+    bypass_actors: "[] (empty)"
+    current_user_can_bypass: never
+    created_at: "2026-10-18T02:30:41-04:00"
+    rules:
+      - deletion
+      - non_fast_forward
+      - pull_request (required_approving_review_count 0, allowed_merge_methods merge/squash/rebase)
+  closes_seq3_force_push_deny_gap: >
+    YES. non_fast_forward is enforced server-side, so both forms seq 3 recorded as
+    matching no deny rule — `git push origin +HEAD:refs/heads/main` (refspec force, no
+    flag) and `--force-with-lease` — are now rejected by the server regardless of local
+    pattern coverage. deletion covers the --delete gap on the same basis. This is the
+    first layer in the stack that is not command-text pattern matching, and
+    current_user_can_bypass "never" means it binds the admin token this session holds.
+  unrestricted_by_design:
+    - "kronos/loop-state — rules/branches/kronos%2Floop-state returns [] (asserted empty)"
+    - "claude/* feature branches — not covered by the ruleset"
+  api_surface_note: >
+    branches/main/protection still returns 404 "Branch not protected" because that
+    endpoint reports classic protection only. branches/main.protected now reads true, so
+    it IS ruleset-aware, contrary to the stage instruction's note. rules/branches/main is
+    the correct probe either way and is what the assertion uses. Earlier seq 3 readings of
+    protected=false were accurate at the time: the ruleset was created 02:30:41, after
+    the last of those checks.
+
+superseded_from_seq3:
+  - "MERGE-GATE item 1 (main protected) moves from FAIL to pass"
+  - >
+      mode_guard and rails_md_correction remain NOT APPLIED, and are now OUT OF SCOPE for
+      the loop: the stage contract forbids editing .claude/ outright. They are maintainer
+      actions outside the pilot, not pending loop work. The orchestrator's earlier offer
+      to apply them, and the proposal to remove the Edit(.claude/**) deny rule, are both
+      withdrawn as incompatible with the stage contract.
+
 ## MERGE-GATE status (10 prerequisites, v6 section 3.1)
 
-1. main protected: FAIL (false — still unprotected as of seq 3; protection requested but not yet applied)
+1. main protected: pass (ruleset 25333712, active, bypass_actors empty, current_user_can_bypass never)
 2. PR #13 not a draft: FAIL (true)
 3. PR #13 open and unmerged: pass
 4. head SHA equals authorized SHA: n/a (no authorization granted yet)
