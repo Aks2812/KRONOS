@@ -228,7 +228,12 @@ def test_teardown_report_round_trips_through_json(tmp_path):
 # Re-pinned again by SPEC_BRIEF10.3 (FORK-2's final piece): node_type
 # threading (H2), cross-shape exclusions (H3), and the §5.4 generated
 # matrix; see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "5e25262aa7434bb37d21a17b94b0b1368128a53d6449a5a66a1d4205b200db2a"
+#
+# Re-pinned again by SPEC_BRIEF10.4 (FORK-2's closing piece): the
+# scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
+# re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
+# path-blind exclusions (§1.3); see tests/test_reconcile.py.
+_SCOPE_GUARD_SHA256 = "7909d7cdc5e6996dea24b4669d8d871d5d06c49650fe8baab01a71105f139724"
 
 
 def test_scope_guard_still_has_zero_line_diff():
