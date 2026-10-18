@@ -2137,3 +2137,88 @@ pending_action:
   seq: 20
   action: "await GATE-1 approval or rejection of docs/loop/SPEC_BRIEF10.5.draft.md; on approval, dispatch the builder against the approved brief only, naming §8 for acceptance and §6 for the live gate"
   outcome: pending
+
+## SEQ 21 — GATE-1 APPROVED FOR 10.5; CONTINUATION GUIDELINE; WRITE-AHEAD FOR BUILD
+
+seq: 21
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: BUILD
+
+seq20_pending_action_outcome: "GATE-1 APPROVED by maintainer this turn"
+
+gate_1:
+  status: APPROVED
+  brief: docs/loop/SPEC_BRIEF10.5.draft.md
+  brief_sha256_at_approval: 450514c24af17c14cf564216a4d8af6a39fc695ca86c672e581f9518ac072a34
+  authority: "maintainer, this turn: 'Gate-1 is approved - dispatch builder'"
+  rule_5_note: >
+    Rule 5's identity-bearing-column discriminator was approved as authored. It was flagged in
+    §1.1 as orchestrator-derived and rejectable; the maintainer approved the brief containing
+    that flag, so rule 5 is now part of the approved specification.
+
+## USAGE-LIMIT POSTURE — maintainer reported 86% consumed, resets 21:40 local
+
+risk: >
+  The SPEC_BRIEF10.4 builder run cost ~379k subagent tokens over ~28 minutes across 121 tool
+  uses. At 86% consumed there may be insufficient headroom. TE.md warns that losing a builder
+  mid-stage to a usage limit is expensive.
+mitigation_applied:
+  - "the brief is landed on the feature branch BEFORE dispatch, so it survives independently of the build"
+  - "this checkpoint, with the full continuation guideline below, is pushed BEFORE dispatch"
+  - "the builder is instructed to COMMIT AND PUSH AFTER EVERY LOGICAL STEP rather than once at the end, so a mid-run cutoff loses only the current step and leaves recoverable commits on origin"
+  - "the builder is told to report progress in its commit messages so a later session can tell what landed"
+
+## CONTINUATION GUIDELINE — how to resume after the usage reset
+
+preferred_trigger: >
+  Type: /kronos-continue
+  CAVEAT: as of this session that command is NOT reachable from most branches and its content is
+  stale. See the rails defect in seq 18. If it does not resolve, use the fallback prompt below.
+
+fallback_prompt_paste_verbatim: |
+  Resume KRONOS. Read docs/loop/PROGRESS.md from origin/kronos/loop-state without checking it
+  out, take the highest SEQ, and continue the phase it records. Do not restart a stage. If its
+  pending_action has no outcome, first determine whether that action took effect on the remote
+  before doing anything else. Re-derive from the remote: main HEAD; PR #13 and PR #15
+  state/draft/merged/head/auto_merge; whether either head is an ancestor of main; issue #2
+  state; and the sha256 of the approved brief. Report any mismatch and stop. §8 is acceptance
+  criteria, §6 is the live-use gate — never conflate them. Report to me directly.
+
+what_a_resuming_session_must_check_first:
+  1: "did the builder land commits on claude/scope-key-dispatch-brief10-4 beyond 2a676a8? `git log --oneline 2a676a8..origin/claude/scope-key-dispatch-brief10-4`"
+  2: "if YES and the build looks complete — VERIFY against §8 of SPEC_BRIEF10.5.md independently, then dispatch an independent reviewer with diff + brief ONLY"
+  3: "if YES but partial — read the commit messages, determine the last completed §5 section, and continue from there. Do NOT restart the build."
+  4: "if NO commits — the builder never ran or died before its first push. Re-dispatch against SPEC_BRIEF10.5.md."
+  5: "in every case: PR #13 and PR #15 must remain OPEN, draft, auto_merge null. Do not merge. Do not mark ready. Do not close issue #2."
+
+reviewer_substitution_still_in_force: >
+  The kronos-builder and kronos-reviewer agent types were withdrawn mid-session (see seq 18
+  rails defect). The maintainer authorized, at seq 15, dispatching the reviewer as a
+  general-purpose subagent pinned to claude-opus-5 with the kronos-reviewer contract inlined:
+  fresh context, diff + brief ONLY, builder's report and orchestrator analysis withheld,
+  read-only, never a fork. That authorization carries forward. If the agent types are available
+  again after reset, prefer them.
+
+do_not_do_on_resume:
+  - "do not reconstruct state from conversation history — it will be gone"
+  - "do not switch models or start a parallel session to get around a limit"
+  - "do not merge anything; no merge authorization exists for PR #15 and the standing one names PR #13, which does not contain this work"
+  - "do not edit .claude/, .github/, cybergym/ (including requirements.txt) or manifest.py"
+  - "do not add the httpx2/httpcore2/truststore pins anywhere"
+
+maintainer_actions_still_outstanding:
+  - "get .claude/ onto main — its absence withdrew the agent types mid-session"
+  - "rewrite .claude/commands/kronos-continue.md to the short reload form, no hardcoded baselines, PR numbers or brief names"
+  - "record G1/G2/G3 in SPEC.md and README.md (separate docs PR, bundle with F7's stale SPEC.md signature)"
+  - "revise KRONOS_RESEARCH_RECORD.md to v6 once PR #15 closes — v5 still shows PR #13 as MERGE-APPROVED"
+  - "decide the /loop self-paced trigger build, deferred by the seq 18 sequencing decision until PR #15 closes"
+
+pending_action:
+  seq: 21
+  action: >
+    Land SPEC_BRIEF10.5.md at repo root on claude/scope-key-dispatch-brief10-4, then dispatch the
+    builder against it. Builder commits and pushes after every logical step, opens no PR, touches
+    no PR. Then orchestrator VERIFIES against §8 and dispatches an independent reviewer with diff
+    + brief only. STOP at GATE-2.
+  outcome: pending
