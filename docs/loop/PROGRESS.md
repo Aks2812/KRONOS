@@ -1989,3 +1989,82 @@ pending_action:
   seq: 18
   action: "await PD-4 ruling (recommend A); then author SPEC_BRIEF10.5 and STOP at GATE-1"
   outcome: pending
+
+## SEQ 19 — PD-4 RULED A + RULE 5; RESEARCH RECORD INGESTED; WRITE-AHEAD FOR 10.5
+
+seq: 19
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: brief authoring
+
+seq18_pending_action_outcome: "resolved — maintainer ruled A and authorized adding §1.2 rule 5"
+
+maintainer_rulings:
+  pause_decision_4:
+    ruling: "A — add §1.2 rule 5"
+    authority: "maintainer, this turn"
+  research_record:
+    instruction: >
+      Read /home/void/KRONOS_RESEARCH_RECORD.md, keep it accessible alongside the loop state,
+      and update it as R&D progresses.
+
+## RESEARCH RECORD — ingested, and it changed rule 5
+
+source: /home/void/KRONOS_RESEARCH_RECORD.md (v5, 1686 lines, last updated 2026-10-16)
+status: "copied to docs/loop/KRONOS_RESEARCH_RECORD.md on kronos/loop-state; memory pointer written"
+the_three_goals_recorded_verbatim:
+  G1: "STRONGER — cross-domain capability connecting evidence across web, infrastructure, mobile, API and cloud"
+  G2: "MORE EFFECTIVE — autonomous planning and execution within explicitly authorized scope and signed engagement limits"
+  G3: "FEWER FALSE POSITIVES — validation-gated, evidence-backed, appropriately classified findings, with abstention when evidence is insufficient"
+goal_precedence_recorded: >
+  G3 constrains G1 and G2. A new domain that cannot produce two-armed evidence does not ship
+  (G1 yields to G3); autonomy never widens scope or relaxes a validation gate (G2 yields to G3
+  and to the signed manifest). G1 before G2 in sequencing — breadth first, then autonomy over
+  that breadth. This is why web and infra precede the agent layer.
+
+consistency_problem_the_record_exposed:
+  finding: >
+    The record's own "Coverage against G1" table classes BOTH Web (WEB_ENDPOINT, PARAMETER)
+    and Infra (HOST, SERVICE) as "schema-only" — no ingestion, no validation. They are the
+    SAME evidence class. But PD-2/A-prime set WEB_ENDPOINT to frozenset() while PD-4/A keeps
+    HOST and SERVICE at their schema families. Rule 5 as the orchestrator originally pitched
+    it — "schema-complete with live reconcile machinery retains its schema-derived family" —
+    would have covered all three and SILENTLY REVERSED the maintainer's PD-2 ruling.
+  my_original_framing_was_wrong: >
+    "has live reconcile machinery" does NOT discriminate. All three have it:
+    reconcile/runner.py consumes WEB_ENDPOINT (:82, :268), HOST (:94, :270) and SERVICE
+    (:133, :274) alike. Checking this is what caught the error before it reached the brief.
+
+rule_5_as_authored:
+  discriminator: "does schema.py give the type a column that carries its NETWORK IDENTITY?"
+  evidence: "src/kronos/schema.py NODE_COLUMNS :223-226 and NODE_PROPS_ALWAYS :165-168"
+  derivation:
+    HOST: >
+      columns are {id, in_scope, created_at, source, merged_into} — no url, no port. The id is
+      the only identity-bearing field, so the schema FORCES network identity into the id.
+      Schema-derived family applies: {host, ip}.
+    SERVICE: >
+      adds port and protocol, which are QUALIFIERS on a host identity, not a replacement for
+      it. The id still carries the identity. Family {host, ip, host_port, ip_port}.
+    WEB_ENDPOINT: >
+      columns include url and method. The network identity lives in the `url` COLUMN, so the
+      id is NOT required to carry it. No schema-derived id shape -> frozenset(). CONSISTENT
+      with PD-2/A-prime rather than overriding it.
+    PARAMETER: "has a `name` column; identity is not in the id -> frozenset(), consistent with §1.4"
+    API_ENDPOINT: >
+      also has url/method columns, but is evidenced by its PRODUCER (parser.py:276, id=found.url)
+      under rule 1. Rule 5 is only consulted when no producer exists, so there is no conflict.
+  status: "DERIVED BY THE ORCHESTRATOR FROM SCHEMA EVIDENCE — flagged loudly in the brief and in the report so GATE-1 can reject it. Not presented as maintainer-ruled."
+  g1_tie: >
+    Rule 5 is what lets G1's web and infra ingesters land later without re-litigating the
+    table: when a producer appears, rule 1 supersedes rule 5 for that row automatically.
+
+pending_action:
+  seq: 19
+  action: >
+    (1) copy the research record to docs/loop/ on kronos/loop-state and write a memory pointer;
+    (2) author SPEC_BRIEF10.5.draft.md carrying §0 Goal justification (G2 primary, G1 enabling),
+    §1.2 rule 5 as derived above, F2(a)(b)(c), criterion 14's verbatim fix, F3's ip/ip_port
+    exclusion fix, F4, F5, F6, a §5.4 grid whose every cell cites prose, and §8/§6 kept
+    distinct; (3) push the draft; (4) STOP at GATE-1. No code written. PR 13 and PR 15 untouched.
+  outcome: pending
