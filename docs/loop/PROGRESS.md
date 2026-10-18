@@ -551,3 +551,91 @@ reviewer_model_pin:
 
 Four of ten prerequisites fail (2, 5, 7, 9); 4 and 5b are n/a. Item 1 now passes.
 Do not merge.
+
+## SEQ 6 — SESSION MIGRATION TO CLAUDE CODE (Kali); STEP 2 RE-ASSERTED; FORK-2 RESEARCH OPENED
+
+seq: 6
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: RESEARCH (pre-GATE-1)
+
+session_change:
+  record: >
+    R&D moved into a Claude Code session on Kali to remove Desktop/Code copying. Parent
+    orchestrator claude-opus-5. Contract loaded from /home/void/TE.md (merged single
+    contract) plus the kronos-continue stage instruction. No architecture revision made.
+
+step2_assertions:
+  a_checkpoint_read: "pass — origin/kronos/loop-state at 90969db, read via git show, no checkout of the state branch into the working tree"
+  b_permission_mode:
+    observed: default
+    source: "this session's transcript jsonl, 7 occurrences of permissionMode, no other value"
+    change_from_seq5: >
+      seq 4/5 observed bypassPermissions. This session observes default. Writes are
+      therefore authorized under the step-2b rule rather than excepted by an allow-rule
+      argument. The persistent sources seq 2 named are STILL PRESENT
+      (/home/void/.zshrc:260 alias, and /home/void/.claude/settings.json defaultMode
+      bypassPermissions) — this session simply was not launched through the alias. The
+      remediation seq 2 recommended is still outstanding and is a maintainer action.
+  c_rails_unmodified: "pass — git diff --quiet HEAD -- .claude/ clean"
+  d_protection:
+    main: "pass — rules/branches/main lists deletion, non_fast_forward, pull_request from ruleset 25333712"
+    loop_state: "pass — rules/branches/kronos%2Floop-state returns []"
+  e_rederive:
+    main_head: "dcbdba950a45253f2c417b0c95c6ccb6930e9221 — matches checkpoint"
+    pr13_state: OPEN
+    pr13_draft: true
+    pr13_merged: false
+    pr13_head: "d2ad51e611927525780b9069db2bc16b0a7209b2 — matches checkpoint"
+    pr13_mergeable_state: CLEAN
+    pr13_head_is_ancestor_of_main: false
+    pr13_auto_merge: null
+    pr13_reviews: "[] (no GitHub review objects)"
+    issue2_state: OPEN
+    brief_sha256: "75a666d81a3bcce92915c51fba7e75a3d08ce389fc65458ff475a95bdf0d8938 — matches checkpoint"
+    result: pass
+  f_draft_and_automerge: "pass — draft true, auto_merge null"
+  pending_action_from_seq5: "none outstanding — seq 5 recorded its own outcome (review FAIL)"
+
+handoff_conflicts_resolved:
+  - id: baseline_figure
+    conflict: >
+      The stage instruction (kronos-continue) cites local test evidence against "the 591/1
+      and 17 baselines". The brief's own section 5.5 states 620 passed / 1 skipped.
+    resolution: >
+      620 passed / 1 skipped is AUTHORITATIVE. Independently confirmed three ways: brief
+      line 232 prose; the seq 5 reviewer's own measurement on base origin/main dcbdba9
+      (620 passed, 1 skipped); and the merged contract's explicit correction. 591/1 is
+      stale and is retired. The "17" figure is unsourced in the brief and is treated as
+      unverified; it is not used as a gate input until a brief names it in prose.
+  - id: section_numbering
+    conflict: >
+      The stage instruction says review "SPEC_BRIEF10.3 section 6 criterion" for
+      acceptance. Section 6 is the Live-use gate; section 8 is Acceptance criteria.
+    resolution: >
+      Section 8 = Acceptance criteria (brief line 278, 12 items). Section 6 = Live-use
+      gate (brief line 242, 6 closing conditions). Re-verified this turn against the
+      brief's heading list. VERIFY runs against section 8; the live gate is section 6.
+      Every dispatch names the section number explicitly. Never conflated.
+
+standing_rule_recorded:
+  id: "prose-derived expectations"
+  origin: "seq 5 reviewer Finding B; third variant of the section 0.3 method defect"
+  rule: >
+    Expected values in any test matrix derive from the brief's PROSE, never from observed
+    behaviour. A grid cell written from what the code currently does turns a conformance
+    test into a change detector. If the prose is ambiguous about a cell, that is a
+    PAUSE-DECISION, not a judgment call. Hard rule, permanent.
+
+pending_action:
+  seq: 6
+  action: >
+    FORK-2 research turn, read-only: (1) per-test in-scope/out-of-scope determination for
+    each of the six regressions from section 1.3 PROSE with citation; (2) Finding A
+    disposition — same brief or its own, with reasoning; (3) Findings C, D, E triage and
+    proposed disposition; (4) X-score verdict, which is BLOCKED with the environment named
+    unless the httpx2==2.13.1 pin from Brief 7.1 is installed and re-run at the head —
+    installing it is a PAUSE-DECISION under the NETWORK rule and is NOT done here.
+    Then author SPEC_BRIEF10.4 draft, push it to kronos/loop-state, and STOP for GATE-1.
+  scope: "repository reads and pytest only; no .claude/, .github/, cybergym/ or manifest edits; no network beyond gh repo reads and state-branch pushes"
+  outcome: pending
