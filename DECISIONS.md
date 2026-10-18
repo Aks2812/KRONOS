@@ -2482,3 +2482,230 @@ holds; a pre-Brief-#10 signed manifest still verifies
 #2 may close once this PR merges with reviewer approval and the merge
 commit is linked — H2 is now closed, which was the last open item
 blocking it.
+
+## Brief #10.4 (FORK-2's closing piece) — scope_key dispatch, evidence-only shape families, path-blind exclusions
+
+### Why
+
+seq 5 independent review of 10.3's PR (#13) returned FAIL: 6 regressions
+in `tests/`, traced to two real defects in 10.3's own §1.2 table (D1/D2),
+plus one deny-side gap 10.3's own §1.3 fix left half-implemented.
+
+**D1 — the id-shape table was applied to a string that isn't an id.**
+`graph.py:140` gates `scope_key or id`. §1.2's table is, by its own
+prose, about how a type's **id** is actually produced. When a
+`scope_key` is present, it is that string (not the id) that gets
+gated, and the table does not describe it. 10.3's builder saw this and
+worked around it one row at a time: `SECRET`'s row was assigned
+`{"host"}` *because* every production SECRET call site sets
+`scope_key=bundle_id`, so a family was chosen to fit the scope_key
+rather than the id — a per-row patch, not a fix for the structural
+problem.
+
+**D2 — one row was assigned by analogy.** `WEB_ENDPOINT`'s row
+(`{"url"}`) was fitted to API_ENDPOINT's real URL evidence — FORK-W's
+exact violation. Measured: there is no production `WEB_ENDPOINT`
+ingester anywhere in `src/` or `cybergym/`; its only documented key,
+`canonical_key_for_web_endpoint`, is a *merge* key consumed by
+`reconcile/runner.py:84`, never a node id; and that key's own shape
+classifies as `"unknown"`, not `"url"`. So `{"url"}` described a shape
+nothing produces, and would deny the real canonical key anyway.
+
+### The fix (§1.1): `scope_key` is gated by its own shape
+
+`ScopeGuard.is_in_scope` and the module-level `scope_guard` both gained
+a second required keyword-only parameter, `target_kind` (`"id"` or
+`"scope_key"`) — no default, same reasoning as 10.3's `node_type`
+requirement: a permissive-by-omission path is exactly how H2 happened.
+`graph.py:140` now passes whichever of `scope_key`/`id` it resolved,
+tagged with which one it is; the `scope_key or id` precedence itself
+is unchanged (§1.5's one-kwarg limit). When `target_kind="scope_key"`,
+`NODE_TYPE_SHAPES`'s id-shape family filter is never consulted at all
+— the scope_key is gated purely on its own shape, via a new
+`_scope_key_shape` function. `_scope_key_shape` differs from
+`_effective_shape` in exactly one place: with no `node_type` signal at
+all to consult, a dot-free string's ambiguous `"bucket_name"` reading
+always resolves to `"host"` (never `CLOUD_RESOURCE`'s free mid-token
+expansion) — narrower, never looser (guardrail §9), matching the
+brief's own worked example: a `CLOUD_RESOURCE` whose `scope_key` is
+`localhost` is governed by the host boundary rule, not the bucket-glob
+treatment the identical string gets on the id path. Fail-closed is
+unaffected either way: an unrecognised/empty/`None` `node_type` still
+denies before any pattern is consulted, scope_key or not.
+
+### The fix (§1.2): `NODE_TYPE_SHAPES` becomes evidence-only, no exceptions
+
+10.3's own FORK-W rule (already applied to
+`IDENTITY`/`TECHNOLOGY`/`FINDING`) is generalised into the table's
+construction rule, with no exception: every row is cited to a
+verified producing call site; a canonical/merge key is never citable
+evidence for an id; a type with no production producer and no
+established id convention gets `frozenset()`. `WEB_ENDPOINT` becomes
+`frozenset()` (D2, above). `SECRET` also becomes `frozenset()`: once
+`is_in_scope` can tell id and scope_key apart (§1.1), the
+scope_key-fitting justification for its old `{"host"}` row is gone,
+and its real id (sha256-derived) matches no shape family this module
+has — denying nothing in production, since every real call site sets
+`scope_key` regardless (FORK-Y, DEFAULT taken).
+
+### The fix (§1.3): exclusions become path-blind too, closing 10.3's own H3 fix
+
+10.3's H3 fix widened the exclusion-side cross-shape comparison for
+the *simple* explicit-port and trailing-glob pattern shapes, but a URL
+exclusion pattern that itself carries a path
+(`http://localhost:8091/internal/*`) still fell through to
+`_matches_url_pattern`'s literal, path-aware `fnmatch`. Measured: that
+pattern let `localhost`, `localhost:8091`, and
+`http://localhost:8091/other` all through, even though the path-free
+`http://localhost:8091*` already denied every one of them — a *more*
+specific exclusion pattern produced a *narrower* deny, the exact
+under-match class H3 exists to eliminate. Fixed by reducing such a
+pattern, on the exclusion side only, to its host/address identity via
+`urlsplit().hostname` (FORK-Z, DEFAULT yes: query/fragment discarded
+too, which required no extra code — `urlsplit().hostname` never
+included them) and comparing it against any host-ish identity the
+target carries, exactly like every other exclusion shape. The allow
+side is completely unchanged: `_matches_url_pattern`'s literal,
+path-aware behaviour still governs an explicit allow entry that spells
+a path out.
+
+### FORK-X / FORK-Y / FORK-Z
+
+- **FORK-X (DEFAULT, taken):** the id/scope_key distinction is a new
+  required kwarg, `target_kind`, with no default.
+- **FORK-Y (DEFAULT, taken):** `SECRET`'s row is re-derived to
+  `frozenset()` rather than kept at `{"host"}` — see "the fix (§1.2)"
+  above.
+- **FORK-Z (DEFAULT yes, taken):** the exclusion-side host-identity
+  comparison also discards a URL pattern's query/fragment.
+
+### §5.4's generated matrix — the third axis
+
+10.3's own 364-cell generated matrix (13 patterns × 14 targets × 2
+sides) is extended, not replaced: its two path-bearing URL pattern
+rows (`https://api.acme.com/v1/*`, `https://api.acme.com:8443/v1/*`)
+were declared `[False] * 14` on the exclusion side under 10.3 — the
+exact Finding-A gap, now corrected to match the host-only exclusion
+rule's other rows. A second, explicitly declared 9-row table adds the
+id/scope_key axis, one representative `(node_type, pattern, target)`
+triple per node type reachable via a scope_key in real production
+evidence, each cell's expected id-path and scope_key-path verdicts
+cited to the rule that determines it (e.g. `CLOUD_RESOURCE`'s row is
+the direct id-vs-scope_key contrast from §1.1's worked example, above;
+`WEB_ENDPOINT`/`SECRET`'s rows are the direct demonstration that §1.1
+is what lets a node with an empty id family still reach "in scope" via
+an authorized scope_key). Total declared cells: 364 (corrected) + 9
+(new axis, run twice each = 18 assertions) = 373 generated-matrix
+cells, all declared, zero undeclared (confirmed via the dedicated cell
+count tests). The individual §5.1/§5.2/§5.3 case tests are additional,
+not part of this count.
+
+### §5.6 — three different remedies for six pre-existing failures
+
+- **(a) Four `API_ENDPOINT` id corrections (§1.4):** a bare host
+  (`"api.acme.example.com"`) was corrected to a full URL
+  (`"https://api.acme.example.com"`) in
+  `tests/test_invariants.py::test_invariant_out_of_scope_secret_cannot_anchor_finding`,
+  `tests/test_invariants.py::test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain`,
+  `tests/test_query.py::test_find_paths_returns_seeded_mobile_to_cloud_chain`, and
+  `tests/test_schema_graph.py::test_upsert_node_stamps_in_scope_via_scope_guard`.
+  The deliberately out-of-scope control, `api.evil.com`, was left
+  untouched in every one — it was never broken by this correction (a
+  bare-host `API_ENDPOINT` id failed the url-shape family filter
+  before and after this brief).
+- **(b) One scope_key correction:**
+  `tests/test_reconcile.py::test_web_endpoint_real_duplicate_merges_and_tombstones`
+  gave its two `WEB_ENDPOINT` nodes (`"web:1"`/`"web:2"`, canonical
+  merge keys, never ids) a `scope_key="acme.example.com"` — §1.1 is
+  what lets this test's subject (WEB_ENDPOINT dedup/merge) reach "in
+  scope" at all, since WEB_ENDPOINT's id family is now `frozenset()`.
+- **(c) Restored by §1.1 alone, no edit:**
+  `tests/test_query.py::test_find_paths_only_in_scope_excludes_out_of_scope_hop`
+  constructs a `CLOUD_RESOURCE` with `scope_key="api.acme.example.com"`
+  (host-shaped, not bucket/ARN-shaped) — 10.3's bug applied the
+  CLOUD_RESOURCE id-shape family to that scope_key and denied it; §1.1
+  alone fixes it, with zero changes to the test file. Verified green,
+  unedited, by diffing `tests/test_query.py` against the pre-this-brief
+  head.
+
+### Out-of-§3 test regression — reported, not edited
+
+Implementing §1.2 correctly (SECRET's id family -> `frozenset()`,
+FORK-Y) exposes a **seventh** failure, not one of the six 10.3 left
+and not named anywhere in this brief's §5.6:
+`tests/test_reconcile.py::test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent`.
+Its `_secret_with_material` fixture calls `g.upsert_node("SECRET", ...)`
+with no `scope_key` at all (unlike every real SECRET ingester, which
+always sets `scope_key=bundle_id` unconditionally — the very fact
+FORK-Y's reasoning relies on), so the SECRET nodes it creates now
+reach the id path with an empty family and deny, breaking the
+`find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE")` assertion later in the
+same test. This brief's §3 permits exactly two edits to
+`tests/test_reconcile.py` (the one named `WEB_ENDPOINT` scope_key
+correction, (b) above, and the `_SCOPE_GUARD_SHA256` pin) — this
+fixture is neither, so it is reported here rather than edited, per the
+brief's own guardrail ("any test outside §3's permitted edits needing
+a change: reported, not edited"). The correct fix, if authorized in a
+future brief, is the same shape as (b): give `_secret_with_material`'s
+callers a `scope_key`, matching real production SECRET ingestion.
+`tests/`: **1 failed** (this one), not the 0 this brief's §8.7
+otherwise requires — see the builder's report for the full accounting.
+
+### Files changed
+
+Exactly SPEC_BRIEF10.4 §3's permitted list: `src/kronos/scope_guard.py`,
+`src/kronos/graph.py` (§1.5's one-kwarg limit only), `tests/test_scope_guard.py`,
+`src/kronos/README_scope.md`, `DECISIONS.md` (this entry), the five
+§5.6(a)/(b) test corrections in `tests/test_invariants.py` (2),
+`tests/test_query.py` (1), `tests/test_schema_graph.py` (1), and
+`tests/test_reconcile.py` (1), and the three `_SCOPE_GUARD_SHA256`
+re-pins (constant + comment only) in `tests/test_budget.py`,
+`tests/test_cleanup.py`, `tests/test_reconcile.py`. `manifest.py`:
+zero-line diff. `cybergym/`: zero-line diff (confirmed via `git diff
+--stat d2ad51e -- src/kronos/manifest.py cybergym/`).
+
+### Totals
+
+- `tests/`: **1067 passed, 1 failed (the out-of-§3 regression above),
+  1 skipped** (branch baseline 620/1 at `dcbdba9`, +364 corrected §5.4
+  cells and the rest of 10.1-10.3's own tests carried forward, +39 of
+  this brief's own new test cases, -6 of 10.3's six regressions fixed,
+  +1 new out-of-§3 regression this brief's §1.2 correctly exposes).
+- `cybergym/cloud/`: **unchanged at 17 passed.**
+
+### Live-use gate (§6, verbatim, restated in `README_scope.md` too)
+
+> FORK-2 is complete, and issue #2 may close, when **all** hold:
+> 1. The PR is merged to `main` after independent reviewer diff approval.
+> 2. Every case from Briefs #10, #10.1, #10.2, #10.3 and this brief is green, including §5.4's
+>    generated product with zero undeclared cells.
+> 3. Live CyberGym X-score 3/3, exit 0, at the merge commit, on an unproxied host.
+> 4. `manifest.py` is zero-line diff; a pre-Brief-#10 signed manifest still verifies.
+> 5. Issue #2 is closed **with a link to the merge commit**.
+> 6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, the
+>    id/scope_key distinction (§1.1), the evidence-only table rule (§1.2), and that
+>    `CLOUD_RESOURCE` is the only type with free mid-token expansion.
+> 7. The `httpx2` environment gap (§5.5) is closed by the maintainer, or explicitly accepted in
+>    writing as a known non-reproducible step.
+>
+> Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
+> **S3** start.
+>
+> §6 is the live-use gate. It is **not** the acceptance criteria. §8 is. Condition 3 is
+> measurable only at merge and therefore never gates acceptance; condition 7 is a maintainer
+> action this loop cannot perform.
+
+Status at PR time: PR open and unmerged, by design. `manifest.py`
+zero-line diff holds; a pre-Brief-#10 signed manifest still verifies.
+Live CyberGym X-score reported separately in the PR/builder report —
+this run did not execute the live CyberGym suite (no network beyond
+pushing the feature branch, per this brief's own restriction); the
+`httpx2`/`httpcore2`/`truststore` environment gap (§5.5) remains open,
+a maintainer action this loop cannot perform, reported rather than
+papered over by adding those pins to `cybergym/requirements.txt`
+(forbidden regardless, §2.2). Issue #2 may close once this PR merges
+with reviewer approval, the merge commit is linked, **and** the
+out-of-§3 regression above is resolved (by a follow-up brief
+authorizing the `test_secret_real_duplicate_*` fixture's scope_key
+correction, or by an explicit, written acceptance that it is not
+blocking).

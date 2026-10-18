@@ -1,4 +1,4 @@
-# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns; SPEC_BRIEF10.3: node-type-aware dispatch, FORK-2's final piece)
+# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns; SPEC_BRIEF10.3: node-type-aware dispatch; SPEC_BRIEF10.4: scope_key dispatch, evidence-only shape families, path-blind exclusions, FORK-2's closing piece)
 
 `scope_guard.py` is the ONLY scope-authorization mechanism (SPEC.md
 "SCOPE GUARD"). Every node gets `in_scope` stamped on it at creation by
@@ -273,12 +273,12 @@ it is holding) is each node type's permitted target-shape family:
 |---|---|---|
 | `HOST` | `host`, `ip`, `host_port`, `ip_port` | `canonical.py`: HOST ids ARE the hostname/IP text |
 | `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | SPEC.md's `host:port`/`ip:port` dedup convention |
-| `WEB_ENDPOINT` | `url` | SPEC_BRIEF9 §4.1, shares API_ENDPOINT's URL convention |
+| `WEB_ENDPOINT` | *(none)* | SPEC_BRIEF10.4 §1.2/FORK-W: corrected from 10.3's `{"url"}`, which was assigned by analogy to API_ENDPOINT (§0.3 D2) -- no production ingester exists, and its only documented key (`canonical_key_for_web_endpoint`) is a *merge* key (`reconcile/runner.py:84`), never a node id, classifying as `"unknown"` anyway |
 | `API_ENDPOINT` | `url` | `ingest/mobile/parser.py:276`: `id=found.url` |
 | `CLOUD_RESOURCE` | `bucket_name`, `arn` | `validate/candidates.py`'s `_all_cloud_resources`; **the only type with free mid-token glob expansion** |
 | `MOBILE_APP` | `host` | `id=bundle_id`, a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
 | `MOBILE_COMPONENT` | `host` | `id=f"{bundle_id}/{component.name}"`, same dotted-token shape |
-| `SECRET` | `host` | every real ingester sets `scope_key=bundle_id` unconditionally -- the SECRET's own id is never the scope target |
+| `SECRET` | *(none)* | SPEC_BRIEF10.4 §1.1/§1.2/FORK-Y: corrected from 10.3's `{"host"}`, which was fitted to make the scope_key path work rather than evidence about SECRET's own id (§0.3 D1) -- now that `is_in_scope` tells id and scope_key apart, SECRET's own sha256-derived id matches no shape family here; every real call site sets `scope_key=bundle_id` regardless, so this denies nothing in production |
 | `PARAMETER` | *(none)* | §1.4: an opaque name, never glob-authorized regardless of shape |
 | `IDENTITY` | *(none)* | FORK-W(2): zero production `upsert_node` call sites, no id convention ever established |
 | `TECHNOLOGY` | *(none)* | FORK-W(2): same |
@@ -323,20 +323,129 @@ family; `IDENTITY`/`TECHNOLOGY`/`FINDING` have none at all -- zero
 production `upsert_node` call sites, grep-verified -- so each denies
 unconditionally rather than guessing.
 
+## SPEC_BRIEF10.4 (FORK-2's closing piece) — scope_key dispatch, evidence-only shape families, path-blind exclusions
+
+seq 5 independent review of 10.3's PR (#13) returned FAIL: 6 regressions in
+`tests/`, traced to two real defects in 10.3's own §1.2 table (D1/D2 --
+see `DECISIONS.md`), plus one deny-side gap 10.3's own §1.3 fix left
+half-implemented.
+
+### §1.1 — `scope_key` is gated by its own shape, independent of `node_type`
+
+**D1:** `graph.py:140` gates `scope_key or id` -- a *string*, not
+necessarily an id. 10.3's `NODE_TYPE_SHAPES` table is, by its own
+prose, about how a type's **id** is actually produced; when the string
+is a `scope_key` instead, that table does not describe it at all. 10.3
+worked around this once (SECRET's row was fitted to the shape its
+scope_key carries, not evidence about its id -- see table above), which
+is a per-row patch, not a fix for the structural problem.
+
+**The fix:** `is_in_scope` (and the module-level `scope_guard`) now
+take a second required keyword argument, `target_kind` (`"id"` or
+`"scope_key"`), carried all the way from `graph.py`'s own `scope_key or
+id` resolution (§1.5 -- that precedence itself is unchanged, this is
+purely a one-kwarg addition at the one call site). When the target is
+a `scope_key`, the node-type shape-family filter (`NODE_TYPE_SHAPES`)
+is never consulted at all -- a scope_key is gated purely on its own
+shape (`_scope_key_shape`), computed independently of `node_type`.
+Everything else is unchanged: boundary rule, standard-port gate, the
+`CLOUD_RESOURCE`-only mid-token expansion, and excluded-first
+default-deny all still apply on the id path exactly as before; an
+unrecognised, empty, or `None` `node_type` still denies before any
+pattern is consulted, on *either* path (fail-closed, §2.4).
+
+`_scope_key_shape` differs from `_effective_shape` in exactly one way:
+with no `node_type` signal to consult, a dot-free string's ambiguous
+`"bucket_name"` classification always resolves to `"host"` (the
+boundary-rule-governed reading), never `"bucket_name"`'s free
+mid-token expansion -- this is strictly a change to *which table
+governs which string*, never a widening of any pattern rule
+(guardrail §9). A `CLOUD_RESOURCE` whose `scope_key` is `localhost`
+becomes governed by the host boundary rule: narrower than the
+bucket-glob treatment the identical string gets on the id path, never
+looser. An unambiguous shape (an explicit `arn:...` scope_key, for
+instance -- exactly what CyberGym's own validation run uses, §0.4)
+passes straight through and keeps its free glob expansion unaffected.
+
+### §1.2 — no row may be assigned by analogy; no evidence means an empty family
+
+**D2:** 10.3's `WEB_ENDPOINT` row (`{"url"}`) was assigned by analogy
+to `API_ENDPOINT`'s real evidence, FORK-W's exact violation. Measured:
+there is no production `WEB_ENDPOINT` ingester anywhere in `src/` or
+`cybergym/`; its only documented key, `canonical_key_for_web_endpoint`,
+is a *merge* key consumed by `reconcile/runner.py:84`, never a node
+id; and that key's own shape classifies as `"unknown"`, not `"url"`.
+
+This generalises 10.3's own FORK-W rule (already applied to
+`IDENTITY`/`TECHNOLOGY`/`FINDING`) into the table's construction rule,
+with no exception: every row must be cited to a verified producing
+call site; a canonical/merge key is never citable evidence for an id;
+a type with no production producer and no established id convention
+gets `frozenset()`, denying unconditionally. `WEB_ENDPOINT` and
+`SECRET` (§1.1, once the scope_key justification was gone) both become
+`frozenset()` under this rule -- see the table above for the full,
+per-row account.
+
+### §1.3 — exclusions are shape-, port-, scheme- **and path-blind**, closing 10.3's own H3 fix
+
+10.3's H3 fix widened an exclusion's cross-shape host-identity
+comparison for the *simple* explicit-port and trailing-glob pattern
+shapes, but a URL exclusion pattern that itself carries a path
+(`http://localhost:8091/internal/*`) still fell through to
+`_matches_url_pattern`'s literal, path-aware `fnmatch` -- so a *more*
+specific exclusion pattern produced a *narrower* deny than the
+path-free form of the identical pattern already gave: measured,
+`http://localhost:8091/internal/*` let `localhost`,
+`localhost:8091`, and `http://localhost:8091/other` all through, even
+though `http://localhost:8091*` already denied every one of them.
+
+**The fix:** on the exclusion side only, such a pattern is reduced to
+its host/address identity -- scheme, port, path, query, and fragment
+(FORK-Z, DEFAULT yes) are all discarded via `urlsplit().hostname`,
+exactly like every other exclusion shape in this module -- and
+compared against any host-ish identity the target carries. The allow
+side is **completely unchanged**: `_matches_url_pattern`'s literal,
+path-aware behaviour still governs an explicit allow entry that spells
+a path out (this is not a FORK-S bypass -- FORK-S governs what an
+*implicit* pattern may infer from a URL target, never what an operator
+explicitly wrote).
+
+### FORK-X / FORK-Y / FORK-Z
+
+- **FORK-X (DEFAULT, taken):** the id/scope_key distinction is carried
+  as a new *required* keyword argument, `target_kind` -- no default,
+  so no call site can silently fall back to the wrong table.
+- **FORK-Y (DEFAULT, taken):** `SECRET`'s row is re-derived to
+  `frozenset()` rather than kept at `{"host"}` -- its real id shape
+  (sha256-derived) matches no pattern family this module has, and
+  every production SECRET call site sets `scope_key` regardless, so
+  this denies nothing real.
+- **FORK-Z (DEFAULT yes, taken):** the exclusion-side host-identity
+  comparison also discards a URL pattern's query/fragment, by the same
+  rule-6 reasoning. In practice this required no extra code:
+  `urlsplit().hostname` never included them to begin with.
+
 ### The live-use gate (§6, verbatim)
 
 > FORK-2 is complete, and issue #2 may close, when **all** hold:
-> 1. This PR is merged to `main` after independent reviewer diff approval.
-> 2. Every case from Briefs #10, #10.1, #10.2 and this brief is green, including §5.4's generated
->    product with zero undeclared cells.
-> 3. Live CyberGym X-score 3/3, exit 0, at the merge commit on an unproxied host.
-> 4. `manifest.py` zero-line diff; a pre-Brief-#10 signed manifest still verifies.
-> 5. Issue #2 closed **with a link to the merge commit**.
-> 6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, and that
+> 1. The PR is merged to `main` after independent reviewer diff approval.
+> 2. Every case from Briefs #10, #10.1, #10.2, #10.3 and this brief is green, including §5.4's
+>    generated product with zero undeclared cells.
+> 3. Live CyberGym X-score 3/3, exit 0, at the merge commit, on an unproxied host.
+> 4. `manifest.py` is zero-line diff; a pre-Brief-#10 signed manifest still verifies.
+> 5. Issue #2 is closed **with a link to the merge commit**.
+> 6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, the
+>    id/scope_key distinction (§1.1), the evidence-only table rule (§1.2), and that
 >    `CLOUD_RESOURCE` is the only type with free mid-token expansion.
+> 7. The `httpx2` environment gap (§5.5) is closed by the maintainer, or explicitly accepted in
+>    writing as a known non-reproducible step.
 >
 > Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
 > **S3** start.
+>
+> §6 is the live-use gate. It is **not** the acceptance criteria. §8 is. Condition 3 is
+> measurable only at merge and therefore never gates acceptance; condition 7 is a maintainer
+> action this loop cannot perform.
 
 ## FORK-U — a pattern with wildcards at both ends
 
