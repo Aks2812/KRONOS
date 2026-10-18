@@ -40,14 +40,14 @@ def test_upsert_node_stamps_in_scope_via_scope_guard(tmp_path, manifest_factory,
     # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
     # shape, a full URL (§0.2) -- this test's subject (upsert_node's
     # in-scope stamping) is unchanged; only the node id's shape is.
-    # `api.evil.com` stays a bare host, deliberately: it is the
-    # out-of-scope control and was never broken by this correction (a
-    # bare-host API_ENDPOINT id already failed the url-shape family
-    # filter before and after this brief).
+    # SPEC_BRIEF10.5 §5.6: the out-of-scope control is a FULL URL on an
+    # out-of-scope host. The earlier bare `api.evil.com` was denied by
+    # the API_ENDPOINT -> {url} family filter before any pattern was
+    # consulted, so it passed even with the pattern logic broken.
     g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
-    g.upsert_node("API_ENDPOINT", "api.evil.com", {})
+    g.upsert_node("API_ENDPOINT", "https://api.evil.com", {})
     assert g.get_node("API_ENDPOINT", "https://api.acme.example.com")["in_scope"] is True
-    assert g.get_node("API_ENDPOINT", "api.evil.com")["in_scope"] is False
+    assert g.get_node("API_ENDPOINT", "https://api.evil.com")["in_scope"] is False
 
 
 def test_mobile_component_exported_flag_round_trips(tmp_path, manifest_factory, signing_keypair):
