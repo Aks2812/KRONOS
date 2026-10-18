@@ -243,8 +243,30 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #   so neither ever reaches this mapping in practice; omitting them
 #   means a direct call with either type still fails closed, which is
 #   the correct behavior for a type that should never be asked here.
+# SPEC_BRIEF10.5 §1.1 RULE 5 (re-derivation, per-row citation + rule):
+# when no production producer exists for a type (rule 1 unsatisfiable),
+# the family is derived from schema.py: if the schema gives the type no
+# identity-bearing column other than `id` (or only qualifiers such as
+# port/protocol), identity lives in the id and the id's shape family
+# applies; if it gives a column carrying network identity (url, name),
+# the id is not required to carry it and the family is frozenset().
+# Rule 1 outranks rule 5; rules 3 and 4 still bind (no row by analogy;
+# canonical/merge key is never evidence of id production).
+#   HOST           rule 5  schema.py:223 NODE_COLUMNS (id/source/
+#                          merged_into only; NODE_PROPS_ALWAYS :165
+#                          {source}) -- identity is the id, and no
+#                          `port` column -> {host, ip}.
+#   SERVICE        rule 5  schema.py:224 NODE_COLUMNS (+port, protocol
+#                          qualifiers; NODE_PROPS_ALWAYS :166) -> identity
+#                          in the id -> {host, ip, host_port, ip_port}.
+#   WEB_ENDPOINT   rule 5  schema.py:225 (`url` column carries identity)
+#                          -> frozenset().
+#   PARAMETER      rule 5  schema.py:226 (`name` column) -> frozenset().
+#   API_ENDPOINT   rule 1  ingest/mobile/parser.py:276 upserts
+#                          id=found.url (schema.py:227 also has url/method
+#                          but rule 1 outranks rule 5) -> {url}.
 NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {
-    "HOST": frozenset({"host", "ip", "host_port", "ip_port"}),
+    "HOST": frozenset({"host", "ip"}),
     "SERVICE": frozenset({"host", "ip", "host_port", "ip_port"}),
     "WEB_ENDPOINT": frozenset(),
     "API_ENDPOINT": frozenset({"url"}),
@@ -436,6 +458,21 @@ def _host_port_scheme(target: str, shape: TargetShape) -> tuple[str | None, int 
         except ValueError:
             port = None
         return (host, port, split.scheme)
+    if shape in ("ip", "ip_port"):
+        # SPEC_BRIEF10.5 §1.2/§4.1: address-shaped targets carry an
+        # address (and port, if present) identity, bracketed / zone-
+        # indexed / IPv4-mapped IPv6 included. Previously fell through
+        # to (None, None, None), so every exclusion host-identity branch
+        # bailed out for them. Allow-side callers are all gated on
+        # url/host/host_port shapes or use _matches_address_pattern, so
+        # this does not change the allow side.
+        bracketed = _parse_bracketed_ip(target)
+        if bracketed is not None:
+            return (bracketed[0].lower(), bracketed[1], None)
+        if shape == "ip_port":
+            host, _, port_str = target.rpartition(":")
+            return (host.lower(), int(port_str), None)
+        return (target.lower(), None, None)
     if shape == "host_port":
         host, _, port_str = target.rpartition(":")
         return (host.lower(), int(port_str), None)
