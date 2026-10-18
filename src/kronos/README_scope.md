@@ -425,27 +425,28 @@ explicitly wrote).
   rule-6 reasoning. In practice this required no extra code:
   `urlsplit().hostname` never included them to begin with.
 
-### The live-use gate (§6, verbatim)
+### The live-use gate (§6, byte-verbatim from SPEC_BRIEF10.5)
 
-> FORK-2 is complete, and issue #2 may close, when **all** hold:
-> 1. The PR is merged to `main` after independent reviewer diff approval.
-> 2. Every case from Briefs #10, #10.1, #10.2, #10.3 and this brief is green, including §5.4's
->    generated product with zero undeclared cells.
-> 3. Live CyberGym X-score 3/3, exit 0, at the merge commit, on an unproxied host.
-> 4. `manifest.py` is zero-line diff; a pre-Brief-#10 signed manifest still verifies.
-> 5. Issue #2 is closed **with a link to the merge commit**.
-> 6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, the
->    id/scope_key distinction (§1.1), the evidence-only table rule (§1.2), and that
->    `CLOUD_RESOURCE` is the only type with free mid-token expansion.
-> 7. The `httpx2` environment gap (§5.5) is closed by the maintainer, or explicitly accepted in
->    writing as a known non-reproducible step.
->
-> Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
-> **S3** start.
->
-> §6 is the live-use gate. It is **not** the acceptance criteria. §8 is. Condition 3 is
-> measurable only at merge and therefore never gates acceptance; condition 7 is a maintainer
-> action this loop cannot perform.
+<!-- BEGIN SPEC_BRIEF10.5 §6 GATE (byte-verbatim; tests/test_scope_guard.py compares) -->
+FORK-2 is complete, and issue #2 may close, when **all** hold:
+
+1. This PR is merged to `main` after independent reviewer diff approval.
+2. Every case from Briefs #10, #10.1, #10.2, #10.3, #10.4 and this brief is green, including
+   §5.4's generated product with zero undeclared cells and every cell prose-referenced.
+3. Live CyberGym X-score 3/3, exit 0, at the merge commit, on an unproxied host.
+4. `manifest.py` zero-line diff; a pre-Brief-#10 signed manifest still verifies.
+5. Issue #2 closed **with a link to the merge commit**.
+6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, the id/scope_key
+   distinction, rule 5 and its citation discipline, the address-shaped exclusion rule, and that
+   `CLOUD_RESOURCE` is the only type with free mid-token expansion.
+7. The `httpx2` environment gap is closed by the maintainer, or explicitly accepted in writing.
+
+Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
+**S3** start.
+
+**§6 is the live-use gate. It is not the acceptance criteria. §8 is.** Conditions 1, 3 and 5 are
+unmeasurable before a merge exists; condition 7 is a maintainer action.
+<!-- END SPEC_BRIEF10.5 §6 GATE -->
 
 ## FORK-U — a pattern with wildcards at both ends
 

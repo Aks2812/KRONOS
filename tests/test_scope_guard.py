@@ -1777,3 +1777,37 @@ def test_b105_5_3_exclusion_grid_public_api(pattern, target):
     expected_excluded, clause = _EXCLUSION_GRID[pattern][target]
     got = scope_guard(target, _m(["*"], [pattern]), node_type="HOST", target_kind="scope_key")
     assert (got is False) is expected_excluded, _CL[clause]
+
+
+# --- SPEC_BRIEF10.5 §1.4 / §5.4 -- the §6 gate is BYTE-verbatim.
+# A real byte comparison (not a presence grep): §6's block is extracted from
+# SPEC_BRIEF10.5.md and compared as bytes against the marker-delimited block
+# in README_scope.md and DECISIONS.md.
+import pathlib as _pl
+
+_REPO = _pl.Path(__file__).resolve().parent.parent
+_GATE_BEGIN = "<!-- BEGIN SPEC_BRIEF10.5 §6 GATE (byte-verbatim; tests/test_scope_guard.py compares) -->\n".encode()
+_GATE_END = "<!-- END SPEC_BRIEF10.5 §6 GATE -->\n".encode()
+
+
+def _spec_gate_bytes() -> bytes:
+    raw = (_REPO / "SPEC_BRIEF10.5.md").read_bytes()
+    start = raw.index(b"FORK-2 is complete, and issue #2 may close")
+    end = raw.index(b"\n\n---\n", start)
+    return raw[start:end] + b"\n"
+
+
+def _embedded_gate_bytes(path: _pl.Path) -> bytes:
+    raw = path.read_bytes()
+    assert raw.count(_GATE_BEGIN) == 1, path
+    s = raw.index(_GATE_BEGIN) + len(_GATE_BEGIN)
+    e = raw.index(_GATE_END, s)
+    return raw[s:e]
+
+
+@pytest.mark.parametrize("rel", ["src/kronos/README_scope.md", "DECISIONS.md"])
+def test_b105_5_4_gate_block_is_byte_identical_to_spec_section_6(rel):
+    spec = _spec_gate_bytes()
+    assert spec.startswith(b"FORK-2 is complete") and spec.rstrip().endswith(b"maintainer action.")
+    assert b"This PR is merged" in spec and b"Issue #2 closed" in spec  # the very words 10.4 paraphrased
+    assert _embedded_gate_bytes(_REPO / rel) == spec
