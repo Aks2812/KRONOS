@@ -484,3 +484,25 @@ brief closes.
   change (guardrail 1). A manifest signed before this brief still
   verifies — see `tests/test_scope_guard.py`'s literal pre-captured
   signed-manifest fixture.
+
+## SPEC_BRIEF10.5 — rule 5, address-shaped exclusions, bucket-name scope_key
+
+- **Rule 5 (schema-derived families).** Consulted only when neither a production producer nor a
+  ratified predecessor-brief prose decision exists for a node type (rule 1 cannot be satisfied).
+  If `schema.py` gives the type no identity-bearing column other than `id` (only qualifiers such as
+  port/protocol), the id carries the identity and the id-shape family applies (`SERVICE`). If it
+  gives a column that carries the network identity (`url`, `name`), the family is `frozenset()` and
+  scope arrives via a `scope_key` (`WEB_ENDPOINT`, `PARAMETER`). Every `NODE_TYPE_SHAPES` row cites
+  a `schema.py` line or a producer call site and records its rule number; no row cites a docstring,
+  a convention or another type. `HOST` keeps all four shapes under rule 1 (Brief #10.3 §1.2).
+- **Address-shaped exclusions.** An exclusion matches an address-shaped target (`ip`, `ip_port`,
+  including bracketed, zone-indexed and IPv4-mapped IPv6) by its address, ignoring port, scheme
+  and path, exactly as for name-shaped hosts. The allow side is unchanged.
+- **Bucket-name `scope_key` no longer matches a bucket glob.** `_scope_key_shape` folds
+  `bucket_name` -> `host`, so a `scope_key` that is a dot-free bucket name is governed by the
+  host boundary rule, not free mid-token expansion. A future ingester that sets a bucket-name
+  `scope_key` must not expect `kronos-cybergym-*` to match it; free expansion remains an
+  id-path property of `CLOUD_RESOURCE` only.
+- **Standing checks.** The §6 gate above is byte-compared against `SPEC_BRIEF10.5.md`; the allow
+  side is proven unchanged versus `dcbdba9` and `2a676a8` by a differential test.
+

@@ -2666,11 +2666,10 @@ zero-line diff. `cybergym/`: zero-line diff (confirmed via `git diff
 
 ### Totals
 
-- `tests/`: **1067 passed, 1 failed (the out-of-§3 regression above),
-  1 skipped** (branch baseline 620/1 at `dcbdba9`, +364 corrected §5.4
-  cells and the rest of 10.1-10.3's own tests carried forward, +39 of
-  this brief's own new test cases, -6 of 10.3's six regressions fixed,
-  +1 new out-of-§3 regression this brief's §1.2 correctly exposes).
+- `tests/`: **1068 passed, 0 failed, 1 skipped** at `2a676a8` (re-measured in
+  SPEC_BRIEF10.5; the earlier "1067 passed, 1 failed" figure was stale -- the
+  `_secret_with_material` fixture was repaired at `2a676a8`). Branch baseline
+  620/1 at `dcbdba9`.
 - `cybergym/cloud/`: **unchanged at 17 passed.**
 
 ### Live-use gate (§6, verbatim, restated in `README_scope.md` too)
@@ -2732,3 +2731,28 @@ separately **and** carries one in its id.
 
 Retyping the 20 lock tests to `SERVICE` was considered and rejected: it would overwrite decisions an
 independent reviewer already approved, on the strength of an inference those decisions contradict.
+
+### SPEC_BRIEF10.5 FORK-AC — allow side does NOT learn address identities from path-bearing URL patterns (DECLINED)
+
+Question: should an *allow* pattern such as `http://10.0.0.5/admin/*` also authorize the bare
+address `10.0.0.5` (as §1.2 now makes the *exclusion* side deny it)?
+
+**Disposition: declined (DEFAULT, taken).** That would widen the allow side -- a path-bearing URL
+pattern would start authorizing targets (bare IPs, other ports) it never named -- and guardrail §9
+forbids widening the allow side anywhere. The asymmetry is deliberate (Brief #10 §1.1 rule 6: allow
+narrow, deny broad). The allow side keeps `_matches_url_pattern`'s literal, path-aware behaviour and
+the existing `_matches_address_pattern` route for CIDR/bare-IP entries, unchanged; this is proven by
+the standing differential test (`test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens`:
+0 allow-side differences over 340 pattern x target pairs at `dcbdba9`, `2a676a8` and head).
+
+### SPEC_BRIEF10.5 — totals (measured at the head that carries this entry)
+
+- `tests/`: **3445 passed, 0 failed, 1 skipped** (baseline 1083/0/1 at `72fb71d`; the increase is
+  the rebuilt §5.4 grid -- 2366 declared cells, 2359 asserted -- plus the byte-verbatim and
+  differential tests).
+- `cybergym/cloud/`: **17 passed.**
+- Rebuilt §5.4 grid: 12 node types x 13 patterns x 14 targets (allow) + 13 x 14 (exclusion) = 2366
+  cells, 0 undeclared, every cell clause-referenced. 11 cells are PAUSE-DECISION (unfilled, unasserted):
+  `_P4_BOTH_ENDS_GLOB` x `_T1_HOST` on the allow side for HOST/SERVICE/MOBILE_APP/MOBILE_COMPONENT, and
+  `_P4_BOTH_ENDS_GLOB` x {api.acme.com, :8443, both URL forms, userinfo URL, lookalike, mid-label} on the
+  exclusion side. No prose in #10..#10.5 determines them.
