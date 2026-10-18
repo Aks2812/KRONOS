@@ -2933,3 +2933,80 @@ pending_action:
   seq: 29
   action: "fix items 2-5 (mechanical, including the orchestrator's own §8.11 breach) and item 1 (§8.2 re-derivation); then re-verify and re-review. Awaiting maintainer direction on whether the orchestrator applies these inline or a builder is dispatched."
   outcome: pending
+
+## SEQ 30 — ALL FIVE REVIEW FAILURES CLOSED AT abfe531
+
+seq: 30
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: VERIFY (re-review pending)
+
+seq29_pending_action_outcome: "maintainer directed the orchestrator to apply all five inline; done"
+
+architecture_confirmed_to_maintainer:
+  correction_issued: >
+    The maintainer described the team as "Opus 5 as orchestrator, researcher & reviewer + 1
+    subagent to build". Corrected: it is THREE roles and TWO subagents. Opus orchestrates,
+    researches, authors and VERIFIES; a Sonnet subagent builds; and a SEPARATE Opus subagent
+    reviews with fresh context and diff+brief only. The reviewer shares the orchestrator's model
+    but is NOT the orchestrator. Self-review was declined at seq 13 and this session justifies
+    that twice over — the reviewer overturned 3 criteria in 10.4 and 4 more in 10.5, one of them
+    the orchestrator's own scope breach.
+  deviations_restated: "agent types withdrawn (rails on one branch), so general-purpose subagents with explicit model pins and the contract inlined — authorized at seq 15. Orchestrator implementing directly is the second deviation, and is how §8.11 happened."
+
+fixes_applied:
+  head: abfe531
+  f_8_2: >
+    All 12 NODE_TYPE_SHAPES rows now carry a citation AND a rule number, and the claim is
+    ENFORCED rather than written down: a new public NODE_TYPE_SHAPE_EVIDENCE dict holds the
+    (rule, citation) pair per row, and test_b105_8_2_every_row_records_a_citation_and_a_rule_number
+    fails if a row is missing, carries a rule other than 1 or 5, cites a docstring or a
+    convention, or (rule 5) omits a schema.py line. The superseded 10.3/10.4 evidence block was
+    DELETED (4979 chars). README_scope.md's table was rewritten: CLOUD_RESOURCE now cites its
+    real producer at cybergym/kronos_validation_run.py:252,257 instead of validate/candidates.py
+    (a READER, as the reviewer spotted), and HOST, SERVICE, IDENTITY, TECHNOLOGY and FINDING no
+    longer rest on a doc, a convention or FORK-W prose.
+  self_caught_by_the_new_test: >
+    The first version of the SECRET row cited its producer file:line but did not name the
+    NodeUpsert call, and the new test rejected it. The enforcement caught the orchestrator's own
+    sloppy citation within minutes of being written — which is the argument for enforcing rather
+    than asserting.
+  f_8_13: "FORK-AA recorded in DECISIONS.md with its reason AND the rejected alternative (live reconcile machinery, which does not discriminate because runner.py consumes WEB_ENDPOINT, HOST and SERVICE alike)"
+  f_8_14: "totals refreshed to 3457/0/1 and 2366 asserted / 0 deferred; the self-contradiction with the PD-5 entry resolved"
+  f_8_11: "docs/loop/PROGRESS.md removed from the branch index; confirmed absent from `git diff --name-only 2a676a8..HEAD`. The file is untracked again, as it was at session start."
+  f_8_5: "_P2's _t1 cell cited 10.r1 (a clause about a different pattern shape); corrected to 10.r2, which the same row already uses for _t6"
+  also_recorded: >
+    §1.1 is a behavioural NO-OP — NODE_TYPE_SHAPES values are byte-identical to 2a676a8 — so the
+    citation discipline is the whole of what it delivered. Recorded in DECISIONS.md so no later
+    reader mistakes §1.1 for a semantic change, and because it is why §8.2 mattered.
+
+the_totals_went_stale_a_THIRD_time:
+  what_happened: >
+    Refreshed to 3456 per the reviewer's instruction, then the §8.2 enforcement test landed and
+    made the suite 3457 — stale again inside the same edit. Caught before committing.
+  root_cause_recorded_in_DECISIONS: >
+    Ordering, not carelessness. A total measured before the last test lands is always wrong.
+    Standing rule now written into DECISIONS.md: refresh totals as the FINAL edit of a change,
+    after the suite has been run for the last time.
+
+orchestrator_verified:
+  tests: "3457 passed, 0 failed, 1 skipped"
+  cybergym_cloud: "17 passed"
+  guardrails: "manifest.py, schema.py, graph.py, cybergym/, .claude/, .github/, SPEC.md all zero-diff vs 2a676a8"
+  files_in_window: "DECISIONS.md, SPEC_BRIEF10.5.md, src/kronos/{README_scope.md,scope_guard.py}, tests/{test_scope_guard,test_schema_graph,test_budget,test_cleanup,test_reconcile}.py — §3 only"
+  commit_hygiene: "staged with EXPLICIT paths, not `git add -A`, per the rule adopted after §8.11"
+  pins: "re-pinned twice as scope_guard.py changed; final value matches sha256sum"
+  live_x_score: "re-running (scope_guard.py changed); result to be recorded"
+
+deferred_to_a_later_brief:
+  finding_1: "equivalent address spellings — exclusions compare host identity as TEXT, so ::ffff:10.0.0.5 and 10.0.0.5 do not cross-match, while CIDR exclusions already normalize. Deny-side inconsistency, MEDIUM."
+  finding_2: "two §5.1 cases labelled IPv4-mapped/zone-indexed pair identical literal strings and pass on byte equality — relabel or implement the semantics (depends on finding 1)"
+  finding_3: "stale 'kept, untouched' comment on the legacy grid, whose _P4 row was brief-authorized to change"
+  note: "all three are outside §8's letter and none blocks the merge gate"
+
+merge_gate: "not re-measured, not proposed. A re-review has not run. PR #15 draft, no merge authorization. Do not merge."
+
+pending_action:
+  seq: 30
+  action: "record the X-score, then dispatch ONE re-review of abfe531 (diff + brief only, fresh context) covering the four previously-failed criteria and the whole §8; then STOP at GATE-2"
+  outcome: pending
