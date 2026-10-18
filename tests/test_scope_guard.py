@@ -1438,3 +1438,91 @@ def test_b104_5_4_id_scope_key_axis(node_type, pattern, target, expected_id, exp
     m = _m([pattern], [])
     assert scope_guard(target, m, node_type=node_type, target_kind="id") is expected_id, why
     assert scope_guard(target, m, node_type=node_type, target_kind="scope_key") is expected_scope_key, why
+
+
+# =============================================================================
+# SPEC_BRIEF10.5 -- address-shaped exclusions (§1.2, §5.1) and rule 5 (§1.1,
+# §5.2). Prefixed test_b105_. Every expected value below is derived from the
+# brief's prose (cited per case), never from running the code. Exclusion
+# cases go through the PUBLIC API: in_scope=['*'] + target_kind='scope_key'
+# yields unconfounded exclusion semantics (§1.3) -- the scope_key path
+# consults no node-type id-shape table, so a False can only be the exclusion.
+# =============================================================================
+
+_B105_ADDR_EXCLUSION_CASES = [
+    # (excluded, target, prose authority)
+    ("http://10.0.0.5/admin/*", "10.0.0.5", "§1.2 shape-blind"),
+    ("http://10.0.0.5/admin/*", "10.0.0.5:8443", "§1.2 shape-blind + port-blind"),
+    ("http://10.0.0.5*", "10.0.0.5", "§1.2 path-free, H3 itself required"),
+    ("http://10.0.0.5:8443/x/*", "10.0.0.5", "§1.2 port-blind"),
+    ("http://[2001:db8::1]:443/x/*", "[2001:db8::1]:443", "§1.2 bracketed IPv6"),
+    ("http://[2001:db8::1]/x/*", "[2001:db8::1]", "§1.2 bracketed IPv6, no port"),
+    ("http://[::ffff:10.0.0.5]/x/*", "[::ffff:10.0.0.5]", "§5.1 IPv4-mapped form"),
+    ("http://[fe80::1%eth0]/x/*", "[fe80::1%eth0]", "§5.1 zone-indexed form"),
+]
+
+
+@pytest.mark.parametrize("excluded,target,why", _B105_ADDR_EXCLUSION_CASES)
+def test_b105_5_1_address_shaped_exclusion_denies(excluded, target, why):
+    m = _m(["*"], [excluded])
+    assert scope_guard(target, m, node_type="HOST", target_kind="scope_key") is False, why
+
+
+def test_b105_5_1_allow_side_controls_unchanged():
+    """§5.1: CIDR and bare-IP allow patterns keep current behaviour
+    exactly (proves §1.2 did not leak into the allow path)."""
+    assert _sg("10.0.0.5", _m(["10.0.0.0/24"], []), "HOST") is True
+    assert _sg("10.0.0.5:8443", _m(["10.0.0.0/24"], []), "SERVICE") is True
+    assert _sg("10.0.0.9", _m(["10.0.0.0/24"], []), "HOST") is True
+    assert _sg("10.0.1.9", _m(["10.0.0.0/24"], []), "HOST") is False
+    assert _sg("10.0.0.5", _m(["10.0.0.5"], []), "HOST") is True
+    assert _sg("10.0.0.6", _m(["10.0.0.5"], []), "HOST") is False
+    assert _sg("[2001:db8::1]:443", _m(["2001:db8::/32"], []), "SERVICE") is True
+
+
+# --- §5.2 -- rule 5 and the re-derived table.
+
+_B105_ALL_SHAPES = {
+    "host": "web-01.acme.example.com",
+    "ip": "10.0.0.5",
+    "host_port": "web-01:8080",
+    "ip_port": "10.0.0.5:8080",
+}
+
+
+def test_b105_5_2_1_host_port_shaped_host_id_denies():
+    """§1.1: HOST has no `port` column (schema.py NODE_COLUMNS) so a
+    port-bearing HOST id is not in its family: denies."""
+    assert NODE_TYPE_SHAPES["HOST"] == frozenset({"host", "ip"})
+    assert _sg("web-01:8080", _m(["*"], []), "HOST", "id") is False
+    assert _sg("10.0.0.5:8080", _m(["*"], []), "HOST", "id") is False
+
+
+def test_b105_5_2_2_host_host_and_ip_ids_follow_family():
+    m = _m(["*"], [])
+    assert _sg(_B105_ALL_SHAPES["host"], m, "HOST", "id") is True
+    assert _sg(_B105_ALL_SHAPES["ip"], m, "HOST", "id") is True
+
+
+def test_b105_5_2_3_service_all_four_shapes_follow_family():
+    assert NODE_TYPE_SHAPES["SERVICE"] == frozenset({"host", "ip", "host_port", "ip_port"})
+    m = _m(["*"], [])
+    for shape, target in _B105_ALL_SHAPES.items():
+        assert _sg(target, m, "SERVICE", "id") is True, shape
+
+
+@pytest.mark.parametrize("node_type", ["WEB_ENDPOINT", "PARAMETER"])
+def test_b105_5_2_4_web_endpoint_and_parameter_deny_on_id(node_type):
+    """§1.1 rule 5: identity lives in a url/name column, id not required
+    to carry it -> frozenset()."""
+    assert NODE_TYPE_SHAPES[node_type] == frozenset()
+    for target in list(_B105_ALL_SHAPES.values()) + ["https://api.acme.example.com/x"]:
+        assert _sg(target, _m(["*"], []), node_type, "id") is False
+
+
+def test_b105_5_2_5_api_endpoint_keeps_url_under_rule_1():
+    """§1.1: API_ENDPOINT carries url/method columns too, yet keeps
+    {url}: a producer exists (parser.py:276), rule 1 outranks rule 5."""
+    assert NODE_TYPE_SHAPES["API_ENDPOINT"] == frozenset({"url"})
+    assert _sg("https://api.acme.example.com/x", _m(["*"], []), "API_ENDPOINT", "id") is True
+    assert _sg("api.acme.example.com", _m(["*"], []), "API_ENDPOINT", "id") is False
