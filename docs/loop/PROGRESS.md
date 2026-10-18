@@ -1836,3 +1836,156 @@ pending_action:
   seq: 17
   action: "await maintainer at GATE-2: authorize a follow-up brief for F1/F2/criterion-14 (+F3/F4), or rule otherwise. No merge is proposed. Marking PR 15 ready for review and closing issue #2 both remain maintainer-only actions."
   outcome: pending
+
+## SEQ 18 — LOOP STRUCTURE DECISIONS; GOAL-TRACEABILITY GAP; PAUSE-DECISION 4 (F1)
+
+seq: 18
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: RESEARCH for SPEC_BRIEF10.5 (pre-GATE-1)
+
+seq17_pending_action_outcome: >
+  Maintainer did not rule on merging. Instead set loop-structure direction and sequencing.
+  No merge proposed. PR 15 stays at review-FAIL.
+
+## MAINTAINER DIRECTION — loop structure (7-step form)
+
+decisions:
+  sequencing: "close PR #15 first — author SPEC_BRIEF10.5 for the review findings, run the cycle, then build loop infra"
+  trigger_mechanism: "/loop, self-paced — orchestrator paces its own iterations, checkpoints, schedules the next wake-up, stops at gates. No cron, no .claude/ writes."
+  autonomy_bounds: "UNCHANGED from today. Still stops at GATE-1, GATE-2, every prose ambiguity, every scope question."
+  rationale_recorded: >
+    Maintainer's aim is to end Desktop copy-paste for the researcher/orchestrator/reviewer
+    roles. That aim is ALREADY MET as of this session: research, brief authoring, build,
+    independent review and verification all ran here with zero Desktop round-trips.
+
+seven_step_map:
+  step_1_trigger: "MISSING — nothing fires the loop; it runs when the maintainer types. This is the only absent step. To be built with /loop self-paced AFTER PR 15 closes."
+  step_2_load_context: "BUILT — PROGRESS.md read from origin/kronos/loop-state without checkout"
+  step_3_run_claude: "BUILT — Opus orchestrator/researcher/brief-author/verifier, Sonnet builder, Opus independent reviewer"
+  step_4_use_files_tools: "BUILT — repo edits, pytest, docker CyberGym lab up/down, gh API"
+  step_5_verify_result: "BUILT — pytest, live X-score, and a fresh-context independent reviewer"
+  step_6_update_state: "BUILT — seq 6..18 write-ahead, each pushed and confirmed"
+  step_7_stop_escalate_repeat: "BUILT — stopped at GATE-1, escalated 4 PAUSE-DECISIONs, stopped at GATE-2"
+  honest_ceiling: >
+    A gated loop cannot run unattended to completion. This cycle escalated five times and
+    four were load-bearing (PD-2's premise was false; the reviewer overturned three criteria
+    the orchestrator had passed). A trigger automates the work BETWEEN gates; it does not
+    reduce the gates. Recorded so the trigger is not over-sold later.
+  v6_relationship: >
+    KRONOS_LOOP_ARCHITECTURE_v6.md is a GOVERNANCE document — merge-authorization model,
+    the ten-item merge gate, pauses/halts, kickoff. It contains no trigger and no
+    load/run/verify/update cycle. The 7-step form is the operational layer v6 never had, not
+    a restatement of it.
+
+## GOAL-TRACEABILITY GAP — G1/G2/G3 absent from the repository
+
+measured:
+  spec_md: 0
+  readme_md: 0
+  kronos_loop_architecture_v6: 0
+  briefs: >
+    SPEC_BRIEF10.3/10.4 appear to match only because G1-G6 there are Brief #10.1's
+    trailing-glob CASE IDs, not the three goals. Zero real goal references.
+finding: >
+  The stated discipline — "every reference assessment, architecture decision and brief is
+  justified against these and only these" — is recorded NOWHERE in the repo. It lived in
+  Desktop transcripts. SPEC_BRIEF10.4, authored by this orchestrator, justifies itself
+  against review findings and §1.3 prose and never against G1/G2/G3. Authoring miss.
+goal_mapping_of_current_work:
+  fork_2_scope_guard: "G2 — autonomous execution inside explicitly authorized, signed scope. The scope guard IS the mechanism that makes autonomy safe."
+  g1_untouched: "cross-domain capability — see PAUSE-DECISION 4, which is a G1 question in disguise"
+  g3_untouched: "validation-gated, evidence-backed findings with abstention"
+proposed_remedy:
+  in_10_5: "add a §0 Goal justification section naming which of G1/G2/G3 the brief serves, and make it a standing brief-template requirement"
+  separate_docs_change: >
+    record the three goals verbatim in SPEC.md and README.md, bundled with F7's stale
+    SPEC.md scope_guard signature. Both files are OUTSIDE any brief's §3, so this is a
+    separate small docs PR or a maintainer action — not foldable into 10.5.
+
+## PAUSE-DECISION 4 — F1: HOST and SERVICE shape families (BLOCKING 10.5 AUTHORING)
+
+why_a_pause_decision: "§1.2's last line: a row that cannot be assigned under rules 1-4 is a PAUSE-DECISION. Reviewer F1 confirmed, orchestrator re-confirmed."
+evidence_gathered_this_turn:
+  no_producer: >
+    Every NodeUpsert/upsert_node call site in src/ and cybergym/ enumerated. Producing types
+    are MOBILE_APP, MOBILE_COMPONENT, API_ENDPOINT, SECRET, EVIDENCE, CLOUD_RESOURCE
+    (ingest/__init__.py:46-47, ingest/mobile/parser.py:171,177,244,258,276, evidence.py:69,
+    cybergym/kronos_validation_run.py:250,252,257,262,269). NO HOST and NO SERVICE producer
+    anywhere. F1 stands.
+  but_they_are_first_class: >
+    HOST and SERVICE are NOT speculative types. schema.py gives them full edge topology
+    (:102-132), prop allowlists (:165-166) and column sets (:223-224, SERVICE carrying port
+    and protocol), and reconcile/runner.py actively CONSUMES them — _active_ids(graph,"HOST")
+    at :94, SERVICE at :133-140, and _merge_type(..., "HOST", _group_hosts(...)) at :270.
+    They are schema-complete with working dedup/merge machinery and simply have no ingester.
+  what_that_means: >
+    This is the INFRASTRUCTURE domain. Mobile, API and cloud have ingesters; infrastructure
+    does not. So F1 is a G1 question wearing a §1.2 costume: the row is unevidenced precisely
+    because the cross-domain capability G1 calls for is not built yet.
+options:
+  A: >
+    Add §1.2 rule 5 — a documented exception for SCHEMA-COMPLETE, NOT-YET-INGESTED types: a
+    type with full schema topology, prop allowlists and live reconcile machinery retains its
+    schema-derived shape family, cited to schema.py and reconcile/runner.py rather than to a
+    producer. HOST and SERVICE keep {host, ip, host_port, ip_port} under that rule, with
+    honest citations. RECOMMENDED — it is truthful about the evidence class, preserves current
+    behaviour, closes the rule-3 violation, and means G1's infrastructure ingester lands
+    without re-litigating the table.
+  B: >
+    Apply rule 2 strictly: HOST and SERVICE -> frozenset(). REJECTED in recommendation — it
+    would deny every infrastructure node the moment an ingester exists, and the reviewer
+    notes it denies essentially everything today.
+  C: >
+    Leave the rows and citations as they are. REJECTED — SERVICE's citation is verbatim what
+    rule 3 forbids ("a documented convention that no code implements"); that IS the defect.
+recommendation: A
+
+## SPEC_BRIEF10.5 SCOPE — ready to author once PD-4 is ruled
+
+prose_determined_already_no_ruling_needed:
+  - "F2(a) — per-cell prose-clause references for the 364 inherited §5.4 cells"
+  - "F2(b) — run the allow grid per node type, every type in the table, not HOST alone"
+  - "F2(c) — move the exclusion grid onto the public API; in_scope=['*'] with target_kind='scope_key' gives unconfounded exclusion semantics, so the in-code 'type gate makes this impossible' justification does not hold"
+  - "criterion 14 — make both gate copies byte-verbatim (currently 'The PR' for 'This PR', 'is zero-line diff' for 'zero-line diff', 'is closed' for 'closed', and two items dropping bold)"
+  - "F3 — exclusion shape-blindness for ip/ip_port; _host_port_scheme returns (None,None,None) for both while _HOST_SHAPES_FOR_EXCLUSION includes them. Deny-side under-match, live-safety relevant, pre-existing at dcbdba9, and the PATH-FREE case fails too so H3 was never satisfied for address shapes"
+  - "F4 — restore the negative control's discriminating power (make it https://api.evil.com)"
+  - "F6 — refresh DECISIONS.md totals to 1068 passed / 0 failed / 1 skipped"
+  - "F5 — document the bucket-name-scope_key narrowing in README_scope.md"
+needs_pd_4_ruling: "the §1.2 table rows for HOST and SERVICE, and whether rule 5 is added"
+out_of_scope_for_10_5: "SPEC.md (F7) and the G1/G2/G3 record — both outside §3, separate docs change"
+
+state:
+  pr_15: "OPEN, draft true, head 2a676a8, auto_merge null — review FAIL stands"
+  pr_13: "OPEN, draft true, head d2ad51e — untouched"
+  issue_2: "OPEN"
+  main: dcbdba9
+  merge_gate: "4 of 10 fail. Do not merge."
+
+## RAILS DEFECT FOUND THIS TURN — MAINTAINER ACTION REQUIRED
+
+finding: >
+  The six rail files (.claude/RAILS.md, settings.json, hooks/brief-scope.sh,
+  agents/kronos-builder.md, agents/kronos-reviewer.md, commands/kronos-continue.md) are
+  tracked at EXACTLY ONE commit, 33a882f, reachable ONLY from claude/loop-scaffolding. They
+  are NOT ancestors of main and NOT ancestors of PR 15's head.
+consequences_observed:
+  - "checking out claude/scope-key-dispatch-brief10-4 removed all six from the working tree — THIS is why the kronos-builder and kronos-reviewer agent types went away mid-session"
+  - "the PreToolUse hook and the deny-rule settings.json were absent from the tree for the back half of this session"
+  - "STEP 2c (git diff --quiet HEAD -- .claude/) was a genuine check at session start on claude/loop-scaffolding and became VACUOUS after the branch switch; the orchestrator ran it once and never re-asserted it"
+  - "/kronos-continue cannot resolve from the current branch at all, so the documented resume path is broken right now"
+resume_file_is_also_stale: >
+  .claude/commands/kronos-continue.md still says "resume by typing: continue" (TE.md replaced
+  that and the replacement was never written), still names PR #13 as the only mergeable PR and
+  SPEC_BRIEF10.3 as the review target, and still carries the 591/1 baseline the brief's own
+  §5.5 contradicts.
+maintainer_actions:
+  - "get .claude/ onto main so every branch cut from it carries the rails"
+  - "rewrite .claude/commands/kronos-continue.md to the short reload form, with no hardcoded baselines, PR numbers or brief names — let the checkpoint supply them"
+  - "consider making STEP 2c re-assert after any branch switch, not only at turn start"
+loop_cannot_fix_this: "correct — .claude/ is never-editable by the loop and TE.md says so explicitly. These are maintainer actions."
+
+pending_action:
+  seq: 18
+  action: "await PD-4 ruling (recommend A); then author SPEC_BRIEF10.5 and STOP at GATE-1"
+  outcome: pending
