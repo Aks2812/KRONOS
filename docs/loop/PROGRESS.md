@@ -1157,3 +1157,82 @@ pending_action:
   no_code_written: true
   pr13_untouched: true
   outcome: pending
+
+## SEQ 11 — SPEC_BRIEF10.4 DRAFT PUSHED; STOPPED AT GATE-1
+
+seq: 11
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: GATE-1 (awaiting maintainer brief approval)
+
+seq10_pending_action_outcome: "complete — suites re-measured and brief authored and pushed"
+
+baselines_remeasured_this_session:
+  base_dcbdba9_tests: "620 passed, 1 skipped"
+  base_dcbdba9_cybergym_cloud: "17 passed"
+  head_d2ad51e_tests: "6 failed, 1023 passed, 1 skipped"
+  head_d2ad51e_cybergym_cloud: "17 passed"
+  head_d2ad51e_live_x_score: "X-SCORE: 3/3 chains validated end-to-end, exit 0, teardown all clear"
+  confirms: "brief 10.3 §5.5's stated 620/1 and 17 exactly; the 591/1 figure is retired"
+
+finding_a_measured:
+  pattern: "http://localhost:8091/internal/* used as an EXCLUSION"
+  denies: ["http://localhost:8091/internal/x"]
+  fails_to_deny: ["localhost:8091", "http://localhost:8091/other", "localhost", "http://localhost:8091/"]
+  control: "the path-free pattern http://localhost:8091* denies all five"
+  severity_note: >
+    Adding a path to a URL exclusion pattern collapses a broad deny into a narrow one — an
+    operator writing a MORE specific exclusion gets LESS exclusion. Deny-side under-match,
+    directly contrary to §1.3's "regardless of port, scheme or path".
+
+brief_draft:
+  path_on_state_branch: docs/loop/SPEC_BRIEF10.4.draft.md
+  sha256: "recorded in the commit; re-derive with sha256sum at GATE-1 review time"
+  lines: 485
+  lands_on_approval_at: "repo-root SPEC_BRIEF10.4.md on a fresh claude/* feature branch"
+  carries:
+    - "§1.1 PD-1/A — scope_key gated on its own shape, id-family filter only on the id path"
+    - "§1.2 PD-2/A-prime — evidence-only families, no analogy, WEB_ENDPOINT -> frozenset()"
+    - "§1.3 Finding A — exclusion side discards a URL pattern's path; allow side unchanged"
+    - "§1.4 four bare-host API_ENDPOINT tests corrected, table NOT widened"
+    - "§1.5 graph.py's scope_key-or-id precedence unchanged"
+    - "§5.4 grid rebuilt: every cell cites prose, path-bearing patterns added, allow side per node type, public API only"
+    - "§5.6 the five test edits split into three remedies, one test green UNEDITED"
+    - "§6 live-use gate and §8 acceptance criteria kept strictly distinct"
+  findings_disposition:
+    A: "fixed in §1.3/§5.1 — same brief, deny-side, must not lag the allow-side work"
+    B: "fixed in §5.4.1 — every cell cites the prose clause determining it"
+    C: "fixed in §5.4.3 — allow side per node type, plus an id/scope_key axis"
+    D: "fixed in §5.4.4 — assert through the public API"
+    E: "accepted, record only — naming, not a gap"
+    F: "no action"
+    G: "WITHDRAWN as framed (seq 9); replaced by G-revised, fixed in §1.2"
+
+late_correction_in_authoring:
+  issue: >
+    The first draft said "the four §1.4 corrections" but listed six test functions under §5.6,
+    conflating three different remedies.
+  corrected_to: >
+    §5.6(a) four §1.4 id corrections; §5.6(b) one §5.3.2 scope_key correction (reconcile
+    WEB_ENDPOINT); §5.6(c) one test that must go green with NO edit
+    (test_find_paths_only_in_scope_excludes_out_of_scope_hop, restored by §1.1 alone — if it
+    still fails, §1.1 is implemented wrongly). Five permitted test edits, not four or six.
+    §3, guardrail 10, §8.11 and §9.5 all updated to match.
+
+gate_1_status: AWAITING MAINTAINER APPROVAL
+no_code_written: true
+no_builder_dispatched: true
+pr13: "OPEN, draft true, unmerged, head d2ad51e, auto_merge null — untouched all session"
+issue2: "OPEN — untouched"
+main: "dcbdba9 — untouched"
+fork2: "does not close"
+s3: "stays blocked"
+scope: "CyberGym only; no live targets; no scope change"
+merge_gate: >
+  §8.9 of 10.3 flips to PASS on the measured X-SCORE. Items 2, 5, 7, 9 still FAIL.
+  Four of ten still fail. Do not merge.
+
+pending_action:
+  seq: 11
+  action: "await GATE-1 approval or rejection of docs/loop/SPEC_BRIEF10.4.draft.md; on approval, dispatch kronos-builder (claude-sonnet-5) in FOREGROUND against the approved brief only"
+  outcome: pending
