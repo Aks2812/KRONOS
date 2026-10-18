@@ -2594,3 +2594,126 @@ pending_action:
   seq: 26
   action: "await (1) PD-5 ruling on the 11 cells and (2) go-ahead to dispatch the independent review. Orchestrator recommends ruling first to avoid reviewing a diff that will change."
   outcome: pending
+
+## SEQ 27 — PD-5 APPLIED AT 7fc1863; REVIEW DISPATCHED; TOOLING EFFICIENCY MEASURED
+
+seq: 27
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: REVIEW in flight
+
+seq26_pending_action_outcome: "PD-5 ruled by maintainer and applied; review dispatched"
+
+maintainer_ruling_pd_5:
+  allow_side: "False (denies)"
+  exclusion_side: "DENY-BROAD (denies)"
+  authority: "maintainer, this turn"
+  scope: "all 11 deferred cells"
+
+implementation:
+  head: 7fc1863
+  code_change: >
+    _matches_hostname_pattern's `*.`-leading branch: when is_exclusion AND the pattern also ends
+    with `*`, the host identity is glob-matched against the pattern instead of applying the
+    strict literal-suffix rule. Previously pattern[2:] ("acme.com*") was taken as a literal
+    suffix, so "api.acme.com".endswith(".acme.com*") was False and `*.acme.com*` failed to
+    exclude the exact host it names. Comparison is HOST-identity only (FORK-S: never path,
+    query, fragment or userinfo), so the deny side widens and the allow side cannot.
+  allow_side_unchanged: "the new branch is gated on is_exclusion, so the allow side keeps FORK-U's behaviour"
+  prose_support_found_during_implementation: >
+    The clause registry already carried "10.1.U" = SPEC_BRIEF10.1 FORK-U: a both-ends wildcard is
+    not a host pattern. That is prior ratified prose supporting the ALLOW-side half of the ruling,
+    so the allow cells are consistent with a predecessor decision rather than resting only on the
+    new ruling.
+  legacy_grid_superseded: >
+    The legacy #10.3 exclusion grid held an all-False row for this pattern and 7 of its cells
+    failed after the change. They were flipped to deny at the _EXCL_HOSTISH positions
+    (T1, T2, T6, T7, T8, T10, T11), computed from the _TARGETS ordering, not guessed. This is a
+    ratified-expectation change and is recorded as superseded by PD-5 in DECISIONS.md.
+  pause_cells_now: 0
+  pause_pin_test: "now asserts _PAUSE_ALLOW == [] and _PAUSE_EXCL == [], so a NEW prose gap appearing later fails loudly"
+  pins: "3 _SCOPE_GUARD_SHA256 re-pinned to 266381ac7d64348a371edf7db86b5fb4ccfef875bf39c94819d62cdfff6c2ea3"
+  brief_amended: "§1.3 carries PD-5 as normative prose; DECISIONS.md records the ruling, the routing change and the superseded legacy row"
+
+orchestrator_verified:
+  tests: "3456 passed, 0 FAILED, 1 skipped (was 3445 before the 11 cells became asserted)"
+  cybergym_cloud: "17 passed"
+  guardrails: "manifest.py, schema.py, graph.py, cybergym/, .claude/, .github/ zero-diff vs 2a676a8"
+  live_x_score:
+    commit: 7fc1863
+    verbatim_line: "X-SCORE: 3/3 chains validated end-to-end"
+    exit_code: 0
+    teardown: "all clear"
+    note: "re-run because scope_guard.py changed; the deny-side widening did not affect the live range"
+
+review:
+  status: IN FLIGHT
+  agent: "general-purpose subagent pinned to claude-opus-5, fresh context, not a fork"
+  inputs: "the diff (dcbdba9..HEAD) and SPEC_BRIEF10.5.md only"
+  withheld: "builder reports, orchestrator VERIFY, the §8 verdict, all probe results, all session reasoning"
+  instructed_additionally: >
+    open the cited file+line for at least three NODE_TYPE_SHAPES rows; probe the address-shaped
+    exclusion rule including bracketed/zone-indexed/IPv4-mapped IPv6; confirm the allow side did
+    not move; check grid cells are prose-derived rather than reverse-engineered AND that each
+    cited clause actually says what the cell claims; confirm the gate check is a byte comparison;
+    confirm the differential test RUNS rather than skipping; and break the pattern logic in a
+    scratch copy to confirm the restored negative control actually catches it.
+
+## TOOLING EFFICIENCY — MEASURED, with one correction to an earlier claim
+
+rtk:
+  mechanism: "hook in /home/void/.claude/settings.json:17 -> `rtk hook claude`"
+  NEW_FINDING: >
+    rtk exposes SUBCOMMANDS that were not being used — notably `rtk test` (run tests, show only
+    failures), `rtk diff`, `rtk err`, `rtk read`, `rtk grep`, `rtk json`, `rtk git`, `rtk gh`.
+    This is the actual efficiency lever and it was being left on the table.
+  measured_ab:
+    raw_pytest_q: "3953 bytes"
+    rtk_test: "45 bytes"
+    reduction: "98.9% — 88x smaller, same suite, same information for a green run"
+  safety_verified: >
+    Checked against a deliberately failing test: `rtk test` DOES surface the FAILED line and the
+    assertion message, plus a `rtk recall <hash>` for full output. It does not hide red.
+  GOTCHA_RECORDED: >
+    `rtk test` returned EXIT 0 on a run with a real failure. Exit codes must NOT be trusted with
+    it; read the SUMMARY line. Any future automation that gates on `$?` after `rtk test` would
+    silently treat red as green.
+  known_costs_this_session: >
+    rtk condensation mangled a markdown table into JSON, mangled a comment block so an edit regex
+    failed, and truncated a large file read — three extra round trips. Working rule adopted: rtk
+    subcommands for tests/diffs/logs/bulk reads; raw python `repr`/base64 for exact code and
+    table reads.
+
+headroom:
+  measured_this_session: "43 requests, 41 compressed, avg 0.7%, best 4.3%, 45,118 tokens removed, compression savings $0.23 (1.8%)"
+  correction_to_the_headline: >
+    The $33.74 it also reports is PROMPT-CACHE saving, not compression. Whether Headroom causes
+    the prefix-freezing behind those cache hits is not determinable from its own output, so it is
+    neither credited nor discredited here.
+  verdict: "real but marginal on compression. Not the lever. Baseline recorded for a trend line."
+
+playwright:
+  helper_written: "/home/void/.local/share/playwright-cli/extract.js — targeted JSON extraction (title/links/inputs/forms/text), outside the KRONOS repo"
+  measured_on_a_mock_page:
+    targeted_json: "190 bytes"
+    aria_snapshot: "676 bytes (what an MCP server returns)"
+    raw_html: "1683 bytes"
+    ratio: "3.6x cheaper than an aria snapshot, 8.9x cheaper than raw HTML; the gap widens on real pages"
+  current_contribution: "ZERO — nothing in KRONOS uses it yet. Web ingestion is S5, unstarted, behind FORK-2."
+  scope_guard_note: "the helper carries a header stating CyberGym-only and that it is a measurement tool, not an ingester; scope enforcement stays in src/kronos/scope_guard.py and is NOT duplicated in it"
+
+the_actual_cost_driver:
+  measured: "subagent dispatches this session: 379k + 241k + 124k + 203k tokens"
+  versus: "Headroom removed 45k; rtk saves ~99% of pytest output but pytest output is kilobytes, not hundreds of kilobytes"
+  conclusion: >
+    Dispatch discipline dominates. The cheapest changes already applied: front-loading
+    "what is already done, do not re-open" into builder prompts, incremental-push so a cut-off
+    run is resumable rather than repeated, and holding the review until PD-5 was ruled so one
+    review covers a settled diff instead of two reviews covering a moving one.
+
+merge_gate: "not re-measured, not proposed. Review in flight. PR #15 draft, no merge authorization. Do not merge."
+
+pending_action:
+  seq: 27
+  action: "await the independent review verdict on 7fc1863; then report it and STOP at GATE-2"
+  outcome: pending
