@@ -1487,3 +1487,57 @@ pending_action:
   seq: 14
   action: "await maintainer on the three blockers above"
   outcome: pending
+
+## SEQ 15 — THREE AUTHORIZATIONS GRANTED; WRITE-AHEAD FOR AMENDMENT, PR AND REVIEW
+
+seq: 15
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: amendment -> PR -> REVIEW
+
+seq14_pending_action_outcome: "resolved — maintainer granted all three this turn"
+
+maintainer_rulings:
+  section_8_7_amendment:
+    ruling: A
+    normative_text: >
+      SPEC_BRIEF10.4 §3 and §5.6 are amended to permit ONE further test edit: give
+      tests/test_reconcile.py's _secret_with_material helper's SECRET nodes a scope_key,
+      the same remedy as §5.6(b). FORK-Y stands; SECRET's id family remains frozenset().
+    authority: "maintainer, this turn"
+  reviewer_substitution:
+    ruling: A
+    normative_text: >
+      REVIEW is dispatched as a general-purpose subagent pinned to claude-opus-5 with the
+      kronos-reviewer contract inlined verbatim: fresh context; diff and brief as the ONLY
+      inputs; the builder's report, the orchestrator's VERIFY and all session reasoning
+      withheld; read-only; never a fork.
+    authority: "maintainer, this turn"
+  pause_decision_3:
+    ruling: A
+    normative_text: >
+      Open a NEW DRAFT PR from claude/scope-key-dispatch-brief10-4 to main. PR #13 is left
+      untouched and remains unmerged. The new PR supersedes #13 in content and will require
+      a FRESH merge authorization naming its own number and SHA — the standing authorization
+      names #13 and does NOT transfer.
+    authority: "maintainer, this turn"
+
+implementer_note:
+  fact: >
+    The kronos-builder agent type was withdrawn mid-session, so the orchestrator applies the
+    one amendment-authorized fixture edit itself. Recorded because the v6 contract normally
+    reserves implementation to the builder. Scope of the orchestrator's edit is exactly the
+    one helper the amendment names — nothing else.
+  scope_guard_unchanged: >
+    The edit touches only tests/test_reconcile.py, so scope_guard.py is untouched and the
+    three _SCOPE_GUARD_SHA256 pins stay valid and need no re-pinning.
+
+pending_action:
+  seq: 15
+  action: >
+    (1) amend SPEC_BRIEF10.4.md §3/§5.6 on the feature branch; (2) apply the one permitted
+    fixture edit; (3) re-run tests/ and cybergym/cloud, expecting 0 failed; (4) push;
+    (5) open a DRAFT PR to main, draft=true, no auto-merge, not marked ready; (6) dispatch
+    the substituted reviewer with diff + brief ONLY; (7) STOP at GATE-2 for the merge
+    decision. No merge is proposed or executed this turn.
+  outcome: pending
