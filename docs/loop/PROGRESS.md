@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 2
-derived_at: 2026-10-18T04:35:00Z
+seq: 3
+derived_at: 2026-10-18T05:40:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v6.md
 stage: FORK-2
@@ -39,6 +39,18 @@ pr_13:
   reviews: 0
   check_runs: 0
 
+pr_14:
+  state: open
+  draft: true
+  merged: false
+  head: 33a882f9a43c01e7fe9696cbb4ccad6bfb8e771f
+  base: main
+  commits: 1
+  mergeable_state: clean
+  note: >
+    Scaffolding PR, not a SPEC_BRIEF — the v6 3.1 acceptance-criteria path does not apply.
+    Branch claude/loop-scaffolding pushed from session kronos-railcheck.
+
 issue_2:
   state: open
 
@@ -50,13 +62,14 @@ tests:
 merge_authorization: null
 
 pending_action: >
-  HELD, not executed: direct push of local commit 33a882f ("chore(loop): add KRONOS loop
-  scaffolding and v6 architecture baseline", 7 files, clean fast-forward over
-  dcbdba95) to origin/main. TE.md authorized it on the stated condition that the push
-  would prompt; the session was in bypass-permissions mode, where that prompt does not
-  exist. Maintainer directed: do not push; relaunch in default mode and push from there.
-  Commit exists locally only. origin/main remains dcbdba95.
-
+  SUPERSEDES seq 2. The scaffolding no longer goes to main by direct push. It is now
+  PR #14 off claude/loop-scaffolding at head 33a882f (draft). Commit 33a882f was never
+  amended, so the SHA seq 2 names still resolves. Two maintainer actions remain
+  outstanding and are NOT done as of this checkpoint: (a) branch protection on main is
+  still absent (verified: branches/main .protected == false, protection endpoint 404),
+  (b) the ask-tier mode guard is still absent from .claude/hooks/brief-scope.sh
+  (verified: zero matches for ASK_TIER_SUBJECT). PR #14 is held in draft until both land;
+  draft status, not the permission rails, is what currently blocks its merge.
 stale_branches:
   - claude/cybergym-denial-fidelity-brief7
   - claude/ingestion-contract-canonical-keys-brief9
@@ -183,9 +196,140 @@ subagent_model_resolution:
   conclusion: >
     The frontmatter pin resolved; it did not fall back silently to Sonnet 5.5 or Opus.
 
+## SEQ 3 FINDINGS — rail-layer survivability under bypassPermissions
+
+hook_deny_survives_bypass:
+  status: verified
+  severity: load-bearing
+  evidence: >
+    Direct `gh api -X POST /rate_limit` was blocked by brief-scope.sh with its own
+    permissionDecisionReason text, in a session whose observed permissionMode is
+    bypassPermissions. The call never reached GitHub. Payload was chosen to mutate
+    nothing had it landed.
+  layer_table:
+    deny_rules:            "survives bypass — 5/5 in the seq 2 negative checks"
+    pretooluse_hook_deny:  "survives bypass — verified above"
+    ask_rules:             "INERT under bypass"
+    no_matching_allow:     "INERT under bypass"
+  consequence: >
+    The hook is the only place an ask-tier condition can be enforced without the ask
+    tier. This is what makes the mode guard viable where a settings.json change is not.
+
+mode_guard:
+  status: authored, NOT APPLIED
+  purpose: "remediation for seq 2 merge_gate_exposed"
+  design: >
+    Defer in permission_mode "default" so `ask: Bash(gh pr merge *)` authorizes as v6 2.2
+    intends; deny otherwise. Avoids the blanket-deny trap: per v6 2.1 the tiers are
+    first-match-wins and an allow cannot carve an exception out of a deny, so
+    `deny: Bash(gh pr merge *)` would swallow the narrow authorized-merge allow and kill
+    MERGE-GATE criteria 4 and 9. The tier is not where the hole lives; the mode is.
+  covers: ["gh pr merge", "gh pr ready", "gh issue close", "WebFetch", "WebSearch"]
+  field_name: "permission_mode, top-level, snake_case (maintainer-confirmed against the hooks docs)"
+  dry_run: >
+    21 crafted hook inputs against the guard logic in isolation, rails untouched: defers
+    in default mode; denies all five subjects under bypassPermissions and acceptEdits;
+    fails closed when the mode field is absent; no over-reach on git status, gh pr view,
+    `gh pr mergeability` (word boundary), non-Bash tools, or the subject appearing inside
+    a quoted string. Chained (`echo ok; gh pr merge 13`) and irregular whitespace caught.
+  not_yet_verified: >
+    Live behaviour and placement. The guard must sit after the gh api method filter and
+    BEFORE the AGENT_TYPE assignment, or it guards only dispatched subagents while the
+    parent orchestrator — the actor that would merge — goes unguarded.
+
+command_text_indirection:
+  status: verified
+  severity: high
+  finding: >
+    Every command-text rail in this design is defeated by one level of shell indirection.
+    The hook's regexes anchor on start-of-string or [;&|], so quoting the command inside
+    another command puts it out of view.
+  evidence:
+    denied:  'gh api -X POST /rate_limit  -> hook denied, never reached GitHub'
+    evaded:  'bash -c "gh api -X POST /rate_limit"  -> reached GitHub, HTTP 404'
+  also_defers: ["eval \"...\"", "xargs gh pr merge", "/usr/bin/gh pr merge", "./script.sh"]
+  deny_tier_inference:
+    status: INFERENCE, NOT VERIFIED
+    claim: >
+      settings.json deny patterns are command-text prefix matches by the same mechanism,
+      so `bash -c "gh pr merge 13 --admin"` should likewise evade the nine --admin/--auto
+      deny entries that v6 2.1 builds the merge boundary on.
+    why_untested: >
+      The only payload that would test it is a real merge of PR #13 into unprotected
+      main. Unlike the /rate_limit probe there is no null version. Confirm on a throwaway
+      repo, never this one.
+  framing: >
+    Consistent with RAILS.md's own "discipline, not security boundary" language — but it
+    means the DENY tier is not a boundary either, which RAILS.md does not say.
+
+force_push_deny_gap:
+  status: verified
+  severity: high
+  finding: >
+    The nine force/delete deny entries all anchor on the literal token --force or
+    --delete. Two force forms carry neither and match no deny rule.
+  uncaught:
+    - form: "git push origin +HEAD:refs/heads/<branch>"
+      note: "git's refspec force syntax — no flag exists to pattern-match"
+    - form: "git push origin HEAD:refs/heads/<branch> --force-with-lease"
+      note: "`git push * --force *` needs a space after --force; this has -with-lease"
+  method: >
+    Both probed with --dry-run, which performs no remote mutation; both reached `ok`,
+    i.e. no deny rule matched. Confirmed nothing was created on origin afterwards.
+  live_exposure: >
+    These fall through to the default prompt, which is inert under bypass. So in a bypass
+    session `git push origin +HEAD:refs/heads/main` executes unprompted. NOT ATTEMPTED.
+    This is the second and stronger argument for branch protection: allow_force_pushes
+    false is enforced server-side and no refspec syntax reaches past it.
+  recommended_deny_additions: ["Bash(git push +*)", "Bash(git push * +*)", "--force* shapes with no trailing space"]
+  caveat: "defense in depth only — see command_text_indirection; the server-side setting is the boundary"
+
+rails_md_correction:
+  status: verified-false
+  severity: documentation
+  rails_md_claims: >
+    Under "Why `git push origin HEAD:refs/heads/claude/*` is not in allow": that the
+    --force deny "does not catch" `git push origin HEAD:refs/heads/claude/foo --force`.
+  actual: >
+    It does. That is verbatim the seq 2 negative check (d) command and it was DENIED. The
+    three flag-position shapes work as designed.
+  conclusion_still_correct: >
+    The rule should stay out of allow — but for a better reason than the one given. With
+    `Bash(git push origin *:refs/heads/claude/*)` in allow, `git push origin
+    +HEAD:refs/heads/claude/scope-guard-shape-aware-brief10` matches the allow, matches no
+    deny, and force-pushes the branch carrying PR #13's head with no flag to notice.
+  action: "correct the example in RAILS.md; the section's conclusion needs no change"
+
+claude_branch_push_allowlist:
+  status: UNRESOLVED — requested, not implemented
+  history: >
+    Maintainer asked for `Bash(git push origin *:refs/heads/claude/*)` to be added to
+    allow, to match kronos-builder.md's claim of "two allowed refspecs". On being shown
+    that RAILS.md removed that rule deliberately, and the +refspec hole above, the request
+    was neither reaffirmed nor withdrawn. Not added. settings.json is unchanged.
+  recommendation: >
+    Do not add it. Instead correct kronos-builder.md to match settings.json, since
+    RAILS.md states the fall-through prompt is intended behaviour and not a gap.
+
+branch_push_authorization_note:
+  record: >
+    claude/loop-scaffolding was pushed from this bypass-mode session. That refspec matches
+    no allow rule and would normally surface the default prompt, which is inert here. The
+    push was made on the maintainer's explicit verbal authorization given in lieu of the
+    prompt, after the orchestrator initially declined to take it. Recorded so the audit
+    trail does not imply a prompt occurred.
+
+rails_edits_not_made_by_agent:
+  record: >
+    No .claude/** file was modified by the orchestrator at any point. Edit(.claude/**) is
+    denied, and the deny was not routed around via Bash, which would have succeeded under
+    bypass. All rails changes this session were authored as patches and applied by the
+    maintainer, or left unapplied. The indirection finding above means such a bypass was
+    available and was deliberately not used.
+
 ## MERGE-GATE status (10 prerequisites, v6 section 3.1)
 
-1. main protected: FAIL (false)
+1. main protected: FAIL (false — still unprotected as of seq 3; protection requested but not yet applied)
 2. PR #13 not a draft: FAIL (true)
 3. PR #13 open and unmerged: pass
 4. head SHA equals authorized SHA: n/a (no authorization granted yet)
