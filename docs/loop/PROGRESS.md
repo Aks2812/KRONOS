@@ -2757,3 +2757,179 @@ pending_action:
   seq: 28
   action: "await the independent review verdict on 7fc1863; then report and STOP at GATE-2"
   outcome: pending
+
+## SEQ 29 — INDEPENDENT REVIEW OF 7fc1863: FAIL / DO NOT MERGE (10 PASS, 4 FAIL)
+
+seq: 29
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: GATE-2 — verdict is DO NOT MERGE
+
+seq28_pending_action_outcome: "review returned; verdict reported; no merge proposed"
+
+review:
+  head_reviewed: 7fc1863
+  verdict: FAIL
+  recommendation: "DO NOT MERGE"
+  tally: "10 PASS, 4 FAIL, 0 UNVERIFIABLE (§8.12's live component unverifiable by the reviewer, but its specified alternative branch is satisfied)"
+  independence_held: "builder reports, orchestrator VERIFY, §8 verdict and all probe results were withheld"
+  no_correctness_bugs_found: >
+    Explicitly: no correctness bugs, no weakened tests, no fail-closed regressions. Unknown/empty/
+    None node_type and unrecognised target_kind still deny; excluded-first holds; classify_target
+    unchanged and type-blind; _effective_shape keeps its narrowing-only contract.
+
+## FOUR FAILURES — ALL FOUR RE-CONFIRMED BY THE ORCHESTRATOR
+
+f_8_2_citations:
+  claim: "§8.2 requires a per-row citation AND rule number for every row; only 5 of 12 rows have one"
+  orchestrator_measurement: "grep counts 5 rows carrying `rule 1`/`rule 5` in the new block; NODE_TYPE_SHAPES has 12"
+  rows_missing: [CLOUD_RESOURCE, MOBILE_APP, MOBILE_COMPONENT, SECRET, IDENTITY, TECHNOLOGY, FINDING]
+  forbidden_citations_still_shipping:
+    - "scope_guard.py:171 — HOST: `canonical.py` DOCUMENTS ids as bare hostname/IP text"
+    - "scope_guard.py:173 — SERVICE: the `ip:port`/`host:port` dedup CONVENTION (SPEC.md)"
+    - "scope_guard.py:236 — FINDING: `reconcile/canonical.py`'s own DOCSTRING says so"
+    - "scope_guard.py:326 — same convention restated"
+  aggravating: >
+    README_scope.md:494-496 ASSERTS the criterion is met ("no row cites docstring, convention or
+    another type"), which is false against the file it ships with. A guardrail asserted rather
+    than proven — the exact failure mode this series keeps hitting.
+  also: "§5.2 item 6 ordered test_b104_5_3_5 extended to assert a rule number per row; it was not extended, so nothing enforces the claim"
+  severity: "high — this is §1.1's ONLY product (see f_informational below), so it is the whole of what 10.5 §1.1 delivered"
+  status: CONFIRMED
+
+f_8_11_out_of_scope_file:
+  claim: "docs/loop/PROGRESS.md, +553 lines, added inside the 10.5 window; not in §3 under any heading"
+  orchestrator_measurement: "git diff --name-only 2a676a8..HEAD lists docs/loop/PROGRESS.md; --diff-filter=A names commit 72fb71d"
+  THIS_IS_THE_ORCHESTRATORS_OWN_BREACH: >
+    72fb71d is the orchestrator's FORK-AB fix commit, where it ran `git add -A` from the repo
+    root. That swept up the UNTRACKED docs/loop/ directory, which had existed in the working tree
+    since session start and belongs to the loop-state branch, not to a feature branch. The
+    builder did not do this. The orchestrator did, while applying a maintainer ruling, and its
+    own §8 verification did not catch it because it checked the guardrail zero-diff paths and the
+    §3 allowlist only for files it expected to have changed.
+  lesson: "never `git add -A` on a brief-scoped branch; add the §3 paths explicitly"
+  severity: "categorical — §8.11 admits no partial credit"
+  status: CONFIRMED
+
+f_8_13_fork_aa_missing:
+  claim: "FORK-AA recorded nowhere"
+  orchestrator_measurement: "grep -c FORK-AA -> DECISIONS.md:0, README_scope.md:0"
+  note: "its SUBSTANCE (the rule-5 discriminator and why the rejected live-reconcile-machinery alternative fails) is in scope_guard.py:246-253 and brief §1.1, but §7's instruction to record the reason in DECISIONS.md is unmet"
+  status: CONFIRMED
+
+f_8_14_stale_totals:
+  claim: "DECISIONS.md totals stale and self-contradictory"
+  orchestrator_measurement: >
+    DECISIONS.md:2750-2751 reads "3445 passed, 0 failed, 1 skipped" and "2366 declared cells,
+    2359 asserted". Measured: 3456 passed and 2366 asserted. It also still says "11 cells
+    PAUSE-DECISION (unfilled, unasserted)" while the PD-5 entry immediately below decides those
+    same 11 — a document contradicting itself on the same page.
+  arithmetic: "3445 + 11 = 3456 — 526092b refreshed the figures, then 7fc1863 promoted the 11 deferred cells to asserted and the refresh was not redone"
+  severity: "this is the DEFECT §5.7 EXISTS TO PREVENT, recurring within the same branch, one commit after being fixed"
+  status: CONFIRMED
+
+## REVIEWER'S STRONGEST WORK — recorded because it exceeds anything prior in this series
+
+differential_section_8_8:
+  reviewer_reproduced_and_EXTENDED_it: >
+    Not content with the shipped test's 340 pairs, the reviewer built its own harness over
+    39 patterns x 26 targets x 12 node types against git-archive exports of both old trees:
+    ALLOW typed 2a676a8->head 12168 cells, widened=0 narrowed=0; ALLOW scope_key widened=0
+    narrowed=0; ALLOW dcbdba9 type-blind newly-True=0; EXCLUSION loosened=0, tightened=88.
+  and_read_the_code_rather_than_trusting_the_comment: >
+    It enumerated every allow path and showed the new ip/ip_port arm in _host_port_scheme is
+    structurally UNREACHABLE from all of them (:569, :650, :836, :707, :901, :511), and that the
+    PD-5 branch is gated on is_exclusion (:576).
+  self_correction_disclosed: >
+    It reported that its FIRST harness returned 0 differences everywhere because its
+    ScopeManifest construction raised on every call, that it caught this with a sanity probe, and
+    that the published numbers come from the corrected 0-exception run. Disclosing a false
+    negative in its own method is the behaviour this control exists for.
+negative_control_section_5_6:
+  reviewer_PROVED_it_rather_than_accepting_it: >
+    It broke the matcher in-memory via a pytest plugin (no repo files touched), forcing _matches
+    to return True unconditionally, then ran both controls: the NEW control
+    (https://api.evil.com) FAILED as it should, and the OLD control (bare api.evil.com, replayed
+    from 2a676a8) PASSED with the matcher fully broken. Genuine strengthening, demonstrated.
+gate_byte_identity:
+  reviewer_reproduced: "all three §6 blocks hash to ed6e5c6d3d7806dabb50f9233f7c0cf8b3c499b425e0dc71a24edc9b97719024, 1179 bytes, one marker pair each"
+
+## NEW FINDINGS BEYOND §8
+
+finding_1_equivalent_address_spellings:
+  severity: MEDIUM
+  detail: >
+    _matches_url_exclusion_host_identity compares host identities as TEXT, so an exclusion
+    written with one spelling of an address does not deny another spelling of the same address:
+    'http://[2001:db8:0:0:0:0:0:1]/x/*' vs '[2001:db8::1]' -> False;
+    'http://[::ffff:10.0.0.5]/x/*' vs '10.0.0.5' -> False;
+    'http://10.0.0.5/admin/*' vs '[::ffff:10.0.0.5]' -> False.
+  why_it_matters: >
+    Same under-match CLASS FORK-2 exists to close, and the module already solves it for CIDR
+    patterns via _address_in_network's deliberate IPv4-mapped normalization (:527-543) — so the
+    deny side is now inconsistent with itself. Fix is small: run the pattern host through _try_ip
+    and compare normalized addresses when both sides parse.
+  disposition: "next brief — outside §8's letter, and a direct continuation of §1.2's own purpose"
+
+finding_2_two_tautological_section_5_1_cases:
+  severity: "MEDIUM (test quality)"
+  detail: >
+    tests/test_scope_guard.py:1469-1470 label two cases "IPv4-mapped form" and "zone-indexed
+    form" but pair a pattern and target that are the SAME LITERAL STRING, so they pass on byte
+    equality. They do verify the §1.2 fix (both returned not-excluded at 2a676a8) but test
+    nothing about mapped or zone-index SEMANTICS — which per finding 1 are absent. A reader
+    auditing §8.4 from the labels would infer coverage that does not exist.
+  disposition: "relabel, or add cross-form pairs and implement them (depends on finding 1)"
+
+finding_3_stale_untouched_claim:
+  severity: LOW
+  detail: "tests/test_scope_guard.py:1543-1545 calls the legacy 10.3 grid 'kept, untouched'; its _P4 exclusion row was edited in this diff. Brief-authorized by §1.3, so a stale comment, not a scope violation."
+
+finding_4_section_1_1_is_a_behavioural_NO_OP:
+  severity: "LOW (informational, but it reframes f_8_2)"
+  detail: >
+    NODE_TYPE_SHAPES values are BYTE-IDENTICAL between 2a676a8 and HEAD. After FORK-AB's
+    rejection the entire §1.1 re-derivation is a citation exercise with zero behavioural effect,
+    and §5.2's mandated RED-first was not achievable for those rows — only §5.1 was genuinely
+    RED. Consequence: the §8.2 citation defects are the ONLY product of §1.1, which raises
+    rather than lowers how much they matter. DECISIONS.md should state this so a later reader
+    does not mistake §1.1 for a semantic change.
+
+finding_5_blanket_clause_references:
+  severity: LOW-MEDIUM
+  detail: >
+    _CORE_ALLOW[_P1_BARE_HOST][_t1] cites "10.r1" ("*.acme.com = subdomains, not apex") for a
+    bare-host-vs-same-host cell it does not govern; the governing clause 10.r2 is already used
+    for _t6 in the same row. Several rows apply a blanket _row(default) clause to targets it does
+    not govern (e.g. _P1's 10.r4 over ARN/bucket/bundle-id targets, where 10.1.1.3 / 10.5.7
+    govern). The grid's VALUES are prose-derived, but a wrong clause reference makes the audit
+    trail unfalsifiable — the structural version of the §0.1 defect.
+
+## §6 LIVE-USE GATE (stated separately, not acceptance)
+
+1: "not yet possible — no merge, and this review does not approve"
+2: "substantially met but NOT closed — 3456/0/1 and 0 undeclared, yet §8.2's and §8.5's citation defects stand"
+3: "not yet possible — no merge commit"
+4: "MET — manifest.py zero-diff measured; pre-#10 signed manifest verifies green"
+5: "not yet possible"
+6: "partially met — all six topics appear, but README_scope.md:494-496 overstates what ships and the :278 table still carries pre-rule-5 evidence"
+7: "not met — maintainer action, correctly reported"
+
+## MERGE GATE — re-measured, not proposed
+
+"1 main protected: pass | 2 PR not draft: FAIL (draft) | 3 open and unmerged: pass | 4 head equals authorized SHA: FAIL (no authorization exists for PR 15) | 5 independent review PASS: FAIL | 6 ci none acknowledged | 7 local evidence recorded: pass | 8 mergeable: pass | 9 merge_authorization this turn: FAIL | 10 clean tree: FAIL — docs/loop/PROGRESS.md is an out-of-§3 file on the branch"
+result: "five of ten fail. DO NOT MERGE. No merge command proposed or executed."
+
+## REQUIRED BEFORE MERGE (reviewer's list, orchestrator-confirmed, none touches scope_guard behaviour)
+
+1: "§8.2 — re-derive the remaining 7 rows with a rule number each; remove or supersede the 10.3/10.4 citations at :171-176 and the FINDING docstring citation; update README_scope.md:278's table with rule numbers and compliant evidence; make :494-496's claim true or soften it to what ships; extend test_b104_5_3_5 to ASSERT a rule number per row, as §5.2 item 6 ordered. This is the real work."
+2: "§8.13 — add the FORK-AA entry to DECISIONS.md with its reason and the rejected alternative. Mechanical."
+3: "§8.14 — refresh DECISIONS.md:2748-2757 to 3456/0/1, 2366 asserted, 0 PAUSE-DECISION, and resolve the contradiction with the PD-5 entry. Mechanical."
+4: "§8.11 — revert docs/loop/PROGRESS.md out of this branch (orchestrator's own breach) or obtain a written §3 amendment. Mechanical."
+5: "§8.5 — fix _CORE_ALLOW[_P1_BARE_HOST][_t1] to cite 10.r2 and replace blanket defaults where they do not govern. Small."
+reviewer_expectation: "a re-review should pass once these land"
+
+pending_action:
+  seq: 29
+  action: "fix items 2-5 (mechanical, including the orchestrator's own §8.11 breach) and item 1 (§8.2 re-derivation); then re-verify and re-review. Awaiting maintainer direction on whether the orchestrator applies these inline or a builder is dispatched."
+  outcome: pending
