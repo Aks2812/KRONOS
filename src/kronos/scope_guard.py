@@ -89,6 +89,57 @@ glob expansion is never even attempted against one -- see
 `classify_target`'s new `bucket_name`/`arn` shapes below), and a
 hostname pattern still never authorizes a bundle id (SPEC_BRIEF10
 §5.7, unaffected).
+
+SPEC_BRIEF10.4 (FORK-2's closing piece) fixes the two real defects seq
+5 independent review found in SPEC_BRIEF10.3's table (D1/D2 -- see
+DECISIONS.md and README_scope.md for the full account) and finishes
+H3's deny-broad rule for a path-bearing URL exclusion pattern:
+
+§1.1 `scope_key` is gated by its own shape, independent of `node_type`.
+A `scope_key` is an explicit, operator- or ingester-supplied assertion
+of a node's in-scope network identity -- it is not an id, so
+`NODE_TYPE_SHAPES`'s id-shape table does not apply to it at all.
+`is_in_scope` now takes a second required keyword argument,
+`target_kind` (`"id"` or `"scope_key"`), stating which string it was
+handed; an unrecognised value denies, same as every other fail-closed
+case here. Fail-closed is unaffected either way: an unrecognised,
+empty, or `None` `node_type` still denies before any pattern is even
+consulted, whether or not a `scope_key` is present. `graph.py:140`'s
+`scope_key or id` precedence is unchanged (§1.5) -- this module is
+simply told, via the new kwarg, which of the two strings it is
+looking at.
+
+§1.2 No row of `NODE_TYPE_SHAPES` may be assigned by analogy; no
+evidence means an empty family. This generalises 10.3's own FORK-W
+rule (already applied to IDENTITY/TECHNOLOGY/FINDING) to every row
+without exception. `WEB_ENDPOINT` therefore becomes `frozenset()`:
+there is no production WEB_ENDPOINT ingester, its only documented key
+(`canonical_key_for_web_endpoint`) is a *merge* key
+(`reconcile/runner.py:84`), never a node id, and that key classifies
+as `"unknown"`, not `"url"` -- so `{"url"}` described a shape nothing
+produces. `SECRET`'s 10.3 row (`{"host"}`) existed only to make the
+scope_key path work before this module could tell scope_key and id
+apart; now that it can (§1.1), that justification is gone, and
+`SECRET`'s own id (sha256-derived) matches no shape family this
+module has, so it too becomes `frozenset()` (FORK-Y) -- every
+production SECRET call site sets `scope_key=bundle_id` regardless, so
+this never denies a real SECRET in practice.
+
+§1.3 (closing 10.3's own H3 fix) An exclusion is shape-blind, port-
+blind, scheme-blind *and* path-blind -- including when the pattern
+itself is a URL that carries a path. `excluded =
+["http://localhost:8091/internal/*"]` must deny `localhost`,
+`localhost:8091`, and `http://localhost:8091/other` exactly as
+broadly as the path-free `http://localhost:8091*` already does; a
+*more* specific exclusion pattern must never produce a *narrower*
+deny. The allow side is unchanged: `_matches_url_pattern`'s literal,
+path-aware behaviour still governs an explicit allow entry that
+spells a path out (FORK-S governs only what an implicit pattern may
+infer, never what an operator explicitly wrote). FORK-Z (DEFAULT
+yes): the exclusion's host-identity comparison also discards a URL
+pattern's query/fragment, by the same rule-6 reasoning -- in practice
+this falls out for free, since a URL's parsed hostname never included
+them to begin with.
 """
 
 from __future__ import annotations
@@ -123,11 +174,21 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #   already special-cases is its established id shape (SPEC.md).
 #   Boundary-rule-governed; dot-free is a hostname here, never a
 #   bucket (H2's whole point).
-# - WEB_ENDPOINT / API_ENDPOINT: `ingest/mobile/parser.py:276` upserts
-#   API_ENDPOINT with `id=found.url`, a full URL; WEB_ENDPOINT has no
-#   production ingester yet but shares the same URL convention
-#   (SPEC_BRIEF9 §4.1, `canonical_key_for_web_endpoint`'s own
-#   docstring).
+# - API_ENDPOINT: `ingest/mobile/parser.py:276` upserts API_ENDPOINT
+#   with `id=found.url`, a full URL -- {"url"} is directly evidenced.
+# - WEB_ENDPOINT (SPEC_BRIEF10.4 §1.2, FORK-W generalised): there is
+#   no production WEB_ENDPOINT ingester anywhere in `src/` or
+#   `cybergym/`, so it has no id convention to cite. Its only
+#   documented key, `canonical_key_for_web_endpoint`
+#   (`f"web:{method}:{scheme}://{host}[:{port}]{path}"`), is a *merge*
+#   key consumed by `reconcile/runner.py:84`, never a node id -- and
+#   that key's own shape classifies as `"unknown"` (it starts
+#   `"web:"`, not a URL scheme), not `"url"`, so even citing it would
+#   not support `{"url"}`. 10.3's row assigned `{"url"}` to WEB_ENDPOINT
+#   by analogy to API_ENDPOINT's real evidence (FORK-W's exact
+#   violation, §0.3 D2); corrected here to `frozenset()`, which also
+#   denies that merge key's `"unknown"` shape, so nothing is lost by
+#   the correction.
 # - CLOUD_RESOURCE: `validate/candidates.py`'s `_all_cloud_resources`
 #   reads bucket-name and ARN ids directly off real CLOUD_RESOURCE
 #   nodes (CyberGym's own enrichment: `kronos-cybergym-*` bucket names,
@@ -145,12 +206,18 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #   `{"host"}`, same shape `classify_target` already gives them, with
 #   the dot-free override (below) also folding a theoretical dot-free
 #   bundle id to `"host"` rather than `"bucket_name"`.
-# - SECRET: every real call site (`ingest/__init__.py:56`,
+# - SECRET (SPEC_BRIEF10.4 §1.1/§1.2, FORK-Y DEFAULT): 10.3 assigned
+#   `{"host"}` here, but by its own admission (§0.3 D1) that was fitted
+#   to make the scope_key path work, not evidence about SECRET's *id*
+#   -- every real call site (`ingest/__init__.py:56`,
 #   `ingest/mobile/parser.py:253`) sets `scope_key=bundle_id`
-#   unconditionally, so `graph.py`'s `scope_key or id` ALWAYS resolves
-#   to the bundle id, never to the SECRET's own sha256-derived id, in
-#   every production path this repo has. Its effective shape family is
-#   therefore identical to MOBILE_APP's: `{"host"}`.
+#   unconditionally, never relying on this row at all. Now that
+#   `is_in_scope` tells id and scope_key apart (§1.1), that
+#   justification is gone, and SECRET's own id is sha256-derived,
+#   matching no shape family this module has -- so this row is
+#   `frozenset()`, the §1.2-consistent answer. This denies nothing in
+#   production: scope always arrives via `scope_key` in every real
+#   path, which bypasses this row entirely.
 # - PARAMETER: §1.4 -- an opaque name with no network identity of its
 #   own; it has no production ingester, and even if it did, a
 #   PARAMETER id was never meant to be glob-matched against anything.
@@ -179,12 +246,12 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {
     "HOST": frozenset({"host", "ip", "host_port", "ip_port"}),
     "SERVICE": frozenset({"host", "ip", "host_port", "ip_port"}),
-    "WEB_ENDPOINT": frozenset({"url"}),
+    "WEB_ENDPOINT": frozenset(),
     "API_ENDPOINT": frozenset({"url"}),
     "CLOUD_RESOURCE": frozenset({"bucket_name", "arn"}),
     "MOBILE_APP": frozenset({"host"}),
     "MOBILE_COMPONENT": frozenset({"host"}),
-    "SECRET": frozenset({"host"}),
+    "SECRET": frozenset(),
     "PARAMETER": frozenset(),
     "IDENTITY": frozenset(),
     "TECHNOLOGY": frozenset(),
@@ -318,6 +385,28 @@ def _effective_shape(target: str, node_type: str) -> TargetShape:
     boundary-rule-governed matching, never widens anything."""
     shape = classify_target(target)
     if shape == "bucket_name" and node_type != "CLOUD_RESOURCE":
+        return "host"
+    return shape
+
+
+def _scope_key_shape(target: str) -> TargetShape:
+    """SPEC_BRIEF10.4 §1.1: a `scope_key`'s matching shape is its own,
+    independent of any `node_type` -- there is no node-type signal to
+    consult for it at all (unlike `_effective_shape`, which exists
+    *because* an id's ambiguous dot-free string needs the node type to
+    tell a bucket name from a bare host apart). Without that signal,
+    the ambiguous dot-free case must resolve to the narrower reading:
+    a dot-free `scope_key` is always treated as `"host"` (boundary-
+    rule-governed), never `"bucket_name"`'s free mid-token glob
+    expansion -- `scope_key="localhost"` on a CLOUD_RESOURCE becomes
+    governed by the host boundary rule, narrower than bucket-glob
+    treatment, never looser (guardrail §9: the allow side is not
+    widened anywhere). An unambiguous shape -- an explicit `arn:...`
+    scope_key, for instance -- passes straight through unaffected,
+    so CyberGym's own ARN-form scope_keys keep their free glob
+    expansion exactly as before."""
+    shape = classify_target(target)
+    if shape == "bucket_name":
         return "host"
     return shape
 
@@ -517,6 +606,34 @@ def _matches_url_pattern(pattern: str, target: str) -> bool:
     hostname/glob pattern may infer from a URL target, not what an
     operator explicitly wrote out."""
     return fnmatch.fnmatchcase(target.lower(), pattern.lower())
+
+
+def _matches_url_exclusion_host_identity(pattern: str, target: str, shape: TargetShape) -> bool:
+    """SPEC_BRIEF10.4 §1.3 (closing 10.3's own H3 fix): a URL pattern
+    that itself carries a path reaches here only on the exclusion side,
+    after the simple explicit-port and trailing-glob shortcuts above
+    have both declined it -- e.g. `http://localhost:8091/internal/*`.
+    Falling through to `_matches_url_pattern`'s literal, path-aware
+    `fnmatch` (as 10.3 still did) made a *more* specific exclusion
+    pattern deny *less*: `http://localhost:8091/other` and the bare
+    `localhost`/`localhost:8091` forms of the same host all slipped
+    through, even though the path-free `http://localhost:8091*` already
+    denied all of them (measured, §0's table). Rule 6 (deny broad) means
+    an exclusion is never allowed to get narrower just because the
+    operator wrote a more specific path -- so here the pattern is
+    reduced to its host identity only (`urlsplit().hostname`: scheme,
+    port, path, query, and fragment are all discarded, FORK-Z) and
+    compared against any host-ish identity the target carries, exactly
+    like every other exclusion shape in this module."""
+    pattern_host = urlsplit(pattern).hostname
+    if not pattern_host:
+        return False
+    if shape not in _HOST_SHAPES_FOR_EXCLUSION:
+        return False
+    host, _, _ = _host_port_scheme(target, shape)
+    if host is None:
+        return False
+    return fnmatch.fnmatchcase(host.lower(), pattern_host.lower())
 
 
 def _matches_generic_pattern(pattern: str, target: str, shape: TargetShape) -> bool:
@@ -780,6 +897,11 @@ def _matches(pattern: str, target: str, *, is_exclusion: bool, shape: TargetShap
             return _matches_trailing_host_glob(
                 host_prefix, target, shape, required_scheme=pattern_scheme, is_exclusion=is_exclusion
             )
+        if is_exclusion:
+            # §1.3: a path-bearing URL pattern is reduced to its host
+            # identity on the exclusion side only -- the allow side
+            # below keeps its literal, path-aware behaviour unchanged.
+            return _matches_url_exclusion_host_identity(pattern, target, shape)
         return _matches_url_pattern(pattern, target)
 
     if not any(ch in pattern for ch in "*?[") and shape in ("url", "host", "host_port"):
@@ -810,22 +932,45 @@ class ScopeGuard:
         self.excluded = list(manifest.excluded)
         self.in_scope = list(manifest.in_scope)
 
-    def is_in_scope(self, target: str, *, node_type: str) -> bool:
-        """SPEC_BRIEF10.3 §1.1: `node_type` is a REQUIRED keyword
-        argument -- no default, no permissive fallback, so no call
-        site can forget it (the compiler enforces what a convention
-        would not; a permissive-by-omission path is exactly how H2
-        happened). Exclusions are checked first and are completely
-        independent of `node_type` (§1.3) -- a type mismatch, or even
-        an unrecognised type, must never cause an exclusion to be
-        skipped. Only the allow side is gated on type, and fails
-        closed, before any allow pattern is even consulted: an
-        unrecognised, empty, or `None` `node_type` -- or a recognised
-        one whose permitted-shape family doesn't include this target's
-        (type-aware) effective shape -- denies unconditionally."""
+    def is_in_scope(self, target: str, *, node_type: str, target_kind: Literal["id", "scope_key"]) -> bool:
+        """SPEC_BRIEF10.3 §1.1 / SPEC_BRIEF10.4 §1.1: `node_type` and
+        `target_kind` are both REQUIRED keyword arguments -- no
+        default, no permissive fallback, so no call site can forget
+        either (the compiler enforces what a convention would not; a
+        permissive-by-omission path is exactly how H2 happened).
+        Exclusions are checked first and are completely independent of
+        `node_type`/`target_kind` (§1.3) -- a type mismatch, an
+        unrecognised type, or an unrecognised `target_kind` must never
+        cause an exclusion to be skipped.
+
+        `target_kind` states which of the two strings `graph.py:140`'s
+        `scope_key or id` resolved to -- `target_kind="id"` applies
+        `NODE_TYPE_SHAPES`'s id-shape family filter exactly as before
+        (`_effective_shape`, node-type-gated); `target_kind="scope_key"`
+        never consults that table at all (§1.1 normative: a scope_key
+        is not an id), instead gating on the scope_key's own shape
+        (`_scope_key_shape`, independent of node_type). An unrecognised
+        `target_kind` denies, same as every other fail-closed case
+        here.
+
+        Fail-closed on `node_type` applies identically on both paths,
+        before any allow pattern is even consulted: an unrecognised,
+        empty, or `None` `node_type` denies unconditionally, whether or
+        not a `scope_key` is present (§2.4/§8.3) -- it is only the
+        *family filter itself* that target_kind="scope_key" skips, not
+        the type-recognition gate."""
         if any(_matches(pattern, target, is_exclusion=True) for pattern in self.excluded):
             return False
-        permitted_shapes = NODE_TYPE_SHAPES.get(node_type)
+        if target_kind not in ("id", "scope_key"):
+            return False
+        if node_type not in NODE_TYPE_SHAPES:
+            return False
+        if target_kind == "scope_key":
+            shape = _scope_key_shape(target)
+            return any(
+                _matches(pattern, target, is_exclusion=False, shape=shape) for pattern in self.in_scope
+            )
+        permitted_shapes = NODE_TYPE_SHAPES[node_type]
         if not permitted_shapes:
             return False
         effective_shape = _effective_shape(target, node_type)
@@ -838,15 +983,18 @@ class ScopeGuard:
         return False
 
 
-def scope_guard(target: str, manifest: ScopeManifest, *, node_type: str) -> bool:
+def scope_guard(
+    target: str, manifest: ScopeManifest, *, node_type: str, target_kind: Literal["id", "scope_key"]
+) -> bool:
     """Exact spec-named entry point: excluded-first, default-deny.
 
     SPEC_BRIEF10.3 FORK-V (DEFAULT 1): `node_type` is a required kwarg
     here too, matching `ScopeGuard.is_in_scope` -- fail-closed by
     construction beats a second, permissive-by-omission path with its
-    own rules, which is exactly how H2 happened. This is a documented
+    own rules, which is exactly how H2 happened. SPEC_BRIEF10.4 §1.1
+    adds `target_kind` for the same reason. This is a documented
     signature conflict with SPEC.md's "SCOPE GUARD" section, which
     still reads `scope_guard(target, manifest)` (two positional
-    arguments, no type) -- SPEC.md is outside this brief's §3 file
-    list, so it is reported here rather than edited."""
-    return ScopeGuard(manifest).is_in_scope(target, node_type=node_type)
+    arguments, no type, no kind) -- SPEC.md is outside this brief's §3
+    file list, so it is reported here rather than edited."""
+    return ScopeGuard(manifest).is_in_scope(target, node_type=node_type, target_kind=target_kind)

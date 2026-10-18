@@ -20,7 +20,7 @@ def _m(in_scope, excluded):
     )
 
 
-def _sg(target, manifest, node_type="HOST"):
+def _sg(target, manifest, node_type="HOST", target_kind="id"):
     """SPEC_BRIEF10.3 made `node_type` a required kwarg on the real
     `scope_guard`/`is_in_scope` -- correctly, per §1.1's fail-closed
     rule -- but every test above this brief's own section was written
@@ -31,8 +31,18 @@ def _sg(target, manifest, node_type="HOST"):
     for the overwhelming majority of those pre-existing call sites, and
     every call this brief's edits route through a different node type
     (CLOUD_RESOURCE, MOBILE_APP, API_ENDPOINT, SERVICE, ...) passes it
-    explicitly rather than relying on the default."""
-    return scope_guard(target, manifest, node_type=node_type)
+    explicitly rather than relying on the default.
+
+    SPEC_BRIEF10.4 §1.1 adds a second required kwarg, `target_kind`.
+    Every test above this brief's own §5.1-§5.4 section was written
+    testing the id-shape family filter (`_effective_shape`,
+    node-type-gated) before the id/scope_key distinction existed at
+    all -- the string each of those tests passes in IS the target's
+    id, never an operator-supplied scope_key -- so this wrapper
+    defaults `target_kind` to `"id"`, preserving every one of those
+    tests' meaning exactly. This brief's own §5.2 scope_key cases pass
+    `target_kind="scope_key"` explicitly."""
+    return scope_guard(target, manifest, node_type=node_type, target_kind=target_kind)
 
 
 def test_fqdn_glob_allows_match():
@@ -662,12 +672,23 @@ def test_b101_5_4_f3_un_regressed():
 #                      indistinguishable from a hostname by design).
 #   SECRET           — scope_key=bundle_id, always, in every real ingester
 #                      path (ingest/__init__.py, ingest/mobile/parser.py) ->
-#                      same as MOBILE_APP, "host". The SECRET's own id
-#                      (a sha256-derived token) is never the scope target.
+#                      same as MOBILE_APP, "host" -- but since SPEC_BRIEF10.4
+#                      §1.1, that string reaches ScopeGuard as a scope_key
+#                      (target_kind="scope_key"), gated on its own shape via
+#                      `_scope_key_shape`, never through this id-shape table
+#                      at all. SECRET's row here is now `frozenset()` (§1.2 /
+#                      FORK-Y): its own id (sha256-derived) matches no shape
+#                      family, and nothing in production ever reaches it via
+#                      the id path.
 #   API_ENDPOINT     — id=found.url, a full URL (ingest/mobile/parser.py:276)
 #                      -> "url".
-#   WEB_ENDPOINT     — no production ingester yet; same URL convention as
-#                      API_ENDPOINT (SPEC_BRIEF9 §4.1) -> "url".
+#   WEB_ENDPOINT     — SPEC_BRIEF10.4 §1.2/FORK-W: no production ingester at
+#                      all, and its only documented key
+#                      (`canonical_key_for_web_endpoint`) is a merge key, not
+#                      a node id, and classifies as "unknown" anyway -- so
+#                      this row is `frozenset()`, denying unconditionally on
+#                      the id path (a WEB_ENDPOINT only reaches "in scope" by
+#                      carrying an authorized scope_key, §1.1).
 #   SERVICE          — no production ingester yet; SPEC.md's host:port dedup
 #                      convention -> "host_port" or "ip_port".
 #   PARAMETER        — no production ingester yet; compound raw id
@@ -692,8 +713,12 @@ def test_b101_5_4_f3_un_regressed():
     [
         ("api.acme.com", "HOST", "host", "*.acme.com", True),
         ("10.0.0.5", "HOST", "ip", "10.0.0.0/24", True),
-        ("com.kronos.demo", "MOBILE_APP", "host", "com.kronos.*", True),  # also SECRET's scope_key
-        ("https://api.acme.com/v1/x", "API_ENDPOINT", "url", "api.acme.com*", True),  # also WEB_ENDPOINT
+        # also the shape SECRET's scope_key carries in production, but
+        # SPEC_BRIEF10.4 §1.1 means that reaches ScopeGuard via
+        # target_kind="scope_key", never through this id-shape table --
+        # see test_b104_5_2_* below for that path exercised directly.
+        ("com.kronos.demo", "MOBILE_APP", "host", "com.kronos.*", True),
+        ("https://api.acme.com/v1/x", "API_ENDPOINT", "url", "api.acme.com*", True),
         ("api.acme.com:8443", "SERVICE", "host_port", "api.acme.com*", True),
         ("10.0.5.10:443", "SERVICE", "ip_port", "10.0.5.0/24", True),
         # PARAMETER, SPEC_BRIEF10.3 §1.4: empty permitted-shape family,
@@ -1083,8 +1108,18 @@ _EXCLUSION_EXPECTATIONS: dict[str, dict[str, bool]] = {
     _P5_BARE_IP: dict(zip(_TARGETS, [_F, _F, _T, _T, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
     _P6_CIDR: dict(zip(_TARGETS, [_F, _F, _T, _T, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
     _P7_HOST_PORT: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
-    _P8_URL_NO_PORT: dict(zip(_TARGETS, [_F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
-    _P9_URL_WITH_PORT: dict(zip(_TARGETS, [_F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F])),
+    # SPEC_BRIEF10.4 §1.3 (Finding A): these two rows were [_F]*14
+    # under 10.3 -- a path-bearing URL *exclusion* pattern fell through
+    # to the literal, path-aware `_matches_url_pattern`, so it denied
+    # almost nothing. §1.3 requires an exclusion to discard the
+    # pattern's path (and, per rule 6, its port and scheme too) and
+    # compare host identity only -- exactly the same host-only
+    # comparison _P1/_P2/_P7 above already use, so these two rows must
+    # now match them on every host-ish target
+    # (_T1/_T2/_T6/_T7/_T8), regardless of the pattern's own port
+    # (_P9 carries :8443, discarded same as _P1 has none).
+    _P8_URL_NO_PORT: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
+    _P9_URL_WITH_PORT: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
     _P10_URL_TRAILING_GLOB: dict(zip(_TARGETS, [_T, _T, _F, _F, _F, _T, _T, _T, _F, _F, _F, _F, _F, _F])),
     _P11_BUCKET_GLOB: dict(zip(_TARGETS, [_F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _T, _F, _F])),
     _P12_ARN_GLOB: dict(zip(_TARGETS, [_F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _F, _T, _F])),
@@ -1124,3 +1159,282 @@ def test_b103_5_4_generated_exclusion_matrix(pattern, target):
 # --- §5.5 regression: every Brief #10/#10.1/#10.2 case is re-run above
 # with node types threaded through (test_b101_*, test_b102_*); G1-G6
 # confirmed still DENY via test_b102_g1_still_denies..test_b102_g6_still_denies.
+
+
+# =============================================================================
+# SPEC_BRIEF10.4 (FORK-2's closing piece) -- scope_key dispatch (§1.1),
+# evidence-only shape families (§1.2), path-blind exclusions (§1.3).
+# Prefixed test_b104_. Every call below goes through the public API
+# (`scope_guard`, matching §5.4 point 4) and passes `target_kind`
+# explicitly -- there is no default at this layer, unlike `_sg`'s
+# file-local convenience default above.
+# =============================================================================
+
+
+# --- §5.1 Finding A (RED first) -- a path-bearing URL exclusion pattern
+# must deny shape-blind, port-blind, scheme-blind AND path-blind, exactly
+# as broadly as the path-free form already does (§1.3, §0's measured
+# table). Two independent hosts, so the rule is proven not fitted to one.
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "http://localhost:8091/internal/x",  # already passed under 10.3 -- keep green
+        "localhost:8091",  # shape-blind
+        "http://localhost:8091/other",  # path-blind
+        "localhost",  # port-blind
+        "http://localhost:8091/",  # path-blind
+    ],
+)
+def test_b104_5_1_finding_a_path_bearing_exclusion_denies_localhost(target):
+    m = _m(["*"], ["http://localhost:8091/internal/*"])
+    assert scope_guard(target, m, node_type="SERVICE", target_kind="id") is False
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "https://api.acme.example.com/v1/x",
+        "api.acme.example.com:443",
+        "https://api.acme.example.com/other",
+        "api.acme.example.com",
+        "https://api.acme.example.com/",
+    ],
+)
+def test_b104_5_1_finding_a_path_bearing_exclusion_denies_second_host(target):
+    """Same rule, a second, non-localhost host -- proves §1.3's fix is
+    the pattern's structural host identity, not something fitted to
+    one hostname."""
+    m = _m(["*"], ["https://api.acme.example.com/v1/*"])
+    assert scope_guard(target, m, node_type="API_ENDPOINT", target_kind="id") is False
+
+
+@pytest.mark.parametrize(
+    "excluded_pattern,allowed_target,denied_target",
+    [
+        (
+            "http://localhost:8091/internal/*",
+            "http://localhost:8091/internal/x",
+            "http://localhost:8091/other",
+        ),
+        (
+            "https://api.acme.example.com/v1/*",
+            "https://api.acme.example.com/v1/x",
+            "https://api.acme.example.com/other",
+        ),
+    ],
+)
+def test_b104_5_1_allow_side_control_keeps_narrow_path_aware_behaviour(
+    excluded_pattern, allowed_target, denied_target
+):
+    """§1.3's fix is deny-side only (guardrail §9: the allow side is not
+    widened anywhere). The identical pattern text, used as an ALLOW
+    entry, keeps its current narrow, path-aware, literal `fnmatch`
+    behaviour: only the exact path it spells out is authorized, and a
+    different path on the same host still denies. This is the control
+    that proves §1.3's exclusion fix did not leak into the allow path."""
+    m = _m([excluded_pattern], [])
+    assert scope_guard(allowed_target, m, node_type="API_ENDPOINT", target_kind="id") is True
+    assert scope_guard(denied_target, m, node_type="API_ENDPOINT", target_kind="id") is False
+
+
+# --- §5.2 -- scope_key is gated on its own shape, independent of
+# node_type (§1.1, RED first against the pre-this-brief single-kwarg
+# `is_in_scope(target, node_type=...)`, which has no way to receive a
+# scope_key/id distinction at all).
+
+
+def test_b104_5_2_1_scope_key_shape_authorizes_regardless_of_id_shape_family():
+    """A CLOUD_RESOURCE's scope_key is a hostname; the CLOUD_RESOURCE
+    id-shape family ({"bucket_name", "arn"}) does not even contain
+    "host" -- yet §1.1 says the family filter never applies to a
+    scope_key at all, so this must still be in scope purely off the
+    scope_key's own shape. Denies today (pre-fix): the single-kwarg
+    `is_in_scope` has no way to know this string is a scope_key, so it
+    was always run through the id-shape table, which "host" fails."""
+    m = _m(["*.acme.example.com"], [])
+    assert scope_guard("api.acme.example.com", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is True
+
+
+def test_b104_5_2_2_same_node_no_scope_key_falls_through_to_id_shape_family():
+    """The same CLOUD_RESOURCE, with no scope_key: `graph.py`'s
+    `scope_key or id` (§1.5, unchanged) falls through to the id,
+    `cr:acme-bucket`, dot-free and colon-containing -> "bucket_name"
+    (CLOUD_RESOURCE is the one type that keeps free glob expansion,
+    §0.2) -- permitted by its family, and matched freely."""
+    m = _m(["cr:acme-*"], [])
+    assert scope_guard("cr:acme-bucket", m, node_type="CLOUD_RESOURCE", target_kind="id") is True
+
+
+def test_b104_5_2_3_scope_key_not_authorized_by_any_pattern_denies():
+    """A scope_key is not a bypass -- its own shape must still match
+    some in_scope pattern, exactly like an id does."""
+    m = _m(["*.acme.example.com"], [])
+    assert scope_guard("unrelated.example.net", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is False
+
+
+def test_b104_5_2_4_excluded_first_still_applies_to_a_scope_key():
+    """§2.5: excluded-first, default-DENY is absolute -- an excluded
+    scope_key denies even though the same string also matches a
+    maximally permissive in_scope entry."""
+    m = _m(["*"], ["evil.example.com"])
+    assert scope_guard("evil.example.com", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is False
+
+
+@pytest.mark.parametrize("bad_node_type", [None, "", "NOT_A_TYPE"])
+def test_b104_5_2_5_fail_closed_on_node_type_unaffected_by_a_valid_scope_key(bad_node_type):
+    """§2.4/§8.3: fail-closed is unaffected by §1.1 -- an unrecognised,
+    empty, or None `node_type` still denies before any pattern is
+    consulted, scope_key or not. Same manifest/scope_key that DOES
+    authorize under a real node_type (proving this is the type gate,
+    not a pattern that would have failed anyway)."""
+    m = _m(["*.acme.example.com"], [])
+    assert scope_guard("api.acme.example.com", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is True
+    assert scope_guard("api.acme.example.com", m, node_type=bad_node_type, target_kind="scope_key") is False
+
+
+def test_b104_5_2_6_arn_form_scope_key_cybergym_uses_stays_in_scope():
+    """CyberGym's real validation run sets CLOUD_RESOURCE scope_keys in
+    ARN form (§0.4) -- an ARN is unambiguous (`classify_target` never
+    confuses it with a dot-free bucket name), so it passes through
+    `_scope_key_shape` unaffected and keeps its free glob expansion,
+    exactly as the id path already does for the same string."""
+    m = _m(["arn:aws:s3:::kronos-cybergym-*"], [])
+    assert (
+        scope_guard(
+            "arn:aws:s3:::kronos-cybergym-general-secrets",
+            m,
+            node_type="CLOUD_RESOURCE",
+            target_kind="scope_key",
+        )
+        is True
+    )
+
+
+def test_b104_5_2_7_localhost_scope_key_governed_by_host_boundary_not_bucket_glob():
+    """§1.1's own worked example, directly: a CLOUD_RESOURCE whose
+    scope_key is the dot-free `localhost` becomes governed by the host
+    boundary rule -- narrower than the bucket-glob treatment the exact
+    same dot-free string gets on the id path, never looser (guardrail
+    §9). `localhost*` still covers bare `localhost` (boundary rule
+    §1.1/trailing-`*` rule, unaffected), but must NOT mid-label-expand
+    into `localhost-evil` the way CLOUD_RESOURCE's free bucket
+    expansion would for an id carrying the identical text."""
+    m = _m(["localhost*"], [])
+    assert scope_guard("localhost", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is True
+    assert scope_guard("localhost-evil", m, node_type="CLOUD_RESOURCE", target_kind="id") is True
+    assert scope_guard("localhost-evil", m, node_type="CLOUD_RESOURCE", target_kind="scope_key") is False
+
+
+# --- §5.3 -- NODE_TYPE_SHAPES is evidence-only (§1.2); WEB_ENDPOINT and
+# SECRET are re-derived, and no `schema.py` node type is silently absent.
+
+
+def test_b104_5_3_1_web_endpoint_id_denies_unconditionally():
+    """§1.2/FORK-W: no production WEB_ENDPOINT ingester, and its only
+    documented key is a merge key, not an id, classifying as
+    "unknown" -- `frozenset()`, denying every shape, even a URL, even
+    its own `web:1` canonical-key form, even under a maximally
+    permissive manifest."""
+    m = _m(["*"], [])
+    assert NODE_TYPE_SHAPES["WEB_ENDPOINT"] == frozenset()
+    for target in ("https://api.acme.example.com/x", "web:1", "web:GET:https://api.acme.example.com/x"):
+        assert scope_guard(target, m, node_type="WEB_ENDPOINT", target_kind="id") is False
+
+
+def test_b104_5_3_2_web_endpoint_reaches_in_scope_only_via_an_authorized_scope_key():
+    """§1.1 is what makes the §1.4/§5.6(b) WEB_ENDPOINT reconcile
+    correction work at all: a WEB_ENDPOINT with no id convention still
+    reaches "in scope" when upserted with a real scope_key, because the
+    scope_key path never consults WEB_ENDPOINT's (empty) id-shape
+    family."""
+    m = _m(["*.acme.example.com"], [])
+    assert scope_guard("api.acme.example.com", m, node_type="WEB_ENDPOINT", target_kind="scope_key") is True
+
+
+@pytest.mark.parametrize("node_type", ["IDENTITY", "TECHNOLOGY", "FINDING", "PARAMETER"])
+def test_b104_5_3_3_identity_technology_finding_parameter_continue_to_deny_unconditionally(node_type):
+    """Unchanged by this brief -- still no production evidence, still
+    `frozenset()`, still denied on the id path regardless of pattern."""
+    assert NODE_TYPE_SHAPES[node_type] == frozenset()
+    assert scope_guard("anything", _m(["*"], []), node_type=node_type, target_kind="id") is False
+
+
+def test_b104_5_3_4_secret_re_derived_denies_on_id_path_but_works_via_scope_key():
+    """SECRET, re-derived (§1.1/§1.2/FORK-Y): its own id is sha256-
+    derived and matches no shape family this module has, so its row is
+    `frozenset()` -- denied on the id path even under a maximally
+    permissive manifest. But every real SECRET call site sets
+    `scope_key=bundle_id` unconditionally (§0.2 D1), so the scope_key
+    path -- gated on the bundle id's own "host" shape, independent of
+    this empty row -- is exactly how a real SECRET reaches "in scope"
+    in production; this denies nothing real."""
+    assert NODE_TYPE_SHAPES["SECRET"] == frozenset()
+    sha256_id = "a" * 64
+    assert scope_guard(sha256_id, _m(["*"], []), node_type="SECRET", target_kind="id") is False
+    m = _m(["com.kronos.*"], [])
+    assert scope_guard("com.kronos.demo", m, node_type="SECRET", target_kind="scope_key") is True
+
+
+def test_b104_5_3_5_every_schema_node_type_is_in_table_or_demonstrably_bypassed():
+    """No `schema.py` node type may be silently absent from this
+    accounting: every one of `ALL_NODE_TABLES` is either a key in
+    `NODE_TYPE_SHAPES` (even with an empty family) or one of the two
+    types `graph.py` bypasses `is_in_scope` for entirely
+    (`_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES`)."""
+    from kronos import graph
+    from kronos.schema import ALL_NODE_TABLES
+
+    bypassed = graph._ALWAYS_IN_SCOPE_TYPES | graph._NO_IN_SCOPE_COLUMN_TYPES
+    for node_type in ALL_NODE_TABLES:
+        assert node_type in NODE_TYPE_SHAPES or node_type in bypassed, node_type
+
+
+# --- §5.4's third axis -- id/scope_key (§1.1), run per node type (not
+# just one), through the public API only. Declared as data: one
+# representative (pattern, target) pair per node type reachable via a
+# scope_key in real production evidence (the NODE_TYPE_SHAPES comment
+# block above cites each), run once with target_kind="id" and once
+# with target_kind="scope_key". Every cell's citation is the row
+# comment next to it; no cell here is computed from running the code --
+# each was derived by hand from `_effective_shape`/`_scope_key_shape`'s
+# documented rules, then verified.
+_B104_ID_SCOPE_KEY_AXIS = [
+    # (node_type, pattern, target, expected_id, expected_scope_key, why)
+    ("HOST", "*.acme.example.com", "api.acme.example.com", True, True,
+     "unambiguous host shape -- id and scope_key paths agree (§1.1: no node_type signal needed either way)"),
+    ("SERVICE", "api.acme.example.com*", "api.acme.example.com:8443", True, True,
+     "host_port shape, unambiguous -- both paths agree"),
+    ("API_ENDPOINT", "api.acme.example.com*", "https://api.acme.example.com/x", True, True,
+     "url shape, unambiguous -- both paths agree (API_ENDPOINT's {'url'} family is directly evidenced, §0.2)"),
+    ("WEB_ENDPOINT", "api.acme.example.com*", "https://api.acme.example.com/x", False, True,
+     "WEB_ENDPOINT's id family is frozenset() (§1.2) -- id denies; scope_key never consults that table (§1.1)"),
+    ("MOBILE_APP", "com.kronos.*", "com.kronos.demo", True, True,
+     "dotted bundle id, 'host' shape either way -- both paths agree"),
+    ("MOBILE_COMPONENT", "com.kronos.*", "com.kronos.democomponent", True, True,
+     "same 'host' family as MOBILE_APP (§0.2 evidence) -- both paths agree"),
+    ("SECRET", "com.kronos.*", "com.kronos.demo", False, True,
+     "SECRET's id family is frozenset() (§1.1/§1.2/FORK-Y) -- id denies; "
+     "scope_key (bundle_id in every real call site) is gated on its own 'host' shape instead"),
+    ("CLOUD_RESOURCE", "kronos-cybergym-*", "kronos-cybergym-general-secrets", True, False,
+     "dot-free ambiguous string: id path keeps CLOUD_RESOURCE's free bucket-glob expansion (§0.2, the only "
+     "type that does); scope_key path has no node_type signal to grant that, so it is forced to the "
+     "narrower host-boundary reading (§1.1's own worked example) and the mid-label pattern fails it"),
+    ("FINDING", "*", "finding-demo", False, True,
+     "FINDING's id family is frozenset() (FORK-W(2)) -- id denies unconditionally; §1.1's scope_key gate "
+     "is type-blind by design, so a maximally permissive pattern still authorizes a scope_key here even "
+     "though no production ingester ever sets one for FINDING -- a direct, intended consequence of §1.1, "
+     "not a new production reachability (no FINDING call site sets scope_key)"),
+]
+
+
+def test_b104_5_4_id_scope_key_axis_cell_count():
+    assert len(_B104_ID_SCOPE_KEY_AXIS) == 9
+
+
+@pytest.mark.parametrize("node_type,pattern,target,expected_id,expected_scope_key,why", _B104_ID_SCOPE_KEY_AXIS)
+def test_b104_5_4_id_scope_key_axis(node_type, pattern, target, expected_id, expected_scope_key, why):
+    m = _m([pattern], [])
+    assert scope_guard(target, m, node_type=node_type, target_kind="id") is expected_id, why
+    assert scope_guard(target, m, node_type=node_type, target_kind="scope_key") is expected_scope_key, why

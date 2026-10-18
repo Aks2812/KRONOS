@@ -137,7 +137,18 @@ class EngagementGraph:
             if type in _ALWAYS_IN_SCOPE_TYPES:
                 in_scope = True
             else:
-                in_scope = self.scope.is_in_scope(scope_key or id, node_type=type)
+                # SPEC_BRIEF10.4 §1.5: the `scope_key or id` precedence
+                # itself is unchanged; the guard is now told, via one
+                # additional required kwarg, which of the two strings it
+                # is looking at, so it can apply NODE_TYPE_SHAPES only to
+                # an id and never to an operator/ingester-supplied
+                # scope_key (§1.1).
+                if scope_key:
+                    in_scope = self.scope.is_in_scope(
+                        scope_key, node_type=type, target_kind="scope_key"
+                    )
+                else:
+                    in_scope = self.scope.is_in_scope(id, node_type=type, target_kind="id")
             in_scope_clause = f"n.in_scope = {_literal(in_scope)}"
             create_clauses.append(in_scope_clause)
             match_clauses.append(in_scope_clause)
