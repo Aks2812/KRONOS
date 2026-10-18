@@ -1449,3 +1449,41 @@ pending_action:
   seq: 13
   action: "await maintainer on (i) the §8.7 fixture amendment (recommend A) and (ii) the reviewer substitution (recommend A or B); PD-3 also still open"
   outcome: pending
+
+## SEQ 14 — LIVE X-SCORE AT BRANCH HEAD; §8 FINAL VERDICT 14 PASS / 1 FAIL
+
+seq: 14
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: VERIFY closed; REVIEW still blocked
+
+live_x_score:
+  commit: 1fa5bad (claude/scope-key-dispatch-brief10-4)
+  verbatim_line: "X-SCORE: 3/3 chains validated end-to-end"
+  exit_code: 0
+  teardown: "TEARDOWN: all clear — [ok] docker 'docker compose down -v (CyberGym range)' -> done"
+  host: "unproxied for HTTP"
+  run_by: "orchestrator (the builder correctly declined for want of authorization)"
+  significance: >
+    §8.12 PASSES with the verbatim line and exit code. It also answers §5.5's real question:
+    node_type threading plus the §1.1 scope_key dispatch did NOT narrow anything live. The
+    range's ARN-shaped CLOUD_RESOURCE scope_keys and bundle-id mobile scope_keys now travel
+    the §1.1 scope_key path rather than the id-family path, and still validate 3/3.
+
+section_8_final:
+  pass: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15]
+  fail: [7]
+  verdict: "14 of 15 PASS. Criterion 7 FAILS on one out-of-§3 test the brief did not authorize editing."
+  note: "§6 live-use gate is NOT this verdict. §6.3 requires 3/3 at the MERGE COMMIT, which does not exist; §6.7 is a maintainer action."
+
+blockers_outstanding:
+  - "§8.7 — the _secret_with_material fixture amendment (recommend option A: one permitted edit)"
+  - "REVIEW — kronos-reviewer agent type withdrawn mid-session (recommend A: general-purpose subagent pinned to claude-opus-5 with the reviewer contract inlined, or B: restore the definition)"
+  - "PD-3 — which PR carries 10.4 (A/B/C)"
+
+merge_gate: "§8.7 red and NO independent review performed. Do not merge. PR #13 remains the only authorized merge target and does not contain this work."
+
+pending_action:
+  seq: 14
+  action: "await maintainer on the three blockers above"
+  outcome: pending
