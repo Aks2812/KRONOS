@@ -2068,3 +2068,72 @@ pending_action:
     exclusion fix, F4, F5, F6, a §5.4 grid whose every cell cites prose, and §8/§6 kept
     distinct; (3) push the draft; (4) STOP at GATE-1. No code written. PR 13 and PR 15 untouched.
   outcome: pending
+
+## SEQ 20 — SPEC_BRIEF10.5 DRAFT PUSHED; STOPPED AT GATE-1
+
+seq: 20
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: GATE-1 (awaiting maintainer brief approval)
+
+seq19_pending_action_outcome: "complete — record tracked, memories written, brief authored and pushed"
+
+research_record:
+  tracked_at: docs/loop/KRONOS_RESEARCH_RECORD.md (kronos/loop-state)
+  sha256: d4cf1cc3ff865a0fe5a60d4e92b7e779293799901d76b8a387f126715b94fe3e
+  lines: 1686
+  source: /home/void/KRONOS_RESEARCH_RECORD.md (v5, 2026-10-16)
+  staleness_note: >
+    v5 predates this session entirely. It still shows PR #13 as MERGE-APPROVED and does not
+    contain SPEC_BRIEF10.4, PR #15, the §8 review FAIL, rule 5, or the address-shaped exclusion
+    gap. It needs a v6 revision once PR #15 closes; that is a documentation task, not a brief.
+  memories_written:
+    - kronos-research-record (reference)
+    - kronos-three-goals (project)
+    - kronos-loop-state (project)
+    - kronos-rails-on-one-branch (project)
+
+brief_draft:
+  path_on_state_branch: docs/loop/SPEC_BRIEF10.5.draft.md
+  sha256: 450514c24af17c14cf564216a4d8af6a39fc695ca86c672e581f9518ac072a34
+  lines: 385
+  lands_on_approval_at: "repo-root SPEC_BRIEF10.5.md on PR #15's EXISTING branch claude/scope-key-dispatch-brief10-4, so PR #15 becomes passing rather than being superseded"
+  carries:
+    - "§0 Goal justification — NEW STANDING REQUIREMENT for every KRONOS brief. G2 primary, G1 enabling via rule 5, G3 explicitly not advanced and not weakened, precedence respected"
+    - "§1.1 rule 5 — identity-bearing-column discriminator, ORCHESTRATOR-DERIVED and flagged as such for GATE-1 to reject"
+    - "§1.2 F3 — address-shaped exclusion identities; the path-free row proves H3 was never satisfied for ip/ip_port since dcbdba9"
+    - "§1.3 F2 — the three §5.4 corrections 10.4 ordered and did not get, with the public-API route named explicitly"
+    - "§1.4 criterion 14 — byte-verbatim gate, and why a presence grep cannot test it"
+    - "§5.5 — the reviewer's differential allow-side proof promoted from a one-off review step to a STANDING test (§8.8)"
+    - "§5.6 F4, §5.7 F5/F6"
+    - "§8 acceptance (15 criteria) and §6 live-use gate kept strictly distinct"
+  notable_narrowing: "HOST goes from 10.4's {host, ip, host_port, ip_port} to {host, ip} — HOST has no port column; SERVICE is the type that carries ports. Permitted by guardrail §9 as a narrowing; FORK-AB covers it."
+
+rule_5_provenance_disclosure:
+  recorded_in_brief: true
+  text: >
+    §1.1 states in the brief itself that the maintainer ruled "add rule 5" without specifying a
+    discriminator, that the orchestrator's first framing (live reconcile machinery) was WRONG and
+    is withdrawn because it would have swept WEB_ENDPOINT back to a non-empty family and silently
+    reversed PD-2/A-prime, and that the identity-bearing-column rule is orchestrator-derived and
+    may be rejected at GATE-1. Not presented as maintainer-ruled.
+
+gate_1_status: AWAITING MAINTAINER APPROVAL
+no_code_written: true
+no_builder_dispatched: true
+pr_15: "OPEN, draft true, head 2a676a8, auto_merge null — untouched; review FAIL stands"
+pr_13: "OPEN, draft true, head d2ad51e — untouched"
+issue_2: "OPEN"
+main: dcbdba9
+merge_gate: "unchanged — 4 of 10 fail. Do not merge."
+
+deferred_by_maintainer_sequencing:
+  loop_trigger: "/loop self-paced — to be built AFTER PR #15 closes, per the seq 18 sequencing decision"
+  autonomy_bounds: "unchanged"
+  rails_fix: "maintainer action — get .claude/ onto main; rewrite kronos-continue.md without hardcoded baselines, PR numbers or brief names"
+  goals_in_repo: "SPEC.md and README.md still carry no G1/G2/G3; outside every brief's §3, so a separate small docs PR bundled with F7's stale SPEC.md signature"
+
+pending_action:
+  seq: 20
+  action: "await GATE-1 approval or rejection of docs/loop/SPEC_BRIEF10.5.draft.md; on approval, dispatch the builder against the approved brief only, naming §8 for acceptance and §6 for the live gate"
+  outcome: pending
