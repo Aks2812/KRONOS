@@ -1115,3 +1115,45 @@ pending_action:
   seq: 9
   action: "await PD-2 re-ruling (recommend A') and confirmation of the fix-the-tests direction for the four API_ENDPOINT cases, then author SPEC_BRIEF10.4 and stop for GATE-1"
   outcome: pending
+
+## SEQ 10 — PD-2 RE-RULED A-PRIME; WRITE-AHEAD FOR SPEC_BRIEF10.4 AUTHORING
+
+seq: 10
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: brief authoring
+
+seq9_pending_action_outcome: "resolved — maintainer re-ruled this turn"
+
+maintainer_rulings:
+  pause_decision_2_rerule:
+    ruling: A-prime
+    normative_text: >
+      A node type with no production ingester and no established id convention gets an
+      EMPTY permitted-shape family and therefore denies, exactly as IDENTITY, TECHNOLOGY
+      and FINDING already do. WEB_ENDPOINT is such a type: its family becomes frozenset().
+      No row in the §1.2 table may be assigned by analogy to another type. Network identity
+      for such a node must be carried by a scope_key.
+    supersedes: "the seq 8 ruling A, whose premise (opaque ids inheriting via §1.4) was falsified in seq 9"
+  four_api_endpoint_tests:
+    ruling: "fix the tests"
+    normative_text: >
+      {url} is evidenced for API_ENDPOINT by its sole production producer
+      (ingest/mobile/parser.py:276, id=found.url). The four tests that hand-construct
+      bare-host API_ENDPOINT ids encode a shape production never generates; they are
+      corrected to carry a real network identity. NODE_TYPE_SHAPES is NOT widened for them.
+    authority: "maintainer, this turn"
+
+pending_action:
+  seq: 10
+  action: >
+    Re-measure tests/ at base dcbdba9 and head d2ad51e against the 620/1 and 17 baselines;
+    then author SPEC_BRIEF10.4.md carrying: PD-1/A and PD-2/A-prime as normative prose, the
+    §1.2 table rebuilt with per-row evidence and no analogy, Finding A's deny-side
+    path-bearing-exclusion fix, the four test corrections named in its own §3, a §5.4 grid
+    whose every cell derives from PROSE, §8 acceptance criteria and §6 live-use gate kept
+    strictly distinct, and the X-SCORE 3/3 result recorded. Push the draft to
+    kronos/loop-state. STOP for GATE-1.
+  no_code_written: true
+  pr13_untouched: true
+  outcome: pending
