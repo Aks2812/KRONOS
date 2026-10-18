@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 4
-derived_at: 2026-10-18T06:45:00Z
+seq: 5
+derived_at: 2026-10-18T07:05:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v6.md
 stage: FORK-2
@@ -61,17 +61,11 @@ issue_2:
 ci: "none; local evidence only"
 
 tests:
-  last_run: null
+  last_run: "2026-10-18 FORK-2 — base 620 passed/1 skipped; PR head 1023 passed/6 FAILED/1 skipped"
 
 merge_authorization: null
 
-pending_action: >
-  PILOT A, STAGE FORK-2 — independent review only. Dispatch kronos-reviewer against
-  PR #13 at head d2ad51e611927525780b9069db2bc16b0a7209b2, judged against
-  SPEC_BRIEF10.3 section 6 criterion by criterion, working only from
-  `git diff origin/main...d2ad51e` and the brief. No builder report is passed to it.
-  Outcome to be written as seq 5. This turn will NOT merge, NOT mark any PR ready, and
-  NOT push to main.
+pending_action: null   # seq 4's FORK-2 review completed; outcome below
 stale_branches:
   - claude/cybergym-denial-fidelity-brief7
   - claude/ingestion-contract-canonical-keys-brief9
@@ -390,18 +384,170 @@ superseded_from_seq3:
       to apply them, and the proposal to remove the Edit(.claude/**) deny rule, are both
       withdrawn as incompatible with the stage contract.
 
+## SEQ 5 — FORK-2 INDEPENDENT REVIEW OUTCOME
+
+review:
+  stage: "PILOT A / FORK-2"
+  pr: 13
+  head_reviewed: d2ad51e611927525780b9069db2bc16b0a7209b2
+  reviewer: kronos-reviewer (foreground subagent, fresh context, no builder report passed)
+  brief_sha256_verified_by_reviewer: true
+  verdict: FAIL
+  recommendation: "DO NOT MERGE at d2ad51e"
+
+  section_scope_correction:
+    issue: >
+      The stage instruction said to review "SPEC_BRIEF10.3 section 6 (acceptance
+      criteria)". Those are two different sections of the brief: section 6 is the Live-use
+      gate (6 closing conditions, brief line 242) and section 8 is Acceptance criteria
+      (12 items, brief line 278). Verified independently by the orchestrator against the
+      brief's heading list.
+    handling: >
+      The reviewer flagged the ambiguity rather than picking one, and judged BOTH tables
+      separately. Both are recorded below. Future stage instructions should name section 8
+      for acceptance criteria and section 6 for the live-use gate.
+
+  section_8_acceptance_criteria:
+    result: "9 PASS, 1 FAIL, 1 UNVERIFIABLE-treated-as-FAIL — NOT every criterion passed"
+    pass: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12]
+    fail:
+      - criterion: 11
+        finding: >
+          README_scope.md carries section 6's gate verbatim, but DECISIONS.md does not,
+          despite a heading claiming it does. Independently confirmed by the orchestrator:
+          the gate's opening sentence appears 1 time in README_scope.md and 0 times in
+          DECISIONS.md at the PR head.
+    unverifiable:
+      - criterion: 9
+        missing_evidence: >
+          No X-SCORE line, no exit code, and no explicit BLOCKED/INCOMPLETE declaration
+          naming the environment appears anywhere in the diff. DECISIONS.md defers it to
+          the PR body, which is not a reviewer input. Not rounded up to PASS.
+
+  section_6_live_use_gate:
+    result: "2 of 6 conditions met — FORK-2 is NOT complete and issue #2 may NOT close"
+    met: [4, 6]
+    not_met:
+      - condition: 1
+        reason: "not merged; this review is the approval step and it is not an approval"
+      - condition: 2
+        reason: "test suite is RED at the PR head — see test_evidence"
+      - condition: 3
+        reason: "unverifiable: no merge commit exists, no X-SCORE in the diff, no network"
+      - condition: 5
+        reason: "issue #2 cannot close without a merge commit"
+
+test_evidence:
+  method: "both trees exported read-only with git archive; nothing checked out"
+  base_origin_main_dcbdba9: "620 passed, 1 skipped"
+  pr_head_d2ad51e: "1023 passed, 6 FAILED, 1 skipped"
+  brief_5_5_baseline_stated: "620 passed / 1 skipped (brief line 232)"
+  baseline_matches: true
+  contract_figure_discrepancy: >
+    The stage contract cites local test evidence as "591/1". The brief's own section 5.5
+    baseline is 620 passed / 1 skipped, independently confirmed by the orchestrator at
+    brief line 232, and the reviewer measured exactly that on base. The 591/1 figure
+    appears stale; the brief is authoritative.
+  scope_guard_suite_alone: "562 passed, 0 failed"
+  regressions_introduced_by_this_pr: 6
+  failing_tests:
+    - tests/test_invariants.py::test_invariant_out_of_scope_secret_cannot_anchor_finding
+    - tests/test_invariants.py::test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain
+    - tests/test_query.py::test_find_paths_returns_seeded_mobile_to_cloud_chain
+    - tests/test_query.py::test_find_paths_only_in_scope_excludes_out_of_scope_hop
+    - tests/test_reconcile.py::test_web_endpoint_real_duplicate_merges_and_tombstones
+    - tests/test_schema_graph.py::test_upsert_node_stamps_in_scope_via_scope_guard
+  root_cause_measured: >
+    NODE_TYPE_SHAPES narrows the endpoint and cloud-resource families, so nodes whose id
+    or scope_key is written in a bare-host shape now deny where they previously allowed.
+    Measured by direct probe at both trees, not inferred.
+  guardrail_9_compliance: >
+    COMPLIANT. The builder did not edit any of the six tests and listed them in
+    DECISIONS.md as out-of-section-3 regressions, reported not edited. Confirmed absent
+    from `git diff --name-only`. The resolution decision therefore belongs upstream.
+  cybergym_cloud_suite:
+    status: NOT INDEPENDENTLY VERIFIED
+    reason: >
+      Collection fails in this environment: the test client requires httpx2, which is not
+      installed in the venv. The files are zero-diff and contain no scope-guard
+      references, so they are structurally unaffected, but the claimed pass count is
+      unconfirmed.
+
+guardrail_10_hash_pin:
+  status: verified
+  detail: >
+    sha256 of scope_guard.py at the PR head matches the re-pinned constant in all three
+    test files that pin it, byte for byte.
+
+reviewer_findings_beyond_criteria:
+  - id: A
+    severity: high
+    finding: >
+      Section 1.3 (exclusions are representation-blind across shapes) is only partially
+      implemented. URL exclusion patterns that carry a path still route to the
+      shape-, port- and scheme-bound matcher, so a deny-side under-match of exactly the
+      class this brief exists to close survives for that pattern family. The patterns the
+      fix did widen behave correctly. Criterion 3 was not failed on this, because every
+      row section 5.2 literally enumerates passes — but 1.3 is normative prose.
+  - id: B
+    severity: high
+    finding: >
+      The section 5.4 generated grid declares the two affected cells as expected-False,
+      codifying finding A as intended behaviour. This is the section 0.3 method defect
+      the brief was written to prevent: the expectation table was derived from observed
+      behaviour rather than from the prose. The grid also never exercises a matching path
+      against those patterns, so it could not have caught it.
+  - id: C
+    severity: medium
+    finding: >
+      Section 5.4's "run the product for the allow side per node type" was run for one
+      node type only. Disclosed in DECISIONS.md as a reported scope reduction, not
+      concealed. Section 8.4's literal text does not require it; section 5.4's does.
+  - id: D
+    severity: minor
+    finding: "the 5.4 exclusion grid asserts through a private matcher, not the public API"
+  - id: E
+    severity: minor
+    finding: >
+      Section 5.3's "correctly-spelled type absent from the shape table" is exercised with
+      a name that is not a real schema type. The property was independently confirmed to
+      hold for the two real candidates, so this is test naming, not a gap.
+  - id: F
+    finding: "nothing in the diff falls outside what section 3 permits"
+
+verified_solid_measured_not_asserted:
+  - "H2 closed: all 9 rows of section 5.1 observed as required"
+  - "H3 closed for all 7 rows of section 5.2, both directions"
+  - "fail-closed holds for every malformed, empty, None and non-schema node_type probed"
+  - "the required keyword-only argument is enforced by the interpreter at both entry points"
+  - "graph.py is a one-line passthrough; the untouched-module list holds"
+  - "manifest.py zero-diff and nothing under cybergym/ touched"
+  - "the pre-#10 signed manifest still verifies"
+  - "PR #13 open, unmerged, draft, head not an ancestor of main"
+
+reviewer_model_pin:
+  status: UNVERIFIABLE BY DESIGN
+  detail: >
+    kronos-reviewer is pinned to claude-opus-5, the same model the parent orchestrator
+    runs on, so its usage aggregates into a single per-model line and cannot be separated
+    from the orchestrator's. The builder's pin was verifiable in seq 3 precisely because
+    it differs from the orchestrator's. A silent fallback on the reviewer would be
+    invisible to the /usage method; the practical risk is low since fallback would land on
+    the same family, but it is unverified rather than verified.
+
 ## MERGE-GATE status (10 prerequisites, v6 section 3.1)
 
 1. main protected: pass (ruleset 25333712, active, bypass_actors empty, current_user_can_bypass never)
 2. PR #13 not a draft: FAIL (true)
 3. PR #13 open and unmerged: pass
 4. head SHA equals authorized SHA: n/a (no authorization granted yet)
-5. independent review PASS on every SPEC_BRIEF10.3 section 6 criterion: FAIL (not yet run)
+5. independent review PASS on every criterion: FAIL (run at seq 5 — section 6: 2/6 met; section 8: 9 PASS, 1 FAIL, 1 UNVERIFIABLE)
 5b. GitHub approving review: n/a (single-maintainer repo, see v6 section 2.4)
 6. CI green or "ci: none" acknowledged: acknowledged ("ci: none; local evidence only")
-7. local test evidence recorded in checkpoint: FAIL (tests.last_run is null)
+7. local test evidence recorded in checkpoint: FAIL (now recorded, and RED — 6 regressions at the PR head vs a green 620/1 base)
 8. mergeable_state clean, head not already ancestor of main: pass
 9. merge_authorization present, granted this turn: FAIL (null)
 10. clean tree, stale branches reconciled or recorded: pass (recorded above, none deleted)
 
-Six of ten prerequisites fail. Do not merge.
+Four of ten prerequisites fail (2, 5, 7, 9); 4 and 5b are n/a. Item 1 now passes.
+Do not merge.
