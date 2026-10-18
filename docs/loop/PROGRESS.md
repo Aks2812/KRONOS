@@ -1293,3 +1293,159 @@ pending_action:
   seq: 12
   action: "dispatch kronos-builder in foreground against approved SPEC_BRIEF10.4; builder implements RED-first, commits, pushes claude/scope-key-dispatch-brief10-4, opens NO PR; then orchestrator VERIFIES against §8 and dispatches kronos-reviewer with diff + brief only"
   outcome: pending
+
+## SEQ 13 — BUILD COMPLETE; ORCHESTRATOR VERIFY AGAINST §8; REVIEW STAGE BLOCKED
+
+seq: 13
+derived_at: 2026-10-18T00:00:00Z
+stage: FORK-2
+phase: VERIFY complete; REVIEW blocked
+
+seq12_pending_action_outcome: >
+  Builder completed and handed back. Orchestrator VERIFY run independently against §8 — the
+  builder's report was NOT taken at face value; every criterion below was re-measured or
+  re-derived from the branch itself.
+
+build:
+  branch: claude/scope-key-dispatch-brief10-4
+  head: 1fa5bad
+  commits_on_top_of_2836110: 4
+  pushed: true
+  pr_opened: false  # correct — PD-3 is the maintainer's
+
+## ORCHESTRATOR-VERIFIED (re-measured, not accepted on report)
+
+verified_independently:
+  manifest_and_cybergym_zero_diff: >
+    PASS — `git diff --stat d2ad51e 1fa5bad -- src/kronos/manifest.py cybergym/ .claude/
+    .github/` is EMPTY. The httpx2/httpcore2/truststore pins were correctly NOT added
+    anywhere, as §5.5 instructed.
+  section_2_7_untouched_list: "PASS — lifecycle.py, schema.py, validate/, reconcile/, ingest/, budget/, cleanup/, events.py all zero-diff"
+  files_changed: >
+    PASS — DECISIONS.md, SPEC_BRIEF10.4.md (orchestrator's own brief commit),
+    src/kronos/{README_scope.md,graph.py,scope_guard.py}, tests/{test_budget,test_cleanup,
+    test_invariants,test_query,test_reconcile,test_schema_graph,test_scope_guard}.py.
+    All within §3.
+  graph_py_section_1_5: >
+    PASS — one added `target_kind` kwarg; the `scope_key or id` precedence is preserved
+    exactly (if scope_key -> scope_key/"scope_key", else id/"id"). No other behaviour change.
+  node_type_shapes: >
+    PASS — WEB_ENDPOINT frozenset(), SECRET frozenset(), API_ENDPOINT {url},
+    CLOUD_RESOURCE {bucket_name, arn}, mobile {host}, PARAMETER/IDENTITY/TECHNOLOGY/FINDING
+    frozenset(). ENGAGEMENT/EVIDENCE deliberately absent with a new test asserting no
+    schema.py type is silently missing.
+  finding_a_fixed_AND_allow_side_intact:
+    status: PASS — the single most important check in this brief
+    exclusion_side: "all five targets of http://localhost:8091/internal/* now DENY (localhost:8091, .../other, localhost, .../ and the literal path match)"
+    allow_side: "UNCHANGED and still narrow — only the literal path match allows; the other four still deny"
+    conclusion: "guardrail §9 holds: the deny side widened, the allow side did not"
+  section_5_6_c_unedited:
+    status: PASS
+    method: "sha256 of the function body extracted from both revisions"
+    both: b6d6c500e5873c942bc75b2f3f9b259d2ab0ef03f7e4a8faf25fa6f123c17d9e
+    meaning: "byte-identical; restored by §1.1 alone, exactly as §5.6(c) required"
+  gate_verbatim_both_files: >
+    PASS — 'FORK-2 is complete' appears once in DECISIONS.md AND once in
+    src/kronos/README_scope.md. This closes 10.3's criterion-11 failure, where README_scope
+    carried the gate and DECISIONS.md claimed to but did not.
+  forks_recorded: "PASS — FORK-X, FORK-Y, FORK-Z all recorded in DECISIONS.md with reasons; DEFAULT taken on each"
+  cell_counts: "PASS — 364 (13x14x2) + 18 (id/scope_key axis) = 382 declared cells; undeclared-cell enforcement is KeyError-on-lookup plus two dedicated count tests"
+  suite_totals_remeasured_by_orchestrator:
+    tests: "1 failed, 1067 passed, 1 skipped"
+    cybergym_cloud: "17 passed"
+    matches_builder_report: true
+  live_x_score_at_1fa5bad: "RUNNING — orchestrator is executing it; the builder correctly declined for want of authorization"
+
+## §8 ACCEPTANCE VERDICT (§8 = acceptance criteria; §6 = live-use gate; not conflated)
+
+- 1 target_kind required kwarg, unrecognised denies: PASS
+- 2 scope_key gated on own shape, family filter on id path, §5.2's rows: PASS
+- 3 fail-closed intact even with a valid scope_key: PASS
+- 4 table re-derived with citations, WEB_ENDPOINT frozenset(), no analogy, no type absent: PASS
+- 5 §1.3 rows deny AND allow-side control proves no leak: PASS (orchestrator-verified directly)
+- 6 §5.4 zero undeclared cells, prose-cited, path-bearing patterns, per node type, id/scope_key axis, public API: PASS
+- 7 tests/ 0 failed: **FAIL — 1 failed**
+- 8 every #10/#10.1/#10.2/#10.3 case green: PASS
+- 9 manifest.py zero-diff, nothing under cybergym/: PASS
+- 10 graph.py per §1.5, §2.7 list zero-diff: PASS
+- 11 only §3's files, five corrections reported, (c) unedited: PASS
+- 12 live X-score or BLOCKED naming environment: PENDING orchestrator run
+- 13 FORK-X/Y/Z recorded, table reported: PASS
+- 14 gate verbatim in both docs: PASS
+- 15 PR left open and unmerged, not marked ready: PASS (no PR opened at all; #13 untouched)
+
+verdict: "14 of 15 pass; criterion 7 FAILS; criterion 12 pending"
+
+## THE ONE FAILURE — A DEFECT IN THE BRIEF, NOT IN THE BUILD
+
+failing_test: "tests/test_reconcile.py::test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_and_idempotent"
+assertion: "tests/test_reconcile.py:384 — find_paths(g, 'MOBILE_APP', 'CLOUD_RESOURCE') must return >= 1 path"
+mechanism_verified_by_orchestrator: >
+  The `_secret_with_material` helper (tests/test_reconcile.py:41) calls
+  upsert_node("SECRET", node_id, {...}) with NO scope_key. With SECRET's id family now
+  frozenset() per FORK-Y, those nodes stamp in_scope=False and the SECRET hop drops out of
+  the traversal.
+only_additional_failure: >
+  Confirmed empirically — the full suite shows exactly one failure. Other scope_key-less
+  SECRET upserts exist (test_schema_graph.py:131,136; test_query.py:26; test_lifecycle.py:
+  14,21,28,61) but none asserts in_scope or traversal through the SECRET, so none fails.
+builder_conduct: >
+  CORRECT. §3 permits exactly two edits to test_reconcile.py (the §5.6(b) WEB_ENDPOINT
+  scope_key correction and the sha256 pin); this fixture is neither. The builder reported
+  rather than edited, which is what guardrail §10 and §8.11 demand. It also documented the
+  item in DECISIONS.md. This is compliance, not an unfinished task.
+root_cause: >
+  THE BRIEF'S OWN DEFECT. FORK-Y's stated default rests on "scope arrives via scope_key in
+  every production path" — which is TRUE of production and FALSE of this test fixture. The
+  brief took the default without extending §3 to the fixture the default would break. The
+  orchestrator authored FORK-Y, so this is an authoring miss, not a build miss.
+options:
+  A: >
+    Minimal GATE-1 amendment: extend §3 and §5.6 to permit ONE further edit — give
+    _secret_with_material's SECRET nodes a scope_key, the same remedy as §5.6(b). Surgical,
+    consistent with §1.2/§1.1, leaves FORK-Y's evidence-only reasoning intact. RECOMMENDED.
+  B: >
+    Revisit FORK-Y and restore SECRET to {host}. Rejected: {host} was only ever a workaround
+    for the scope_key path (defect D1), which §1.1 now handles properly; restoring it
+    reinstates the very inconsistency §1.2 exists to remove, and would make SECRET the one
+    row still assigned to fit a scope_key rather than its id.
+  C: "accept 1 failed. Rejected — §8.7 requires 0, and a red suite cannot support a merge gate."
+recommendation: A
+
+## REVIEW STAGE BLOCKED — AGENT TYPE WITHDRAWN MID-SESSION
+
+blocker:
+  fact: >
+    The harness reported mid-session that the agent types `kronos-builder` and
+    `kronos-reviewer` are NO LONGER AVAILABLE. The builder had already completed, so BUILD
+    is unaffected. REVIEW cannot be dispatched as specified.
+  contract_requirement: >
+    "kronos-reviewer claude-opus-5 — fresh context, diff + brief only, never the builder's
+    report, never a fork."
+  why_this_is_not_a_judgment_call: >
+    Independent review is the load-bearing control standing between this branch and GATE-2.
+    Substituting the reviewer is scope-sensitive and touches an authorization the maintainer
+    set, so it is a PAUSE-DECISION rather than something the loop re-plans around.
+options:
+  A: >
+    Dispatch a general-purpose subagent pinned to claude-opus-5 with the kronos-reviewer
+    contract inlined verbatim: fresh context, diff + brief ONLY, builder's report and
+    reasoning withheld, read-only tools, not a fork. Preserves every property the contract
+    names except the agent-definition filename. RECOMMENDED.
+  B: "maintainer restores the kronos-reviewer agent definition, then the loop dispatches it unchanged. Cleanest, but needs a maintainer action."
+  C: "orchestrator self-reviews. REJECTED — the orchestrator authored the brief and verified the build; self-review destroys the independence the control exists for. Not acceptable at any effort level."
+recommendation: "A, or B if the definition is easy to restore"
+not_done_this_turn: "no reviewer dispatched; no substitute improvised"
+
+## STATE
+
+pr13: "OPEN, draft true, unmerged, head d2ad51e, auto_merge null — untouched all session"
+issue2: "OPEN — untouched"
+main: "dcbdba9 — untouched"
+pd_3_which_pr_carries_10_4: "STILL OPEN — no PR opened for 10.4"
+merge_gate: "unchanged; §8.7 red and no independent review. Do not merge."
+
+pending_action:
+  seq: 13
+  action: "await maintainer on (i) the §8.7 fixture amendment (recommend A) and (ii) the reviewer substitution (recommend A or B); PD-3 also still open"
+  outcome: pending
