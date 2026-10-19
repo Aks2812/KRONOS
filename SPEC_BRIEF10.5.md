@@ -183,8 +183,8 @@ comparison — not a presence grep. **A presence grep cannot test verbatim-ness;
 7. Every case from Briefs #10, #10.1, #10.2, #10.3 and #10.4 stays green.
 8. `lifecycle.py`, `validate/`, `reconcile/`, `ingest/`, `budget/`, `cleanup/`, `events.py` all
    zero-diff.
-9. **The allow side is not widened anywhere.** §1.2 widens the deny side; §1.1's `HOST` change
-   narrows. Prove the allow side is unchanged by differential measurement, not by assertion.
+9. **The allow side is not widened anywhere.** §1.2 widens the deny side. Prove the allow side is
+   unchanged by differential measurement, not by assertion.
 10. Stdlib only. Deterministic. No LLM.
 11. Do not weaken or delete any existing test. §5.6's control restoration is the only permitted
     edit outside `tests/test_scope_guard.py`. Any other test needing a change: **stop and report**.
@@ -218,7 +218,7 @@ Any other file — including `schema.py`, `graph.py`, `SPEC.md` and anything und
    exclusion host-identity branches stop bailing out. Allow-side address matching keeps its
    existing `_matches_address_pattern` route.
 2. **`NODE_TYPE_SHAPES` is re-derived under rule 5**, with per-row citations naming `schema.py`
-   lines. `HOST` narrows to `{host, ip}`.
+   lines. `HOST` keeps all four shapes `{host, ip, host_port, ip_port}` under rule 1 (not rule 5); rule 5 is never consulted for it (see §1.1, FORK-AB).
 3. **The §5.4 grid is rebuilt, not extended** — per-cell clause references, a node-type axis over
    the allow side, and public-API assertions on both sides.
 4. `classify_target` stays pure and type-blind. `_effective_shape` keeps its narrowing-only
