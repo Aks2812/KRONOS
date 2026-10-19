@@ -3288,3 +3288,95 @@ pending_action:
   seq: 33
   action: "await the resumed review's verdict on abfe531; then report and STOP at GATE-2. v7.1 applies from the next brief; the first dispatch under it must verify claude-haiku-5-5 actually resolved."
   outcome: pending
+
+## SEQ 34 — FINAL v6 REVIEW OF abfe531: FAIL (13 PASS, 2 FAIL); WRITE-AHEAD FOR FIXES
+
+seq: 34
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: GATE-2 — verdict DO NOT MERGE
+
+seq33_pending_action_outcome: "resumed review completed and returned a verdict"
+
+review:
+  head_reviewed: abfe531
+  brief_sha256: 8388125f1cce4c49b16b23148570223467de406c7fd2e10cbc513cfcba6712b1
+  verdict: FAIL
+  recommendation: "DO NOT MERGE"
+  tally: "13 PASS, 2 FAIL (criteria 2 and 5), 0 UNVERIFIABLE"
+  resumed_not_respawned: "the rate-limited agent was resumed via SendMessage; it reused its completed measurements rather than repeating them (176k tokens, 13 tool uses for the remainder)"
+  no_behavioural_regression: "explicitly — the shipped matcher behaviour measured correct, deny-side-only, and better evidenced than any prior brief in the series. No deleted or weakened test found."
+
+## THE TWO FAILURES — ALL CONFIRMED BY THE ORCHESTRATOR
+
+f_criterion_2_citations:
+  2a_SECRET_cites_another_node_type:
+    claim: "scope_guard.py:216 cites parser.py:258, whose type string on 259 is EVIDENCE, not SECRET"
+    orchestrator_measurement: "parser.py:244-245 = NodeUpsert( / \"SECRET\",  |  parser.py:258-259 = NodeUpsert( / \"EVIDENCE\". CONFIRMED."
+    severity: "this is EXACTLY the 'cites another type' failure §1.2 rule 4 and §8.2 forbid, shipped inside the row meant to demonstrate compliance"
+    also_in: "src/kronos/README_scope.md:281 reproduces the same wrong line"
+    whose_error: "the orchestrator's — it wrote this citation in seq 30 while closing the previous review's §8.2 failure"
+  2b_FINDING_rule_contradicts_its_value:
+    claim: "FINDING records rule 5 on `title`/`severity` 'carry the identity', but rule 5 concerns NETWORK identity (a url, a name)"
+    orchestrator_measurement: >
+      CONFIRMED and the logic is airtight: title/severity are neither a url nor a name, so rule 5's
+      FIRST branch applies (no identity-bearing column -> the id's shape family governs), which
+      yields a NON-EMPTY family. The shipped value is frozenset(). So the recorded rule contradicts
+      the value it exists to justify. The value is correct — it is settled by #10.3's ratified
+      FORK-W(2) prose, i.e. rule 1. By contrast IDENTITY/TECHNOLOGY citing `name` ARE consistent
+      with rule 5, since rule 5 names `name` explicitly. FINDING is the only inconsistent row.
+  2c_the_enforcement_test_does_not_enforce_what_it_claims:
+    claim: "test_b105_8_2 checks only literal substrings; the reviewer CONSTRUCTED violating rows and two PASSED"
+    passing_violations_it_built:
+      - "PARAMETER -> (1, 'NodeUpsert(\"EVIDENCE\", ...) at parser.py:258') — cites another type, PASSES"
+      - "SERVICE -> (5, 'schema.py:224 -- see the module header prose for why') — rests on prose, PASSES"
+    correctly_rejected: ["rule 5 citing 'by analogy with HOST'", "rule number 9"]
+    orchestrator_assessment: >
+      Accepted without reservation. The orchestrator wrote that test one turn earlier and presented
+      it as proof the claim was 'enforced, not written down'. It was PARTLY theatre: substring
+      absence is not the prohibition. The shipped SECRET row is violation case 1 in the wild, and
+      the test did not catch it. This is the strongest possible demonstration of why an independent
+      reader is needed even when the orchestrator has written a test — and the reviewer found it
+      precisely because it was asked to construct violating rows rather than read the test.
+
+f_criterion_5_stale_pause_count:
+  claim: "DECISIONS.md states '2366 asserted, 0 deferred' and then '11 cells are PAUSE-DECISION (unfilled, unasserted)' in the same bullet"
+  orchestrator_measurement: "CONFIRMED — :2751 says 0 deferred, :2755 says 11 PAUSE-DECISION. Measured PAUSE count is 0. §8.5 requires every PAUSE-DECISION cell reported; the reported figure is wrong."
+  mechanics_passed: "2184 + 182 = 2366 cells, 0 undeclared, all 20 clause keys resolve, allow side runs all 12 node types, both sides through the public API — the 10.4 private-_matches objection is genuinely gone"
+  additional_point_accepted: >
+    Blanket ROW DEFAULTS blanket-apply one clause to unlisted targets, so a material fraction of
+    cells cite a clause that is true of the row but does not decide the cell. Three proven examples:
+    _ALLOW_GRID[(HOST,_P5_BARE_IP,'api.acme.com')] cites 10.r7 (CIDR/bare-IP port rule) to justify
+    denying a HOSTNAME; _EXCLUSION_GRID[_P2_LEADING_GLOB]['10.0.0.5'] cites 10.r1 (*.acme.com =
+    subdomains not apex) for an IP; _ALLOW_GRID[(HOST,_P1_BARE_HOST,_T13_ARN)] cites 10.r4
+    (nonstandard port) for an ARN. §8.5's literal wording is met; the audit trail is thinner than
+    100% coverage implies.
+
+## REVIEWER WORK WORTH RECORDING
+
+reproduced_rather_than_accepted:
+  - "extracted §6 from the brief and both marker blocks itself: 1179 bytes each, byte-equal, one marker pair per file"
+  - "imported the test module to count cells directly: 2184 allow + 182 exclusion, 0 undeclared, 2366 asserted"
+  - "ran the differential under -s and read its own stderr: pairs=340 allow_diffs=0 excl_diffs=32 (dcbdba9) and 19 (2a676a8); confirmed it loads old trees read-only via git archive at chmod 0o444 and asserts the 2a676a8 diff set is NON-EMPTY so it cannot pass vacuously"
+  - "monkeypatched _matches to return True and measured both controls: old api.evil.com still False (test would pass with the matcher destroyed), new https://api.evil.com returns True so the assertion fails. Strength proven, not claimed."
+  - "verified the pre-#10 signed manifest is PROVED not asserted — test_scope_guard.py:463-489 carries a frozen YAML blob with its literal Ed25519 signature through load_and_verify"
+  - "added §5.1 rows the suite lacks: unbracketed 2001:db8::1 vs a bracketed exclusion, and a URL-form target — both deny"
+  - "confirmed address exclusions are node-type-blind across HOST/SERVICE/API_ENDPOINT/CLOUD_RESOURCE/''/BOGUS/None, both target_kinds"
+new_findings_accepted:
+  cloud_resource_evidence_is_a_harness: "LOW — CLOUD_RESOURCE claims rule 1 on cybergym/kronos_validation_run.py:252,257, a validation harness, not a production ingester. Lines cited correctly; classification generous. Sharpest form of the point: the row granting the ONLY free mid-token expansion in the system rests on the weakest producer evidence."
+  stale_decisions_entry: "LOW — DECISIONS.md:2631-2650 says the test_secret_real_duplicate_ fixture was 'reported, not edited', but 2a676a8 edited it. 10.4's window, so criterion 11 still passes for 10.5, but DECISIONS.md is in §3 and now contradicts its own branch."
+  brief_5_5_environment_claim_inaccurate: "LOW — §5.5 says the pins are 'recorded in NO requirements file', but httpx2==2.13.1 is at cybergym/requirements.txt:12 already at dcbdba9. Pre-existing; worth correcting before §6 condition 7 is negotiated."
+  differential_scope_limit: "LOW — the allow side is compared at ONE node type per target, so non-widening is proven along that axis only. Acceptable here solely because the family table is byte-identical to 2a676a8."
+
+merge_gate: "not re-measured, not proposed. Review FAIL. PR #15 draft, no authorization. Do not merge."
+
+pending_action:
+  seq: 34
+  action: >
+    Apply the four required fixes (SECRET citation -> parser.py:244; FINDING -> rule 1 with the
+    FORK-W(2) citation; strengthen test_b105_8_2 to OPEN the cited file:line and assert the region
+    names that node type; correct DECISIONS.md's stale PAUSE sentence) plus three cheap honesty
+    fixes (CLOUD_RESOURCE's harness classification, the stale 'reported, not edited' entry, and
+    §5.5's requirements-file claim). Re-pin the three SHAs, re-run the suite and the live X-score,
+    re-audit the full window, then STOP at GATE-2. No behaviour change in any of it.
+  outcome: pending
