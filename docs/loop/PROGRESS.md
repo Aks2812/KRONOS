@@ -3745,3 +3745,28 @@ pending_action:
     (2) After (1), the queued SPEC_BRIEF10.7 unblocks: branch from the new squash-merge main commit and
         implement per FORK-AD/FORK-AE above.
   outcome: pending
+
+## SEQ 39 — MAINTAINER-AUTHORIZED: PUSH f80ad6a TO PR #15 BRANCH + MARK PR #15 READY (write-ahead)
+
+seq: 39
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: GATE-2 — two of three prerequisites satisfied this turn by explicit maintainer instruction; MERGE still NOT authorized
+
+authorization:
+  granted_this_turn: "maintainer instruction: 'Push f80ad6a to the PR branch and mark #15 ready'"
+  covers: ["push f80ad6a to claude/scope-key-dispatch-brief10-4 (PR #15 branch)", "mark PR #15 ready for review"]
+  does_NOT_cover: ["merging PR #15", "a merge authorization naming PR 15 + head f80ad6a", "--admin", "--auto"]
+
+pending_action:
+  seq: 39
+  action: >
+    Write-ahead for two consequential, maintainer-authorized actions performed this turn:
+    (1) git push origin f80ad6a:refs/heads/claude/scope-key-dispatch-brief10-4, advancing the PR #15
+        GitHub head 648621a -> f80ad6a (fast-forward; f80ad6a's parent IS 648621a);
+    (2) gh pr ready 15.
+    After these, merge-gate item 2 (not draft) becomes PASS and the GitHub head equals the locally
+    reviewed erratum head f80ad6a. Items 4 and 9 (head-equals-AUTHORIZED-sha; merge authorization
+    granted this turn) remain FAIL until the maintainer grants a fresh merge authorization naming
+    PR 15 + f80ad6a. No merge performed or proposed this turn.
+  outcome: pending
