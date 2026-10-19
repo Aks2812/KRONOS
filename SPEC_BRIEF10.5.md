@@ -291,8 +291,11 @@ it is the strongest evidence in the series — make it a standing test, not a on
 per-target type, id/scope_key, and verdict — **do not loosen §1 to recover the score.**
 
 **Environment:** the live suite needs `httpx2==2.13.1`, `httpcore2==2.13.1`, `truststore==0.10.5`.
-Installed in the verification venv, recorded in **no** requirements file, because the only correct
-home is `cybergym/requirements.txt`, which guardrail §2.2 forbids. **Do not add them anywhere.**
+Installed in the verification venv. **Correction (post-review):** `httpx2==2.13.1` is in fact
+already present at `cybergym/requirements.txt:12`, and has been since `dcbdba9` -- the earlier
+claim that the pins are recorded in *no* requirements file was inaccurate. What remains
+unrecorded is `httpcore2==2.13.1` and `truststore==0.10.5`, and the only correct home for them
+is `cybergym/requirements.txt`, which guardrail §2.2 forbids touching. **Do not add them anywhere.**
 Report the gap; it is a maintainer action and §6 condition 7.
 
 ### 5.6 F4 — restore the negative control

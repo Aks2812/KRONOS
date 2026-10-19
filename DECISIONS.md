@@ -2435,6 +2435,14 @@ this gate.
 
 ### Out-of-§3 test regressions — reported, not edited
 
+> **Superseded note (SPEC_BRIEF10.5):** the `test_secret_real_duplicate_…` fixture
+> described below as "reported, not edited" WAS subsequently edited, under an explicit
+> maintainer amendment to §3/§5.6(d), by commit `2a676a8` (threading an optional
+> `scope_key` through `_secret_with_material`). The description was accurate when written
+> and is retained for the audit trail; this note corrects it rather than rewriting history.
+> Within SPEC_BRIEF10.5's own window `2a676a8..HEAD`, `tests/test_reconcile.py` carries a
+> constant-only hash-pin change.
+
 Six pre-existing tests, all outside this brief's file list, broke
 under the correct, newly-added type gate because their fixtures used a
 non-representative id/scope_key shape for their node type — a bare
@@ -2752,10 +2760,7 @@ the standing differential test (`test_b105_5_5_differential_allow_side_unchanged
   differential tests).
 - `cybergym/cloud/`: **17 passed.**
 - Rebuilt §5.4 grid: 12 node types x 13 patterns x 14 targets (allow) + 13 x 14 (exclusion) = 2366
-  cells, 0 undeclared, every cell clause-referenced. 11 cells are PAUSE-DECISION (unfilled, unasserted):
-  `_P4_BOTH_ENDS_GLOB` x `_T1_HOST` on the allow side for HOST/SERVICE/MOBILE_APP/MOBILE_COMPONENT, and
-  `_P4_BOTH_ENDS_GLOB` x {api.acme.com, :8443, both URL forms, userinfo URL, lookalike, mid-label} on the
-  exclusion side. No prose in #10..#10.5 determines them.
+  cells, 0 undeclared, every cell clause-referenced. **0 cells are PAUSE-DECISION.** The 11 that were deferred when the grid was first rebuilt (`_P4_BOTH_ENDS_GLOB` against `api.acme.com` and its representations) were decided by the maintainer's PD-5 ruling recorded below, and are now asserted. Measured: 2366 declared, 2366 asserted, 0 deferred. A test pins the empty deferred-set so a NEW prose gap fails loudly.
 
 ### SPEC_BRIEF10.5 PD-5 — the `*.acme.com*` both-ends glob, 11 cells, maintainer-ruled
 

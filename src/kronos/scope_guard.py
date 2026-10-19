@@ -187,37 +187,37 @@ _STANDARD_PORTS = {"http": 80, "https": 443}
 #                          localhost:8091-True] locks it. A ratified
 #                          predecessor prose decision IS rule-1 evidence, so
 #                          rule 5 is never reached for this row. FORK-AB:
-#                          narrowing to {host, ip} from schema.py:223's
+#                          narrowing to {host, ip} from src/kronos/schema.py:223's
 #                          missing `port` column was PROPOSED AND REJECTED --
 #                          a missing port COLUMN does not forbid a
 #                          port-bearing ID (SERVICE stores a port separately
 #                          AND carries one in its id). See SPEC_BRIEF10.5
 #                          §1.1 and DECISIONS.md.
-#   SERVICE        rule 5  schema.py:224 NODE_COLUMNS (+port, protocol
+#   SERVICE        rule 5  src/kronos/schema.py:224 NODE_COLUMNS (+port, protocol
 #                          qualifiers; NODE_PROPS_ALWAYS :166) -> identity
 #                          in the id -> {host, ip, host_port, ip_port}.
-#   WEB_ENDPOINT   rule 5  schema.py:225 (`url` column carries identity)
+#   WEB_ENDPOINT   rule 5  src/kronos/schema.py:225 (`url` column carries identity)
 #                          -> frozenset().
-#   PARAMETER      rule 5  schema.py:226 (`name` column) -> frozenset().
+#   PARAMETER      rule 5  src/kronos/schema.py:226 (`name` column) -> frozenset().
 #   API_ENDPOINT   rule 1  ingest/mobile/parser.py:276 upserts
-#                          id=found.url (schema.py:227 also has url/method
+#                          id=found.url (src/kronos/schema.py:227 also has url/method
 #                          but rule 1 outranks rule 5) -> {url}.
 # SPEC_BRIEF10.5 §8.2: (rule, citation) per row. Rule 1 = a production
 # producer call site. Rule 5 = derived from schema.py because neither a
 # producer nor a ratified predecessor-brief prose decision exists.
 NODE_TYPE_SHAPE_EVIDENCE: dict[str, tuple[int, str]] = {
     "HOST": (1, "SPEC_BRIEF10.3 §1.2 ratified prose table; locked by test_b103_h2 (FORK-AB)"),
-    "SERVICE": (5, "schema.py:224 NODE_COLUMNS (+port, protocol are qualifiers); NODE_PROPS_ALWAYS:166"),
-    "WEB_ENDPOINT": (5, "schema.py:225 NODE_COLUMNS -- `url` column carries the network identity"),
+    "SERVICE": (5, "src/kronos/schema.py:224 NODE_COLUMNS (+port, protocol are qualifiers); NODE_PROPS_ALWAYS:166"),
+    "WEB_ENDPOINT": (5, "src/kronos/schema.py:225 NODE_COLUMNS -- `url` column carries the network identity"),
     "API_ENDPOINT": (1, "src/kronos/ingest/mobile/parser.py:276 -- NodeUpsert(\"API_ENDPOINT\", found.url)"),
-    "CLOUD_RESOURCE": (1, "cybergym/kronos_validation_run.py:252,257 -- NodeUpsert(\"CLOUD_RESOURCE\", bucket/ARN ids)"),
+    "CLOUD_RESOURCE": (1, "NodeUpsert(\"CLOUD_RESOURCE\", ...) at cybergym/kronos_validation_run.py:252,257 (bucket-name and ARN ids). NOTE: this is the CyberGym validation harness, the ONLY producer of this type that exists -- no src/ ingester does. This row grants the only free mid-token glob expansion in the system, so it rests on the weakest producer evidence of any row; revisit when a real cloud ingester lands."),
     "MOBILE_APP": (1, "src/kronos/ingest/mobile/parser.py:171 and src/kronos/ingest/__init__.py:46 -- NodeUpsert(\"MOBILE_APP\", bundle_id)"),
     "MOBILE_COMPONENT": (1, "src/kronos/ingest/mobile/parser.py:177 -- NodeUpsert(\"MOBILE_COMPONENT\", f\"{bundle_id}/{name}\")"),
-    "SECRET": (1, "NodeUpsert(\"SECRET\", ...) at src/kronos/ingest/mobile/parser.py:258 and src/kronos/ingest/__init__.py:47 -- id is sha256-derived and matches no shape family, so the family is empty and scope arrives via scope_key (FORK-Y)"),
-    "PARAMETER": (5, "schema.py:226 NODE_COLUMNS -- `name` column carries the identity; §1.4"),
-    "IDENTITY": (5, "schema.py:231 NODE_COLUMNS -- `name`/`provider` columns carry the identity; no producer"),
-    "TECHNOLOGY": (5, "schema.py:233 NODE_COLUMNS -- `name`/`version` columns carry the identity; no producer"),
-    "FINDING": (5, "schema.py:234 NODE_COLUMNS -- `title`/`severity` columns carry the identity; no producer"),
+    "SECRET": (1, "NodeUpsert(\"SECRET\", ...) at src/kronos/ingest/mobile/parser.py:244 and src/kronos/ingest/__init__.py:47 -- id is sha256-derived and matches no shape family, so the family is empty and scope arrives via scope_key (FORK-Y)"),
+    "PARAMETER": (5, "src/kronos/schema.py:226 NODE_COLUMNS -- `name` column carries the identity; §1.4"),
+    "IDENTITY": (5, "src/kronos/schema.py:231 NODE_COLUMNS -- `name`/`provider` columns carry the identity; no producer"),
+    "TECHNOLOGY": (5, "src/kronos/schema.py:233 NODE_COLUMNS -- `name`/`version` columns carry the identity; no producer"),
+    "FINDING": (1, "SPEC_BRIEF10.3 FORK-W(2) ratified prose: no production producer and no established id convention, so the family is empty. NOT rule 5 -- src/kronos/schema.py:234's `title`/`severity` are not NETWORK identities, so rule 5's first branch would wrongly yield a non-empty family."),
 }
 
 NODE_TYPE_SHAPES: dict[str, frozenset[TargetShape]] = {

@@ -344,7 +344,7 @@ def test_config_fallback_reason_is_recorded_on_the_ledger_for_the_audit_trail(tm
 # scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
 # re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
 # path-blind exclusions (§1.3); see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "f1620b1afb1aa73741514c0261c1d9fe8fff05335b50d04e832eb61935aecf23"
+_SCOPE_GUARD_SHA256 = "8f8662829bb75cddacb5c408acf5d934ef612a7eb9078338c826f6d787cb5b52"
 
 
 def test_scope_guard_still_has_zero_line_diff():

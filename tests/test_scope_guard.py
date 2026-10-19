@@ -1432,24 +1432,66 @@ _B104_ID_SCOPE_KEY_AXIS = [
 
 
 def test_b105_8_2_every_row_records_a_citation_and_a_rule_number():
-    """SPEC_BRIEF10.5 §8.2 / §5.2 item 6: the per-row citation and rule
-    number are ENFORCED, not merely written in a comment. Every
-    NODE_TYPE_SHAPES row must appear in NODE_TYPE_SHAPE_EVIDENCE with a
-    rule of 1 or 5 and a non-empty citation, and no citation may rest on
-    a docstring, a convention, or another node type (§1.2 rules 3/4)."""
+    """SPEC_BRIEF10.5 §8.2 / §5.2 item 6: the per-row citation and rule number
+    are ENFORCED, not merely written down.
+
+    The first version of this test only checked for the absence of the literal
+    substrings "docstring"/"convention". That is not the prohibition, and it let
+    a real defect ship: SECRET cited parser.py:258, whose type string is
+    "EVIDENCE", not SECRET -- exactly the "cites another type" failure §1.2 rule
+    4 forbids. An independent reviewer caught it by CONSTRUCTING violating rows,
+    two of which passed. This version opens every cited `path:line` and asserts
+    the referenced region actually names that node type, so the same class of
+    defect fails here instead of shipping."""
+    import pathlib as _pl
+    import re
+    import re as _re
     from kronos.scope_guard import NODE_TYPE_SHAPE_EVIDENCE as EV
+
+    repo = _pl.Path(__file__).resolve().parent.parent
 
     assert set(EV) == set(NODE_TYPE_SHAPES), (
         "every row needs evidence: missing=%s extra=%s"
         % (sorted(set(NODE_TYPE_SHAPES) - set(EV)), sorted(set(EV) - set(NODE_TYPE_SHAPES))))
+
     for node_type, (rule, citation) in EV.items():
         assert rule in (1, 5), (node_type, rule)
         assert citation.strip(), node_type
         low = citation.lower()
-        assert "docstring" not in low, (node_type, "cites a docstring -- §1.2 rule 3 forbids it")
-        assert "convention" not in low, (node_type, "cites a convention -- §1.2 rule 3 forbids it")
-        # rule 1 must name a producer call site or a ratified brief;
-        # rule 5 must name a schema.py line.
+        # §1.2 rule 3 forbids a citation that RESTS ON a docstring or a
+        # convention. A citation that says no convention exists is the
+        # opposite of relying on one, so negated forms are stripped before
+        # the check -- the first version of this guard rejected FINDING's
+        # own "no established id convention", which was a false positive.
+        affirmative = re.sub(r"no (?:established )?(?:id[- ])?(?:convention|docstring)", "", low)
+        assert "docstring" not in affirmative, (
+            node_type, "rests on a docstring -- §1.2 rule 3 forbids it")
+        assert "convention" not in affirmative, (
+            node_type, "rests on a convention -- §1.2 rule 3 forbids it")
+        assert "prose for why" not in low and "see the module header" not in low, (
+            node_type, "a citation may not defer to prose elsewhere -- it must name evidence")
+        assert "by analogy" not in low, (node_type, "§1.2 rule 3: no row by analogy")
+
+        # Every `path:line` reference in the citation must EXIST and, where it
+        # points at a producer call, must name THIS node type near that line.
+        refs = _re.findall(r"([A-Za-z0-9_./]+\.py):(\d+(?:,\d+)*)", citation)
+        assert refs or rule == 1, (node_type, "rule 5 must cite a schema.py line")
+        for path, linespec in refs:
+            f = repo / path
+            assert f.exists(), (node_type, "cited file does not exist: %s" % path)
+            lines = f.read_text().splitlines()
+            for ln in (int(x) for x in linespec.split(",")):
+                assert 1 <= ln <= len(lines), (node_type, "cited line out of range: %s:%d" % (path, ln))
+                # window covers a multi-line NodeUpsert( whose type string
+                # sits on the following line(s)
+                window = "\n".join(lines[ln - 1: ln + 3])
+                quoted = _re.findall(r'"([A-Z_]{3,})"', window)
+                if quoted:
+                    assert node_type in quoted, (
+                        node_type,
+                        "citation %s:%d names %s, not %s -- §1.2 rule 4 forbids citing another type"
+                        % (path, ln, quoted, node_type))
+
         if rule == 5:
             assert "schema.py:" in citation, (node_type, "rule 5 must cite a schema.py line")
         else:

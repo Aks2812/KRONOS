@@ -272,17 +272,17 @@ it is holding) is each node type's permitted target-shape family:
 | node type | permitted shapes | evidence |
 |---|---|---|
 | `HOST` | `host`, `ip`, `host_port`, `ip_port` | **rule 1** -- SPEC_BRIEF10.3 §1.2's ratified prose table, locked by `test_b103_h2` (FORK-AB) |
-| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | **rule 5** -- `schema.py:224` `NODE_COLUMNS` (`port`/`protocol` are qualifiers on a host identity, not a replacement for it); `NODE_PROPS_ALWAYS:166` |
-| `WEB_ENDPOINT` | *(none)* | **rule 5** -- `schema.py:225` `NODE_COLUMNS`: the `url` column carries the network identity, so the id need not. Corrected from 10.3's `{"url"}`, which was assigned by analogy to `API_ENDPOINT` (§0.3 D2) |
+| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | **rule 5** -- `src/kronos/schema.py:224` `NODE_COLUMNS` (`port`/`protocol` are qualifiers on a host identity, not a replacement for it); `NODE_PROPS_ALWAYS:166` |
+| `WEB_ENDPOINT` | *(none)* | **rule 5** -- `src/kronos/schema.py:225` `NODE_COLUMNS`: the `url` column carries the network identity, so the id need not. Corrected from 10.3's `{"url"}`, which was assigned by analogy to `API_ENDPOINT` (§0.3 D2) |
 | `API_ENDPOINT` | `url` | **rule 1** -- `NodeUpsert("API_ENDPOINT", found.url)` at `ingest/mobile/parser.py:276` |
-| `CLOUD_RESOURCE` | `bucket_name`, `arn` | **rule 1** -- `NodeUpsert("CLOUD_RESOURCE", ...)` at `cybergym/kronos_validation_run.py:252,257` (bucket-name and ARN ids); **the only type with free mid-token glob expansion** |
+| `CLOUD_RESOURCE` | `bucket_name`, `arn` | **rule 1** -- `NodeUpsert("CLOUD_RESOURCE", ...)` at `cybergym/kronos_validation_run.py:252,257` (bucket-name and ARN ids). **Note:** that is the CyberGym validation harness, the only producer of this type that exists -- no `src/` ingester does. This row grants **the only free mid-token glob expansion** in the system, so the most permissive row rests on the weakest producer evidence; revisit when a real cloud ingester lands |
 | `MOBILE_APP` | `host` | **rule 1** -- `NodeUpsert("MOBILE_APP", bundle_id)` at `ingest/mobile/parser.py:171` and `ingest/__init__.py:46`; a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
 | `MOBILE_COMPONENT` | `host` | **rule 1** -- `NodeUpsert("MOBILE_COMPONENT", f"{bundle_id}/{name}")` at `ingest/mobile/parser.py:177`; same dotted-token shape |
-| `SECRET` | *(none)* | **rule 1** -- `NodeUpsert("SECRET", ...)` at `ingest/mobile/parser.py:258` and `ingest/__init__.py:47`: the id is sha256-derived and matches no shape family, and every real call site sets `scope_key=bundle_id`, so this denies nothing in production (FORK-Y) |
-| `PARAMETER` | *(none)* | **rule 5** -- `schema.py:226` `NODE_COLUMNS`: the `name` column carries the identity; §1.4 an opaque name is never glob-authorized |
-| `IDENTITY` | *(none)* | **rule 5** -- `schema.py:231` `NODE_COLUMNS`: `name`/`provider` carry the identity; no producer call site exists |
-| `TECHNOLOGY` | *(none)* | **rule 5** -- `schema.py:233` `NODE_COLUMNS`: `name`/`version` carry the identity; no producer call site exists |
-| `FINDING` | *(none)* | **rule 5** -- `schema.py:234` `NODE_COLUMNS`: `title`/`severity` carry the identity; no producer call site exists |
+| `SECRET` | *(none)* | **rule 1** -- `NodeUpsert("SECRET", ...)` at `ingest/mobile/parser.py:244` and `ingest/__init__.py:47`: the id is sha256-derived and matches no shape family, and every real call site sets `scope_key=bundle_id`, so this denies nothing in production (FORK-Y) |
+| `PARAMETER` | *(none)* | **rule 5** -- `src/kronos/schema.py:226` `NODE_COLUMNS`: the `name` column carries the identity; §1.4 an opaque name is never glob-authorized |
+| `IDENTITY` | *(none)* | **rule 5** -- `src/kronos/schema.py:231` `NODE_COLUMNS`: `name`/`provider` carry the identity; no producer call site exists |
+| `TECHNOLOGY` | *(none)* | **rule 5** -- `src/kronos/schema.py:233` `NODE_COLUMNS`: `name`/`version` carry the identity; no producer call site exists |
+| `FINDING` | *(none)* | **rule 1** -- SPEC_BRIEF10.3 FORK-W(2) ratified prose: no production producer and no established id convention, so the family is empty. **Not** rule 5 -- `src/kronos/schema.py:234`'s `title`/`severity` are not *network* identities, so rule 5's first branch would wrongly yield a non-empty family |
 | `ENGAGEMENT` / `EVIDENCE` | *(absent)* | `graph.py`'s `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` bypass this guard entirely, unchanged |
 
 `classify_target` itself is untouched -- still a pure, node-type-blind
