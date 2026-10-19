@@ -38,11 +38,22 @@ def _graph(tmp_path, manifest_factory, signing_keypair, **manifest_overrides):
     return EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_text, pub)
 
 
-def _secret_with_material(graph, engagement_dir, node_id, material: bytes, *, kind="api_key", status="extracted"):
+def _secret_with_material(
+    graph, engagement_dir, node_id, material: bytes, *, kind="api_key", status="extracted", scope_key=None
+):
+    # SPEC_BRIEF10.4 amendment (§3/§5.6, maintainer-approved): SECRET's id
+    # family is `frozenset()` under §1.2/FORK-Y, because a SECRET id is
+    # sha256-derived and matches no shape family -- every real ingester
+    # (`ingest/__init__.py:56`, `ingest/mobile/parser.py:253`) carries scope
+    # on a `scope_key=bundle_id` instead. `scope_key` is threaded through
+    # here, defaulting to None, so callers that do not assert on `in_scope`
+    # or on traversal keep their existing behaviour exactly; only the test
+    # whose subject IS traversal passes one.
     info = store_evidence(engagement_dir, material, kind="mobile_secret")
     graph.upsert_node(
         "SECRET", node_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": kind, "status": status, "source": "test"},
+        scope_key=scope_key,
     )
 
 
@@ -331,7 +342,7 @@ def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_a
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
     engagement_dir = tmp_path
 
-    _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material")
+    _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material", scope_key="app1")
     advance_secret_status(g, "secret:aaa", "validated")
     evidence_id = attach_evidence(
         g, engagement_dir, b"real-dup-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa"
@@ -340,7 +351,7 @@ def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_a
     g.upsert_node("CLOUD_RESOURCE", "cr1", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"})
     g.upsert_edge("authenticates_to", "secret:aaa", "SECRET", "cr1", "CLOUD_RESOURCE")
 
-    _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material")  # extracted, no evidence
+    _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material", scope_key="app1")  # extracted, no evidence
     g.upsert_node("MOBILE_APP", "app1", {"bundle_id": "app1", "platform": "android", "source": "test"})
     g.upsert_edge("leaks", "app1", "MOBILE_APP", "secret:bbb", "SECRET")
 
@@ -475,7 +486,16 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
 # deliberate, in-scope fix routing scheme://host:port* URL patterns
 # through a structural host/port comparison instead of raw-string
 # prefix matching.
-_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
+#
+# Re-pinned again by SPEC_BRIEF10.3 (FORK-2's final piece): node_type
+# threading (H2), cross-shape exclusions (H3), and the §5.4 generated
+# matrix.
+#
+# Re-pinned again by SPEC_BRIEF10.4 (FORK-2's closing piece): the
+# scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
+# re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
+# path-blind exclusions (§1.3).
+_SCOPE_GUARD_SHA256 = "8f8662829bb75cddacb5c408acf5d934ef612a7eb9078338c826f6d787cb5b52"
 
 
 def test_scope_guard_has_zero_line_diff():
@@ -515,8 +535,21 @@ def test_reconcile_never_calls_advance_secret_status():
 def test_web_endpoint_real_duplicate_merges_and_tombstones(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
     url = "https://acme.example.com/blog/post-1"
-    g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"})
-    g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"})
+    # SPEC_BRIEF10.4 §5.6(b): WEB_ENDPOINT's id-shape family is now
+    # frozenset() (§1.2 -- no production WEB_ENDPOINT ingester, no
+    # evidenced id convention). "web:1"/"web:2" are canonical merge
+    # keys, not URLs, so they never matched any id-shape family even
+    # before this brief, and would deny unconditionally on the id
+    # path now. §1.1 is what makes this test's subject (WEB_ENDPOINT
+    # dedup/merge) work at all: give each node the scope_key its real
+    # host identity actually is, gated on its own shape, independent
+    # of WEB_ENDPOINT's (empty) id table.
+    g.upsert_node(
+        "WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"}, scope_key="acme.example.com"
+    )
+    g.upsert_node(
+        "WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"}, scope_key="acme.example.com"
+    )
     g.upsert_node("HOST", "h1", {"source": "test"})
     g.upsert_edge("exposes", "h1", "HOST", "web:1", "WEB_ENDPOINT")
     g.upsert_edge("exposes", "h1", "HOST", "web:2", "WEB_ENDPOINT")

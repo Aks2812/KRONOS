@@ -224,7 +224,16 @@ def test_teardown_report_round_trips_through_json(tmp_path):
 # own deliberate, in-scope fix routing scheme://host:port* URL patterns
 # through a structural host/port comparison instead of raw-string
 # prefix matching; see tests/test_reconcile.py.
-_SCOPE_GUARD_SHA256 = "7bee515a261dbb5e88d9146596ccedb639cbef0c997b00754453e69f5eaccee3"
+#
+# Re-pinned again by SPEC_BRIEF10.3 (FORK-2's final piece): node_type
+# threading (H2), cross-shape exclusions (H3), and the §5.4 generated
+# matrix; see tests/test_reconcile.py.
+#
+# Re-pinned again by SPEC_BRIEF10.4 (FORK-2's closing piece): the
+# scope_key/id distinction (§1.1), the evidence-only NODE_TYPE_SHAPES
+# re-derivation (§1.2, WEB_ENDPOINT and SECRET -> frozenset()), and
+# path-blind exclusions (§1.3); see tests/test_reconcile.py.
+_SCOPE_GUARD_SHA256 = "8f8662829bb75cddacb5c408acf5d934ef612a7eb9078338c826f6d787cb5b52"
 
 
 def test_scope_guard_still_has_zero_line_diff():

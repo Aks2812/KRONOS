@@ -78,13 +78,16 @@ def test_invariant_out_of_scope_secret_cannot_anchor_finding(engagement_graph):
     # True branch — `return False` would have passed every existing
     # test. Add a positive case: a second secret reaching an in-scope
     # target must be able to anchor a finding.
-    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {})
+    # SPEC_BRIEF10.4 §1.4: API_ENDPOINT's evidenced id shape is a full
+    # URL (`{"url"}`, §0.2), never a bare host -- correcting the id,
+    # not this test's subject (can_anchor_finding's True branch).
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
     g.upsert_node(
         "SECRET", "s2", {"value_ref": "y", "kind": "api_key", "status": "extracted"},
         scope_key="api.acme.example.com",
     )
     advance_secret_status(g, "s2", "validated")
-    g.upsert_edge("authenticates_to", "s2", "SECRET", "api.acme.example.com", "API_ENDPOINT")
+    g.upsert_edge("authenticates_to", "s2", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
     advance_secret_status(g, "s2", "reachable")
     assert can_anchor_finding(g, "s2") is True
 
@@ -123,11 +126,14 @@ def test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain(manifest_fact
 
     g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"})
     g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app")
-    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {})
+    # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
+    # shape, a full URL (§0.2) -- the test's subject (find_paths
+    # traversal) is unchanged; only the node id's shape is.
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
     g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com")
     g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET")
-    g.upsert_edge("authenticates_to", "s1", "SECRET", "api.acme.example.com", "API_ENDPOINT")
-    g.upsert_edge("chains_to", "api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
+    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
+    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
 
     paths = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5)
     assert len(paths) >= 1

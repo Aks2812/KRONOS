@@ -39,11 +39,14 @@ def test_find_paths_returns_seeded_mobile_to_cloud_chain(manifest_factory, signi
 
     g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"})
     g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app")
-    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {})
+    # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
+    # shape, a full URL (§0.2) -- the test's subject (find_paths
+    # traversal) is unchanged; only the node id's shape is.
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
     g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com")
     g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET")
-    g.upsert_edge("authenticates_to", "s1", "SECRET", "api.acme.example.com", "API_ENDPOINT")
-    g.upsert_edge("chains_to", "api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
+    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
+    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
 
     paths = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5)
     assert len(paths) >= 1

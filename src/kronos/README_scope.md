@@ -1,4 +1,4 @@
-# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns)
+# Scope guard (SPEC_BRIEF10 / FORK-2: shape-aware matching; SPEC_BRIEF10.1: trailing-glob boundary rule; SPEC_BRIEF10.2: explicit-port URL patterns; SPEC_BRIEF10.3: node-type-aware dispatch; SPEC_BRIEF10.4: scope_key dispatch, evidence-only shape families, path-blind exclusions, FORK-2's closing piece)
 
 `scope_guard.py` is the ONLY scope-authorization mechanism (SPEC.md
 "SCOPE GUARD"). Every node gets `in_scope` stamped on it at creation by
@@ -239,6 +239,215 @@ also measured that every single-label bare hostname (`localhost`,
 explicit-port URL pattern shape only; H2 has its own, not-yet-written
 brief, and **FORK-2/issue #2 stays open** until it also closes.
 
+## SPEC_BRIEF10.3 (FORK-2's final piece) — node-type-aware dispatch
+
+Two defects remained after #10.2, both traced to one root cause: the
+matcher only ever had the *target string* to classify, and a dot-free
+bare token (`localhost`, `kronos-cybergym-general-secrets`) is
+genuinely ambiguous from the string alone -- both get `classify_target`'s
+`"bucket_name"` shape (§1.3), which is correct for a bucket and wrong
+for a hostname. `localhost*` wrongly authorized `localhostevil` and
+`localhost-evil` (**H2**); `jenkins*` would do the same to
+`jenkins-prod` for any internal single-label hostname. Separately,
+`excluded = ["http://localhost:8091*"]` denied the URL form of that
+host but not its bare `localhost:8091`/`localhost` forms (**H3**) --
+Brief #10 §1.1 rule 6 ("every port, scheme, path, *and
+representation*") was under-implemented across shape boundaries.
+
+**The fix: `node_type` is now a required keyword argument** on both
+`ScopeGuard.is_in_scope` and the module-level `scope_guard` -- the one
+signal that *does* disambiguate `localhost` (a `HOST`) from
+`kronos-cybergym-general-secrets` (a `CLOUD_RESOURCE`), carried from
+`graph.py`'s own `upsert_node(type, id, props, scope_key)` call, which
+already has it. No default, no permissive fallback: an unrecognised,
+empty, or `None` `node_type` denies unconditionally, before any
+pattern is even consulted (`NODE_TYPE_SHAPES.get(node_type)` falsy ->
+immediate `False`). A permissive-by-omission path is exactly how H2
+happened, so this one has none.
+
+**`NODE_TYPE_SHAPES`** (owned by `scope_guard.py`, not `graph.py` --
+the guard owns scope policy, the graph only reports what kind of node
+it is holding) is each node type's permitted target-shape family:
+
+| node type | permitted shapes | evidence |
+|---|---|---|
+| `HOST` | `host`, `ip`, `host_port`, `ip_port` | **rule 1** -- SPEC_BRIEF10.3 §1.2's ratified prose table, locked by `test_b103_h2` (FORK-AB) |
+| `SERVICE` | `host`, `ip`, `host_port`, `ip_port` | **rule 5** -- `src/kronos/schema.py:224` `NODE_COLUMNS` (`port`/`protocol` are qualifiers on a host identity, not a replacement for it); `NODE_PROPS_ALWAYS:166` |
+| `WEB_ENDPOINT` | *(none)* | **rule 5** -- `src/kronos/schema.py:225` `NODE_COLUMNS`: the `url` column carries the network identity, so the id need not. Corrected from 10.3's `{"url"}`, which was assigned by analogy to `API_ENDPOINT` (§0.3 D2) |
+| `API_ENDPOINT` | `url` | **rule 1** -- `NodeUpsert("API_ENDPOINT", found.url)` at `ingest/mobile/parser.py:276` |
+| `CLOUD_RESOURCE` | `bucket_name`, `arn` | **rule 1** -- `NodeUpsert("CLOUD_RESOURCE", ...)` at `cybergym/kronos_validation_run.py:252,257` (bucket-name and ARN ids). **Note:** that is the CyberGym validation harness, the only producer of this type that exists -- no `src/` ingester does. This row grants **the only free mid-token glob expansion** in the system, so the most permissive row rests on the weakest producer evidence; revisit when a real cloud ingester lands |
+| `MOBILE_APP` | `host` | **rule 1** -- `NodeUpsert("MOBILE_APP", bundle_id)` at `ingest/mobile/parser.py:171` and `ingest/__init__.py:46`; a dotted token `classify_target` resolves to `"host"` (never literal `"bundle_id"` -- FORK-T) |
+| `MOBILE_COMPONENT` | `host` | **rule 1** -- `NodeUpsert("MOBILE_COMPONENT", f"{bundle_id}/{name}")` at `ingest/mobile/parser.py:177`; same dotted-token shape |
+| `SECRET` | *(none)* | **rule 1** -- `NodeUpsert("SECRET", ...)` at `ingest/mobile/parser.py:244` and `ingest/__init__.py:47`: the id is sha256-derived and matches no shape family, and every real call site sets `scope_key=bundle_id`, so this denies nothing in production (FORK-Y) |
+| `PARAMETER` | *(none)* | **rule 5** -- `src/kronos/schema.py:226` `NODE_COLUMNS`: the `name` column carries the identity; §1.4 an opaque name is never glob-authorized |
+| `IDENTITY` | *(none)* | **rule 5** -- `src/kronos/schema.py:231` `NODE_COLUMNS`: `name`/`provider` carry the identity; no producer call site exists |
+| `TECHNOLOGY` | *(none)* | **rule 5** -- `src/kronos/schema.py:233` `NODE_COLUMNS`: `name`/`version` carry the identity; no producer call site exists |
+| `FINDING` | *(none)* | **rule 1** -- SPEC_BRIEF10.3 FORK-W(2) ratified prose: no production producer and no established id convention, so the family is empty. **Not** rule 5 -- `src/kronos/schema.py:234`'s `title`/`severity` are not *network* identities, so rule 5's first branch would wrongly yield a non-empty family |
+| `ENGAGEMENT` / `EVIDENCE` | *(absent)* | `graph.py`'s `_ALWAYS_IN_SCOPE_TYPES`/`_NO_IN_SCOPE_COLUMN_TYPES` bypass this guard entirely, unchanged |
+
+`classify_target` itself is untouched -- still a pure, node-type-blind
+function. `_effective_shape(target, node_type)` is the new, thin layer
+in front of it: a dot-free raw `"bucket_name"` shape is corrected back
+to `"host"` for every node type except `CLOUD_RESOURCE`. This is what
+lets `kronos-cybergym-*` keep matching
+`kronos-cybergym-general-secrets` under `CLOUD_RESOURCE` while
+`localhost*` stops over-matching under `HOST` -- the exact two cases
+H2 could not tell apart from the string alone.
+
+**Exclusions stay completely independent of `node_type`** (§1.3) --
+checked first, before the type gate even runs, so a type mismatch (or
+an unrecognised type) never causes an exclusion to be skipped. Fixing
+H3 meant widening the *exclusion* side of the two pattern shapes that
+had a hard `shape != "url"` gate (`_matches_explicit_port_url_pattern`,
+`_matches_trailing_host_glob`'s `scheme://host*` case) to accept any
+host-ish shape and compare host identity alone, scheme- and
+port-blind -- including the dot-free `"bucket_name"` raw shape, which
+needed `_host_port_scheme` taught to treat it as a plain host text too
+(exclusion-only; the allow side never sees `"bucket_name"` as `shape`
+at all, since it is always pre-corrected by `_effective_shape` first).
+
+**FORK-V (DEFAULT 1, taken):** the module-level `scope_guard(target,
+manifest)` helper also gained a required `node_type` kwarg, matching
+`is_in_scope` -- fail-closed by construction beats a second,
+permissive-by-omission path with its own rules. This is a **documented
+conflict with SPEC.md's "SCOPE GUARD" section**, which still reads
+`scope_guard(target, manifest)` (two positional arguments, no type);
+SPEC.md is outside this brief's file list, so the conflict is recorded
+here rather than resolved by editing it.
+
+**FORK-W (DEFAULT 1 with evidence, but (2) taken for all three
+candidates):** `SECRET`/`IDENTITY`/`TECHNOLOGY`/`FINDING` were each
+checked against this branch's actual source rather than assigned a
+family by analogy. `SECRET` has real evidence (see table) and got a
+family; `IDENTITY`/`TECHNOLOGY`/`FINDING` have none at all -- zero
+production `upsert_node` call sites, grep-verified -- so each denies
+unconditionally rather than guessing.
+
+## SPEC_BRIEF10.4 (FORK-2's closing piece) — scope_key dispatch, evidence-only shape families, path-blind exclusions
+
+seq 5 independent review of 10.3's PR (#13) returned FAIL: 6 regressions in
+`tests/`, traced to two real defects in 10.3's own §1.2 table (D1/D2 --
+see `DECISIONS.md`), plus one deny-side gap 10.3's own §1.3 fix left
+half-implemented.
+
+### §1.1 — `scope_key` is gated by its own shape, independent of `node_type`
+
+**D1:** `graph.py:140` gates `scope_key or id` -- a *string*, not
+necessarily an id. 10.3's `NODE_TYPE_SHAPES` table is, by its own
+prose, about how a type's **id** is actually produced; when the string
+is a `scope_key` instead, that table does not describe it at all. 10.3
+worked around this once (SECRET's row was fitted to the shape its
+scope_key carries, not evidence about its id -- see table above), which
+is a per-row patch, not a fix for the structural problem.
+
+**The fix:** `is_in_scope` (and the module-level `scope_guard`) now
+take a second required keyword argument, `target_kind` (`"id"` or
+`"scope_key"`), carried all the way from `graph.py`'s own `scope_key or
+id` resolution (§1.5 -- that precedence itself is unchanged, this is
+purely a one-kwarg addition at the one call site). When the target is
+a `scope_key`, the node-type shape-family filter (`NODE_TYPE_SHAPES`)
+is never consulted at all -- a scope_key is gated purely on its own
+shape (`_scope_key_shape`), computed independently of `node_type`.
+Everything else is unchanged: boundary rule, standard-port gate, the
+`CLOUD_RESOURCE`-only mid-token expansion, and excluded-first
+default-deny all still apply on the id path exactly as before; an
+unrecognised, empty, or `None` `node_type` still denies before any
+pattern is consulted, on *either* path (fail-closed, §2.4).
+
+`_scope_key_shape` differs from `_effective_shape` in exactly one way:
+with no `node_type` signal to consult, a dot-free string's ambiguous
+`"bucket_name"` classification always resolves to `"host"` (the
+boundary-rule-governed reading), never `"bucket_name"`'s free
+mid-token expansion -- this is strictly a change to *which table
+governs which string*, never a widening of any pattern rule
+(guardrail §9). A `CLOUD_RESOURCE` whose `scope_key` is `localhost`
+becomes governed by the host boundary rule: narrower than the
+bucket-glob treatment the identical string gets on the id path, never
+looser. An unambiguous shape (an explicit `arn:...` scope_key, for
+instance -- exactly what CyberGym's own validation run uses, §0.4)
+passes straight through and keeps its free glob expansion unaffected.
+
+### §1.2 — no row may be assigned by analogy; no evidence means an empty family
+
+**D2:** 10.3's `WEB_ENDPOINT` row (`{"url"}`) was assigned by analogy
+to `API_ENDPOINT`'s real evidence, FORK-W's exact violation. Measured:
+there is no production `WEB_ENDPOINT` ingester anywhere in `src/` or
+`cybergym/`; its only documented key, `canonical_key_for_web_endpoint`,
+is a *merge* key consumed by `reconcile/runner.py:84`, never a node
+id; and that key's own shape classifies as `"unknown"`, not `"url"`.
+
+This generalises 10.3's own FORK-W rule (already applied to
+`IDENTITY`/`TECHNOLOGY`/`FINDING`) into the table's construction rule,
+with no exception: every row must be cited to a verified producing
+call site; a canonical/merge key is never citable evidence for an id;
+a type with no production producer and no established id convention
+gets `frozenset()`, denying unconditionally. `WEB_ENDPOINT` and
+`SECRET` (§1.1, once the scope_key justification was gone) both become
+`frozenset()` under this rule -- see the table above for the full,
+per-row account.
+
+### §1.3 — exclusions are shape-, port-, scheme- **and path-blind**, closing 10.3's own H3 fix
+
+10.3's H3 fix widened an exclusion's cross-shape host-identity
+comparison for the *simple* explicit-port and trailing-glob pattern
+shapes, but a URL exclusion pattern that itself carries a path
+(`http://localhost:8091/internal/*`) still fell through to
+`_matches_url_pattern`'s literal, path-aware `fnmatch` -- so a *more*
+specific exclusion pattern produced a *narrower* deny than the
+path-free form of the identical pattern already gave: measured,
+`http://localhost:8091/internal/*` let `localhost`,
+`localhost:8091`, and `http://localhost:8091/other` all through, even
+though `http://localhost:8091*` already denied every one of them.
+
+**The fix:** on the exclusion side only, such a pattern is reduced to
+its host/address identity -- scheme, port, path, query, and fragment
+(FORK-Z, DEFAULT yes) are all discarded via `urlsplit().hostname`,
+exactly like every other exclusion shape in this module -- and
+compared against any host-ish identity the target carries. The allow
+side is **completely unchanged**: `_matches_url_pattern`'s literal,
+path-aware behaviour still governs an explicit allow entry that spells
+a path out (this is not a FORK-S bypass -- FORK-S governs what an
+*implicit* pattern may infer from a URL target, never what an operator
+explicitly wrote).
+
+### FORK-X / FORK-Y / FORK-Z
+
+- **FORK-X (DEFAULT, taken):** the id/scope_key distinction is carried
+  as a new *required* keyword argument, `target_kind` -- no default,
+  so no call site can silently fall back to the wrong table.
+- **FORK-Y (DEFAULT, taken):** `SECRET`'s row is re-derived to
+  `frozenset()` rather than kept at `{"host"}` -- its real id shape
+  (sha256-derived) matches no pattern family this module has, and
+  every production SECRET call site sets `scope_key` regardless, so
+  this denies nothing real.
+- **FORK-Z (DEFAULT yes, taken):** the exclusion-side host-identity
+  comparison also discards a URL pattern's query/fragment, by the same
+  rule-6 reasoning. In practice this required no extra code:
+  `urlsplit().hostname` never included them to begin with.
+
+### The live-use gate (§6, byte-verbatim from SPEC_BRIEF10.5)
+
+<!-- BEGIN SPEC_BRIEF10.5 §6 GATE (byte-verbatim; tests/test_scope_guard.py compares) -->
+FORK-2 is complete, and issue #2 may close, when **all** hold:
+
+1. This PR is merged to `main` after independent reviewer diff approval.
+2. Every case from Briefs #10, #10.1, #10.2, #10.3, #10.4 and this brief is green, including
+   §5.4's generated product with zero undeclared cells and every cell prose-referenced.
+3. Live CyberGym X-score 3/3, exit 0, at the merge commit, on an unproxied host.
+4. `manifest.py` zero-line diff; a pre-Brief-#10 signed manifest still verifies.
+5. Issue #2 closed **with a link to the merge commit**.
+6. `README_scope.md` documents the node-type dispatch, the allow/deny asymmetry, the id/scope_key
+   distinction, rule 5 and its citation discipline, the address-shaped exclusion rule, and that
+   `CLOUD_RESOURCE` is the only type with free mid-token expansion.
+7. The `httpx2` environment gap is closed by the maintainer, or explicitly accepted in writing.
+
+Only then may KRONOS be pointed at a live client target or run in Beast mode, and only then does
+**S3** start.
+
+**§6 is the live-use gate. It is not the acceptance criteria. §8 is.** Conditions 1, 3 and 5 are
+unmeasurable before a merge exists; condition 7 is a maintainer action.
+<!-- END SPEC_BRIEF10.5 §6 GATE -->
+
 ## FORK-U — a pattern with wildcards at both ends
 
 `*.acme.com*` (leading subdomain wildcard AND a trailing one).
@@ -275,3 +484,28 @@ brief closes.
   change (guardrail 1). A manifest signed before this brief still
   verifies — see `tests/test_scope_guard.py`'s literal pre-captured
   signed-manifest fixture.
+
+## SPEC_BRIEF10.5 — rule 5, address-shaped exclusions, bucket-name scope_key
+
+- **Rule 5 (schema-derived families).** Consulted only when neither a production producer nor a
+  ratified predecessor-brief prose decision exists for a node type (rule 1 cannot be satisfied).
+  If `schema.py` gives the type no identity-bearing column other than `id` (only qualifiers such as
+  port/protocol), the id carries the identity and the id-shape family applies (`SERVICE`). If it
+  gives a column that carries the network identity (`url`, `name`), the family is `frozenset()` and
+  scope arrives via a `scope_key` (`WEB_ENDPOINT`, `PARAMETER`). Every `NODE_TYPE_SHAPES` row cites
+  a `schema.py` line or a producer call site and records its rule number; no row cites a docstring,
+  a convention or another type. This is **enforced**, not asserted: `NODE_TYPE_SHAPE_EVIDENCE` carries
+  the `(rule, citation)` pair per row and
+  `test_b105_8_2_every_row_records_a_citation_and_a_rule_number` fails if a row is missing, carries a
+  rule other than 1 or 5, cites a docstring or a convention, or (rule 5) omits a `schema.py` line. `HOST` keeps all four shapes under rule 1 (Brief #10.3 §1.2).
+- **Address-shaped exclusions.** An exclusion matches an address-shaped target (`ip`, `ip_port`,
+  including bracketed, zone-indexed and IPv4-mapped IPv6) by its address, ignoring port, scheme
+  and path, exactly as for name-shaped hosts. The allow side is unchanged.
+- **Bucket-name `scope_key` no longer matches a bucket glob.** `_scope_key_shape` folds
+  `bucket_name` -> `host`, so a `scope_key` that is a dot-free bucket name is governed by the
+  host boundary rule, not free mid-token expansion. A future ingester that sets a bucket-name
+  `scope_key` must not expect `kronos-cybergym-*` to match it; free expansion remains an
+  id-path property of `CLOUD_RESOURCE` only.
+- **Standing checks.** The §6 gate above is byte-compared against `SPEC_BRIEF10.5.md`; the allow
+  side is proven unchanged versus `dcbdba9` and `2a676a8` by a differential test.
+
