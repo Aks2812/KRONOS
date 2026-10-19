@@ -122,3 +122,69 @@ same turn as any merge proposal. Usage limit means stop, not switch models.
   work to the orchestrator moves its cost, it does not remove it. Realistic saving from merging
   steps: **one agent spin-up plus duplicated suite runs**. The large, certain saving is the Haiku
   short-circuit, which avoids a ~266k review whenever the suite is red.
+
+---
+
+## 7. v7.1 AMENDMENT — aligned to `/home/void/CE.md` (2026-10-19)
+
+CE.md was rewritten as the pipeline-initialization blueprint and **corrects four things
+in the v7 draft above**. CE.md governs; the table in §1 is amended as follows.
+
+### 7.1 The independent reviewer is RESTORED — on Haiku
+
+v7 §4 removed the independent reviewer and folded semantic review into the orchestrator at
+step 5. **CE.md reinstates it:** *"Haiku reviewer: independently reviews the approved brief
+and diff, then reports evidence and test results."*
+
+This is materially better than the v7 draft and better than the earlier
+Haiku-as-test-runner proposal. Independence — the control that caught 3 defects on 10.4 and
+4 on 10.5, including the orchestrator's own scope breach — is **preserved**, just moved to a
+cheaper model. The orchestrator's step 5 remains, but as verification and hand-up, not as a
+substitute for an independent reader. v7 §4's six compensating controls stay in force
+regardless; they are good practice, not merely a patch for lost independence.
+
+### 7.2 The researcher returns findings; it does not write files
+
+v7 had step 2 dumping into `context.txt`. CE.md: *"The researcher must not be told to write
+`context.txt` while its tools are read-only. Prefer having it return findings for the
+orchestrator to save."* Correct — the v7 draft gave a read-only agent a write task.
+`.claude/agents/kronos-researcher.md` therefore has `tools: Read, Glob, Grep` only, and the
+orchestrator saves what it returns to `.claude/pipeline/02-research/findings.md`.
+
+### 7.3 `gate1.json` is retired — the name collided with a human gate
+
+v7 named the step-4 payload `gate1.json`. CE.md: *"GATE-1 is my approval of a brief. Do not
+label reviewer output `gate1.json`."* The collision was real: GATE-1 and GATE-2 are the
+**maintainer's** approvals and are never produced by an agent. Reviewer output is now
+`.claude/pipeline/04-review/review-evidence.json` — evidence *for* a gate, not the gate.
+
+### 7.4 No orchestrator subagent
+
+CE.md: *"don't create an unused orchestrator subagent."* Steps 1 and 5 are the primary
+session. Only three agent definitions exist.
+
+### 7.5 Amended role table
+
+| Step | Role | Model | State it owns |
+|---|---|---|---|
+| 1 | Opus orchestrator (primary session) | `claude-opus-5` | `01-orchestrate/todo.md` |
+| 2 | Sonnet researcher (read-only, returns findings) | `claude-sonnet-5` | none — orchestrator saves `02-research/findings.md` |
+| 3 | Sonnet builder | `claude-sonnet-5` | `03-build/build-report.md` |
+| 4 | **Haiku reviewer** (brief + diff + approved tests; **not** read-only, it has bounded Bash) | `claude-haiku-5-5` | `04-review/review-evidence.json` |
+| 5 | Opus orchestrator (verify + hand up) | `claude-opus-5` | `05-verify/verification.md` |
+
+Short-circuit and the 3-attempt circuit breaker are unchanged. The durable checkpoint
+remains `docs/loop/PROGRESS.md` on this branch — `.claude/pipeline/` holds per-iteration
+working state only, never a second copy of checkpoint state.
+
+### 7.6 Open risk, recorded not resolved
+
+A **Haiku** reviewer performing semantic review is a capability drop from the Opus reviewer
+it replaces. On 10.5 that reviewer independently rebuilt the differential over 12,168 cells,
+read every allow path to prove a new branch unreachable, broke the matcher in-memory to test
+a negative control, and disclosed a false negative in its own harness. Whether Haiku reaches
+that depth is **unverified**. Mitigations: the reviewer's instructions are highly
+prescriptive about *what to measure*; §4's enforcement controls mean fewer judgments depend
+on the reader; and v7's escape hatch stands — the orchestrator may request a one-off
+independent **Opus** review when a brief's central deliverable is a judgment rather than a
+behaviour. Requesting it is never a failure.

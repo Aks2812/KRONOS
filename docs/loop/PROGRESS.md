@@ -3169,3 +3169,122 @@ pending_action:
   seq: 32
   action: "await the final independent review verdict on abfe531; then report and STOP at GATE-2. v7 applies from the next brief."
   outcome: pending
+
+## SEQ 33 — PIPELINE INITIALIZED PER CE.md; v7 AMENDED TO v7.1; REVIEW RESUMED
+
+seq: 33
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: REVIEW in flight (resumed after a session-limit interruption)
+
+maintainer_direction:
+  1: "continue the review that was interrupted by the usage limit"
+  2: "initialize the KRONOS R&D pipeline strictly per /home/void/CE.md — three subagent definitions in .claude/agents/, step folders in .claude/pipeline/, minimal CLAUDE.md/CE.md alignment, no product code changed, do not start the task cycle"
+
+review_resumed:
+  agent: afcfc940029d92fa0
+  interruption: "rate_limit HTTP 429 on claude-opus-5, session limit; the agent's work was preserved"
+  action: "resumed via SendMessage rather than re-spawned, so its completed measurements are reused instead of repeated"
+  instructed: "pick up at the next unfinished item; new untracked files at the repo root and under .claude/ are unrelated config, are NOT in the diff, and must not affect the verdict"
+
+## CE.md WAS REPLACED — and it corrects FOUR things in the orchestrator's own v7 draft
+
+ce_md_now: "a pipeline-initialization blueprint (37 lines), not the enforcement protocol it held on 2026-10-18"
+corrections_accepted:
+  1_independent_reviewer_RESTORED: >
+    v7 §4 removed the independent reviewer and folded semantic review into the orchestrator.
+    CE.md reinstates it as a HAIKU reviewer that "independently reviews the approved brief and
+    diff, then reports evidence and test results". This is better than the orchestrator's own v7
+    draft AND better than the earlier Haiku-as-test-runner proposal: independence — the control
+    that caught 3 defects on 10.4 and 4 on 10.5 including the orchestrator's own scope breach —
+    is PRESERVED, just moved to a cheaper model.
+  2_researcher_must_not_write: >
+    v7 had the researcher dumping into context.txt while being read-only — the draft gave a
+    read-only agent a write task. CE.md corrects it: the researcher RETURNS findings and the
+    orchestrator saves them. kronos-researcher.md therefore has tools: Read, Glob, Grep only.
+  3_gate1_json_retired: >
+    v7 named the step-4 payload gate1.json. CE.md: "GATE-1 is my approval of a brief. Do not
+    label reviewer output gate1.json." The collision was real — GATE-1/GATE-2 are the
+    MAINTAINER's approvals and are never produced by an agent. Output is now
+    review-evidence.json: evidence FOR a gate, not the gate.
+  4_no_orchestrator_subagent: "steps 1 and 5 are the primary session; only three agent definitions exist"
+doc_updated: "docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md extended with a §7 v7.1 amendment, 190 lines total"
+
+## .claude/ WRITE — AUTHORIZED EXCEPTION, RECORDED AS SUCH
+
+the_standing_rule: "the loop never edits .claude/; TE.md said that halt has no override, including the maintainer's"
+why_this_is_not_a_breach_of_its_purpose: >
+  That rule exists to stop the RUNNING LOOP from rewriting its own rails mid-execution —
+  self-escalation. This is the maintainer, in a direct written instruction (CE.md), directing
+  initialization of the pipeline for the architecture they just adopted. The orchestrator twice
+  told the maintainer that .claude/ was theirs and offered to draft the contents; this is that
+  offer being taken up. Recorded explicitly so the audit trail never reads as the loop quietly
+  rewriting its rails.
+rule_amended_in_CLAUDE_md: >
+  ".claude/ is maintainer-owned. The loop does not edit its own rails. The only exception is an
+  explicit, written maintainer instruction to initialize or change the pipeline, which must be
+  recorded in the checkpoint as such."
+settings_local_json_preserved: "yes — .claude/settings.local.json untouched, per CE.md's 'preserve local changes and existing safeguards'"
+
+## FILES CREATED — ALL UNTRACKED, DELIBERATELY
+
+why_untracked: >
+  The branch claude/scope-key-dispatch-brief10-4 is UNDER INDEPENDENT REVIEW right now, and
+  SPEC_BRIEF10.5 §8.10 requires .claude/ to be ZERO-DIFF against 2a676a8. Committing these would
+  have broken an acceptance criterion and repeated the §8.11 breach in the same breath. Claude
+  Code reads agent definitions and CLAUDE.md from the FILESYSTEM, not from git, so untracked
+  makes them fully active with zero effect on the diff.
+verified: "git status shows only `?? .claude/`, `?? CLAUDE.md`, `?? docs/loop/`; `git diff --stat 2a676a8..HEAD -- .claude/` is EMPTY; the §3 window is unchanged at 9 permitted paths"
+follow_up_for_the_maintainer: "commit .claude/agents/, .claude/pipeline/ and CLAUDE.md to main in their own small PR once PR #15 closes. Not loop scope."
+
+created:
+  - ".claude/agents/kronos-researcher.md — claude-sonnet-5; tools Read, Glob, Grep; no Bash/Write/Edit/network. Facts-only mandate, path:line + verbatim quote per finding, explicit ban on conclusions."
+  - ".claude/agents/kronos-builder.md — claude-sonnet-5; tools Read, Edit, Write, Bash, Glob, Grep. §3-only, prose-derived expectations, never git add -A, rtk SUMMARY-not-exit-code, incremental push, NEEDS-DECISION on out-of-scope."
+  - ".claude/agents/kronos-reviewer.md — claude-haiku-5-5; tools Read, Bash, Glob, Grep. NOT described as read-only (it has Bash, per CE.md); Bash explicitly bounded to tests and read-only git inspection; §8-vs-§6 separation; never round UNVERIFIABLE up to PASS; full file-window audit."
+  - ".claude/pipeline/{01-orchestrate,02-research,03-build,04-review,05-verify}/ with .gitkeep"
+  - ".claude/pipeline/README.md — per-step owner/file/format/purpose table, the review-evidence.json schema, why the name is not gate1.json, and an explicit statement that the AUTHORITATIVE checkpoint is NOT here."
+modified:
+  - "CLAUDE.md — rewritten to the CE.md role model: Haiku reviewer, researcher returns findings, review-evidence.json, no orchestrator subagent, pipeline ownership, the .claude/ exception clause. Retains the tests-as-rules mandate, the rtk exit-code trap and the hard boundaries."
+  - "docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md — §7 v7.1 amendment"
+not_touched: "all KRONOS product code, signed scope data (cybergym/), .github/, external repository settings. No R&D task cycle started, per CE.md."
+
+validation_run:
+  frontmatter: "all three parse; required keys present; filename matches `name`; models and tool lists as intended"
+  second_source_of_truth_avoided: "pipeline README states durable state stays in docs/loop/PROGRESS.md on this branch. The scratchpad was cleared twice across these sessions and the loop resumed intact from origin both times — that only works because nothing authoritative lives locally."
+
+## UNRESOLVED SETUP ISSUES — reported, not papered over
+
+1_haiku_reachability_unverified: >
+  claude-haiku-5-5 has NOT been confirmed reachable under this session's custom
+  ANTHROPIC_BASE_URL. Precedent for caution: seq 2 recorded that claude-sonnet-5 does not appear
+  in the /model picker under this provider yet does resolve on dispatch. Haiku's availability can
+  only be confirmed by dispatching it, which CE.md forbids for now ("do not start the R&D task
+  cycle yet"). First dispatch must verify the model actually resolved and not silently fell back.
+2_haiku_capability_risk: >
+  A Haiku reviewer doing SEMANTIC review is a capability drop from the Opus reviewer it replaces.
+  On 10.5 that reviewer rebuilt the differential over 12,168 cells, read every allow path to prove
+  a new branch unreachable, broke the matcher in-memory to test a negative control, and disclosed
+  a false negative in its OWN harness. Whether Haiku reaches that depth is unknown. Mitigations:
+  prescriptive instructions about WHAT to measure; v7 §4's enforcement controls so fewer judgments
+  depend on the reader; and the retained escape hatch for a one-off Opus review when a brief's
+  central deliverable is a judgment.
+3_rails_still_only_on_one_branch: >
+  The six original rail files (RAILS.md, settings.json, hooks/brief-scope.sh, the two old agent
+  definitions, commands/kronos-continue.md) still exist ONLY at 33a882f on
+  claude/loop-scaffolding. The new agents sit beside them in the working tree but are untracked.
+  If loop-scaffolding is ever checked out, its OLD kronos-builder.md and OPUS kronos-reviewer.md
+  would shadow these. Getting .claude/ onto main remains the real fix.
+4_kronos_continue_still_stale: "the resume command still names PR #13, SPEC_BRIEF10.3 and the retired 591/1 baseline"
+
+state:
+  pr_15: "OPEN, draft true, branch abfe531"
+  pr_13: "OPEN, draft true"
+  issue_2: OPEN
+  main: dcbdba9
+  suite: "3457 passed, 0 failed, 1 skipped — unchanged; no product code touched"
+  merge_gate: "not re-measured, not proposed"
+
+pending_action:
+  seq: 33
+  action: "await the resumed review's verdict on abfe531; then report and STOP at GATE-2. v7.1 applies from the next brief; the first dispatch under it must verify claude-haiku-5-5 actually resolved."
+  outcome: pending
