@@ -3679,3 +3679,69 @@ pending_action:
     The PR branch itself has NOT been pushed (maintainer instruction); only this loop-state
     checkpoint was pushed this turn.
   outcome: pending
+
+## SEQ 38 — SPEC_BRIEF10.7 (FINDINGS 1 & 2) APPROVED AT GATE-1; QUEUED, BLOCKED ON PR #15 MERGE
+
+seq: 38
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: >
+  two items open — (a) SPEC_BRIEF10.7 GATE-1-APPROVED but QUEUED behind PR #15's merge;
+  (b) PR #15 GATE-2 still pending (maintainer-only).
+
+seq37_pending_action_outcome: >
+  PR #15 GATE-2 remains pending (unchanged). Separately, the maintainer approved SPEC_BRIEF10.7
+  (Findings 1 & 2) at GATE-1 and directed it be QUEUED — not started — until PR #15 is merged.
+
+gate1_approval:
+  brief: "SPEC_BRIEF10.7 — NOT yet written to disk; recorded here as the durable queue; author = orchestrator claude-opus-5"
+  approved: true
+  scope_section_3: ["tests/test_scope_guard.py"]   # test-only; reads schema.py + scope_guard.py read-only; NO product code; nothing under cybergym/
+  findings_in_scope: "Findings 1 and 2 ONLY"
+  other_findings_kept_separate: "RFC-6874 percent-encoding; the CLOUD_RESOURCE rule-5 row; §5.5 enumeration mismatch; criterion-10 sub-clause — remain recorded, not fixed by 10.7"
+  decision_finding_2: >
+    Harden test_b105_8_2 (tests/test_scope_guard.py ~:1479-1493): a schema.py citation must name the
+    node type on the CITED LINE ITSELF (lines[ln-1]); keep the ±3-line window (lines[ln-1:ln+3]) ONLY
+    for multi-line producer NodeUpsert( call sites (rule 1, non-schema .py). Add a negative self-check:
+    a constructed EV row citing schema.py:223 (HOST's row) for WEB_ENDPOINT must be REJECTED. RED-first:
+    today's validator accepts it (the hole); it is rejected after the fix. All 12 shipped rows still pass.
+  decision_finding_1: >
+    Re-attribute the ~35 mis-cited differential/grid cells to their DETERMINANT clause
+    (tests/test_scope_guard.py grids ~:1680-1685 and ~:1753-1755; clause registry ~:1631-1643; comment
+    ~:1935-1936). ~28 _P5_BARE_IP/_P6_CIDR exclusion cells -> 10.r7 (SPEC_BRIEF10 §1.1 r7 /
+    _matches_address_pattern); ~7 _P4_BOTH_ENDS_GLOB exclusion cells -> the PD-5 exclusion-side clause
+    (NOT the allow-side FORK-U 10.1.U). Soften the :1935-1936 comment claiming §1.2 "exercises" cells
+    already denied at dcbdba9.
+  FORK_AD: "post-merge — do NOT start until PR #15 merges, then branch from the FRESH squash-merge main commit"
+  FORK_AE: >
+    ENFORCED, and STRENGTHENED by the maintainer: the Finding-1 assertion must verify the INTENDED
+    DETERMINANT ATTRIBUTION for the identified cells — i.e. each identified cell is asserted to cite
+    its EXPECTED determinant clause (positive: bare-IP/CIDR -> 10.r7; _P4 -> PD-5 exclusion-side
+    clause) — NOT merely that unchanged-from-dcbdba9 cells avoid citing §1.2. The negative invariant
+    is retained only as a secondary guard. The dcbdba9 git-archive export already present in
+    test_b105_5_5 (~:1917-1969) supplies the base measurement.
+  acceptance_criteria_summary: >
+    (1) schema.py citation validated against the cited line only; WEB_ENDPOINT->schema.py:223 fails; 12
+    rows pass. (2) every identified cell cites its EXPECTED determinant clause (positive attribution,
+    enforced). (3) :1935-1936 comment corrected. (4) tests/ 0 failed, 1 skipped; cybergym/cloud/ 17 —
+    run under .venv; totals refreshed as the final edit. (5) only tests/test_scope_guard.py changed;
+    zero diff to scope_guard.py / schema.py / graph.py / manifest.py and cybergym/. (6) RED-first
+    recorded for both guards. (7) scope held to Findings 1 & 2.
+
+dependency:
+  blocked_on: "PR #15 squash-merge to main"
+  trigger: "on PR #15 merge, branch from the NEW squash-merge main commit (NOT f80ad6a, NOT 648621a) and implement 10.7 there via the build/review loop"
+  not_authorized_by_this_gate1: "pushing the PR #15 branch, marking PR #15 ready, merging PR #15"
+
+pending_action:
+  seq: 38
+  action: >
+    TWO independent maintainer actions outstanding; neither is performed by the loop:
+    (1) PR #15 GATE-2 — push erratum head f80ad6a to the PR #15 branch (claude/scope-key-dispatch-brief10-4),
+        mark PR #15 ready for review, and grant a fresh merge authorization naming PR 15 and head f80ad6a;
+        only then may the orchestrator propose
+        `gh pr merge 15 --squash --match-head-commit f80ad6a362aa6ebb25a4e41d9aa1eac27506defd`
+        with all ten MERGE-GATE prerequisites re-measured in that same turn. Never --admin, never --auto.
+    (2) After (1), the queued SPEC_BRIEF10.7 unblocks: branch from the new squash-merge main commit and
+        implement per FORK-AD/FORK-AE above.
+  outcome: pending
