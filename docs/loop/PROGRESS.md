@@ -3477,3 +3477,127 @@ pending_action:
     model-reachability item from seq 33 — the dispatch must confirm the model actually resolved
     and did not silently fall back. Then STOP at GATE-2.
   outcome: pending
+
+## SEQ 36 — REVIEW PASS AT 648621a (15/15); MERGE GATE RE-MEASURED; NO MERGE PROPOSED
+
+seq: 36
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: GATE-2 — awaiting maintainer merge authorization
+
+seq35_pending_action_outcome: "maintainer authorized an Opus re-review; it ran and returned PASS"
+
+review:
+  head_reviewed: 648621a
+  brief_sha256: 83eddc86145b878f822388224f2daf76d8bb1daf7e57d18820927da9d416b4d7
+  note_on_sha: "differs from the prior review's 8388125f because the orchestrator corrected §5.5's requirements-file claim after that review — expected, not a discrepancy"
+  verdict: PASS
+  recommendation: MERGE
+  tally: "15 PASS, 0 FAIL, 0 UNVERIFIABLE (one sub-clause of criterion 10 noted)"
+  model: claude-opus-5
+  independence: "no prior findings, no builder report, no orchestrator analysis passed to it; it re-derived everything"
+  first_pass_in_the_series: "yes — 10.3 FAIL, 10.4 FAIL, 10.5 FAIL, 10.5 FAIL, now PASS"
+
+## WHAT THE REVIEWER DID THAT THE ORCHESTRATOR DID NOT
+
+non_vacuity_proofs_by_sabotage:
+  differential: >
+    It replaced head's scope_guard.py with 2a676a8's in a scratch clone and confirmed the
+    differential FAILS; then it WIDENED the allow side (routing path-bearing URL patterns into
+    address identity — the FORK-AC widening) and the differential CAUGHT it. So guardrail §9 is
+    proven to detect a real widening, not merely to report zeros.
+  gate_byte_compare: "it added ONE TRAILING SPACE to DECISIONS.md's block and flipped a word in README_scope.md's; each failed only its own parametrization"
+  section_1_2: "reverting the ip/ip_port branch produced 8 failures, all in test_b105_5_1_address_shaped_exclusion_denies"
+  section_5_6_control: >
+    It inserted `return not is_exclusion` at the top of _matches — allow-side logic entirely
+    bypassed — and measured: the NEW control failed, the OLD control PASSED under identical
+    breakage. The strengthening is verified against behaviour, not prose.
+  grid_tests: "dropping a cell, an off-registry clause key, a non-T/F/PAUSE value, flipping an expectation, and reverting the PD-5 cell were ALL rejected; a source-edited _PAUSE cell failed the pause-pin test"
+  citation_test: "11 violating rows constructed, 10 rejected; 2 legitimate near-boundary rows accepted (no over-rejection) — including FINDING's negated 'no established id convention', confirming the false-positive fix works"
+  baseline: "it checked out 2a676a8 in a scratch clone and measured 1068 passed / 1 skipped itself, confirming §5.5's baseline exactly"
+
+## FINDINGS — BOTH LOAD-BEARING ONES RE-CONFIRMED BY THE ORCHESTRATOR
+
+finding_2_SECOND_GENERATION_HOLE:
+  severity: MEDIUM-LOW
+  claim: "test_b105_8_2's citation window reads lines[ln-1 : ln+3], and schema.py's NODE_COLUMNS rows sit one line apart, so a rule-5 row citing the WRONG type's line passes"
+  orchestrator_verification: >
+    CONFIRMED by construction. Set WEB_ENDPOINT to (5, "src/kronos/schema.py:223 — HOST row") and
+    the test ACCEPTED it, because "WEB_ENDPOINT" happens to appear at :225 inside the ±3 window.
+  why_this_matters_most: >
+    This is a SECOND-GENERATION hole in a test written specifically to close a first-generation
+    one. The orchestrator rewrote that test last turn precisely because substring matching let a
+    wrong citation ship, presented the rewrite as enforcement, and the rewrite still has a hole of
+    the same shape. Every shipped row IS correctly cited (the reviewer opened all 12), so there is
+    no live defect — but the pattern is now three deep: assert, get caught, fix, get caught again.
+  fix: "for a schema.py reference require the quoted type on the CITED LINE ITSELF; keep the window only for multi-line NodeUpsert( calls"
+
+finding_5_BRIEF_CONTRADICTS_ITSELF:
+  severity: LOW (documentation) but REGRESSION-CAPABLE
+  claim: "§4.2 still reads 'HOST narrows to {host, ip}', contradicting §1.1, §7's FORK-AB 'PROPOSED AND REJECTED', and §8.3"
+  orchestrator_verification: "CONFIRMED — SPEC_BRIEF10.5.md:221 says it narrows; :348 says the narrowing was rejected"
+  why_it_is_a_trap: >
+    A future reader following §4.2 would narrow HOST and break 21 tests, 14 of them ratified
+    lock/H2/grid cases, plus guardrail §2.1's signed-manifest proof. The brief itself records that
+    outcome. The orchestrator introduced this inconsistency when amending §1.1 for FORK-AB and did
+    not sweep §4.
+  disposition: "first item of the next brief, or a standalone erratum"
+
+finding_1_non_determining_clauses:
+  severity: MEDIUM
+  detail: >
+    ~35 cells cite a clause that does not determine them. _P5_BARE_IP/_P6_CIDR exclusion rows cite
+    10.5.1.2 (§1.2), but the reviewer measured at dcbdba9 that those exclusions ALREADY denied
+    before §1.2 existed — they are determined by _matches_address_pattern / 10.r7 (28 cells).
+    _P4's exclusion default cites 10.1.U (FORK-U, an ALLOW-side holding that PD-5 explicitly
+    overrides on the exclusion side); the determinant is 10.5.pd5e (7 cells).
+  status: "§8.5's literal wording is met; CLAUDE.md §2's 'the clause that DETERMINES it' is not"
+
+other_findings:
+  3_differential_comment_overclaims: "LOW — the assertion is satisfied by ANY exclusion delta; reverting §1.2 still passed it (excl_diffs merely fell 19->7). §5.1 does catch that revert, so coverage is intact, but the comment implies the differential pins §1.2 and it does not."
+  4_rfc6874_percent_encoded_zone_ids: "LOW — exclusion 'http://[fe80::1%25eth0]/x/*' (the RFC-correct encoding) does NOT exclude '[fe80::1%eth0]'. Same under-match class FORK-2 exists to close; §5.1 names only the unencoded form."
+  6_cloud_resource_row: "LOW/informational, pre-existing — if a validation harness does not qualify as a 'production producer', the row falls to rule 5, and schema.py:232 has no identity column, which would yield a HOST-shaped family rather than {bucket_name, arn}. This is the row granting the system's only free mid-token glob expansion. Disclosed honestly in the evidence string."
+  7_section_5_5_enumeration_mismatch: "INFORMATIONAL — §5.5's prose cites the one-off 418 pairs / 42 changes and says reproduce 'exactly'; the standing test enumerates 340 pairs / 32 and 19. §8.8 names no numbers and DECISIONS.md reports 340 consistently."
+  criterion_10_sub_clause: "UNVERIFIABLE as literally worded — no pre-Brief-#10 SIGNED MANIFEST ARTIFACT is retained in the repo; conftest's signing_keypair generates at test time. The claim is a logical consequence of manifest.py's zero-diff (last changed 59adbee 2026-10-11, before Brief #10 opened at f6efbb5 2026-10-16), not a direct measurement."
+
+## MERGE GATE — ALL TEN RE-MEASURED THIS TURN
+
+1_main_protected: "PASS — ruleset lists deletion, non_fast_forward, pull_request"
+2_pr_not_draft: "FAIL — PR #15 isDraft=true. Marking ready for review is MAINTAINER-ONLY."
+3_open_and_unmerged: "PASS — state=OPEN, mergedAt=null"
+4_head_equals_authorized_sha: "FAIL — no merge authorization exists for PR #15 at any SHA"
+5_independent_review_PASS: "PASS — first time in this series. Opus, fresh context, diff + brief only, 15/15."
+6_ci_green_or_none: "acknowledged — 'ci: none; local evidence only'"
+7_local_test_evidence_recorded: "PASS — 3457 passed / 0 failed / 1 skipped; cybergym/cloud 17 passed; X-SCORE: 3/3 exit 0 at 648621a; all recorded in checkpoint"
+8_mergeable_and_not_ancestor: "PARTIAL — head is NOT an ancestor of main (correct). mergeable=UNKNOWN and mergeStateStatus=UNKNOWN because GitHub does not compute mergeability for a DRAFT PR; this resolves when item 2 clears."
+9_merge_authorization_granted_this_turn: "FAIL — none"
+10_clean_tree: "PASS — only the intended untracked config (CLAUDE.md, .claude/, docs/loop/); nothing staged, no stale branch deleted"
+result: "three of ten fail (2, 4, 9), and 8 is pending on 2. NO MERGE PROPOSED. NO MERGE COMMAND RUN."
+standing_authorization_note: >
+  The only standing merge authorization names PR #13, which does NOT contain this work. It does
+  NOT transfer. A FRESH authorization naming PR 15 and head 648621a is required.
+
+## ORCHESTRATOR RECOMMENDATION ON SEQUENCING
+
+recommend: "merge 648621a AS REVIEWED; do not fix findings 1, 2 and 5 first"
+reasoning: >
+  Merge-gate item 4 exists so that the SHA reviewed is the SHA merged. Fixing findings 1/2/5 moves
+  the head, invalidates the PASS, and costs another full review cycle (the last one was 263k
+  tokens over 22 minutes) for three QUALITY defects in guards and citations — none of which is a
+  correctness bug, widens the allow side, or weakens a deny. The reviewer reached the same
+  conclusion independently and recommended filing 1 and 2 as the opening items of the next brief.
+caveat_the_maintainer_should_weigh: >
+  Finding 5 is the one with teeth: the brief contradicts itself about HOST, and a future reader
+  following §4.2 would reproduce a change the brief itself records as breaking 21 tests. It is a
+  one-line erratum. If the maintainer prefers it corrected pre-merge, that is defensible — it just
+  costs a re-review of the new SHA.
+
+pending_action:
+  seq: 36
+  action: >
+    Await the maintainer at GATE-2. Two things are needed and both are maintainer-only: mark PR #15
+    ready for review (clears item 2), and grant a fresh merge authorization naming PR 15 and head
+    648621a (clears items 4 and 9). The only command the orchestrator may then propose is
+    `gh pr merge 15 --squash --match-head-commit 648621a1805c5117051f57a6791cc382c0ec64d7`,
+    with all ten prerequisites re-measured again in that same turn. Never --admin, never --auto.
+  outcome: pending
