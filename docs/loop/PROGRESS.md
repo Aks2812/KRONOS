@@ -3380,3 +3380,100 @@ pending_action:
     §5.5's requirements-file claim). Re-pin the three SHAs, re-run the suite and the live X-score,
     re-audit the full window, then STOP at GATE-2. No behaviour change in any of it.
   outcome: pending
+
+## SEQ 35 — BOTH REVIEW FAILURES CLOSED AT 648621a; X-SCORE 3/3; AWAITING RE-REVIEW
+
+seq: 35
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: VERIFY complete; re-review not yet dispatched
+
+seq34_pending_action_outcome: "all four required fixes plus three honesty fixes applied; two further defects surfaced and were closed"
+
+head: 648621a
+
+fixes_applied:
+  criterion_2a_SECRET_citation:
+    was: "src/kronos/ingest/mobile/parser.py:258 — whose type string on 259 is EVIDENCE"
+    now: "src/kronos/ingest/mobile/parser.py:244 — the NodeUpsert(\"SECRET\", ...) call"
+    also_fixed_in: "src/kronos/README_scope.md"
+    provenance: "the orchestrator wrote this wrong citation in seq 30 WHILE closing the previous review's §8.2 failure — a fix that introduced the same class of defect it was fixing"
+  criterion_2b_FINDING_rule:
+    was: "rule 5 citing title/severity as 'carrying the identity'"
+    now: "rule 1 citing SPEC_BRIEF10.3's ratified FORK-W(2) prose"
+    reasoning: "rule 5 concerns NETWORK identity; title/severity are neither a url nor a name, so rule 5's first branch would yield a NON-EMPTY family and contradict the shipped frozenset(). The value was right, the recorded justification was not."
+  criterion_2c_enforcement_test_strengthened:
+    was: "literal substring checks only — a reviewer-constructed row citing another type PASSED"
+    now: >
+      opens every cited path:line and asserts the referenced region names THAT node type.
+      Verified by construction that five violation classes are now rejected:
+      cites-another-type, defers-to-prose, rests-on-a-convention, by-analogy, unresolvable-path.
+    orchestrator_admission: >
+      This test was presented in seq 30 as proof the claim was 'enforced, not written down'. It
+      was partly theatre — substring absence is not the prohibition — and the shipped SECRET row
+      was violation case 1 in the wild. The reviewer found it because it was instructed to
+      CONSTRUCT violating rows rather than read the test. That instruction should persist in
+      every future reviewer dispatch.
+  criterion_5_stale_pause_count:
+    was: "'2366 asserted, 0 deferred' and '11 cells are PAUSE-DECISION (unfilled, unasserted)' in the SAME bullet"
+    now: "corrected to 0 deferred, with the PD-5 ruling named as what decided the 11"
+
+two_FURTHER_defects_the_strengthened_test_itself_caught:
+  1_citations_were_not_resolvable:
+    detail: "all schema.py references were bare 'schema.py:NNN' and did not resolve from the repo root. 17 references across scope_guard.py and README_scope.md are now fully qualified to src/kronos/schema.py:NNN."
+    principle: "a citation you cannot follow is not evidence — the test now refuses unresolvable paths"
+  2_false_positive_in_the_new_guard:
+    detail: >
+      It rejected FINDING's own 'no established id convention', which DENIES a convention rather
+      than resting on one. The prohibition now strips negated forms before checking.
+    why_recorded: "a guard that over-rejects teaches people to weaken it, so the over-rejection matters as much as the under-rejection"
+
+low_severity_findings_also_taken:
+  cloud_resource_relabelled: >
+    CLOUD_RESOURCE's rule-1 evidence now states plainly that it is the CyberGym VALIDATION
+    HARNESS, not a production ingester, and the only producer of that type that exists. Recorded
+    sharply: this is the row granting the ONLY free mid-token glob expansion in the system, so
+    the most permissive row rests on the weakest producer evidence. Flagged to revisit when a
+    real cloud ingester lands.
+  stale_reported_not_edited_entry: "a superseded-note added rather than rewriting history — the fixture WAS later edited under the maintainer's §3/§5.6(d) amendment by 2a676a8"
+  brief_5_5_corrected: "httpx2==2.13.1 is in fact already at cybergym/requirements.txt:12 and has been since dcbdba9; what remains unrecorded is httpcore2 and truststore"
+
+orchestrator_verified_at_648621a:
+  tests: "3457 passed, 0 failed, 1 skipped"
+  cybergym_cloud: "17 passed"
+  full_window_audit: "git diff --name-only 2a676a8..HEAD -> 9 paths, every one in §3"
+  guardrails: "manifest.py, schema.py, graph.py, cybergym/, .claude/, .github/, SPEC.md all zero-diff"
+  pins: "all three agree on 8f8662829bb75cddacb5c408acf5d934ef612a7eb9078338c826f6d787cb5b52 and it matches sha256sum of the file"
+  live_x_score:
+    commit: 648621a
+    verbatim_line: "X-SCORE: 3/3 chains validated end-to-end"
+    exit_code: 0
+    teardown: "all clear"
+  behaviour_unchanged: "NODE_TYPE_SHAPES values untouched; every fix was a citation, a rule label, a test, or a document"
+  untracked_config_excluded: "CLAUDE.md, .claude/agents/, .claude/pipeline/ and docs/loop/ remain untracked and are absent from the window, as intended"
+
+## WHAT THE REVIEW CONFIRMED (recorded so the next reviewer need not redo it)
+
+- "§6 gate: reproduced independently — 1179 bytes, byte-equal in both copies, one marker pair per file, 10.4's paraphrases gone"
+- "grid: counted by importing the test module — 2184 allow + 182 exclusion = 2366, 0 undeclared, all 20 clause keys resolve, all 12 node types on the allow side, public API both sides. The 10.4 private-_matches objection is gone."
+- "differential: RUNS (not skipped), loads old trees read-only via git archive at chmod 0o444, and asserts the 2a676a8 diff set is NON-EMPTY so it cannot pass vacuously. 0 allow-side differences against both refs."
+- "§5.6 control: proved by monkeypatching _matches to return True — the OLD control still passed with the matcher destroyed, the NEW one fails. Strength demonstrated, not claimed."
+- "pre-#10 signed manifest: PROVED, not asserted — a frozen YAML blob with its literal Ed25519 signature run through load_and_verify"
+- "address exclusions confirmed node-type-blind across HOST/SERVICE/API_ENDPOINT/CLOUD_RESOURCE/''/BOGUS/None, both target_kinds"
+
+open_items_not_blocking_acceptance:
+  blanket_clause_defaults: "a material fraction of §5.4 cells cite a row default that is true of the row but does not decide the cell (three proven examples). §8.5's literal wording is met; the audit trail is thinner than 100% coverage implies. Candidate for the next brief."
+  differential_scope_limit: "the allow side is compared at one node type per target, so non-widening is proven along that axis only — acceptable here solely because the family table is byte-identical to 2a676a8"
+  equivalent_address_spellings: "exclusions compare host identity as TEXT, so ::ffff:10.0.0.5 and 10.0.0.5 do not cross-match while CIDR exclusions already normalize. Deny-side inconsistent with itself. MEDIUM, next brief."
+  section_5_1_tautological_cases: "two cases labelled IPv4-mapped/zone-indexed pair identical literal strings and pass on byte equality"
+
+merge_gate: "not re-measured, not proposed. No re-review has run on 648621a. PR #15 draft, no merge authorization exists. Do not merge."
+
+pending_action:
+  seq: 35
+  action: >
+    Await the maintainer's go-ahead to dispatch ONE re-review of 648621a. Recommended under
+    v7.1 with the claude-haiku-5-5 reviewer, which also discharges the unverified
+    model-reachability item from seq 33 — the dispatch must confirm the model actually resolved
+    and did not silently fall back. Then STOP at GATE-2.
+  outcome: pending
