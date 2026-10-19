@@ -188,3 +188,32 @@ prescriptive about *what to measure*; §4's enforcement controls mean fewer judg
 on the reader; and v7's escape hatch stands — the orchestrator may request a one-off
 independent **Opus** review when a brief's central deliverable is a judgment rather than a
 behaviour. Requesting it is never a failure.
+
+### 7.7 Pause, checkpoint, and next-action report — persistent
+
+Whenever the loop **pauses or finishes** — for any reason — the step-5 hand-up MUST carry these
+five things, in this order. The pause is not complete until it does:
+
+1. **Why it stopped.** Exactly one of: usage limit, approval gate (name it — GATE-1 or GATE-2),
+   blocker, failure (name the failing gate or §8/§6 criterion), or completion.
+2. **The checkpoint.** Sequence number; branch and HEAD SHA; local-vs-remote status (pushed, or
+   local-only and why); PR state (number, draft/ready, GitHub head SHA); and the pending work. This
+   is the same state recorded in `docs/loop/PROGRESS.md` on `kronos/loop-state` — report it, never
+   stand up a second copy of it.
+3. **What completed, with concise evidence** — verbatim counts, verbatim lines, `file:line`
+   citations and verdicts, per §4.6. Evidence, not a summary of intent.
+4. **The recommended next action and why**, plus up to two alternatives with their trade-offs.
+5. **The exact response or action needed from the maintainer.** Distinguish a bare `continue`
+   (proceed within already-approved scope) from approval to cross a human gate, push, or merge.
+
+The operating rules this report rides on:
+
+- **Within already-approved scope, continue without asking for routine confirmations.** Spending a
+  turn to re-confirm a decision the maintainer already made is itself a defect.
+- **A recommendation — or a `continue` — is never authorization to cross a human gate, expand
+  scope, push, or merge.** GATE-1 and GATE-2 are the maintainer's and are neither produced by nor
+  unlocked by the loop (§7.3). Crossing one requires an explicit maintainer instruction that names
+  what is authorized — and, for a merge, the PR number and exact head SHA, with §5's ten-item
+  MERGE-GATE re-measured in that same turn.
+- **At a usage limit: stop, save the checkpoint, and state how to resume** — the branch and HEAD to
+  resume from, and the exact `pending_action`. Do not switch models or open a parallel session.
