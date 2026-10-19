@@ -3770,3 +3770,42 @@ pending_action:
     granted this turn) remain FAIL until the maintainer grants a fresh merge authorization naming
     PR 15 + f80ad6a. No merge performed or proposed this turn.
   outcome: pending
+
+## SEQ 40 — MERGE AUTHORIZED; ALL TEN MERGE-GATE PREREQUISITES RE-MEASURED PASS (write-ahead); MERGING PR #15 @ f80ad6a
+
+seq: 40
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: GATE-2 satisfied — maintainer authorized the merge this turn; executing the squash merge of PR #15 at f80ad6a
+
+seq39_pending_action_outcome: "complete — f80ad6a pushed to PR #15 branch (648621a..f80ad6a); PR #15 marked ready; no merge performed then"
+
+merge_authorization:
+  granted_this_turn: "maintainer: 'proceed to merge, I authorize that operations' — in direct reply to the proposal naming PR 15 + head f80ad6a"
+  pr: 15
+  head: f80ad6a362aa6ebb25a4e41d9aa1eac27506defd
+  command: "gh pr merge 15 --squash --match-head-commit f80ad6a362aa6ebb25a4e41d9aa1eac27506defd"
+  forbidden: ["--admin", "--auto"]
+
+merge_gate_ten_remeasured_this_turn:
+  1_main_protected: "PASS — ruleset 25333712: deletion, non_fast_forward, pull_request"
+  2_pr_not_draft: "PASS — isDraft false"
+  3_open_and_unmerged: "PASS — state OPEN, mergedAt null"
+  4_head_equals_authorized_sha: "PASS — headRefOid f80ad6a == authorized f80ad6a"
+  5_independent_review_PASS: "PASS — 10.5 §8 15/15 at 648621a (code byte-identical at f80ad6a per the 10.6 review); 10.6 erratum 6/6 at f80ad6a"
+  5b_github_approving_review: "n/a — single-maintainer; ruleset carries no required-review rule; reviewDecision empty; mergeStateStatus CLEAN"
+  6_ci: "PASS — 'no checks reported' => ci: none, acknowledged (local evidence only)"
+  7_local_test_evidence_recorded: "PASS — seq 36/37: tests/ 3457 passed, 0 failed, 1 skipped; cybergym/cloud 17; at f80ad6a under .venv"
+  8_mergeable_clean_not_ancestor: "PASS — mergeable MERGEABLE, mergeStateStatus CLEAN, f80ad6a not ancestor of origin/main (dcbdba9)"
+  9_merge_authorization_this_turn: "PASS — granted this turn (above)"
+  10_clean_tree_branches: "PASS — no tracked modifications; only the known untracked rails (.claude/, .mcp.json, CLAUDE.md, docs/loop/), recorded"
+  verdict: "all ten PASS (5b n/a) — merge permitted"
+
+pending_action:
+  seq: 40
+  action: >
+    Execute `gh pr merge 15 --squash --match-head-commit f80ad6a362aa6ebb25a4e41d9aa1eac27506defd`
+    (never --admin, never --auto). On success, record the NEW squash-merge main commit SHA; SPEC_BRIEF10.7
+    then unblocks (FORK-AD: branch from that new main commit). If the command fails (head moved, or a gate
+    newly blocks), STOP and report — do not retry with --admin.
+  outcome: pending
