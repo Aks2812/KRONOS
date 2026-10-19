@@ -3601,3 +3601,81 @@ pending_action:
     `gh pr merge 15 --squash --match-head-commit 648621a1805c5117051f57a6791cc382c0ec64d7`,
     with all ten prerequisites re-measured again in that same turn. Never --admin, never --auto.
   outcome: pending
+
+## SEQ 37 — FINDING-5 ERRATUM (SPEC_BRIEF10.6) BUILT AND REVIEWED PASS AT f80ad6a; CHECKPOINT PUSHED
+
+seq: 37
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: GATE-2 awaiting maintainer merge authorization (now at erratum head f80ad6a)
+
+seq36_pending_action_outcome: >
+  The maintainer did not merge 648621a as-reviewed. Instead the maintainer chose to correct
+  Finding 5 (the §4.2 HOST-narrowing self-contradiction) pre-merge via a narrowly scoped erratum,
+  GATE-1 approved as SPEC_BRIEF10.6 and then amended at GATE-1 to a two-line fix. The 648621a
+  15/15 PASS is superseded; the reviewed head is now f80ad6a.
+
+erratum:
+  brief: SPEC_BRIEF10.6.md
+  gate1: "maintainer-approved; amended at GATE-1 to a two-line correction (SPEC_BRIEF10.5.md lines 221 and 186-187)"
+  scope_section_3: ["SPEC_BRIEF10.5.md", "SPEC_BRIEF10.6.md"]
+  base: 648621a1805c5117051f57a6791cc382c0ec64d7
+  head: f80ad6a362aa6ebb25a4e41d9aa1eac27506defd   # parent is the base; single commit; LOCAL ONLY, not pushed to PR #15
+  change_class: "documentation-only; zero code/test diff vs 648621a"
+
+build:
+  agent: kronos-builder (claude-sonnet-5-5)
+  corrections:
+    - "SPEC_BRIEF10.5.md:221 — HOST now keeps {host, ip, host_port, ip_port} under rule 1 (not rule 5)"
+    - "SPEC_BRIEF10.5.md:186-187 — removed the false '§1.1 HOST change narrows' clause from acceptance item 9"
+
+review:
+  agent: kronos-reviewer (claude-haiku-5-5)
+  independence: "no builder report passed; re-derived everything"
+  attempt_1:
+    head: 0d25e0b2ec9d65eb8e0399b74a83344c33efe164
+    verdict: FAIL
+    cause: "surviving HOST-narrowing claim at SPEC_BRIEF10.5.md:187; the brief's single-line premise was wrong; returned to build"
+  attempt_2:
+    head: f80ad6a362aa6ebb25a4e41d9aa1eac27506defd
+    verdict: PASS
+    tally: "6/6 checks PASS"
+    scope: "only SPEC_BRIEF10.5.md and SPEC_BRIEF10.6.md changed; parent = 648621a"
+    code_zero_diff: "empty over src/tests/cybergym/README_scope.md/DECISIONS.md and scope_guard|schema|graph|manifest"
+    suite: "tests/ 3457 passed, 0 failed, 1 skipped; cybergym/cloud/ 17 passed — matches the 648621a baseline; run under .venv (system python lacks kuzu)"
+    recommendation: "MERGE (maintainer's decision)"
+  circuit_breaker: "2 of 3 review attempts used this task; not exhausted"
+
+orchestrator_verification:
+  confirmed: >
+    Both corrected lines and the consistency classification of all six 'narrow' hits in
+    SPEC_BRIEF10.5.md were verified independently; none asserts HOST narrows as live design
+    (lines 88 and 348 are the rejected FORK-AB record).
+  low_findings:
+    - "SPEC_BRIEF10.5.md:221 is ~150 chars, over the file's 100-col wrap (cosmetic)"
+    - "the suite gate must run under .venv; plain rtk/system python lacks kuzu -> 12 collection errors"
+
+merge_gate_status:   # not merged; not re-measured in full this turn
+  pr_15_github_head: 648621a   # branch NOT pushed; GitHub head still the pre-erratum SHA
+  item_2_pr_not_draft: "FAIL (isDraft true)"
+  item_4_head_equals_authorized_sha: "FAIL (reviewed head f80ad6a not on the PR; no authorization)"
+  item_9_merge_authorization: "FAIL (none)"
+  do_not_merge: true
+
+playwright_setup:   # this session, outside the KRONOS feature loop
+  cli: "@playwright/cli v1.64.1 already installed at ~/.local/share/playwright-cli; it IS the agent CLI, not the test runner"
+  global_skills: "~/.claude/skills/{playwright-cli,playwright-component-testing,playwright-trace} installed via `playwright init-skills --loop claude`"
+  project_mcp: ".mcp.json at repo root — playwright server only (npx @playwright/mcp@latest); UNTRACKED, not committed; maintainer approved it for this session"
+
+pending_action:
+  seq: 37
+  action: >
+    Await the maintainer at GATE-2 on the erratum head f80ad6a. All still pending and all
+    maintainer-only: push f80ad6a to the PR #15 branch (claude/scope-key-dispatch-brief10-4), mark
+    PR #15 ready for review, and grant a fresh merge authorization naming PR 15 and head f80ad6a.
+    Only then may the orchestrator propose
+    `gh pr merge 15 --squash --match-head-commit f80ad6a362aa6ebb25a4e41d9aa1eac27506defd`,
+    with all ten MERGE-GATE prerequisites re-measured in that same turn. Never --admin, never --auto.
+    The PR branch itself has NOT been pushed (maintainer instruction); only this loop-state
+    checkpoint was pushed this turn.
+  outcome: pending
