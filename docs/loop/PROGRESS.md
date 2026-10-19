@@ -3845,3 +3845,52 @@ pending_action:
     maintainer's go to start the cycle (or a decision to defer). No push/merge of any new branch without
     the usual authorization.
   outcome: pending
+
+## SEQ 42 — SPEC_BRIEF10.7 BUILT @ 98586b3 + REVIEWED PASS (mechanics) WITH 3 GROUNDING FINDINGS; /kronos-continue SKILL ADDED
+
+seq: 42
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: 10.7 built + independently reviewed; PASS on §8 mechanics with grounding findings for the maintainer; NOT pushed, no PR; GATE-2 not reached
+
+seq41_pending_action_outcome: "SPEC_BRIEF10.7 implementation started post-merge on branch claude/findings-1-2-brief10-7 off faac345, per FORK-AD"
+
+brief_10_7_build:
+  branch: claude/findings-1-2-brief10-7
+  base: faac345073f03700c85dbb89c2c340e02a92a57e
+  head: 98586b3c3089efd015d6e8ddb286e10a3fb5d024   # parent faac345; LOCAL ONLY, not pushed, no PR
+  scope: "only tests/test_scope_guard.py (72 insertions, 14 deletions)"
+  builder: "kronos-builder (claude-sonnet-5-5)"
+
+review_10_7:
+  reviewer: "kronos-reviewer (claude-haiku-5-5), independent, no builder report"
+  verdict: "PASS on §8 acceptance mechanics (6/6); recommend MERGE provided the maintainer accepts the grounding notes"
+  suite: "tests/ 3458 passed, 0 failed, 1 skipped (3457 + 1 new negative test); cybergym/cloud 17 passed; under .venv"
+  finding_2: "PASS — schema.py citation checked against the cited line only; WEB_ENDPOINT@:223/:224 rejected, :225 accepted; 12 rows pass; new test test_b107_f2_wrong_line_schema_citation_is_rejected"
+  finding_1: "PASS mechanics — positive determinant assertion + dcbdba9 negative guard in test_b105_5_5; map matches brief (bare-IP/CIDR -> 10.r7; _P4 -> 10.5.pd5e); misleading comment softened"
+  grounding_findings_for_maintainer:
+    F_A: "MEDIUM (tests/test_scope_guard.py:1434-1450) — the schema.py check rejects a WRONG-type line but ACCEPTS a line with NO quoted type (e.g. schema.py:220 comment, :221 declaration). Satisfies criterion 1 (wrong-type rejected) but weaker than 'the cited line must NAME the row's type'. Follow-up candidate."
+    F_B: "MEDIUM (prose-level; the mapping is maintainer-approved) — 10.r7 is an ALLOW-side clause ('authorizes all ports on a matching address', SPEC_BRIEF10:121) applied to exclusion-side cells; it determines only the T3/T4 address-match cells, not the 12 False non-match cells per row. Reviewer notes 10.r6 (exclusion-broad) is the closer fit for the port-ignored deny. The mapping is ROW-level, not cell-level-determinant-true."
+    F_C: "LOW — _P4 default cites 10.5.pd5e for all 14 targets, but PD-5's host-identity glob determines only the host cells; non-host False cells (IPv6/bucket/ARN/bundle) are not PD-5-determined."
+  orchestrator_assessment: >
+    The implementation conforms EXACTLY to the GATE-1-approved brief. But reviewer and orchestrator
+    concur that the approved determinant mapping is ROW-level: within each row only the match cells are
+    determined by the cited clause; the non-match False cells are determined by 'pattern does not match
+    this target type', not by 10.r7 / 10.5.pd5e. This is a milder recurrence of the Finding-1 class that
+    FORK-AE was strengthened to eliminate. It is a prose/design decision, not an implementation defect.
+
+skill_addition:
+  note: "MAINTAINER-AUTHORIZED per explicit written instruction: created project-only skill .claude/skills/kronos-continue/SKILL.md (user-invoked resume of the loop from the checkpoint). Recorded here per CLAUDE.md §4. Untracked; not committed; not invoked by the loop."
+
+pending_action:
+  seq: 42
+  action: >
+    Maintainer decision on SPEC_BRIEF10.7 (local @ 98586b3, not pushed, not a PR):
+    (A) ACCEPT the row-level mapping as a known limit (per the reviewer's MERGE recommendation); record
+        F-A as a follow-up; then proceed toward GATE-2 (push + open PR + merge authorization naming the
+        PR + head); or
+    (B) AMEND for cell-level determinant truth (F-B: use exclusion-side 10.r6 for the port-ignored deny;
+        split match vs non-match determinants; optionally tighten F-A to require the cited line to NAME
+        the row's type) — this moves the head and needs a rebuild + fresh review.
+    No push / PR / merge performed this turn.
+  outcome: pending
