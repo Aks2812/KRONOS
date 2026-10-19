@@ -3809,3 +3809,39 @@ pending_action:
     then unblocks (FORK-AD: branch from that new main commit). If the command fails (head moved, or a gate
     newly blocks), STOP and report — do not retry with --admin.
   outcome: pending
+
+## SEQ 41 — PR #15 MERGED (squash) TO main @ faac345; SPEC_BRIEF10.7 UNBLOCKED
+
+seq: 41
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: PR #15 complete; SPEC_BRIEF10.7 (GATE-1-approved) now unblocked, not yet started
+
+seq40_pending_action_outcome: >
+  SUCCESS. `gh pr merge 15 --squash --match-head-commit f80ad6a...` executed after the write-ahead push
+  was confirmed. PR #15 state=MERGED, mergedAt 2026-10-19T15:45:24Z. No --admin, no --auto.
+
+merge_result:
+  pr_15: MERGED
+  squash_merge_commit: faac345073f03700c85dbb89c2c340e02a92a57e
+  main: "dcbdba9 -> faac345 (origin/main is now faac345073f03700c85dbb89c2c340e02a92a57e)"
+  pr_branch_claude_scope_key_dispatch_brief10_4: "merged; NOT deleted (maintainer's call); local working tree still at f80ad6a"
+  contents_landed: "SPEC_BRIEF10.3/10.4/10.5 scope_guard work plus the 10.6 Finding-5 erratum"
+
+spec_brief_10_7:
+  gate1: "approved (seq 38)"
+  status: "UNBLOCKED — merge trigger satisfied"
+  base_per_FORK_AD: faac345073f03700c85dbb89c2c340e02a92a57e   # branch from THIS new main commit
+  scope_section_3: ["tests/test_scope_guard.py"]
+  fork_ae: "enforced + strengthened: positive determinant attribution for the identified cells"
+  not_yet_started: true
+
+pending_action:
+  seq: 41
+  action: >
+    SPEC_BRIEF10.7 may now be implemented per its GATE-1 approval: branch from origin/main @ faac345,
+    write SPEC_BRIEF10.7.md, implement Findings 1 & 2 in tests/test_scope_guard.py (FORK-AE = positive
+    determinant attribution), then run the build/review loop and stop at the next gate. Awaiting the
+    maintainer's go to start the cycle (or a decision to defer). No push/merge of any new branch without
+    the usual authorization.
+  outcome: pending
