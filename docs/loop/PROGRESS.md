@@ -3973,3 +3973,33 @@ pending_action:
     global ~/.claude/agents/ copies untouched (0 matches). Note: .claude/ is untracked on the active
     branch claude/findings-1-2-brief10-7, so these edits live in the working tree (tracked copy of
     .claude/ is on claude/loop-scaffolding). No loop build step ran; 10.7 still parked at GATE-2.
+
+## SEQ 45 — MAINTAINER-AUTHORIZED HOUSEKEEPING: correct stale top-of-file header (seq 5 -> 44, baseline v6 -> v7); NO loop build, 10.7 unchanged
+seq: 45
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: housekeeping — stale pointer correction authorized by maintainer; NOT a loop build step; 10.7 still parked at GATE-2 (unchanged)
+maintainer_authorization:
+  instruction: >
+    "correct the stale top-of-file checkpoint header in kronos/loop-state:docs/loop/PROGRESS.md so it
+    reflects the highest recorded sequence, SEQ 44, and update the stale baseline reference from loop
+    contract v6 to v7. Follow the contract's write-ahead procedure and verify against the live repo.
+    Make no other checkpoint or code changes."
+  basis: "explicit written maintainer authorization this turn; permission-bypass mode confirmed intentional, no alias/settings change made"
+why: >
+  The top-of-file header read `seq: 5` / `baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v6.md`, both stale:
+  the highest recorded block is ## SEQ 44 and the loop contract on this branch is
+  docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md (v6 absent). The stale header caused a /kronos-continue run to
+  mis-read seq 5 as authoritative. This corrects the pointer only.
+header_fields_to_change:
+  - "seq: 5  ->  seq: 44"
+  - "derived_at: 2026-10-18T07:05:00Z  ->  derived_at: 2026-10-20T00:00:00Z  (to match SEQ 44)"
+  - "baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v6.md  ->  baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md"
+not_changed:
+  - "no SEQ 1..44 block altered; no body content changed"
+  - "no product code; no brief; no agent/skill file"
+  - "SPEC_BRIEF10.7 remains LOCAL @ 98586b3, not pushed, no PR, parked at GATE-2"
+pending_action:
+  seq: 45
+  action: "Apply the three header-field corrections above to the top-of-file header, then record the outcome and verify against the live repo."
+  outcome: pending
