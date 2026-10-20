@@ -1,6 +1,8 @@
 # KRONOS — Research & Decision Record
 
-**Last updated:** 2026-10-16 (v5 — supersedes v4)
+**Last updated:** 2026-10-19 (v6 — supersedes v5)
+
+**Changes in v6 (2026-10-19):** §2 advanced to `main` @ `faac345`. FORK-2's structural scope-guard line (node-type-aware scope-key dispatch, evidence-only shape families, path-blind exclusions — briefs 10.3→10.4→10.5) **merged** via PR #15 (squash) at `faac345`, independently reviewed PASS 15/15 at `648621a`; the SPEC_BRIEF10.6 **Finding-5 erratum** (docs-only) merged with it. **SPEC_BRIEF10.7** (Findings 1 & 2 — determinant-true citations + `schema.py` cited-line closure, test-only) built LOCAL @ `98586b3`, independently reviewed **PASS on §8 mechanics (6/6)**; maintainer chose **Option A** (accept the row-level exclusion mapping as a known limit) and it is **parked at GATE-2** — not pushed, no PR, not merged; open follow-up **F-A**. Roadmap (§6) and G1 coverage (3/5 real) unchanged — FORK-2 remains the active pre-S3 blocker.
 
 **Changes in v5:** Beast-mode action classes **revised** — Class C is unattended where the signed
 manifest enumerates class + named target + time window (decision 10, §7.3); origin-direct arm and
@@ -10,7 +12,7 @@ byte-identical to the 2026-10-15 one, so **no new upstream features have been as
 **Withdrawn in v4 and still withdrawn:** the blanket rejection of authorized WAF/firewall bypass
 testing — see the record correction in §4.10(c).
 **Researcher/architect/reviewer:** Claude Opus 5 (`claude-opus-5`) · **Builder:** Claude Sonnet 5 in Claude Code
-**Repo:** `github.com/Aks2812/KRONOS` — `main` @ `3d89223`
+**Repo:** `github.com/Aks2812/KRONOS` — `main` @ `faac345` (was `3d89223` at v5)
 
 Human-readable record of KRONOS architecture research and decisions. A *record*, not a spec;
 build specs live in `SPEC_BRIEF*.md` at the repo root.
@@ -49,7 +51,7 @@ recorded as such so absence is never mistaken for rejection.
 
 ---
 
-## 2. Implementation state (`main` @ `3d89223`)
+## 2. Implementation state (`main` @ `faac345`)
 
 | Brief | Content | Status |
 |---|---|---|
@@ -75,6 +77,11 @@ a **verified** measurement instrument.
 | #10.2 | Explicit-port URL patterns must obey the boundary rule (H1) | brief ready (`SPEC_BRIEF10.2.md`, sha256 `4eb25f1a…`), not yet committed |
 | #10 + #10.1 + #10.2 | Shape-aware matcher, boundary rule, structural port comparison | **MERGED** as `3d89223` (PR #12). F1–F8, G1–G6, H1 all closed and reviewer-verified. `scope_guard.py` now 656 lines, up from 73 |
 | #10.3 | **H2 + H3 — node-type-aware scope dispatch, cross-shape exclusions, generated matrix** | **PR #13 open at `d2ad51e`, reviewed, MERGE-APPROVED** (§7.15). Completes FORK-2 on merge |
+| #10.4 (incl. the 10.3/10.5 line) | **Node-type-aware scope-key dispatch, evidence-only shape families, path-blind exclusions** — the H2/H3 structural matcher, corrected across briefs 10.3→10.4→10.5 | **MERGED** as `faac345` (PR #15, squash, 2026-10-19T15:45:24Z). Independently reviewed **PASS 15/15** at `648621a`; superseded the PR #13 plan for the #10.3 row above |
+| #10.6 | **Finding-5 erratum** — corrects SPEC_BRIEF10.5.md HOST self-contradiction (§4.2 vs §1.1 / §7 FORK-AB / §8.3); docs-only, zero code/test diff | **MERGED** with PR #15 (head `648621a`→`f80ad6a`, squashed into `faac345`) |
+| #10.7 | **Findings 1 & 2** — determinant-true citations + `schema.py` cited-line citation closure (test-only, `tests/test_scope_guard.py`) | **Built LOCAL @ `98586b3`**, independently reviewed **PASS on §8 mechanics (6/6)** (suite `3458 passed, 0 failed, 1 skipped`; `cybergym/cloud` `17 passed`). Maintainer chose **Option A** 2026-10-19 (accept the row-level exclusion mapping as a documented limit). **PARKED AT GATE-2** — not pushed, no PR, not merged. Open follow-up **F-A** (MEDIUM): wrong-*type* `schema.py` citation still accepted |
+
+**As of 2026-10-19 (v6 refresh).** FORK-2's scope-guard hardening ran several more briefs than the #10.3 plan anticipated — findings kept surfacing (Finding-5, then Findings 1 & 2). The structural matcher line is now **on `main` @ `faac345`**; **SPEC_BRIEF10.7 is accepted-but-unmerged, parked at GATE-2** awaiting a merge authorization that names the PR number and head SHA. Advancing off local requires that explicit authorization — a bare "continue" does not grant it. The durable loop checkpoint is `docs/loop/PROGRESS.md` on `kronos/loop-state` (currently SEQ 43). G1 coverage (§2 table below) and the §6 sequencing are unchanged: 3/5 domains real, web + infra still schema-only, S3 (infra ingestion) is the next capability stage.
 
 ### 7.15 PR #13 review (Brief #10.3) — FORK-2 complete, 2026-10-17
 
