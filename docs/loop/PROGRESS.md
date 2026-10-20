@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 51
+seq: 52
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4324,3 +4324,48 @@ pending_action:
     merged_at: "2026-10-20T09:08:22Z"
     squash_merge_commit: d71ebf6c5074f3351e5fdc94ce8277c464587db8
     main: "faac345 -> d71ebf6"
+
+## SEQ 52 — GATE-1 APPROVED SPEC_BRIEF10.9 (F-B); DISPATCHING BUILDER ON tests/test_scope_guard.py + SPEC_BRIEF10.7.md (write-ahead)
+seq: 52
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: loop build — GATE-1 crossed for the F-B follow-up brief (SPEC_BRIEF10.9); builder dispatch is the consequential action this write-ahead precedes. New work item off the fresh main d71ebf6.
+maintainer_decision_trail:
+  - "branch from main for the F-B follow-up -> created claude/finding-b-brief10-9 @ d71ebf6"
+  - "AskUserQuestion F-B scope -> 'Investigate first, then decide' -> kronos-researcher dispatched (read-only); findings saved to .claude/pipeline/02-research/findings.md"
+  - "AskUserQuestion F-B resolution -> 'Document the limit (close F-B as by-design)' (no verdict logic change)"
+  - "GATE-1: 'GATE-1 approve 10.9'"
+maintainer_authorization:
+  instruction: "GATE-1 approve 10.9"
+  basis: "explicit written maintainer GATE-1 approval of the SPEC_BRIEF10.9 (F-B) draft presented this turn"
+  scope_confirmed: "§3 = tests/test_scope_guard.py + SPEC_BRIEF10.7.md ONLY; no product code, no scope_guard.py/schema.py; no push/PR/merge; GATE-2 not crossed"
+brief:
+  id: SPEC_BRIEF10.9
+  derives_from: "F-B (SEQ 43, MEDIUM) accepted as a documented limit under Option A"
+  resolution: "document the row-level exclusion mapping as BY-DESIGN (deny-broad rule 6 compares host-identity only, so port/scheme/path columns collapse and share one determinant) + encode the claim as an assertion. NO verdict/behavior change."
+research_basis:
+  - "row-level grouping is intrinsic, not a shortcut: _EXCL_DETERMINANT pattern-keyed (tests/test_scope_guard.py:1819-1823); loop :2050-2053 asserts one det per pattern over all _TARGETS; _P5_BARE_IP/_P6_CIDR -> 10.r7, _P4_BOTH_ENDS_GLOB -> 10.5.pd5e (both T and F cells same clause)"
+  - "cause: scope_guard.py:40-42 (rule 6 deny-broad) + SPEC_BRIEF10.5.md:147-151 (host-identity-only comparison)"
+  - "no test byte-pins SPEC_BRIEF10.7.md; byte-gate test_b105_5_4 (:1941-1945) compares other files -> prose edit of 10.7.md:41 is safe"
+tests_declared:
+  - "New test_b109_fb_exclusion_determinant_is_row_uniform_by_design: for each of the 3 patterns in _EXCL_DETERMINANT, assert every target column in _EXCLUSION_GRID[pattern] carries the identical determinant clause id (structural encoding of deny-broad column-collapse)."
+  - "RED-first negative: a locally constructed exclusion row with two different determinant ids across columns must FAIL."
+  - "Keep green: :2050-2053 determinant check; 2366-cell count test :1833-1859; byte-gate test_b105_5_4 :1941-1945."
+acceptance_§8:
+  - "rtk test SUMMARY line shows 0 failed (decide PASS/FAIL from SUMMARY, never exit code)."
+  - "New row-uniform test + RED-first negative present."
+  - "SPEC_BRIEF10.7.md:41 states the deny-broad derivation; no 'open gap' framing remains; comment :1816-1818 carries the one-line rationale."
+  - "git diff --name-only d71ebf6..HEAD == exactly tests/test_scope_guard.py + SPEC_BRIEF10.7.md."
+  - "No live network; no traffic outside CyberGym range."
+build_branch:
+  branch: claude/finding-b-brief10-9
+  base: d71ebf6c5074f3351e5fdc94ce8277c464587db8
+not_changed:
+  - "no scope_guard.py/schema.py/other product code; no verdict/behavior change; no push/PR/merge"
+pending_action:
+  seq: 52
+  action: >
+    Dispatch kronos-builder on SPEC_BRIEF10.9, §3 = tests/test_scope_guard.py + SPEC_BRIEF10.7.md ONLY,
+    base d71ebf6, branch claude/finding-b-brief10-9. Then dispatch kronos-reviewer (independent). Builder
+    stages explicit paths only; never git add -A; no push/PR/merge.
+  outcome: pending
