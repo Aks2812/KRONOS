@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from kronos.manifest import ScopeManifest
-from kronos.scope_guard import scope_guard
+from kronos.scope_guard import _matches_hostname_pattern, scope_guard
 
 _NOW = datetime.now(timezone.utc)
 
@@ -2083,6 +2083,40 @@ def test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens():
               f"excl_diffs={sum(oe[k] != head_excl[k] for k in oe)}", file=_sys.stderr)
     _, mid_excl = trees["2a676a8"]
     assert [k for k in mid_excl if mid_excl[k] != head_excl[k]] != []
+
+
+# --- SPEC_BRIEF10.10 (Finding F-C): PD-5 reaches host identities only -------
+
+def test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only():
+    # SPEC_BRIEF10.5 §1.3 PD-5: "host identity only". This asserts the
+    # FUNCTION-LEVEL gate contract of _matches_hostname_pattern
+    # (src/kronos/scope_guard.py:515): it returns False for any shape outside
+    # ("url", "host", "host_port"). It is NOT a system-wide identity claim.
+    # Only bucket_name is solely gate-determined (removing the gate flips only
+    # it). ip/ip_port/arn/bundle_id are False under the gate but also for a
+    # downstream reason (host extraction yields no glob-matching host), so
+    # they are the full enumeration of excluded shapes, not independent gate
+    # evidence. H3 (SPEC_BRIEF10.3; scope_guard.py:397-402, :669
+    # _HOST_SHAPES_FOR_EXCLUSION) treats bucket_name as host on the exclusion
+    # path at a HIGHER layer; out of scope for this function-level test.
+    # Expected values come from that prose, not from running the code.
+    pattern = _P4_BOTH_ENDS_GLOB
+    host_targets = {
+        "url": "https://x.acme.com/p",
+        "host": "x.acme.com",
+        "host_port": "x.acme.com:443",
+    }
+    for shape, target in host_targets.items():
+        assert _matches_hostname_pattern(pattern, target, shape, is_exclusion=True) is True, (shape, target)
+    non_host_targets = {
+        "ip": "10.0.0.1",
+        "ip_port": "10.0.0.1:443",
+        "bucket_name": "x.acme.com",
+        "arn": "arn:aws:s3:::x.acme.com",
+        "bundle_id": "com.acme.x",
+    }
+    for shape, target in non_host_targets.items():
+        assert _matches_hostname_pattern(pattern, target, shape, is_exclusion=True) is False, (shape, target)
 
 
 def _row_uniform_violation(grid, determinant):
