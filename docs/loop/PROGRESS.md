@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 57
+seq: 58
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4656,4 +4656,36 @@ pending_action:
     (prior Option 2) after 10.9 merges.
   build_state: "test_b1010 committed 366b740 on claude/finding-c-brief10-10 (pushed), NOT merged; brief SPEC_BRIEF10.10.md @ e870aaa."
   carried_forward_10_9: "10.9 (F-B) still parked at cefeabd, not pushed, no PR; merge eval (ten MERGE-GATE prerequisites) still queued, unaffected by F-C."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
+
+## SEQ 58 — MAINTAINER RULED R2 (honest gate-contract test); RE-SCOPING SPEC_BRIEF10.10 + RE-DISPATCHING BUILDER (write-ahead)
+seq: 58
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: F-C re-scope after SEQ 57 FAIL. Build attempt 2 of 3. No merge.
+
+ruling: >
+  Maintainer chose R2 (AskUserQuestion, this session): ground the FUNCTION-level :515 gate contract
+  of _matches_hostname_pattern — it returns False for any shape outside ('url','host','host_port').
+  bucket_name is non-host AT THIS FUNCTION (the :515 gate); H3 (SPEC_BRIEF10.3; scope_guard.py:397-402,
+  :669 _HOST_SHAPES_FOR_EXCLUSION) routes bucket_name through host-identity exclusion at a HIGHER layer
+  and is out of scope for this function-level assertion. Fix the §5.1/§8.3 overclaim (F1): only
+  bucket_name is SOLELY gate-determined (removing the gate flips only it); the other non-host shapes are
+  False under the gate but not solely gate-determined (downstream host-extraction also yields False).
+
+circuit_breaker: "F-C review attempt 1 FAILed (SEQ 57). This is attempt 2 of 3. First FAIL was escalated for a ruling, not spent as a silent retry."
+
+pending_action:
+  seq: 58
+  action: >
+    (1) Orchestrator amends SPEC_BRIEF10.10.md on claude/finding-c-brief10-10 to the R2 framing
+    (function-level :515 gate contract; H3 note; honest §5.1/§8.3 wording; RED scoped to bucket_name).
+    (2) Re-dispatch kronos-builder to update test_b1010_* in tests/test_scope_guard.py to the honest
+    framing (comments/docstring/name: function-level gate contract + H3 caveat; keep the assertions;
+    capture bucket_name RED via reverted gate mutation; prefer a top-level import to drop the # noqa:E402
+    if clean). §3 = tests/test_scope_guard.py only. (3) Re-dispatch kronos-reviewer. (4) Step-5 verify.
+    (5) On PASS, evaluate GATE-2 merge under the ten MERGE-GATE prerequisites.
+  outcome: pending
+  build_state: "prior test @ 366b740 on claude/finding-c-brief10-10 (pushed); brief @ e870aaa; to be amended."
+  carried_forward_10_9: "10.9 (F-B) parked at cefeabd, merge eval still queued, unaffected."
   carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
