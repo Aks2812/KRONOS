@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 50
+seq: 51
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4269,3 +4269,45 @@ pending_action:
     merged: false
     base: main
     head: e8c38e5ed2d523e5a09b9be52c63266579180375
+
+## SEQ 51 — MERGE AUTHORIZED (PR #16 @ e8c38e5); ALL TEN MERGE-GATE PREREQUISITES RE-MEASURED PASS (write-ahead); MARK READY + SQUASH MERGE
+seq: 51
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: GATE-2 satisfied — maintainer authorized the merge this turn naming PR #16 + head e8c38e5; executing the squash merge after marking the draft PR ready
+merge_authorization:
+  granted_this_turn: "maintainer: 'merge PR #16, head e8c38e5' — the required form, naming the exact PR number and head SHA"
+  pr: 16
+  head: e8c38e5ed2d523e5a09b9be52c63266579180375
+  command: "gh pr merge 16 --squash --match-head-commit e8c38e5ed2d523e5a09b9be52c63266579180375"
+  forbidden: ["--admin", "--auto"]
+  mark_ready_note: >
+    PR #16 was opened as DRAFT (the conservative 'stop before merge' choice at SEQ 50). The authorized
+    merge mechanically requires marking it ready first (`gh pr ready 16`); this is the precondition of
+    the authorized merge of this exact PR, not a new outward decision or scope change.
+head_consistency:
+  delta_a753aa9_to_e8c38e5: "SPEC_BRIEF10.7.md + SPEC_BRIEF10.8.md only (docs)"
+  tests_scope_guard_identical_a753aa9_to_e8c38e5: true   # git diff --quiet a753aa9..e8c38e5 -- tests/test_scope_guard.py => identical
+  implication: "the independent review PASS and local test evidence (taken at a753aa9 / 98586b3) hold unchanged at the merge head e8c38e5"
+  diff_vs_main_faac345: ["tests/test_scope_guard.py", "SPEC_BRIEF10.7.md", "SPEC_BRIEF10.8.md"]   # exactly three paths (SEQ 49/50)
+merge_gate_ten_remeasured_this_turn:
+  1_main_protected: "PASS — ruleset 25333712 'void-rule-kronos', target branch; rules: deletion, non_fast_forward, pull_request"
+  2_pr_not_draft: "PASS-AFTER-READY — PR #16 isDraft true at measurement; `gh pr ready 16` flips it as the mechanical precondition of the authorized merge; re-confirmed not-draft immediately before the merge command"
+  3_open_and_unmerged: "PASS — state OPEN, mergedAt null"
+  4_head_equals_authorized_sha: "PASS — headRefOid e8c38e5 == authorized e8c38e5"
+  5_independent_review_PASS: "PASS — 10.7 reviewed PASS on mechanics + maintainer Option A (SEQ 42/43); 10.8 (F-A) reviewer overall PASS + orchestrator step-5 verified (SEQ 47); test code byte-identical a753aa9..e8c38e5, so evidence holds at e8c38e5"
+  5b_github_approving_review: "n/a — single-maintainer; ruleset carries no required-review rule; reviewDecision empty; mergeStateStatus CLEAN"
+  6_ci: "PASS — statusCheckRollup [] => ci: none, acknowledged (local evidence only), per SEQ 40 precedent"
+  7_local_test_evidence_recorded: "PASS — .venv: tests/test_scope_guard.py 2992 passed 0 failed; full suite 3459 passed, 1 skipped, 0 failed (SEQ 47 + orchestrator step-5); unchanged at e8c38e5"
+  8_mergeable_clean_not_ancestor: "PASS — mergeable MERGEABLE, mergeStateStatus CLEAN, e8c38e5 NOT ancestor of origin/main (faac345)"
+  9_merge_authorization_this_turn: "PASS — granted this turn naming PR #16 + head e8c38e5 (above)"
+  10_clean_tree_branches: "PASS — no tracked modifications; only the known untracked rails (.claude/, CLAUDE.md, docs/loop/), recorded"
+  verdict: "all ten PASS (2 after the mechanical mark-ready; 5b n/a) — merge permitted"
+pending_action:
+  seq: 51
+  action: >
+    (1) `gh pr ready 16`; re-confirm isDraft=false and head still e8c38e5. (2) Execute
+    `gh pr merge 16 --squash --match-head-commit e8c38e5ed2d523e5a09b9be52c63266579180375`
+    (never --admin, never --auto). On success record the NEW squash-merge main SHA and PR #16 MERGED.
+    If the command fails (head moved or a gate newly blocks), STOP and report — do not retry with --admin.
+  outcome: pending
