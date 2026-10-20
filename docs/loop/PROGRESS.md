@@ -4207,4 +4207,13 @@ not_changed:
 pending_action:
   seq: 49
   action: "git add SPEC_BRIEF10.7.md SPEC_BRIEF10.8.md (explicit paths, never -A) on branch claude/findings-1-2-brief10-7; commit locally; record the new HEAD and verify the diff. No push."
-  outcome: pending
+  outcome: >
+    COMPLETE. Committed SPEC_BRIEF10.7.md + SPEC_BRIEF10.8.md on claude/findings-1-2-brief10-7 as a
+    docs-only commit e8c38e5 (2 files, +80, 0 deletions; staged by explicit path, not -A). New branch
+    HEAD = e8c38e5. Verified branch diff vs main (faac345) = exactly SPEC_BRIEF10.7.md +
+    SPEC_BRIEF10.8.md + tests/test_scope_guard.py, matching the scope_audit_note above. No push, no PR,
+    no merge. No product code, test, other brief, research finding, or PR state changed. SPEC_BRIEF10.7
+    (test work @ 98586b3, carried in the cumulative tests/test_scope_guard.py diff) and SPEC_BRIEF10.8
+    (@ a753aa9) both remain parked at GATE-2. Top header bumped 48 -> 49 in the SEQ 49 write-ahead
+    commit (same-commit rule). NOTE for MERGE-GATE: the branch now carries the two brief docs in
+    addition to the test change; a scope re-measure must expect those three paths.
