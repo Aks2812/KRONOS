@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 59
+seq: 60
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4728,3 +4728,35 @@ pending_action:
   outcome: pending
   carried_forward_10_9: "10.9 (F-B) parked at cefeabd; merge eval still queued, independent of F-C."
   carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
+
+## SEQ 60 — SPEC_BRIEF10.10 (F-C) MERGED to main (PR #17, squash 2b1f3f3); GATE-2 closed; F-C finding resolved
+seq: 60
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: F-C landed on main via autonomous GATE-2 merge under SEQ 55 authority. Grounding-findings backlog now reduces to 10.9 (F-B), still parked.
+
+seq59_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (scope = tests/test_scope_guard.py
+  + expected brief doc; ruleset void-rule-kronos 25333712 active; PR #17 not-draft + OPEN; independent
+  review PASS + step-5; no required checks; suite 2993 passed/0 failed under .venv; mergeable MERGEABLE
+  + mergeStateStatus CLEAN + head dd82f4e not ancestor of origin/main; self-authorized this turn naming
+  PR #17 + head dd82f4e; clean tree with only known untracked rails + worktree .venv). Executed
+  `gh pr merge 17 --squash --match-head-commit dd82f4e753da8b977590a689934550a0c71b8bef` — NO --admin,
+  NO --auto. PR #17 state=MERGED, mergedAt 2026-10-20T14:57:38Z. origin/main d71ebf6 -> squash 2b1f3f311b29bcf80e7c659741d2b9036a164c39.
+
+finding_f_c: "CLOSED. PD-5 host-identity-only scope is now grounded at the function level by test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only (:515 gate contract), honest R2 framing with H3 caveat. F-C was the last of the three grounding findings from SEQ 42 (F-A merged PR #16; F-B = 10.9 parked; F-C = this)."
+
+housekeeping: "F-C worktree + its .venv symlink removed. Branch claude/finding-c-brief10-10 left on origin (merged); not deleted."
+
+pending_action:
+  seq: 60
+  action: >
+    No action required to close F-C. Next eligible autonomous R&D item: SPEC_BRIEF10.9 (Finding F-B)
+    merge evaluation — it is built + reviewed PASS at cefeabd on claude/finding-b-brief10-9, parked at
+    GATE-2 (SEQ 53), not pushed, no PR. Under SEQ 55 authority Opus may merge it within scope after
+    re-measuring the ten MERGE-GATE prerequisites in-turn (note: 10.9 edits tests/test_scope_guard.py +
+    SPEC_BRIEF10.7.md and was based on d71ebf6; main has since advanced to 2b1f3f3, so a rebase/merge
+    conflict check against 2b1f3f3 is part of prerequisite 8). Once 10.9 lands, the grounding-findings
+    backlog is empty and FORK-2 may be complete.
+  outcome: n/a (milestone record)
+  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome pending — to confirm when next touched or on maintainer instruction to commit them."
