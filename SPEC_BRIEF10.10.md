@@ -11,9 +11,11 @@ Primary **G2 (MORE EFFECTIVE):** closes a grounding gap. PD-5 (`10.5.pd5e`, the 
 The both-ends-glob PD-5 branch lives in `_matches_hostname_pattern` (`src/kronos/scope_guard.py:511`), which is shape-gated at `:515` — `if shape not in ("url", "host", "host_port"): return False` — so it never reaches `ip`, `ip_port`, `bucket_name`, `arn`, `bundle_id`. Per `SPEC_BRIEF10.5` §1.3 (PD-5): the both-ends glob compares **HOST identity only**. No test asserts this host-vs-non-host restriction; the only statement of it is an untested rationale comment near `_EXCL_DETERMINANT` in `tests/test_scope_guard.py`. So nothing fails if a future change widened PD-5 to a non-host shape.
 
 ## 2. The correction (approach)
-Add ONE conformance test (test-only) asserting the host-identity-only scope of the PD-5 both-ends-glob branch directly against `_matches_hostname_pattern`. **No product code changes. No edit to the `_EXCL_DETERMINANT` comment or `_EXCLUSION_GRID`** (that row-level citation is the Option-A-accepted known limit, SEQ 43 — out of scope here). Expected values derive from `SPEC_BRIEF10.5` §1.3 PD-5 **prose** ("host identity only"), never from observed behaviour.
+Add ONE conformance test (test-only) asserting the **function-level `:515` gate contract** of `_matches_hostname_pattern`: for any shape outside `("url","host","host_port")`, the function returns `False` (the PD-5 both-ends-glob branch is never reached). This grounds the gate line, not a system-wide semantic claim. **No product code changes. No edit to the `_EXCL_DETERMINANT` comment or `_EXCLUSION_GRID`** (that row-level citation is the Option-A-accepted known limit, SEQ 43 — out of scope). Expected values derive from `SPEC_BRIEF10.5` §1.3 PD-5 **prose** ("host identity only") and the `:515` gate contract, never from observed behaviour.
 
-**Pre-build probe (orchestrator, read-only):** `_matches_hostname_pattern` @ `:511`, gate @ `:515` to `("url","host","host_port")`; `_P4_BOTH_ENDS_GLOB = "*.acme.com*"` present in `tests/test_scope_guard.py`. The asserted behaviour already holds, so the test is a conformance/characterization test; its validity is proven by a transient mutation (below), not by a RED-then-fix cycle.
+**Scope of the claim (honest, per SEQ 57/58 ruling R2):** this is a function-level assertion about the `:515` gate only. Of the five non-host shapes, **only `bucket_name` is SOLELY gate-determined** — removing the gate flips its result (the RED case). For `ip`/`ip_port`/`arn`/`bundle_id` the result is `False` under the gate but *also* for a downstream reason (their host-extraction yields no glob-matching host), so they are not solely gate-determined; they are included as the full enumeration of the gate's excluded shapes, not as independent gate evidence. Separately, **H3** (`SPEC_BRIEF10.3`; `src/kronos/scope_guard.py:397-402` and `:669 _HOST_SHAPES_FOR_EXCLUSION`) treats `bucket_name` as host on the exclusion path at a **higher layer** — that routing is out of scope for this function-level assertion, and this test makes no claim about it.
+
+**Pre-build probe (orchestrator, read-only):** `_matches_hostname_pattern` @ `:511`, gate @ `:515` to `("url","host","host_port")`; `_P4_BOTH_ENDS_GLOB = "*.acme.com*"` present in `tests/test_scope_guard.py`. The asserted behaviour already holds, so the test is a conformance/characterization test; its validity is proven by a transient mutation of the gate (below), which flips the `bucket_name` assertion.
 
 ## 3. Permitted files (only these may change)
 - `tests/test_scope_guard.py`
@@ -21,22 +23,22 @@ Add ONE conformance test (test-only) asserting the host-identity-only scope of t
 Not permitted: `src/kronos/scope_guard.py`, `src/kronos/schema.py`, any other product code, `.claude/`, `.github/`, `src/kronos/manifest.py`, or anything under `cybergym/`.
 
 ## 5. Tests (the deliverable)
-1. New test `test_b1010_fc_pd5_both_ends_glob_is_host_identity_only`:
+1. New test `test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only`:
    - pattern = `_P4_BOTH_ENDS_GLOB` (`"*.acme.com*"`).
-   - For each **host-ish** shape in `("url", "host", "host_port")`, with a target whose host component matches the glob (e.g. host `"x.acme.com"`, host_port `"x.acme.com:443"`, url `"https://x.acme.com/p"`), assert `_matches_hostname_pattern(pattern, target, shape, is_exclusion=True)` is **True**.
-   - For each **non-host** shape in `("ip", "ip_port", "bucket_name", "arn", "bundle_id")`, with any target, assert the call returns **False** — PD-5 does not reach non-host identities (prose: `SPEC_BRIEF10.5` §1.3, host identity only). Cite the clause in a comment.
-   - The test is discriminating by construction: at least one host shape returns True and every non-host shape returns False for the same pattern, so removing the `:515` gate would flip the non-host assertions red.
-2. **Validity (RED) evidence:** capture a transient mutation — temporarily relax the `:515` shape gate (uncommitted, reverted immediately) and confirm the non-host assertions go red — to prove the test can fail. Do **not** commit the mutation.
+   - For each **host** shape in `("url", "host", "host_port")`, with a target whose host component matches the glob (e.g. host `"x.acme.com"`, host_port `"x.acme.com:443"`, url `"https://x.acme.com/p"`), assert `_matches_hostname_pattern(pattern, target, shape, is_exclusion=True)` is **True**.
+   - For each shape in `("ip", "ip_port", "bucket_name", "arn", "bundle_id")` (the full set outside the host-shape gate), assert the call returns **False** — the `:515` gate short-circuits non-host shapes (the PD-5 both-ends-glob branch is never reached). Comment must: (a) cite `SPEC_BRIEF10.5` §1.3 PD-5 "host identity only"; (b) state this asserts the function-level `:515` gate contract, not a system-wide identity claim; (c) note that **only `bucket_name` is solely gate-determined** here, and that **H3** (`SPEC_BRIEF10.3`) treats `bucket_name` as host on the exclusion path at a higher layer, out of scope for this test.
+2. **Validity (RED) evidence:** capture a transient mutation — temporarily relax the `:515` gate (uncommitted, reverted immediately) and confirm the **`bucket_name`** assertion goes red — to prove the gate is what the test pins. Do **not** commit the mutation. (The `ip`/`ip_port`/`arn`/`bundle_id` assertions are not expected to flip, because their host-extraction yields no glob-matching host; that is stated, not hidden.)
 3. Regression: the full `tests/test_scope_guard.py` suite stays green; no existing test weakened; `_EXCL_DETERMINANT`/`_EXCLUSION_GRID` and the row-uniform test are untouched.
+4. Prefer a top-level import for `_matches_hostname_pattern` consistent with the file's existing imports; avoid a mid-file `# noqa: E402` import if a clean top-level one is available.
 
 ## 6. Live-use gate
 Not applicable. Test-only; no product behaviour changes; §6 (live-use) is not engaged.
 
 ## 8. Acceptance criteria
 1. `rtk test` `SUMMARY:` line shows **0 failed** (decide PASS/FAIL from the SUMMARY line, never the exit code).
-2. `test_b1010_fc_pd5_both_ends_glob_is_host_identity_only` is present, asserts False for all five non-host shapes and True for at least one host shape, and its expected values cite `SPEC_BRIEF10.5` §1.3 PD-5.
-3. RED evidence captured: a transient shape-gate mutation flips the non-host assertions red (reverted, not committed).
-4. `git diff --name-only d71ebf6..HEAD` is exactly `tests/test_scope_guard.py` (the brief doc `SPEC_BRIEF10.10.md` is committed separately by the orchestrator and is not part of the builder's §3 diff).
+2. `test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only` is present, asserts False for all five shapes outside the host-shape gate (`ip`,`ip_port`,`bucket_name`,`arn`,`bundle_id`) and True for at least one host shape, and its comment (a) cites `SPEC_BRIEF10.5` §1.3 PD-5, (b) frames the assertion as the function-level `:515` gate contract, and (c) notes only `bucket_name` is solely gate-determined and that H3 treats `bucket_name` as host at a higher layer (out of scope).
+3. RED evidence captured: a transient `:515` gate mutation flips the **`bucket_name`** assertion red (reverted, not committed). The brief does not claim the other four non-host assertions flip.
+4. The builder's committed code diff is exactly `tests/test_scope_guard.py`. `git diff --name-only d71ebf6..HEAD` additionally shows `SPEC_BRIEF10.10.md` (the orchestrator-authored brief, separate commits e870aaa + this amendment); that is expected and is not a §3 violation.
 5. No live network; no traffic outside the CyberGym range (no `socket`/`urllib`/`requests`/`httpx` added).
 
 This is §8 acceptance-grounding of existing behaviour. Not a §6 live-use change.
