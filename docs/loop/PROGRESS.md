@@ -4046,4 +4046,18 @@ not_changed:
 pending_action:
   seq: 46
   action: "Apply the two instruction-file edits above in the working tree, then record the outcome and verify."
-  outcome: pending
+  outcome: >
+    COMPLETE. Edited .claude/skills/kronos-continue/SKILL.md (now 93 lines): step 1 blueprint pointer
+    fixed to docs/loop/CE.md on kronos/loop-state; step 2 now names the highest `## SEQ N` block
+    (pending vs COMPLETE outcome) authoritative and the top `seq:` header advisory, and resolves
+    stale-header/summary disagreement itself instead of stopping; step 3 resolves routine uncertainty
+    itself; step 5 enumerates the only stop conditions (gate, scope, missing artifact/authorization,
+    external action, failure/circuit-breaker, unresolvable conflict, usage limit — a stale header is
+    NOT one); step 7 says derive status yourself and never ask the maintainer to copy a transcript or
+    re-confirm a recorded decision; Write-ahead section adds the no-header-correction-loop rule.
+    Edited CLAUDE.md '### Pausing or finishing — always report' with the same authoritative-read +
+    self-resolve + no-transcript rule. Both are untracked project-local working-tree files (no tracked
+    copy exists on any branch); no tracked file, product code, test, brief, research finding, or PR
+    state changed (git status --untracked-files=no is empty). v7 loop contract NOT edited. Top-of-file
+    header bumped 44 -> 46 in the SEQ 46 write-ahead commit (same-commit rule), resolving the prior
+    44-vs-45 lag. SPEC_BRIEF10.7 untouched: LOCAL @ 98586b3, not pushed, no PR, parked at GATE-2.
