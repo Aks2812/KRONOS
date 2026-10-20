@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 48
+seq: 49
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4171,3 +4171,40 @@ pending_action:
     working-tree files. No v7 contract edit; no product code, test, brief, research finding, or PR
     state. SPEC_BRIEF10.7 @ 98586b3 and SPEC_BRIEF10.8 @ a753aa9 both remain local, not pushed, no PR,
     parked at GATE-2. Top header bumped 47 -> 48 in the SEQ 48 write-ahead commit (same-commit rule).
+
+## SEQ 49 — MAINTAINER-AUTHORIZED DOCS COMMIT: write SPEC_BRIEF10.7.md + SPEC_BRIEF10.8.md to disk on the build branch (write-ahead)
+seq: 49
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: housekeeping/docs — maintainer authorized committing the two brief files; NOT a loop build step; 10.7 @ 98586b3 and 10.8 @ a753aa9 test work still parked at GATE-2 (unchanged). LOCAL COMMIT ONLY — no push, no PR, no merge.
+maintainer_authorization:
+  instruction: "commit the SPEC_BRIEF10.7 and 10.8 brief files"
+  basis: "explicit written maintainer instruction this turn (the Medium-to-do from the SEQ 48 completion report). Permission-bypass mode confirmed intentional; no alias/settings change."
+  scope_confirmed: "the two new brief .md files ONLY; local commit on the current build branch; NO push/PR/merge; no edit to implementation code, tests, other briefs, PRs, or research findings"
+provenance:
+  SPEC_BRIEF10.7.md: >
+    Reconstructed faithfully from the durable GATE-1 record in this file SEQ 38 (gate1_approval:
+    §3 = tests/test_scope_guard.py; Findings 1 & 2; decision_finding_1 / decision_finding_2;
+    FORK-AD / FORK-AE; 7-point acceptance_criteria_summary) plus the Option-A outcome at SEQ 43.
+    The 10.7 brief had never been written to disk; SEQ 38 is its authoritative text. Not fabricated.
+  SPEC_BRIEF10.8.md: >
+    Authored by the orchestrator this session, GATE-1-approved verbatim ("GATE-1 approve 10.8"),
+    recorded SEQ 47; includes the recorded build evidence (HEAD a753aa9, 2992 passed, etc.).
+commit_target:
+  branch: claude/findings-1-2-brief10-7
+  base: a753aa9 (current HEAD)
+  files_staged_explicitly: ["SPEC_BRIEF10.7.md", "SPEC_BRIEF10.8.md"]
+scope_audit_note: >
+  IMPORTANT for the eventual MERGE-GATE: after this commit the branch diff vs main (faac345) is
+  tests/test_scope_guard.py (the 10.7+10.8 build, +97/-15 cumulative) PLUS SPEC_BRIEF10.7.md and
+  SPEC_BRIEF10.8.md (new docs). The two brief .md files are a SEPARATE maintainer-authorized docs
+  commit, NOT a violation of either brief's §3 (which governs the build diff only). Any MERGE-GATE
+  scope re-measure must expect exactly: tests/test_scope_guard.py + SPEC_BRIEF10.7.md + SPEC_BRIEF10.8.md.
+not_changed:
+  - "no product code, test, other brief, research finding, or PR state"
+  - "no push, no PR opened, no merge"
+  - "SPEC_BRIEF10.7 @ 98586b3 and SPEC_BRIEF10.8 @ a753aa9 test work remain parked at GATE-2"
+pending_action:
+  seq: 49
+  action: "git add SPEC_BRIEF10.7.md SPEC_BRIEF10.8.md (explicit paths, never -A) on branch claude/findings-1-2-brief10-7; commit locally; record the new HEAD and verify the diff. No push."
+  outcome: pending
