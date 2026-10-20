@@ -3941,3 +3941,28 @@ pending_action:
     /kronos-continue and a bare "continue" do NOT authorize this. Until then: no push, no PR,
     no merge. F-A remains an open follow-up to schedule as its own brief.
   outcome: pending
+
+## SEQ 44 — MAINTAINER-AUTHORIZED .claude/ RAILS CHANGE: append Behavioral Guidelines to builder + reviewer agent defs (write-ahead)
+seq: 44
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: housekeeping — rails/doc change authorized by maintainer; NOT a loop build step; 10.7 still parked at GATE-2 (unchanged)
+maintainer_authorization:
+  instruction: "add it to the builder and reviewer agent defs too"
+  scope_confirmed: "Project only (AskUserQuestion) — this repo's .claude/agents/ only; NOT the global ~/.claude/agents/ copies"
+  basis: "CLAUDE.md §4 one-exception: explicit written maintainer instruction to change the pipeline rails, recorded here as such"
+context:
+  prior: "project CLAUDE.md already carries a '## Behavioral Guidelines' section (Karpathy-derived) + blueprint pointer fixed to docs/loop/CE.md"
+  karpathy_source: "github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md"
+  global_scope_note: "Karpathy guidelines remain KRONOS-project-only; global ~/.claude/CLAUDE.md is @RTK.md only, no behavioral content"
+pending_action:
+  seq: 44
+  action: >
+    Append a role-appropriate '## Behavioral guidelines' block (Karpathy-derived: think-before,
+    simplicity, surgical, goal-driven) with an explicit precedence note (KRONOS Hard rules / §3 scope
+    / §8 and the no-round-UNVERIFIABLE-up-to-PASS rule WIN on conflict) to BOTH:
+      - .claude/agents/kronos-builder.md
+      - .claude/agents/kronos-reviewer.md
+    Project working-tree copies only. No change to kronos-researcher, no change to global copies,
+    no product code, no PR/merge. 10.7 remains parked at GATE-2.
+  outcome: pending
