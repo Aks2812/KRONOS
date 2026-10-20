@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 60
+seq: 61
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4760,3 +4760,40 @@ pending_action:
     backlog is empty and FORK-2 may be complete.
   outcome: n/a (milestone record)
   carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome pending — to confirm when next touched or on maintainer instruction to commit them."
+
+## SEQ 61 — 10.9 (F-B) MERGE EVAL: base advanced to 2b1f3f3 (F-C); resolving test-file conflict within §3, then re-review + merge (write-ahead)
+seq: 61
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: autonomous 10.9 merge eval under SEQ 55. Maintainer instruction: resolve base-advance only within brief+scope, re-measure every prerequisite after any change, continue reviewer+merge if eligible, pause only on unresolvable conflict.
+
+base_advance:
+  branch: claude/finding-b-brief10-9
+  head_before: cefeabd
+  base_was: d71ebf6
+  main_now: 2b1f3f311b29bcf80e7c659741d2b9036a164c39
+  conflict: >
+    git merge-tree main<-cefeabd: single CONFLICT in tests/test_scope_guard.py (both sides append
+    tests at EOF). SPEC_BRIEF10.7.md merges clean (F-C did not touch it). The conflicted file is in
+    10.9's §3 (tests/test_scope_guard.py + SPEC_BRIEF10.7.md), so resolution is within brief+scope.
+  resolution: >
+    Keep BOTH end-of-file blocks: F-C's test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only
+    (already in main) AND 10.9's _row_uniform_violation + test_b109_fb_exclusion_determinant_is_row_uniform_by_design
+    + test_b109_fb_row_uniform_check_fails_on_mixed_determinant_row. Distinct, non-overlapping; no new
+    logic. The top import (line 6) auto-merges to main's version (adds _matches_hostname_pattern), which
+    10.9 needs nothing from. NO change outside §3.
+
+pending_action:
+  seq: 61
+  action: >
+    (1) In the primary checkout (on claude/finding-b-brief10-9): git merge origin/main; resolve the
+    single tests/test_scope_guard.py conflict by keeping both blocks; stage ONLY tests/test_scope_guard.py
+    (never git add -A); commit the merge. (2) Verify: git diff --name-only 2b1f3f3..HEAD is within
+    {SPEC_BRIEF10.7.md, tests/test_scope_guard.py}; both test_b1010 and test_b109_fb present; suite green
+    under .venv (0 failed). (3) Push claude/finding-b-brief10-9 (first push). (4) Re-dispatch kronos-reviewer
+    (independent) against brief 10.9 vs the new diff. (5) Re-measure ALL ten MERGE-GATE prerequisites
+    in-turn. (6) If eligible -> open PR, squash-merge (no --admin/--auto). Pause only on an unresolvable
+    material conflict or another defined pause condition.
+  outcome: pending
+  carried_forward_f_c: "F-C merged to main (SEQ 60, PR #17 @ 2b1f3f3); closed."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
