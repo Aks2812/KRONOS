@@ -4156,4 +4156,18 @@ not_changed:
 pending_action:
   seq: 48
   action: "Apply the two instruction-file edits above in the working tree, then record the outcome and verify (both are untracked project-local files; no tracked file changes)."
-  outcome: pending
+  outcome: >
+    COMPLETE. (1) CLAUDE.md: appended a "**Prioritize next actions.**" subsection under
+    "### Pausing or finishing — always report" with the five-tier ordered to-do list (Urgent-to-do >
+    High-to-do > Medium-to-do > Low-to-do > Optional-to-do), each item carrying verified evidence /
+    why-that-priority / dependencies / needs-approval, plus the guards: priority != risk severity
+    (not urgent merely security-related; authorized --dangerously-skip-permissions not urgent merely
+    enabled), rank only checkpoint+verified-repo-supported actions, one recommended next action + exact
+    approval if any, and "priority never grants authorization" (no gate/push/merge/scope). (2)
+    .claude/skills/kronos-continue/SKILL.md step 7 now routes the next-actions section through that
+    same CLAUDE.md policy (same tiers + guards). Verified: CLAUDE.md 3 policy-marker hits, skill 2;
+    global ~/.claude/CLAUDE.md has 0 (kept KRONOS-specific, not touched); `git status
+    --untracked-files=no` empty (no tracked file changed); both CLAUDE.md and .claude/ remain untracked
+    working-tree files. No v7 contract edit; no product code, test, brief, research finding, or PR
+    state. SPEC_BRIEF10.7 @ 98586b3 and SPEC_BRIEF10.8 @ a753aa9 both remain local, not pushed, no PR,
+    parked at GATE-2. Top header bumped 47 -> 48 in the SEQ 48 write-ahead commit (same-commit rule).
