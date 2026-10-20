@@ -3894,3 +3894,50 @@ pending_action:
         the row's type) — this moves the head and needs a rebuild + fresh review.
     No push / PR / merge performed this turn.
   outcome: pending
+
+## SEQ 43 — MAINTAINER CHOSE OPTION A ON SPEC_BRIEF10.7; F-A RECORDED AS FOLLOW-UP; PARKED AT GATE-2 (no push/PR/merge)
+seq: 43
+derived_at: 2026-10-19T00:00:00Z
+stage: FORK-2
+phase: 10.7 reviewed PASS + maintainer ACCEPTED (Option A); build still LOCAL ONLY @ 98586b3; no push, no PR; GATE-2 NOT crossed
+seq42_pending_action_outcome: >
+  Maintainer selected OPTION A: ACCEPT the row-level exclusion mapping as a known,
+  documented limit (consistent with reviewer's MERGE recommendation). No AMEND (Option B)
+  requested; head does NOT move. F-A recorded as a tracked follow-up (below). No rebuild.
+decision:
+  by: maintainer
+  instruction: "Go with Option A"
+  effect: "SPEC_BRIEF10.7 @ 98586b3 accepted on §8 mechanics; proceed TOWARD GATE-2 only."
+followups_recorded:
+  - id: F-A
+    severity: MEDIUM
+    locus: "tests/test_scope_guard.py:1434-1450"
+    summary: >
+      schema.py WRONG-TYPE citation is currently ACCEPTED (a line that exists but names the
+      wrong node type passes). Follow-up: tighten so the cited schema.py line must NAME the
+      row's own type, not merely exist. Deferred by Option A; not a merge blocker.
+  - id: F-B
+    severity: MEDIUM
+    class: prose/design (maintainer-approved as known limit)
+    summary: >
+      Exclusion-side mapping is ROW-level, not cell-level-determinant-true (port-ignored deny
+      via 10.r6). Accepted as documented limitation under Option A.
+  - id: F-C
+    severity: LOW
+    summary: "PD-5 host-identity scope note; non-host identities (IPv6/bucket/ARN/bundle) not PD-5-determined."
+verified_against_live_repo:
+  branch: claude/findings-1-2-brief10-7
+  head: 98586b3c3089efd015d6e8ddb286e10a3fb5d024
+  base_on_main: faac345073f03700c85dbb89c2c340e02a92a57e
+  scope: "tests/test_scope_guard.py only (72 insertions, 14 deletions) — diff faac345..98586b3"
+  pushed: false
+  pr: none
+pending_action:
+  seq: 43
+  action: >
+    PARKED AT GATE-2. SPEC_BRIEF10.7 is accepted (Option A) but remains LOCAL @ 98586b3.
+    Advancing requires a SEPARATE explicit written maintainer authorization that names the
+    exact PR number and head SHA, e.g. "push 98586b3, open PR, merge — PR #<n>, head 98586b3".
+    /kronos-continue and a bare "continue" do NOT authorize this. Until then: no push, no PR,
+    no merge. F-A remains an open follow-up to schedule as its own brief.
+  outcome: pending
