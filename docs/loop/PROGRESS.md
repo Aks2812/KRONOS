@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 49
+seq: 50
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4217,3 +4217,40 @@ pending_action:
     (@ a753aa9) both remain parked at GATE-2. Top header bumped 48 -> 49 in the SEQ 49 write-ahead
     commit (same-commit rule). NOTE for MERGE-GATE: the branch now carries the two brief docs in
     addition to the test change; a scope re-measure must expect those three paths.
+
+## SEQ 50 — MAINTAINER-AUTHORIZED: PUSH claude/findings-1-2-brief10-7 @ e8c38e5 + OPEN DRAFT PR TO main; STOP BEFORE MERGE (write-ahead)
+seq: 50
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: GATE-2 partial — maintainer authorized PUSH + OPEN PR ONLY for the 10.7+10.8 build branch; merge explicitly WITHHELD. This write-ahead precedes the push (the consequential/outward action).
+maintainer_authorization:
+  instruction: "I authorize you to Push + open PR only (stop before merge)"
+  context: "follows the two offered forms; maintainer chose the push+open-PR-only form, merge deferred to a separate authorization"
+  scope_confirmed: >
+    Push branch claude/findings-1-2-brief10-7 at head e8c38e5 to origin, and open ONE pull request to
+    base main. DO NOT merge. DO NOT mark ready (opening as DRAFT, the conservative reading of
+    'stop before merge'). No --admin, no --auto, no merge command of any kind this turn.
+  not_authorized: "merging; marking the PR ready; any later merge still needs a SEPARATE authorization naming the exact PR number and head SHA with all ten MERGE-GATE prerequisites re-measured in that same turn."
+push_target:
+  branch: claude/findings-1-2-brief10-7
+  head: e8c38e5ed2d523e5a09b9be52c63266579180375
+  remote: origin
+  pre_state: "remote branch absent; no PR exists (verified this turn)"
+pr_plan:
+  base: main
+  head: claude/findings-1-2-brief10-7
+  draft: true
+  contents: >
+    diff vs main (faac345) = tests/test_scope_guard.py (SPEC_BRIEF10.7 Findings 1&2 @ 98586b3 +
+    SPEC_BRIEF10.8 Finding F-A @ a753aa9, cumulative) PLUS SPEC_BRIEF10.7.md + SPEC_BRIEF10.8.md
+    (docs @ e8c38e5). Exactly three paths.
+not_changed:
+  - "no merge; no product code, test, brief, or research finding edited this turn"
+  - "SPEC_BRIEF10.7 and SPEC_BRIEF10.8 remain at head e8c38e5; GATE-2 merge still pending maintainer authorization"
+pending_action:
+  seq: 50
+  action: >
+    git push -u origin claude/findings-1-2-brief10-7 (explicit branch, head e8c38e5); then
+    gh pr create --draft --base main --head claude/findings-1-2-brief10-7 with a descriptive title/body.
+    Record the pushed remote SHA and the new PR number, then STOP (no merge, not marked ready).
+  outcome: pending
