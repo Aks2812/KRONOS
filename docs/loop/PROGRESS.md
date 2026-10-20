@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 54
+seq: 55
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4498,3 +4498,69 @@ pending_action:
   pr: none
   build_head: cefeabdd1c6b326c253460c3fb3332ccdc8b55e8
   next_trigger: "maintainer /kronos-continue"
+
+## SEQ 55 — MAINTAINER-AUTHORIZED AUTHORITY-MODEL CHANGE: continuous Opus orchestrator with FULL AUTONOMY incl. merge (write-ahead)
+seq: 55
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: rails/authority-model change (write-ahead). No R&D build in this entry. 10.9 state unchanged until acted on under new model.
+
+authorization:
+  source: "/home/void/context.md (2026-10-20) + explicit in-session confirmation 'Full autonomy incl. merge' (AskUserQuestion, this session)."
+  nature: >
+    Explicit written maintainer instruction to change the loop rails AND the approval-gate
+    architecture. Recorded here "as such" per CLAUDE.md §4 (.claude/ exception). This is a
+    material architecture change (context.md pause-exception #2) that the maintainer has
+    expressly chosen; it supersedes the prior-turn standing instruction "don't push / stop
+    at any approval gate."
+
+authority_model:
+  continuous_orchestrator: "The active Opus session is the continuous supervisory orchestrator. EVERY researcher/builder/reviewer handoff returns to Opus first; Opus assesses evidence, updates the checkpoint, decides the next permitted action, and dispatches the next role. Workers never ask the maintainer for routine decisions and never report a final recommendation directly to the maintainer before Opus synthesizes it."
+  opus_may_autonomously:
+    - "choose and sequence backlog work"
+    - "dispatch Sonnet researcher, Sonnet builder, Haiku reviewer"
+    - "approve routine internal GATE-1 progression after validating the brief and its evidence"
+    - "create local branches, implement approved work, run verification, review results, commit checkpoints, continue to the next eligible task"
+    - "resolve routine priority, implementation, and wording decisions from evidence"
+    - "carry out normal GitHub lifecycle actions INCLUDING push, open PR, and MERGE to main, when the reviewed change stays within established KRONOS goals and recorded repository scope"
+  gate_change: >
+    GATE-1 and GATE-2 are NO LONGER exclusively the maintainer's. Opus self-approves routine
+    GATE-1 (brief + evidence validated) and self-authorizes GATE-2 merges within scope. The
+    MERGE-GATE discipline is PRESERVED but self-validated: Opus must still re-measure all ten
+    MERGE-GATE prerequisites in the same turn as any merge, name the exact PR number and head
+    SHA, and never merge on a red prerequisite.
+  preserved_boundaries_unchanged:
+    - "No model may infer or create client or target authorization (explicitly preserved by context.md)."
+    - "CyberGym only; no live targets; no scope expansion; assert no live network / no traffic outside the CyberGym range."
+    - "Never edit src/kronos/manifest.py, .github/, or anything under cybergym/."
+    - "Never git add -A on a brief-scoped branch; stage explicit paths."
+    - "Only a GATE-1-approved brief's §3 files may change."
+    - "Write-ahead remains binding before any consequential action (now including autonomous merges): write + push the checkpoint, confirm, then act."
+    - "At a usage limit: stop."
+    - ".claude/ rails change only on explicit written maintainer instruction recorded here (this is one)."
+  pause_only_for:
+    - "1. Physical interactive authentication, credential entry, or device confirmation."
+    - "2. An action that would materially change KRONOS goals, success criteria, approved scope, or architecture direction."
+    - "3. A missing or ambiguous target, client authorization, legal boundary, or external testing scope."
+    - "4. A material conflict, failed verification, reviewer finding, circuit breaker (3 attempts), or blocker unresolvable from existing evidence."
+    - "5. A usage limit stopping the active session."
+    - "(A routine report is NOT a pause.)"
+
+rails_edited_this_turn:
+  authorization_recorded: true
+  files:
+    - "CLAUDE.md (untracked working-tree on claude/finding-b-brief10-9): encode continuous-orchestrator + full-autonomy-incl-merge model; rewrite §4 GATE-1/GATE-2/merge boundary accordingly; preserve the boundaries listed above."
+    - ".claude/skills/kronos-continue/SKILL.md (untracked): reflect autonomous gate progression, workers-report-to-Opus-first, and context.md pause-exceptions 1-5."
+  not_changed: "global agent templates; model defaults; permission settings (.claude/settings.local.json)."
+
+pending_action:
+  seq: 55
+  action: >
+    Enact the two rails edits above (CLAUDE.md + /kronos-continue skill). Then continue the
+    loop autonomously under the new model: (a) self-validate and self-approve GATE-1 for
+    SPEC_BRIEF10.10 (Finding F-C), create branch off main @ d71ebf6, dispatch the builder on
+    tests/test_scope_guard.py only; (b) evaluate the parked 10.9 (cefeabd) for merge by
+    re-measuring all ten MERGE-GATE prerequisites. No boundary above is relaxed.
+  outcome: pending
+  carried_forward_10_9: "SPEC_BRIEF10.9 (F-B) remains built + reviewed PASS at cefeabd on claude/finding-b-brief10-9, not pushed, no PR (SEQ 53/54). Now eligible for autonomous merge under this model subject to the ten MERGE-GATE prerequisites."
+  carried_forward_f_c: "SPEC_BRIEF10.10 (F-C) brief drafted, research in .claude/pipeline/02-research/findings.md; was pending maintainer GATE-1, now self-approvable by Opus."
