@@ -2078,3 +2078,31 @@ def test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens():
               f"excl_diffs={sum(oe[k] != head_excl[k] for k in oe)}", file=_sys.stderr)
     _, mid_excl = trees["2a676a8"]
     assert [k for k in mid_excl if mid_excl[k] != head_excl[k]] != []
+
+
+# --- SPEC_BRIEF10.10 (Finding F-C): PD-5 reaches host identities only -------
+from kronos.scope_guard import _matches_hostname_pattern  # noqa: E402
+
+
+def test_b1010_fc_pd5_both_ends_glob_is_host_identity_only():
+    # SPEC_BRIEF10.5 §1.3 (PD-5): "both-ends glob compares HOST identity
+    # only". As an exclusion it matches host-ish shapes (url/host/host_port)
+    # whose host component matches, and nothing else: non-host shapes never
+    # match. Expected values come from that prose, not from running the code.
+    pattern = _P4_BOTH_ENDS_GLOB
+    host_targets = {
+        "url": "https://x.acme.com/p",
+        "host": "x.acme.com",
+        "host_port": "x.acme.com:443",
+    }
+    for shape, target in host_targets.items():
+        assert _matches_hostname_pattern(pattern, target, shape, is_exclusion=True) is True, (shape, target)
+    non_host_targets = {
+        "ip": "10.0.0.1",
+        "ip_port": "10.0.0.1:443",
+        "bucket_name": "x.acme.com",
+        "arn": "arn:aws:s3:::x.acme.com",
+        "bundle_id": "com.acme.x",
+    }
+    for shape, target in non_host_targets.items():
+        assert _matches_hostname_pattern(pattern, target, shape, is_exclusion=True) is False, (shape, target)
