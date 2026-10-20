@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 44
+seq: 46
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4007,3 +4007,43 @@ pending_action:
     `baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md`. Header now agrees with the highest recorded
     block (## SEQ 44). No SEQ 1..44 block or body content changed; no product code, brief, agent, or
     skill file touched. SPEC_BRIEF10.7 unchanged: LOCAL @ 98586b3, not pushed, no PR, parked at GATE-2.
+
+## SEQ 46 — MAINTAINER-AUTHORIZED RAILS CHANGE: harden /kronos-continue skill + pause-report instructions against the stale-header loop (write-ahead)
+seq: 46
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: housekeeping — rails/instruction change authorized by maintainer; NOT a loop build step; 10.7 still parked at GATE-2 (unchanged)
+maintainer_authorization:
+  instruction: >
+    "Update the KRONOS /kronos-continue skill and project pause-report instructions so the loop
+    resolves routine uncertainty itself from authoritative sources, does not chase the top-level
+    `seq:` header by creating another sequence for each header correction, and reports concisely.
+    Modify only the resume skill and pause-report instructions; follow the write-ahead/checkpoint
+    procedure; do not modify implementation code, tests, briefs, research findings, or PR state; do
+    not push or merge implementation work. Keep 10.7 parked."
+  basis: "CLAUDE.md §4 one-exception: explicit written maintainer instruction to change the loop's own rails, recorded here as such. Permission-bypass mode confirmed intentional; no alias/settings change made."
+durable_fix:
+  problem: >
+    The top-of-file `seq:`/`derived_at`/`baseline` header is a convenience pointer that can lag the
+    highest recorded `## SEQ N` block. A /kronos-continue run read the stale top `seq:` as
+    authoritative and stopped; the follow-up "correction" then risked an endless header-correction
+    loop (each correction is itself a new SEQ that re-lags the header).
+  rule: >
+    (1) Authoritative current state = the highest-numbered `## SEQ N` block (its `pending_action`
+    AND its recorded `outcome`; a `pending` outcome means not-yet-done, `COMPLETE` means done).
+    (2) The top-of-file header is advisory only and may lag; it is NEVER authoritative and a stale
+    header alone is NEVER a stop condition — resolve from the highest block + live repo and continue.
+    (3) The header is kept in sync ONLY by updating it in the SAME commit that appends a new
+    `## SEQ N` block; NEVER open a new SEQ solely to correct the header.
+  demonstrated_here: "this write-ahead commit appends ## SEQ 46 AND bumps the top header 44 -> 46 in the same commit, resolving the prior 44-vs-45 lag without a standalone correction sequence."
+files_to_change:
+  - ".claude/skills/kronos-continue/SKILL.md (working-tree, project-local, untracked)"
+  - "CLAUDE.md '### Pausing or finishing — always report' section (working-tree, project-local, untracked)"
+not_changed:
+  - "no v7 loop-contract edit (latent top-`seq:` ambiguity explained to maintainer; durable fix applied in skill + pause instructions; mirroring into v7 left as an optional maintainer call)"
+  - "no product code, test, brief, research finding, or PR state; no push/merge of implementation work"
+  - "SPEC_BRIEF10.7 remains LOCAL @ 98586b3, not pushed, no PR, parked at GATE-2 (Option A = accept row-level, recorded SEQ 43) — not reinterpreted"
+pending_action:
+  seq: 46
+  action: "Apply the two instruction-file edits above in the working tree, then record the outcome and verify."
+  outcome: pending
