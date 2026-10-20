@@ -37,5 +37,5 @@ RFC-6874 percent-encoding; the `CLOUD_RESOURCE` rule-5 row; §5.5 enumeration mi
 6. RED-first recorded for both guards.
 7. Scope held to Findings 1 & 2.
 
-## Known accepted limitation (Option A, SEQ 43)
-The exclusion-side mapping is ROW-level, not cell-level-determinant-true (port-ignored deny via `10.r6`); accepted as a documented limit. Follow-up **F-A** (schema.py wrong-/missing-type citation) is tracked separately in `SPEC_BRIEF10.8.md`.
+## Exclusion-side determinant is row-uniform BY DESIGN (derived; SPEC_BRIEF10.9, Finding F-B)
+TESTED claim: the DECLARED determinant map `_EXCL_DETERMINANT` is row-uniform over `_EXCLUSION_GRID` for the three named patterns, as asserted by `test_b109_fb_exclusion_determinant_is_row_uniform_by_design` (with a negative self-check proving the check can fail). RATIONALE (not tested, not an absolute): the authors declared the map row-level because rule 6 (deny-broad) compares HOST-IDENTITY ONLY (`src/kronos/scope_guard.py` rule 6; `SPEC_BRIEF10.5.md` §1.3 PD-5), so port, scheme and path -- the axes that distinguish target columns -- are discarded; this is the reason the map is declared row-uniform. The test does not verify that causal derivation. This is not a gap and no verdict changes. Follow-up **F-A** (schema.py wrong-/missing-type citation) is tracked separately in `SPEC_BRIEF10.8.md`.
