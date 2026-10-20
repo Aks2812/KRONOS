@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 55
+seq: 56
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4564,3 +4564,41 @@ pending_action:
   outcome: pending
   carried_forward_10_9: "SPEC_BRIEF10.9 (F-B) remains built + reviewed PASS at cefeabd on claude/finding-b-brief10-9, not pushed, no PR (SEQ 53/54). Now eligible for autonomous merge under this model subject to the ten MERGE-GATE prerequisites."
   carried_forward_f_c: "SPEC_BRIEF10.10 (F-C) brief drafted, research in .claude/pipeline/02-research/findings.md; was pending maintainer GATE-1, now self-approvable by Opus."
+
+## SEQ 56 — GATE-1 SELF-APPROVED (SPEC_BRIEF10.10, Finding F-C); AUTHORING BRIEF + DISPATCHING BUILDER on tests/test_scope_guard.py (write-ahead)
+seq: 56
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: F-C loop opened under the SEQ 55 full-autonomy model. Opus self-approved routine GATE-1. No build committed yet.
+
+authority: "SEQ 55 authority model — Opus self-approves routine GATE-1 after validating the brief and its evidence. Maintainer instruction this session: 'Continue F-C under the existing autonomous policy.'"
+
+gate1_self_approval:
+  brief: "SPEC_BRIEF10.10 (Finding F-C), Option 1 — behaviorally ground PD-5's host-identity-only scope with a test-only conformance assertion."
+  validated_against:
+    - "research findings .claude/pipeline/02-research/findings.md (kronos-researcher, claude-sonnet-5)"
+    - "src/kronos/scope_guard.py:515 shape gate restricts _matches_hostname_pattern (PD-5 both-ends-glob branch) to ('url','host','host_port')"
+    - "SPEC_BRIEF10.5 §1.3 PD-5 prose: host identity only (expected values derive from prose, not observed behaviour)"
+    - "untested rationale comment tests/test_scope_guard.py (F-B region) + _EXCL_DETERMINANT citing 10.5.pd5e across all 14 targets"
+  scope: "§3 = tests/test_scope_guard.py ONLY. Test-only; no product-behaviour change. G2 (more effective: closes grounding gap); G1 untouched; G3 not relaxed."
+  independence: "Base main @ d71ebf6 (has 10.7+10.8; NOT 10.9). Append-only new test; does not edit the F-B comment/grid. Independent of parked 10.9; no reliance on 10.9 merging."
+
+build_target:
+  branch: claude/finding-c-brief10-10
+  base: d71ebf6c5074f3351e5fdc94ce8277c464587db8
+  worktree: "separate git worktree (primary checkout stays on claude/finding-b-brief10-9 with the SEQ 55 untracked rails edits intact)"
+
+pending_action:
+  seq: 56
+  action: >
+    Author + commit SPEC_BRIEF10.10.md on claude/finding-c-brief10-10 (off main d71ebf6, separate
+    worktree). Dispatch kronos-builder (claude-sonnet-5-5) to add ONE conformance test to
+    tests/test_scope_guard.py asserting _matches_hostname_pattern returns False for non-host shapes
+    (ip, ip_port, bucket_name, arn, bundle_id) and host-matches for host shapes (url, host,
+    host_port) on the both-ends-glob pattern; expected values from SPEC_BRIEF10.5 §1.3 PD-5 prose;
+    builder captures RED via a transient (reverted, uncommitted) shape-gate mutation. Then dispatch
+    kronos-reviewer (independent), then orchestrator step-5 verify. Stage explicit paths; never
+    git add -A; §3 = tests/test_scope_guard.py only.
+  outcome: pending
+  carried_forward_10_9: "10.9 (F-B) still parked at cefeabd, not pushed, no PR; autonomous merge evaluation (ten MERGE-GATE prerequisites) deferred until after F-C lands or independently."
+  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) remain untracked in the primary checkout; outcome still pending (to be confirmed in a later entry)."
