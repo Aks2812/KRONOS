@@ -1816,9 +1816,11 @@ _EXCLUSION_GRID = {
 # SPEC_BRIEF10.7 Finding 1: expected DETERMINANT clause for every exclusion
 # cell of these rows (prose: SPEC_BRIEF10 §1.1 r7 for address entries;
 # SPEC_BRIEF10.5 §1.3 PD-5 exclusion side for the both-ends glob).
-# Row-uniform BY DESIGN (SPEC_BRIEF10.9 F-B): rule 6 deny-broad compares
-# host-identity only, so port/scheme/path (the column axes) are discarded and
-# every column of an exclusion row shares one determinant clause.
+# Row-uniform BY DESIGN (SPEC_BRIEF10.9 F-B). Rationale (not itself tested; the
+# test asserts only that this declared map is row-uniform over the grid): rule 6
+# deny-broad compares host-identity only, so port/scheme/path (the column axes)
+# are discarded, which is why the map is declared with one determinant clause
+# per exclusion row.
 _EXCL_DETERMINANT = {
     _P4_BOTH_ENDS_GLOB: "10.5.pd5e",
     _P5_BARE_IP: "10.r7",
