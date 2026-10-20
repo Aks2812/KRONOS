@@ -4253,4 +4253,19 @@ pending_action:
     git push -u origin claude/findings-1-2-brief10-7 (explicit branch, head e8c38e5); then
     gh pr create --draft --base main --head claude/findings-1-2-brief10-7 with a descriptive title/body.
     Record the pushed remote SHA and the new PR number, then STOP (no merge, not marked ready).
-  outcome: pending
+  outcome: >
+    COMPLETE. Pushed claude/findings-1-2-brief10-7 to origin (new branch, remote head =
+    e8c38e5ed2d523e5a09b9be52c63266579180375). Opened PR #16 (DRAFT) base main <- head
+    claude/findings-1-2-brief10-7. Verified via gh pr view 16: number=16, isDraft=true, state=OPEN,
+    baseRefName=main, headRefOid=e8c38e5, mergeable=MERGEABLE, mergedAt=null (NOT merged, NOT marked
+    ready). Diff vs main (faac345) = exactly three paths: tests/test_scope_guard.py + SPEC_BRIEF10.7.md
+    + SPEC_BRIEF10.8.md. No merge performed; no --admin/--auto; no ready-flag. GATE-2 merge remains
+    withheld and requires a SEPARATE authorization naming PR #16 + head e8c38e5 with all ten MERGE-GATE
+    prerequisites re-measured in that same turn. Top header bumped 49 -> 50 in the SEQ 50 write-ahead
+    commit.
+  pr_16:
+    state: open
+    draft: true
+    merged: false
+    base: main
+    head: e8c38e5ed2d523e5a09b9be52c63266579180375
