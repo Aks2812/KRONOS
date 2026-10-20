@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 58
+seq: 59
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4688,4 +4688,43 @@ pending_action:
   outcome: pending
   build_state: "prior test @ 366b740 on claude/finding-c-brief10-10 (pushed); brief @ e870aaa; to be amended."
   carried_forward_10_9: "10.9 (F-B) parked at cefeabd, merge eval still queued, unaffected."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
+
+## SEQ 59 — F-C REVIEW PASS + STEP-5 VERIFIED; SELF-AUTHORIZING GATE-2 MERGE of SPEC_BRIEF10.10; re-measuring ten MERGE-GATE prerequisites (write-ahead)
+seq: 59
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: F-C build attempt 2 reviewed PASS (all §8), orchestrator step-5 verified. Autonomous GATE-2 merge under SEQ 55 authority. Branch protection NOT bypassable — if GitHub blocks, HALT (no --admin).
+
+seq58_pending_action_outcome: >
+  COMPLETE. Brief amended to R2 framing (SPEC_BRIEF10.10.md @ 5f25081, sha256
+  7059a9708f928a391bfa3d057cab27b6b0ea488053af687e92c4150a73e832eb). kronos-builder attempt 2
+  renamed test -> test_b1010_fc_pd5_hostname_pattern_gate_is_host_shapes_only, honest framing + H3
+  caveat, top-level import (noqa removed), bucket_name RED captured/reverted; HEAD dd82f4e, pushed.
+  kronos-reviewer (claude-haiku-5-5, independent) re-review: PASS all §8, F1+F2 resolved, MERGE
+  recommended; new findings LOW/INFO non-blocking. Orchestrator step-5 (independent, under .venv):
+  diff d71ebf6..dd82f4e = SPEC_BRIEF10.10.md + tests/test_scope_guard.py only; src/cybergym/.github/.claude
+  unchanged; test present @ :2085; no socket/urllib/requests/httpx added; SUMMARY 2993 passed, 0 failed.
+
+merge_target:
+  branch: claude/finding-c-brief10-10
+  head: dd82f4e753da8b977590a689934550a0c71b8bef
+  base: main (origin/main d71ebf6)
+  self_authorization: "Opus self-authorizes this GATE-2 merge under CLAUDE.md 'Authority model' (SEQ 55). PR number assigned on creation THIS turn; authorization names that PR number + head dd82f4e before merge."
+
+pending_action:
+  seq: 59
+  action: >
+    (1) Open a PR claude/finding-c-brief10-10 -> main. (2) Re-measure all ten MERGE-GATE
+    prerequisites in this same turn: 1 scope (diff name-only within §3 tests/test_scope_guard.py +
+    brief doc); 2 branch-protection ruleset present; 3 PR ready (not draft); 4 PR OPEN; 5 independent
+    review PASS (+5b step-5 byte-consistent); 6 required status checks clean/none; 7 suite green under
+    .venv (2993 passed/0 failed); 8 mergeable MERGEABLE + mergeStateStatus CLEAN + head not ancestor of
+    origin/main; 9 self-authorization this turn naming PR# + head dd82f4e; 10 clean tree (only known
+    untracked rails + worktree .venv symlink, recorded). (3) If ALL pass -> gh pr merge <n> --squash
+    --match-head-commit dd82f4e753da8b977590a689934550a0c71b8bef (NEVER --admin, NEVER --auto). Record
+    new squash-merge main SHA + PR MERGED. If any prerequisite (esp. 8 CLEAN/MERGEABLE under branch
+    protection) fails -> HALT and report; do not retry with --admin.
+  outcome: pending
+  carried_forward_10_9: "10.9 (F-B) parked at cefeabd; merge eval still queued, independent of F-C."
   carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
