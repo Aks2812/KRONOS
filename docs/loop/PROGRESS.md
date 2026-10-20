@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 47
+seq: 48
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4123,3 +4123,37 @@ pending_action:
     head SHA. Step-5 verification.md written to .claude/pipeline/05-verify/ (orchestrator folder,
     untracked). UNVERIFIABLE (non-blocking): runtime traffic not instrumented; SPEC_BRIEF10.8 not
     committed as a repo file (content recorded in this SEQ 47 block).
+
+## SEQ 48 — MAINTAINER-AUTHORIZED RAILS CHANGE: add prioritized next-action policy to pause/finish reporting (root CLAUDE.md + /kronos-continue skill) (write-ahead)
+seq: 48
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: housekeeping — rails/instruction change authorized by maintainer; NOT a loop build step; 10.7 @ 98586b3 and 10.8 @ a753aa9 both still parked at GATE-2 (unchanged)
+maintainer_authorization:
+  instruction: >
+    "Stay parked & proceed" + pasted task: update KRONOS pause/completion reporting to prioritize next
+    actions consistently; save canonical concise policy in repo-root CLAUDE.md under the existing
+    pause/finish instructions; update the project-local /kronos-continue skill to follow the same policy;
+    keep it KRONOS-specific, do NOT add to global ~/.claude/CLAUDE.md; follow the checkpoint procedure;
+    do NOT resume R&D or modify implementation code, tests, briefs, PRs, or research findings.
+  basis: "CLAUDE.md §4 one-exception: explicit written maintainer instruction to change the loop's own rails, recorded here as such. Permission-bypass mode confirmed intentional; no alias/settings change made."
+policy_added:
+  ordering: "Urgent > High > Medium > Low > Optional (five-tier, highest first)"
+  per_item_fields: "verified evidence; why that priority; dependencies; whether it needs maintainer approval"
+  guards:
+    - "Priority is NOT risk severity — not urgent merely because security-related."
+    - "--dangerously-skip-permissions (intentionally authorized) is NOT urgent merely because enabled."
+    - "Rank only actions supported by the current checkpoint + verified repo state."
+    - "Priority NEVER grants authorization: no item authorizes crossing a human gate, push, merge, or scope expansion."
+    - "Name one recommended next action + the exact approval it needs, if any; ask approval only for the next action that needs it, not prematurely for later items."
+files_to_change:
+  - "CLAUDE.md — append a 'Prioritize next actions' subsection under '### Pausing or finishing — always report' (repo root; untracked working tree)"
+  - ".claude/skills/kronos-continue/SKILL.md — step 7 references the same policy (project-local; untracked working tree)"
+not_changed:
+  - "global ~/.claude/CLAUDE.md — NOT touched (policy kept KRONOS-specific)"
+  - "no v7 loop-contract edit; no product code, test, brief, research finding, or PR state"
+  - "SPEC_BRIEF10.7 @ 98586b3 and SPEC_BRIEF10.8 @ a753aa9 both remain local, not pushed, no PR, parked at GATE-2"
+pending_action:
+  seq: 48
+  action: "Apply the two instruction-file edits above in the working tree, then record the outcome and verify (both are untracked project-local files; no tracked file changes)."
+  outcome: pending
