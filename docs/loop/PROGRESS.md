@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 56
+seq: 57
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4602,3 +4602,58 @@ pending_action:
   outcome: pending
   carried_forward_10_9: "10.9 (F-B) still parked at cefeabd, not pushed, no PR; autonomous merge evaluation (ten MERGE-GATE prerequisites) deferred until after F-C lands or independently."
   carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) remain untracked in the primary checkout; outcome still pending (to be confirmed in a later entry)."
+
+## SEQ 57 — SPEC_BRIEF10.10 (F-C) REVIEW: FAIL (§8.3); ESCALATE — PD-5/bucket_name grounding ruling needed; circuit-breaker 1/3
+seq: 57
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: F-C build reviewed; independent FAIL on §8.3; orchestrator escalates (pause conditions #4 + #2). No merge. 10.9 unchanged.
+
+seq56_pending_action_outcome: >
+  COMPLETE. Brief SPEC_BRIEF10.10.md authored + committed e870aaa (sha256
+  f88d0d836a77ecbb5be9b88386cf741a309d57ad81120725151c604b52385668); branch
+  claude/finding-c-brief10-10 off main d71ebf6 pushed; kronos-builder added
+  test_b1010_fc_pd5_both_ends_glob_is_host_identity_only (HEAD 366b740, pushed); then
+  kronos-reviewer ran independently.
+
+review:
+  reviewer: "kronos-reviewer (claude-haiku-5-5), independent, not given builder report"
+  build_head: 366b740afa3e815ff6f1210c1b31037d7a57e061
+  brief_sha256_verified: f88d0d836a77ecbb5be9b88386cf741a309d57ad81120725151c604b52385668
+  diff_name_only: ["SPEC_BRIEF10.10.md", "tests/test_scope_guard.py"]
+  env: ".venv (kuzu 0.11.3); worktree had no .venv so the system-python run showed an unrelated pre-existing kuzu ModuleNotFoundError — orchestrator confirmed test_b104_5_3_5_ passes under .venv."
+  verdict: "FAIL (§8.3 as worded); DO NOT MERGE"
+  criteria:
+    s8_1: "PASS — SUMMARY 2993 passed, 0 failed under .venv"
+    s8_2: "PASS — test present (tests/test_scope_guard.py:2087), asserts True for url/host/host_port, False for ip/ip_port/bucket_name/arn/bundle_id, cites SPEC_BRIEF10.5 §1.3 PD-5"
+    s8_3: "FAIL as worded — see F1"
+    s8_4: "PASS (caveat: diff includes the orchestrator's brief doc, which the brief's parenthetical excuses)"
+    s8_5: "PASS — no socket/urllib/requests/httpx added"
+    s6: "n/a — no src/ change; product behaviour unchanged"
+  findings:
+    F1: "LOW-MED. Brief §5.1/§8.3 claim removing the :515 gate flips 'the non-host assertions' red; measured: ONLY bucket_name flips (1 of 5). ip/ip_port host 10.0.0.1 does not fnmatch *.acme.com*; arn/bundle_id host is None -> guard returns False. The four non-bucket non-host assertions pass for non-gate reasons -> incidental change-detectors, not PD-5 grounding. Claim-vs-measurement gap; not to be softened silently."
+    F2: "LOW (needs maintainer ruling). The only gate-determined non-host shape, bucket_name, is itself contested: scope_guard.py:397-402 + SPEC_BRIEF10.3 H3 treat bucket_name as host on the exclusion path, while the :515 gate excludes it. PD-5 prose (SPEC_BRIEF10.5 §1.3) does not adjudicate. The test pins a judgment the brief never flags."
+    F3: "INFO — tests/test_scope_guard.py:2084 mid-file import uses # noqa: E402 (style)."
+    F4: "INFO — each non-host shape checked with one target; consistent with the test; not a defect."
+
+orchestrator_semantic_review: >
+  Accepts the FAIL. Root cause is a flaw in the brief the orchestrator authored: Option-1 assumed
+  the :515 gate determines all five non-host shapes; it determines only bucket_name, and bucket_name
+  is semantically contested (F2). A builder retry cannot resolve F2 — it is a judgment the governing
+  prose does not settle and the code evidence contradicts itself (gate vs H3). Therefore ESCALATE
+  rather than spend a circuit-breaker retry.
+
+outcome: ESCALATE (pause conditions #4 reviewer-finding-unresolvable-from-evidence, and #2 may define PD-5 success criteria). Circuit-breaker attempt 1/3; no retry spent.
+
+pending_action:
+  seq: 57
+  action: >
+    Await maintainer ruling on F2 (is bucket_name a PD-5 host identity for this grounding, given H3
+    treats it as host on the exclusion path?). Then the orchestrator re-scopes SPEC_BRIEF10.10 to
+    assert only what the :515 gate genuinely determines (fix §5.1/§8.3 wording per F1) and re-runs
+    builder + reviewer. Options offered: (R2) ground the function-level :515 gate contract explicitly
+    and honestly, distinct from H3 routing; or (R3) abandon Option-1 and defer F-C to a doc-softening
+    (prior Option 2) after 10.9 merges.
+  build_state: "test_b1010 committed 366b740 on claude/finding-c-brief10-10 (pushed), NOT merged; brief SPEC_BRIEF10.10.md @ e870aaa."
+  carried_forward_10_9: "10.9 (F-B) still parked at cefeabd, not pushed, no PR; merge eval (ten MERGE-GATE prerequisites) still queued, unaffected by F-C."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
