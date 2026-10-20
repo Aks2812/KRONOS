@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 52
+seq: 53
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4368,4 +4368,48 @@ pending_action:
     Dispatch kronos-builder on SPEC_BRIEF10.9, §3 = tests/test_scope_guard.py + SPEC_BRIEF10.7.md ONLY,
     base d71ebf6, branch claude/finding-b-brief10-9. Then dispatch kronos-reviewer (independent). Builder
     stages explicit paths only; never git add -A; no push/PR/merge.
+  outcome: pending
+
+## SEQ 53 — SPEC_BRIEF10.9 REVIEW FAIL (1 check: §2 doc over-claim); RETURN TO BUILDER, circuit-breaker attempt 1/3 (write-ahead)
+seq: 53
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: loop review FAIL -> step 3 (builder) with evidence. Bounded prose-softening fix. 10.9 LOCAL @ 515ecfa; no push/PR/merge.
+build_under_review:
+  branch: claude/finding-b-brief10-9
+  head: 515ecfa3a9b381ac1dd920a93a9971c875d299af
+  base: d71ebf6
+review_result:
+  verdict: FAIL (1 of 6 checks)
+  by: kronos-reviewer (independent, not given builder report)
+  passing: "scope (2 files), no-behavior-change (zero real-grid verdict/clause edits), positive test valid (archive-mutation flips it red), negative guard valid (archive-break flips it red), keep-green (2366-count/byte-gate/determinant assertion), suite 0 failed (scope_guard 2994 passed; full dir 3461 passed, 1 skipped, under .venv with sockets patched)"
+  failing_check: "§2 documented-claims over-claim at SPEC_BRIEF10.7.md note ('Exclusion-side determinant is row-uniform BY DESIGN')"
+  detail: >
+    The note asserts the mapping is row-uniform 'by construction', that every column 'necessarily shares
+    one determinant clause', and that this 'is asserted by' test_b109_fb. But test_b109_fb proves ONLY
+    that the hand-written _EXCL_DETERMINANT map is row-uniform over the hand-written _EXCLUSION_GRID; the
+    causal rule-6/PD-5 derivation is NOT tested. Per §2, prose must claim only what ships/what a test
+    proves. Code supports the rationale (scope_guard.py _matches_url_exclusion_host_identity :619-646;
+    _matches_explicit_port_pattern :585-606 port-blind for exclusions) but that support is prose, not a
+    test in this diff.
+  minor_notes:
+    - "RED-first ordering for the negative not separately captured (builder landed helper+test together); reviewer judged the negative a VALID guard regardless."
+    - "comment above _EXCL_DETERMINANT is 3 lines not 1 (deviation, not a failure)."
+circuit_breaker:
+  attempts_used: 1
+  max: 3
+  policy: "after 3 FAILs HALT and escalate; this is attempt 1 -> a bounded retry, not a silent budget spend"
+fix_directed_to_builder:
+  scope_section_3_unchanged: ["tests/test_scope_guard.py", "SPEC_BRIEF10.7.md"]
+  change: >
+    Soften the SPEC_BRIEF10.7.md note so it claims only what test_b109_fb proves: 'the DECLARED
+    determinant map (_EXCL_DETERMINANT) is row-uniform over _EXCLUSION_GRID, as asserted by
+    test_b109_fb_...'. Keep the rule-6 (deny-broad, host-identity-only) + PD-5 reasoning as CITED
+    RATIONALE for WHY that holds, clearly framed as rationale/explanation, NOT as a property the test
+    verifies. Remove the absolute 'by construction'/'necessarily shares' phrasing that implies a tested
+    causal derivation. Align the :1816-1818 comment the same way if it carries the same over-claim.
+    No verdict/clause change; no new behavior; keep all tests green.
+pending_action:
+  seq: 53
+  action: "Dispatch kronos-builder to apply the prose-softening fix on SPEC_BRIEF10.7.md (and align the test comment), §3 unchanged, base d71ebf6, branch claude/finding-b-brief10-9. Then re-dispatch kronos-reviewer. Builder stages explicit paths; no push/PR/merge."
   outcome: pending
