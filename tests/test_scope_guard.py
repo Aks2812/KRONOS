@@ -1438,13 +1438,21 @@ def _citation_line_error(node_type, path, ln, lines):
     (NODE_COLUMNS lists one node type per line, so a following-lines window
     lets a row cite a neighbouring type's line and still pass). The window is
     kept ONLY for non-schema producer call sites, where a multi-line
-    NodeUpsert( puts the type string on a later line."""
+    NodeUpsert( puts the type string on a later line. A schema.py citation
+    must POSITIVELY name node_type on the cited line (a line naming no type
+    is rejected too)."""
     import re as _re
     if path.endswith("schema.py"):
         window = lines[ln - 1]
     else:
         window = "\n".join(lines[ln - 1: ln + 3])
     quoted = _re.findall(r'"([A-Z_]{3,})"', window)
+    if path.endswith("schema.py"):
+        if node_type not in quoted:
+            return (node_type,
+                    "citation %s:%d names %s, not %s -- §1.2 rule 4/5 requires the cited "
+                    "schema.py line to name the row's own type" % (path, ln, quoted, node_type))
+        return None
     if quoted and node_type not in quoted:
         return (node_type,
                 "citation %s:%d names %s, not %s -- §1.2 rule 4 forbids citing another type"
@@ -1462,6 +1470,22 @@ def test_b107_f2_wrong_line_schema_citation_is_rejected():
     assert '"HOST"' in lines[222] and '"WEB_ENDPOINT"' in lines[224]  # fixture anchors
     assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 223, lines) is not None
     assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 224, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 225, lines) is None
+
+
+def test_b108_fa_schema_citation_must_name_own_type_not_merely_exist():
+    """SPEC_BRIEF10.8 F-A: a schema.py citation to a line that EXISTS but names
+    NO type (schema.py:221, the `NODE_COLUMNS: dict[...] = {` opener) must be
+    REJECTED; wrong-type and correct-type cases keep their verdicts."""
+    import pathlib as _pl3
+    import re as _re3
+    f = _pl3.Path(__file__).resolve().parent.parent / "src" / "kronos" / "schema.py"
+    lines = f.read_text().splitlines()
+    assert lines[220].startswith("NODE_COLUMNS")  # fixture anchor
+    assert not _re3.findall(r'"([A-Z_]{3,})"', lines[220])  # names no type
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 221, lines) is not None
+    assert _citation_line_error("SERVICE", "src/kronos/schema.py", 221, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 223, lines) is not None
     assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 225, lines) is None
 
 
