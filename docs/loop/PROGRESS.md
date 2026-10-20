@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 46
+seq: 47
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4061,3 +4061,49 @@ pending_action:
     state changed (git status --untracked-files=no is empty). v7 loop contract NOT edited. Top-of-file
     header bumped 44 -> 46 in the SEQ 46 write-ahead commit (same-commit rule), resolving the prior
     44-vs-45 lag. SPEC_BRIEF10.7 untouched: LOCAL @ 98586b3, not pushed, no PR, parked at GATE-2.
+
+## SEQ 47 — GATE-1 APPROVED SPEC_BRIEF10.8 (F-A); DISPATCHING BUILDER ON tests/test_scope_guard.py ONLY (write-ahead)
+seq: 47
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: loop build — GATE-1 crossed for the F-A follow-up brief (SPEC_BRIEF10.8); builder dispatch is the consequential action this write-ahead precedes; 10.7 still parked at GATE-2 (unchanged)
+maintainer_authorization:
+  instruction: "GATE-1 approve 10.8"
+  basis: "explicit written maintainer GATE-1 approval of the SPEC_BRIEF10.8 (F-A) draft presented this turn"
+  scope_confirmed: "§3 = tests/test_scope_guard.py ONLY; no product code, no schema.py, no scope_guard.py; no push/PR/merge of implementation; GATE-2 not crossed"
+brief:
+  id: SPEC_BRIEF10.8
+  derives_from: "F-A follow-up recorded SEQ 43 (MEDIUM): schema.py WRONG-TYPE/missing-type citation currently accepted"
+  problem: >
+    _citation_line_error (tests/test_scope_guard.py:1434-1453), for a schema.py citation, errors only when
+    the cited line names a DIFFERENT type (quoted and node_type not in quoted). A cited schema.py line that
+    exists but names NO type (quoted empty) returns None = ACCEPTED. §1.2 rule 4/5 require a rule-5 row's
+    schema.py citation to positively name the row's own type.
+  fix: >
+    Tighten the schema.py branch of _citation_line_error so node_type MUST appear in the cited line
+    (covers both wrong-type and names-no-type). Producer (non-schema) multi-line window branch unchanged.
+pre_build_probe:
+  by: orchestrator (read-only, PYTHONPATH=src)
+  result: >
+    All 5 rule-5 NODE_TYPE_SHAPE_EVIDENCE rows already positively name their own type on the cited
+    schema.py line: SERVICE schema.py:224, WEB_ENDPOINT :225, PARAMETER :226, IDENTITY :231, TECHNOLOGY :233.
+    Tightening breaks none -> §3 stays tests/test_scope_guard.py only; no evidence-table / schema.py edit.
+tests_declared:
+  - "Tighten _citation_line_error: schema.py branch errors when node_type not in quoted (wrong-type AND names-no-type)."
+  - "New negative self-check test_b108_fa_schema_citation_must_name_own_type_not_merely_exist: a schema.py citation to a line that EXISTS but names no type is REJECTED; keep :223 wrong-type-rejected and :225 correct-accepted."
+  - "Regression: test_b105_8_2_every_row_records_a_citation_and_a_rule_number still passes (all 5 rule-5 rows green)."
+acceptance_§8:
+  - "rtk test SUMMARY line shows 0 failed (decide PASS/FAIL from SUMMARY, never exit code)."
+  - "New negative self-check present and asserts the names-no-type rejection."
+  - "git diff --name-only 98586b3..HEAD == tests/test_scope_guard.py ONLY."
+  - "No live network; no traffic outside CyberGym range."
+build_branch:
+  branch: claude/findings-1-2-brief10-7
+  base: 98586b3c3089efd015d6e8ddb286e10a3fb5d024
+pending_action:
+  seq: 47
+  action: >
+    Dispatch kronos-builder on SPEC_BRIEF10.8, §3 = tests/test_scope_guard.py ONLY, base 98586b3,
+    branch claude/findings-1-2-brief10-7. Then dispatch kronos-reviewer (independent; brief vs diff +
+    approved local tests). Builder stages explicit path only; never git add -A; no push/PR/merge.
+  outcome: pending
