@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 53
+seq: 54
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4433,3 +4433,68 @@ pending_action:
     write-ahead commit.
   pr: none
   build_head: cefeabdd1c6b326c253460c3fb3332ccdc8b55e8
+
+## SEQ 54 — MAINTAINER-AUTHORIZED INSTRUCTION-FILE CHANGE (Option A): delegation policy added to CLAUDE.md + kronos-continue skill; LOCAL-ONLY, NOT PUSHED; R&D UNCHANGED (SEQ 53 carried forward)
+seq: 54
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: instruction/rails update only — no R&D advance; SEQ 53 state unchanged.
+
+instruction_change:
+  authorization: >
+    Maintainer explicit written instruction: /home/void/context.md + chat "Option A"
+    (2026-10-20). Recorded here "as such" per CLAUDE.md §4 (the only exception to the
+    .claude/ maintainer-owned / loop-does-not-edit-its-own-rails boundary).
+  files_edited_local_only:
+    - path: CLAUDE.md
+      tracked: "untracked (?? on claude/finding-b-brief10-9; also not tracked on kronos/loop-state)"
+      change: >
+        Added section "### Delegation policy — keep Opus in the orchestrator seat"
+        between the durable-checkpoint note and "### Gates and the loop outcome".
+    - path: .claude/skills/kronos-continue/SKILL.md
+      tracked: "untracked"
+      change: >
+        Step 4 — delegation mandatory where available + "state why a role was not
+        dispatched" (unavailable vs inappropriate). Step 7 report — add which roles
+        were dispatched + their configured model aliases (verified resolved IDs or
+        fallback only, never from configuration alone).
+  not_changed: "model defaults; agent definitions (.claude/agents/*); permission settings (.claude/settings.local.json); implementation code"
+  not_done: "no push; no PR; no merge; no R&D resume"
+  file_location_warning: >
+    The two edits live ONLY in the working tree at
+    /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void on branch
+    claude/finding-b-brief10-9, as untracked files. They must stay in that checkout
+    until committed; a branch switch or a different worktree will not contain them.
+  recording_method: >
+    This SEQ 54 was written via a SEPARATE git worktree on kronos/loop-state; the
+    maintainer's checkout and its untracked files were left untouched. Committed
+    locally, not pushed. Top header bumped 53 -> 54 in this same commit.
+
+# R&D state is UNCHANGED by this instruction-only entry. SEQ 53 pending_action carried
+# forward verbatim below — NOT a generic status; it remains the current action/outcome.
+pending_action:
+  seq: 53
+  carried_forward: "verbatim from SEQ 53; R&D unchanged by this instruction-only update"
+  action: "Dispatch kronos-builder to apply the prose-softening fix on SPEC_BRIEF10.7.md (and align the test comment), §3 unchanged, base d71ebf6, branch claude/finding-b-brief10-9. Then re-dispatch kronos-reviewer. Builder stages explicit paths; no push/PR/merge."
+  outcome: >
+    COMPLETE. Builder softened the §2 over-claim in SPEC_BRIEF10.7.md and the comment above
+    _EXCL_DETERMINANT -> new HEAD cefeabdd1c6b326c253460c3fb3332ccdc8b55e8. Prose now splits a TESTED
+    claim (the declared _EXCL_DETERMINANT map is row-uniform over _EXCLUSION_GRID, per test_b109_fb_...)
+    from untested RATIONALE (rule-6 deny-broad host-identity-only); no "by construction"/"necessarily".
+    Independent kronos-reviewer RE-REVIEW: overall PASS, all six checks PASS (scope = 2 files; no
+    verdict/clause change; positive test flips red on an archive mutation; negative guard valid;
+    §2 doc-honesty RESOLVED; keep-green 2366-count/byte-gate/determinant assertion). Reviewer brief
+    sha256 of SPEC_BRIEF10.7.md @ cefeabd = 531e3a0ff266727c0bdd471d3c9b52296da155e58a88d470aa3f341d30082a8e.
+    Orchestrator step-5 (independent): diff d71ebf6..cefeabd = exactly SPEC_BRIEF10.7.md +
+    tests/test_scope_guard.py; no real-grid verdict/clause changed; .venv pytest tests/test_scope_guard.py
+    = 2994 passed, 0 failed; reviewer full dir 3461 passed, 1 skipped, 0 failed; no-live-network holds;
+    verification.md written to .claude/pipeline/05-verify/. Loop outcome: SUCCESS after one bounded fix
+    round (circuit-breaker attempt 1/3, well under the limit). Residual LOW/non-blocking: rationale calls
+    port/scheme/path "the column axes" though _TARGETS also varies by target shape — labeled untested, no
+    verdict affected; optional later doc tightening. NOW PARKED AT GATE-2: 10.9 @ cefeabd is LOCAL on
+    claude/finding-b-brief10-9, not pushed, no PR. Advancing requires a SEPARATE explicit maintainer
+    authorization naming the exact PR number and head SHA. Top header bumped 52 -> 53 in the SEQ 53
+    write-ahead commit.
+  pr: none
+  build_head: cefeabdd1c6b326c253460c3fb3332ccdc8b55e8
+  next_trigger: "maintainer /kronos-continue"
