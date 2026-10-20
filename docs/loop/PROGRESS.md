@@ -4412,4 +4412,24 @@ fix_directed_to_builder:
 pending_action:
   seq: 53
   action: "Dispatch kronos-builder to apply the prose-softening fix on SPEC_BRIEF10.7.md (and align the test comment), §3 unchanged, base d71ebf6, branch claude/finding-b-brief10-9. Then re-dispatch kronos-reviewer. Builder stages explicit paths; no push/PR/merge."
-  outcome: pending
+  outcome: >
+    COMPLETE. Builder softened the §2 over-claim in SPEC_BRIEF10.7.md and the comment above
+    _EXCL_DETERMINANT -> new HEAD cefeabdd1c6b326c253460c3fb3332ccdc8b55e8. Prose now splits a TESTED
+    claim (the declared _EXCL_DETERMINANT map is row-uniform over _EXCLUSION_GRID, per test_b109_fb_...)
+    from untested RATIONALE (rule-6 deny-broad host-identity-only); no "by construction"/"necessarily".
+    Independent kronos-reviewer RE-REVIEW: overall PASS, all six checks PASS (scope = 2 files; no
+    verdict/clause change; positive test flips red on an archive mutation; negative guard valid;
+    §2 doc-honesty RESOLVED; keep-green 2366-count/byte-gate/determinant assertion). Reviewer brief
+    sha256 of SPEC_BRIEF10.7.md @ cefeabd = 531e3a0ff266727c0bdd471d3c9b52296da155e58a88d470aa3f341d30082a8e.
+    Orchestrator step-5 (independent): diff d71ebf6..cefeabd = exactly SPEC_BRIEF10.7.md +
+    tests/test_scope_guard.py; no real-grid verdict/clause changed; .venv pytest tests/test_scope_guard.py
+    = 2994 passed, 0 failed; reviewer full dir 3461 passed, 1 skipped, 0 failed; no-live-network holds;
+    verification.md written to .claude/pipeline/05-verify/. Loop outcome: SUCCESS after one bounded fix
+    round (circuit-breaker attempt 1/3, well under the limit). Residual LOW/non-blocking: rationale calls
+    port/scheme/path "the column axes" though _TARGETS also varies by target shape — labeled untested, no
+    verdict affected; optional later doc tightening. NOW PARKED AT GATE-2: 10.9 @ cefeabd is LOCAL on
+    claude/finding-b-brief10-9, not pushed, no PR. Advancing requires a SEPARATE explicit maintainer
+    authorization naming the exact PR number and head SHA. Top header bumped 52 -> 53 in the SEQ 53
+    write-ahead commit.
+  pr: none
+  build_head: cefeabdd1c6b326c253460c3fb3332ccdc8b55e8
