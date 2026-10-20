@@ -4310,4 +4310,17 @@ pending_action:
     `gh pr merge 16 --squash --match-head-commit e8c38e5ed2d523e5a09b9be52c63266579180375`
     (never --admin, never --auto). On success record the NEW squash-merge main SHA and PR #16 MERGED.
     If the command fails (head moved or a gate newly blocks), STOP and report — do not retry with --admin.
-  outcome: pending
+  outcome: >
+    SUCCESS. `gh pr ready 16` flipped the draft (isDraft=false re-confirmed, head still e8c38e5,
+    mergeable MERGEABLE, mergeStateStatus CLEAN). Then `gh pr merge 16 --squash --match-head-commit
+    e8c38e5...` executed after the write-ahead push was confirmed. PR #16 state=MERGED, mergedAt
+    2026-10-20T09:08:22Z. No --admin, no --auto. Squash-merge main commit = d71ebf6c5074f3351e5fdc94ce8277c464587db8;
+    origin/main faac345 -> d71ebf6. Contents landed: SPEC_BRIEF10.7 (Findings 1 & 2) + SPEC_BRIEF10.8
+    (Finding F-A) in tests/test_scope_guard.py, plus the two brief docs SPEC_BRIEF10.7.md +
+    SPEC_BRIEF10.8.md. PR branch claude/findings-1-2-brief10-7 merged; NOT deleted (maintainer's call).
+    GATE-2 for 10.7+10.8 now CLOSED. Top header bumped 50 -> 51 in the SEQ 51 write-ahead commit.
+  merge_result:
+    pr_16: MERGED
+    merged_at: "2026-10-20T09:08:22Z"
+    squash_merge_commit: d71ebf6c5074f3351e5fdc94ce8277c464587db8
+    main: "faac345 -> d71ebf6"
