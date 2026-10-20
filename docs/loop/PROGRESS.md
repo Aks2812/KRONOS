@@ -3965,4 +3965,11 @@ pending_action:
       - .claude/agents/kronos-reviewer.md
     Project working-tree copies only. No change to kronos-researcher, no change to global copies,
     no product code, no PR/merge. 10.7 remains parked at GATE-2.
-  outcome: pending
+  outcome: >
+    COMPLETE. Appended a role-tailored '## Behavioral guidelines' block to
+    .claude/agents/kronos-builder.md (now 65 lines) and .claude/agents/kronos-reviewer.md (now 67
+    lines), each with the precedence note (KRONOS Hard rules / §3 / §8 and never-round-UNVERIFIABLE-
+    up-to-PASS WIN on conflict). Verified: frontmatter intact on both; kronos-researcher.md untouched;
+    global ~/.claude/agents/ copies untouched (0 matches). Note: .claude/ is untracked on the active
+    branch claude/findings-1-2-brief10-7, so these edits live in the working tree (tracked copy of
+    .claude/ is on claude/loop-scaffolding). No loop build step ran; 10.7 still parked at GATE-2.
