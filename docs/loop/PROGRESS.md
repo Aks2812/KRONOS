@@ -4106,4 +4106,20 @@ pending_action:
     Dispatch kronos-builder on SPEC_BRIEF10.8, §3 = tests/test_scope_guard.py ONLY, base 98586b3,
     branch claude/findings-1-2-brief10-7. Then dispatch kronos-reviewer (independent; brief vs diff +
     approved local tests). Builder stages explicit path only; never git add -A; no push/PR/merge.
-  outcome: pending
+  outcome: >
+    COMPLETE. Builder built @ a753aa9 (branch claude/findings-1-2-brief10-7, base 98586b3); scope =
+    tests/test_scope_guard.py ONLY (+25/-1), verified by orchestrator via git diff --name-only
+    98586b3..a753aa9. kronos-reviewer (independent, not given builder report): overall PASS, every
+    measurable §8 check PASS, recommendation MERGE (maintainer decision). Orchestrator step-5 semantic
+    verify (independent): schema.py branch of _citation_line_error now returns None only when
+    node_type in quoted (rejects wrong-type AND names-no-type); producer branch unchanged; new
+    test_b108_fa_schema_citation_must_name_own_type_not_merely_exist anchors on schema.py:221 (names no
+    type) and asserts rejection, keeping 223-reject/225-accept; test_b107_f2 and test_b105_8_2 not
+    weakened. Measured: .venv pytest tests/test_scope_guard.py -> 2992 passed, 0 failed; reviewer full
+    suite 3459 passed, 1 skipped, 0 failed. no-live-network satisfied statically (no socket/urllib/
+    requests/httpx import in the file); no traffic outside CyberGym. F-A CLOSED. Loop outcome: success.
+    NOW PARKED AT GATE-2 (10.8 @ a753aa9 local only, not pushed, no PR) exactly as 10.7 is: advancing
+    EITHER brief requires separate explicit maintainer authorization naming the exact PR number and
+    head SHA. Step-5 verification.md written to .claude/pipeline/05-verify/ (orchestrator folder,
+    untracked). UNVERIFIABLE (non-blocking): runtime traffic not instrumented; SPEC_BRIEF10.8 not
+    committed as a repo file (content recorded in this SEQ 47 block).
