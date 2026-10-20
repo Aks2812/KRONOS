@@ -1431,6 +1431,64 @@ _B104_ID_SCOPE_KEY_AXIS = [
 ]
 
 
+def _citation_line_error(node_type, path, ln, lines):
+    """-> None if the cited `path:ln` names `node_type`, else a message.
+
+    A schema.py citation is validated against the CITED LINE ITSELF
+    (NODE_COLUMNS lists one node type per line, so a following-lines window
+    lets a row cite a neighbouring type's line and still pass). The window is
+    kept ONLY for non-schema producer call sites, where a multi-line
+    NodeUpsert( puts the type string on a later line. A schema.py citation
+    must POSITIVELY name node_type on the cited line (a line naming no type
+    is rejected too)."""
+    import re as _re
+    if path.endswith("schema.py"):
+        window = lines[ln - 1]
+    else:
+        window = "\n".join(lines[ln - 1: ln + 3])
+    quoted = _re.findall(r'"([A-Z_]{3,})"', window)
+    if path.endswith("schema.py"):
+        if node_type not in quoted:
+            return (node_type,
+                    "citation %s:%d names %s, not %s -- §1.2 rule 4/5 requires the cited "
+                    "schema.py line to name the row's own type" % (path, ln, quoted, node_type))
+        return None
+    if quoted and node_type not in quoted:
+        return (node_type,
+                "citation %s:%d names %s, not %s -- §1.2 rule 4 forbids citing another type"
+                % (path, ln, quoted, node_type))
+    return None
+
+
+def test_b107_f2_wrong_line_schema_citation_is_rejected():
+    """SPEC_BRIEF10.7 Finding 2 negative self-check: a constructed rule-5 row
+    citing HOST's NODE_COLUMNS line (schema.py:223) for WEB_ENDPOINT (:225)
+    must be REJECTED; the correct line must be accepted."""
+    import pathlib as _pl2
+    f = _pl2.Path(__file__).resolve().parent.parent / "src" / "kronos" / "schema.py"
+    lines = f.read_text().splitlines()
+    assert '"HOST"' in lines[222] and '"WEB_ENDPOINT"' in lines[224]  # fixture anchors
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 223, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 224, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 225, lines) is None
+
+
+def test_b108_fa_schema_citation_must_name_own_type_not_merely_exist():
+    """SPEC_BRIEF10.8 F-A: a schema.py citation to a line that EXISTS but names
+    NO type (schema.py:221, the `NODE_COLUMNS: dict[...] = {` opener) must be
+    REJECTED; wrong-type and correct-type cases keep their verdicts."""
+    import pathlib as _pl3
+    import re as _re3
+    f = _pl3.Path(__file__).resolve().parent.parent / "src" / "kronos" / "schema.py"
+    lines = f.read_text().splitlines()
+    assert lines[220].startswith("NODE_COLUMNS")  # fixture anchor
+    assert not _re3.findall(r'"([A-Z_]{3,})"', lines[220])  # names no type
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 221, lines) is not None
+    assert _citation_line_error("SERVICE", "src/kronos/schema.py", 221, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 223, lines) is not None
+    assert _citation_line_error("WEB_ENDPOINT", "src/kronos/schema.py", 225, lines) is None
+
+
 def test_b105_8_2_every_row_records_a_citation_and_a_rule_number():
     """SPEC_BRIEF10.5 §8.2 / §5.2 item 6: the per-row citation and rule number
     are ENFORCED, not merely written down.
@@ -1482,15 +1540,8 @@ def test_b105_8_2_every_row_records_a_citation_and_a_rule_number():
             lines = f.read_text().splitlines()
             for ln in (int(x) for x in linespec.split(",")):
                 assert 1 <= ln <= len(lines), (node_type, "cited line out of range: %s:%d" % (path, ln))
-                # window covers a multi-line NodeUpsert( whose type string
-                # sits on the following line(s)
-                window = "\n".join(lines[ln - 1: ln + 3])
-                quoted = _re.findall(r'"([A-Z_]{3,})"', window)
-                if quoted:
-                    assert node_type in quoted, (
-                        node_type,
-                        "citation %s:%d names %s, not %s -- §1.2 rule 4 forbids citing another type"
-                        % (path, ln, quoted, node_type))
+                err = _citation_line_error(node_type, path, ln, lines)
+                assert err is None, err
 
         if rule == 5:
             assert "schema.py:" in citation, (node_type, "rule 5 must cite a schema.py line")
@@ -1750,9 +1801,9 @@ _EXCLUSION_GRID = {
     _P3_TRAILING_GLOB: _row((_F, "10.r6"), dict(
         {t: (_T, "10.r6") for t in _H_SAME},
         **{_t10: (_T, "10.1.2.2"), _t11: (_T, "10.1.2.2")})),
-    _P4_BOTH_ENDS_GLOB: _row((_F, "10.1.U"), {t: (_T, "10.5.pd5e") for t in _EXCL_HOSTISH}),
-    _P5_BARE_IP: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
-    _P6_CIDR: _row((_F, "10.5.1.2"), {_t3: (_T, "10.5.1.2"), _t4: (_T, "10.5.1.2")}),
+    _P4_BOTH_ENDS_GLOB: _row((_F, "10.5.pd5e"), {t: (_T, "10.5.pd5e") for t in _EXCL_HOSTISH}),
+    _P5_BARE_IP: _row((_F, "10.r7"), {_t3: (_T, "10.r7"), _t4: (_T, "10.r7")}),
+    _P6_CIDR: _row((_F, "10.r7"), {_t3: (_T, "10.r7"), _t4: (_T, "10.r7")}),
     _P7_HOST_PORT: _row((_F, "10.r6"), {t: (_T, "10.3.1.3") for t in _H_SAME}),
     _P8_URL_NO_PORT: _row((_F, "10.4.1.3"), {t: (_T, "10.4.1.3") for t in _H_SAME}),
     _P9_URL_WITH_PORT: _row((_F, "10.4.1.3"), {t: (_T, "10.4.1.3") for t in _H_SAME}),
@@ -1760,6 +1811,15 @@ _EXCLUSION_GRID = {
     _P11_BUCKET_GLOB: _row((_F, "10.3.1.3"), {_t12: (_T, "10.3.1.3")}),
     _P12_ARN_GLOB: _row((_F, "10.3.1.3"), {_t13: (_T, "10.3.1.3")}),
     _P13_BUNDLE_GLOB: _row((_F, "10.3.1.3"), {_t14: (_T, "10.3.1.3")}),
+}
+
+# SPEC_BRIEF10.7 Finding 1: expected DETERMINANT clause for every exclusion
+# cell of these rows (prose: SPEC_BRIEF10 §1.1 r7 for address entries;
+# SPEC_BRIEF10.5 §1.3 PD-5 exclusion side for the both-ends glob).
+_EXCL_DETERMINANT = {
+    _P4_BOTH_ENDS_GLOB: "10.5.pd5e",
+    _P5_BARE_IP: "10.r7",
+    _P6_CIDR: "10.r7",
 }
 
 _ALLOW_CELLS = [(nt, p, t) for nt in _GRID_NODE_TYPES for p in _PATTERNS for t in _TARGETS]
@@ -1932,8 +1992,10 @@ def _load_old_scope_guard(ref, tmp):
     return mod
 
 
-# §5.1's address-shaped patterns/targets join the enumeration so the
-# deny-ward §1.2 change is actually exercised by the differential.
+# §5.1's address-shaped patterns/targets join the enumeration. NOTE: cells
+# already denied at dcbdba9 (bare-IP / CIDR vs an IP, determined by §1.1 r7)
+# are NOT evidence the §1.2 change is exercised; only cells whose verdict
+# differs from dcbdba9/2a676a8 exercise it (see the nonzero-diff assertion).
 _DIFF_PATTERNS = _PATTERNS + [c[0] for c in _B105_ADDR_EXCLUSION_CASES]
 _DIFF_TARGETS = _TARGETS + [c[1] for c in _B105_ADDR_EXCLUSION_CASES]
 _DIFF_NODE_TYPE.update({c[1]: "HOST" for c in _B105_ADDR_EXCLUSION_CASES})
@@ -1979,6 +2041,26 @@ def test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens():
     pairs = len(set(_DIFF_PATTERNS)) * len(set(_DIFF_TARGETS))
     assert len(trees["HEAD"][0]) == pairs
     head_allow, head_excl = trees["HEAD"]
+    # SPEC_BRIEF10.7 Finding 1 (FORK-AE): POSITIVE determinant attribution.
+    # Every exclusion-grid cell of an identified row cites the clause that
+    # DETERMINES it. Bare-IP / CIDR rows: the verdicts are identical at the
+    # pre-§1.2 base dcbdba9 (measured below), so §1.1 r7 -- not §1.2 -- is the
+    # determinant. The both-ends-glob row: PD-5's exclusion side.
+    db_excl = trees["dcbdba9"][1]
+    for pat, det in _EXCL_DETERMINANT.items():
+        for t in _TARGETS:
+            assert _EXCLUSION_GRID[pat][t][1] == det, (
+                pat, t, _EXCLUSION_GRID[pat][t][1], "expected determinant", det)
+    for pat in (_P5_BARE_IP, _P6_CIDR):
+        assert all(db_excl[(pat, t)] == head_excl[(pat, t)] for t in _TARGETS), (
+            pat, "10.r7 attribution requires the verdict to already hold at dcbdba9")
+    # SECONDARY guard: a cell whose exclusion verdict is unchanged from
+    # dcbdba9 cannot be determined by a §1.2 (10.5.1.2) clause.
+    for pat in _PATTERNS:
+        for t in _TARGETS:
+            if db_excl[(pat, t)] == head_excl[(pat, t)]:
+                assert _EXCLUSION_GRID[pat][t][1] != "10.5.1.2", (
+                    pat, t, "unchanged from dcbdba9 yet cites the §1.2 clause 10.5.1.2")
     for ref in _OLD_REFS:
         old_allow, old_excl = trees[ref]
         allow_diffs = [k for k in old_allow if old_allow[k] != head_allow[k]]
