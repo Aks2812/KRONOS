@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 61
+seq: 62
 derived_at: 2026-10-20T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -4796,4 +4796,40 @@ pending_action:
     material conflict or another defined pause condition.
   outcome: pending
   carried_forward_f_c: "F-C merged to main (SEQ 60, PR #17 @ 2b1f3f3); closed."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
+
+## SEQ 62 — 10.9 (F-B) base-advance resolved + re-reviewed PASS; SELF-AUTHORIZING GATE-2 MERGE; re-measuring ten prerequisites (write-ahead)
+seq: 62
+derived_at: 2026-10-20T00:00:00Z
+stage: FORK-2
+phase: 10.9 merged with main (conflict resolved within §3), independently re-reviewed PASS, step-5 confirmed. Autonomous GATE-2 merge under SEQ 55. Branch protection not bypassable — HALT (no --admin) if GitHub blocks.
+
+seq61_pending_action_outcome: >
+  COMPLETE. git merge origin/main into claude/finding-b-brief10-9; single tests/test_scope_guard.py
+  conflict resolved by keeping BOTH blocks (F-C test_b1010 + F-B _row_uniform_violation/test_b109_fb_*);
+  staged explicit paths only; merge commit d983418c67211c275973e6b29c4e53532f4757e7; branch pushed.
+  Net diff 2b1f3f3..d983418 = SPEC_BRIEF10.7.md + tests/test_scope_guard.py (10.9 §3); src/ unchanged;
+  suite 2995 passed / 0 failed under .venv. kronos-reviewer (claude-haiku-5-5, independent) re-review:
+  PASS all §8 (1 suite 0 failed; 2 both test_b109_fb_* valid, real grid not mutated; 3 SPEC_BRIEF10.7.md:41
+  deny-broad no open-gap framing + _EXCL_DETERMINANT comment rationale; 4 diff name-only exactly the two
+  §3 files; 5 no network), F-C preserved (test_b1010 present + passing, no markers), no src change;
+  MERGE recommended; findings LOW/INFO non-blocking. Orchestrator step-5 confirmed diff + suite.
+
+merge_target:
+  branch: claude/finding-b-brief10-9
+  head: d983418c67211c275973e6b29c4e53532f4757e7
+  base: main (origin/main 2b1f3f3)
+  self_authorization: "Opus self-authorizes this GATE-2 merge under CLAUDE.md 'Authority model' (SEQ 55); PR number assigned on creation this turn; authorization names PR# + head d983418 before merge."
+
+pending_action:
+  seq: 62
+  action: >
+    (1) Open PR claude/finding-b-brief10-9 -> main. (2) Re-measure all ten MERGE-GATE prerequisites
+    in-turn (1 scope = SPEC_BRIEF10.7.md + tests/test_scope_guard.py; 2 ruleset void-rule-kronos; 3 not
+    draft; 4 OPEN; 5 independent re-review PASS + step-5; 6 checks clean/none; 7 suite 2995/0 under .venv;
+    8 mergeable MERGEABLE + CLEAN + head not ancestor of origin/main; 9 self-auth naming PR# + head d983418;
+    10 clean tree, only known untracked rails + reviewer-worktree .venv symlink). (3) If ALL pass ->
+    gh pr merge <n> --squash --match-head-commit d983418c67211c275973e6b29c4e53532f4757e7 (NEVER --admin,
+    NEVER --auto). Record new main SHA + PR MERGED. If any prerequisite fails -> HALT and report; no --admin.
+  outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in primary checkout; outcome pending."
