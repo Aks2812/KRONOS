@@ -1816,6 +1816,9 @@ _EXCLUSION_GRID = {
 # SPEC_BRIEF10.7 Finding 1: expected DETERMINANT clause for every exclusion
 # cell of these rows (prose: SPEC_BRIEF10 §1.1 r7 for address entries;
 # SPEC_BRIEF10.5 §1.3 PD-5 exclusion side for the both-ends glob).
+# Row-uniform BY DESIGN (SPEC_BRIEF10.9 F-B): rule 6 deny-broad compares
+# host-identity only, so port/scheme/path (the column axes) are discarded and
+# every column of an exclusion row shares one determinant clause.
 _EXCL_DETERMINANT = {
     _P4_BOTH_ENDS_GLOB: "10.5.pd5e",
     _P5_BARE_IP: "10.r7",
@@ -2078,3 +2081,28 @@ def test_b105_5_5_differential_allow_side_unchanged_exclusion_only_tightens():
               f"excl_diffs={sum(oe[k] != head_excl[k] for k in oe)}", file=_sys.stderr)
     _, mid_excl = trees["2a676a8"]
     assert [k for k in mid_excl if mid_excl[k] != head_excl[k]] != []
+
+
+def _row_uniform_violation(grid, determinant):
+    """-> first (pattern, target) whose clause id differs from the row's
+    determinant, else None."""
+    for pat, det in determinant.items():
+        for t in _TARGETS:
+            if grid[pat][t][1] != det:
+                return (pat, t)
+    return None
+
+
+def test_b109_fb_exclusion_determinant_is_row_uniform_by_design():
+    # SPEC_BRIEF10.9 F-B: rule 6 deny-broad is host-identity-only, so every
+    # target column of an identified exclusion row shares one determinant.
+    assert _row_uniform_violation(_EXCLUSION_GRID, _EXCL_DETERMINANT) is None
+    for pat in _EXCL_DETERMINANT:
+        assert len({_EXCLUSION_GRID[pat][t][1] for t in _TARGETS}) == 1, pat
+
+
+def test_b109_fb_row_uniform_check_fails_on_mixed_determinant_row():
+    # RED-first negative: a LOCAL row with two different clause ids must be
+    # flagged. The real _EXCLUSION_GRID is not mutated.
+    bad = {_P5_BARE_IP: _row((_F, "10.r7"), {_TARGETS[0]: (_T, "10.r6")})}
+    assert _row_uniform_violation(bad, {_P5_BARE_IP: "10.r7"}) == (_P5_BARE_IP, _TARGETS[0])
