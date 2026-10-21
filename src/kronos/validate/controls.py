@@ -148,11 +148,13 @@ def _arm_outcome_str(arm: ArmResult) -> str:
     return f"{arm.label}=denied({arm.status_code})"
 
 
-def run_differential(arms: Sequence[ArmResult], *, kind: Literal["http", "cloud"]) -> DifferentialResult:
+def run_differential(arms: Sequence[ArmResult], *, kind: Literal["http", "cloud", "infra"]) -> DifferentialResult:
     """The only place `discriminated` is ever set `True` (SPEC_BRIEF8
     §3.2). `arms` must be exactly the arms SPEC_BRIEF8 §3.3 (`kind="http"`:
     labels `A_canonical`, `B_negative_control`) or §3.4 (`kind="cloud"`:
-    labels `A_canonical`, `B_bad_secret`, `C_unknown_key`) describe —
+    labels `A_canonical`, `B_bad_secret`, `C_unknown_key`) describe;
+    `kind="infra"` (SPEC_BRIEF12) uses the same two-arm path as "http"
+    (labels `A_canonical`, `B_negative_control`) —
     callers never invent a different arm set or calling convention
     (FORK-I: one chokepoint, not a rule re-derived per validator).
     """
@@ -175,7 +177,7 @@ def run_differential(arms: Sequence[ArmResult], *, kind: Literal["http", "cloud"
 
     a = by_label["A_canonical"]
 
-    if kind == "http":
+    if kind in ("http", "infra"):
         b = by_label["B_negative_control"]
         control_outcome = _arm_outcome_str(b)
         if a.transport_error and b.transport_error:
