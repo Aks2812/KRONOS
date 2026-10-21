@@ -60,12 +60,28 @@ Edit `src/kronos/validate/controls.py` — the ONLY code change to the different
 No new dependency. No event emission (existing validators/runner emit none; `events.py` untouched).
 No live network in the module itself — the caller supplies probed `ArmResult`s; tests inject a fake probe.
 
+## §2a — Seal brief 11's scope-audit test (amendment, 2026-10-21)
+
+`tests/test_infra_ingest.py::test_K_scope_audit` (committed by brief 11) diffs `a2feba3..HEAD` and
+asserts ⊆ brief 11's §3. That window is HEAD-relative, so on any branch built after brief 11 merged it
+also captures later briefs' files and fails — it is a landmine for every subsequent brief. **Seal it:**
+pin the upper bound to brief 11's merged SHA `19c9464` (PR #19 squash), i.e. change the diff to
+`a2feba3..19c9464`. Both SHAs are now immutable, so the test becomes a stable historical assertion of
+brief 11's exact footprint (still fails loudly if that footprint ever differed from its §3). Minimal edit:
+add `BRIEF_MERGE = "19c9464"` beside `BRIEF_BASE` and use `f"{BRIEF_BASE}..{BRIEF_MERGE}"`. Change nothing
+else in that file.
+
+**Convention going forward:** a brief's own `base..HEAD` scope-audit (this brief's §8-J) is HEAD-relative
+and correct only on its own branch; the NEXT brief seals it by pinning its upper bound to this brief's
+merge SHA. So S5's brief will seal brief 12's §8-J the same way.
+
 ## §3 — Permitted files (ONLY these; whole-window `git diff --name-only 19c9464..HEAD` ⊆ this set)
 
 1. `SPEC_BRIEF12.md`
 2. `src/kronos/validate/controls.py`  (edit: add `"infra"` kind only)
 3. `src/kronos/validate/infra_validator.py`  (new)
 4. `tests/test_infra_validator.py`  (new)
+5. `tests/test_infra_ingest.py`  (edit: §2a seal ONLY — add `BRIEF_MERGE` and pin the diff upper bound; no other change)
 
 Base = `origin/main` @ `19c9464`. Never `git add -A`; stage these explicit paths only.
 Do NOT edit `schema.py`, `lifecycle.py`, `types.py`, `events.py`, `runner.py`, `candidates.py`,
@@ -101,6 +117,9 @@ H. **Control is same in-scope host** — the negative-control arm's target host 
 I. **Idempotence** — running the pass twice yields the same FINDINGs/edges, no duplicates (deterministic
    `finding_id` + MERGE).
 J. **Scope audit** — `git diff --name-only 19c9464..HEAD` ⊆ §3 (whole window).
+
+K. **Brief-11 seal** — `tests/test_infra_ingest.py::test_K_scope_audit` passes with its upper bound
+   pinned to `19c9464` (§2a): `a2feba3..19c9464` ⊆ brief 11's §3.
 
 Full suite green (`0 failed`) under `.venv`; refresh the total count as the final edit. Reviewer runs
 independently against this brief and the diff.
