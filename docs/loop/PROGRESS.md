@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 74
-derived_at: 2026-10-21T00:00:10Z
+seq: 75
+derived_at: 2026-10-21T00:00:11Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5335,4 +5335,47 @@ pending_action:
     SHA + PR MERGED next block, then continue autonomously to S5. If ANY prerequisite fails or GitHub blocks ->
     HALT and report; no --admin.
   outcome: pending
-  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ74]"
+
+## SEQ 75 — SPEC_BRIEF12 (S4.1) MERGED to main (PR #20, squash 079a76f); S4 delivered; starting S5 web ingestion; dispatching researcher (write-ahead)
+seq: 75
+derived_at: 2026-10-21T00:00:11Z
+stage: S5
+phase: S4.1 landed on main via autonomous GATE-2 merge under SEQ 55. Continuing autonomous §6 loop (SEQ 69): S5 (web ingestion) next. Dispatching researcher to scope S5.
+
+seq74_pending_action_outcome: >
+  SUCCESS. Ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope=5 §3 paths; 2 ruleset
+  void-rule-kronos active; 3 isDraft false; 4 OPEN; 5 reviewer PASS + step-5; 6 no checks/CLEAN; 7 full suite
+  3489 passed, 1 skipped, 0 failed under .venv; 8 MERGEABLE + CLEAN + e72f3df not ancestor of origin/main;
+  9 self-authorized naming PR #20 + head e72f3df; 10 clean tree, only known untracked rails). Executed
+  `gh pr merge 20 --squash --match-head-commit e72f3dfe2930974be0d338ce5bfe5203881321a0` — NO --admin, NO
+  --auto. PR #20 MERGED, mergedAt 2026-10-21T14:53:37Z. origin/main 19c9464 -> squash 079a76f.
+
+s4_status: >
+  S4 (research record §6: infra validation, two-armed + control disposition) DELIVERED by S4.1. First infra
+  validator: two-armed reachability differential (kind='infra') over in-scope SERVICE nodes, verdict recorded
+  as FINDING(vulnerable_to SERVICE), status hypothesis->reachable (confidence 7). Also sealed brief 11's
+  scope-audit test. Deferred to follow-up (brief 12 §9): EVIDENCE-node storage (raises confidence 7->9);
+  CandidateTarget HOST/SERVICE extension; validate_* event kinds.
+
+next_milestone:
+  id: S5
+  title: "Web ingestion -> WEB_ENDPOINT, PARAMETER, seeded from S3"
+  goal: G1 (breadth)
+  source: "research record v6 §6; depends on S3 (delivered). NODE_TYPE_SHAPES['WEB_ENDPOINT']/['PARAMETER'] = frozenset() with zero producers today (researcher SEQ 61) — same gap class as HOST/SERVICE pre-S3."
+
+pending_action:
+  seq: 75
+  action: >
+    Dispatch kronos-researcher (read-only, claude-sonnet-5) to scope S5 web ingestion. Required cited findings
+    (file:line): (1) WEB_ENDPOINT/PARAMETER schema columns + canonical keys (canonical_key_for_web_endpoint /
+    canonical_key_for_parameter) and whether they exist; (2) the has_param + exposes edge pairs wiring
+    (WEB_ENDPOINT->PARAMETER; HOST/SERVICE->WEB_ENDPOINT); (3) scope_guard WEB_ENDPOINT/PARAMETER shapes and how
+    a URL/endpoint identifier is scope-gated (inherit FORK-2); (4) the S3 infra parser as the mirror precedent
+    + the ingestion contract (same as S3); (5) how S5 is "seeded from S3" — does web ingestion consume existing
+    HOST/SERVICE nodes, and via which edge (exposes); (6) what deterministic local web input/fixture exists in
+    CyberGym (the api service on 127.0.0.1:8091) and whether a crawl/HTTP-scan output format must be chosen;
+    (7) nearest ingestion test precedent (test_infra_ingest.py). Researcher returns findings only; Opus assesses
+    then authors a bounded S5 SPEC_BRIEF (explicit §3 + §8), self-approves GATE-1, and continues the loop.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
