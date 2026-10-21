@@ -1,0 +1,20 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "CyberGym API", "version": "1.0.0"},
+  "servers": [{"url": "http://127.0.0.1:8091"}],
+  "paths": {
+    "/health": {
+      "get": {"summary": "Health check", "responses": {"200": {"description": "ok"}}}
+    },
+    "/items/{item_id}": {
+      "get": {
+        "summary": "Get item",
+        "parameters": [
+          {"name": "item_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "verbose", "in": "query", "required": false, "schema": {"type": "boolean"}}
+        ],
+        "responses": {"200": {"description": "ok"}}
+      }
+    }
+  }
+}
