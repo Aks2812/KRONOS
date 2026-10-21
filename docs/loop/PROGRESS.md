@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 64
-derived_at: 2026-10-21T00:00:00Z
+seq: 65
+derived_at: 2026-10-21T00:00:01Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -4911,3 +4911,57 @@ pending_action:
     §8 acceptance criteria before any GATE-1 / build.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome still pending — not part of S3."
+
+## SEQ 65 — S3.1 researcher PASS; SPEC_BRIEF11 authored; GATE-1 SELF-APPROVED (SEQ 55 authority); dispatching builder (write-ahead)
+seq: 65
+derived_at: 2026-10-21T00:00:01Z
+stage: S3
+phase: Researcher (kronos-researcher, claude-sonnet-5, read-only) returned cited findings for S3; Opus assessed; SPEC_BRIEF11 (S3.1 nmap-XML infra ingestion) authored and GATE-1 self-approved. Next: set up build branch + dispatch builder.
+
+seq64_pending_action_outcome: >
+  COMPLETE. Researcher dispatched and returned (97967 subagent tokens, 31 tool uses). Cited findings:
+  ingestion contract = IngestionSource Protocol / IngestPlan in src/kronos/ingest/contract.py:84-93,
+  apply_plan sole writer :118-129; bare-list dispatcher ingest(raw_tool_output, tool_name, engagement)
+  src/kronos/ingest/__init__.py:62-78 (only "reference"+"mobile_static" branches); HOST/SERVICE canonical
+  keys ALREADY EXIST (reconcile/canonical.py:103-109, :198-218) and HOST/SERVICE DDL ALREADY EXISTS
+  (schema.py:30-39) — the sole gap is NO production source emits HOST/SERVICE NodeUpserts (all test-only);
+  scope_guard HOST/SERVICE shapes already ratified post-FORK-2 (scope_guard.py:223-236); events.emit
+  ALLOWED_KINDS events.py:42-77; mobile/parser.py is the only merged ingestion precedent (two faces on one
+  core, :292-321); NO API source exists; NO infra scan fixture exists under tests/ (only mobile APK fixtures).
+  Two researcher flags resolved by Opus: (1) the "research record not found / signature mismatch" is because
+  the researcher saw only the working branch (no docs/loop/); the record is on kronos/loop-state and Opus read
+  §6 directly — roadmap prose is shorthand, real contract is IngestPlan-based; (2) "no API precedent" confirmed
+  — mirror mobile only. No material conflict requiring re-dispatch.
+
+brief_authored:
+  path: SPEC_BRIEF11.md
+  stage: S3.1
+  scope: "nmap-XML infra ingestion -> HOST + SERVICE nodes + 'hosts' edges; ingestion only (infra validation is S4)."
+  input_format_decision: "nmap XML via stdlib xml.etree.ElementTree. Rationale: canonical/most-deterministic infra scanner (§6); clean map to existing HOST/SERVICE columns; NO new dependency (PR #9 undeclared-dep lesson); ElementTree does not resolve external entities (no XXE). Bounding decision within maintainer-granted milestone-definition authority; not a pause condition."
+  structure: "mirror src/kronos/ingest/mobile/parser.py — two faces (ingest_infra_nmap bare-list + ingest_infra_nmap_plan -> IngestPlan) on one shared core; source NEVER calls upsert_node/upsert_edge (contract.py:118-127 guard)."
+
+gate1:
+  decision: SELF-APPROVED
+  by: Opus orchestrator (checkpoint SEQ 55 authority model; maintainer context.md 2026-10-21)
+  basis: "Brief validated against researcher evidence (file:line citations above); recorded S3 roadmap milestone; CyberGym-only; §3-bounded (6 paths); no new deps; no live targets. First build of the S3 domain but well-precedented (mirror mobile)."
+
+permitted_files_s3_list:
+  - SPEC_BRIEF11.md
+  - src/kronos/ingest/infra/__init__.py
+  - src/kronos/ingest/infra/parser.py
+  - src/kronos/ingest/__init__.py   # add ONLY the infra_nmap dispatch branch
+  - tests/test_infra_ingest.py
+  - tests/fixtures/infra/cybergym_nmap.xml
+
+pending_action:
+  seq: 65
+  action: >
+    (1) Create build branch claude/s3-infra-ingest-brief11 off origin/main (a2feba3); commit SPEC_BRIEF11.md
+    (explicit path), push. (2) Dispatch kronos-builder (claude-sonnet-5-5) to implement ONLY the §3 permitted
+    files per SPEC_BRIEF11 §2/§8, writing the tests-as-rules suite in tests/test_infra_ingest.py first. (3) On
+    builder return, Opus assesses the diff against §3 (whole-window git diff --name-only a2feba3..HEAD subset),
+    then dispatches kronos-reviewer (claude-haiku-5-5, independent, NOT given the builder report) to review the
+    brief vs diff and run the suite under .venv. (4) Opus step-5 semantic verification; then GATE-2 merge
+    decision re-measuring all ten MERGE-GATE prerequisites in-turn. Pause only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3."
