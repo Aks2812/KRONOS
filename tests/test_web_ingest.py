@@ -163,17 +163,49 @@ def test_H_no_socket_io(g, doc, monkeypatch):
         raise AssertionError("socket used")
 
     monkeypatch.setattr(socket, "socket", boom)
+    monkeypatch.setattr(socket, "create_connection", boom)
     apply_plan(g, ingest_web_openapi_plan(doc, g))
     assert g.get_node("WEB_ENDPOINT", HEALTH) is not None
 
 
-@pytest.mark.parametrize("bad", ["{not json", '{"openapi": "3.0.3"}', "[]", None])
+@pytest.mark.parametrize("bad", ["{not json", '{"openapi": "3.0.3"}', "[]", "null", None])
 def test_H_bad_input_declined_not_raised(g, bad):
     plan = ingest_web_openapi_plan(bad, g)
     assert plan.upserts == ()
     assert plan.report.declined
     assert all(isinstance(d, DeclinedItem) for d in plan.report.declined)
     assert ingest_web_openapi(bad, g) == []
+
+
+@pytest.mark.parametrize("url", ["http://127.0.0.1:notaport", "http://127.0.0.1:99999999", "http://[::1", "/relative"])
+def test_H_bad_server_url_declined_not_raised(g, doc, url):
+    d = json.loads(doc)
+    d["servers"] = [{"url": url}]
+    plan = ingest_web_openapi_plan(d, g)  # must not raise
+    assert plan.upserts == ()
+    assert plan.report.declined
+    assert all(isinstance(x, DeclinedItem) for x in plan.report.declined)
+    assert ingest_web_openapi(d, g) == []
+
+
+def test_absent_servers_defaults_to_loopback(g, doc):
+    d = json.loads(doc)
+    del d["servers"]
+    plan = ingest_web_openapi_plan(d, g)
+    assert not plan.report.declined
+    apply_plan(g, plan)
+    eid = "web:GET:http://127.0.0.1/health"
+    assert g.get_node("WEB_ENDPOINT", eid)["url"] == "http://127.0.0.1/health"
+    assert g.get_node("WEB_ENDPOINT", eid)["in_scope"] is True
+    assert all(u.scope_key == "127.0.0.1" for u in plan.upserts if isinstance(u, NodeUpsert))
+
+
+def test_parameter_missing_name_or_in_declined(g, doc):
+    d = json.loads(doc)
+    d["paths"]["/health"]["get"]["parameters"] = [{"in": "query"}, {"name": "x"}, {"name": "ok", "in": "query"}]
+    plan = ingest_web_openapi_plan(d, g)
+    assert len(plan.report.declined) == 2
+    assert plan.report.node_counts["PARAMETER"] == 3  # 2 fixture params + "ok"
 
 
 def test_I_report(g, doc):

@@ -22,6 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 WEB_OPENAPI_SOURCE = SourceDescriptor(name="openapi", version="1")
 
+_DEFAULT_SERVER_URL = "http://127.0.0.1"
 _METHODS = ("get", "post", "put", "patch", "delete")
 
 
@@ -38,41 +39,44 @@ def _ingest_web_openapi_core(
 
     emit(engagement_dir, "ingest_started", source_name=WEB_OPENAPI_SOURCE.name, source_version=WEB_OPENAPI_SOURCE.version)
 
-    doc: Any = openapi_json
+    doc: Any = None
     if isinstance(openapi_json, (str, bytes)):
         try:
             doc = json.loads(openapi_json)
         except (ValueError, TypeError):
-            decline("unparseable_openapi_json", "OpenAPI JSON failed to parse")
             doc = None
-    if doc is not None and not isinstance(doc, dict):
-        decline("unparseable_openapi_json", "OpenAPI document is not a JSON object")
+    elif openapi_json is not None:
+        doc = openapi_json
+    if not isinstance(doc, dict):
+        decline("unparseable_openapi_json", "OpenAPI input is missing, unparseable, or not a JSON object")
         doc = None
-    elif openapi_json is None:
-        decline("unparseable_openapi_json", "no OpenAPI input")
 
-    server_base = ""
     host = None
     port = None
+    server_base = ""
     if doc is not None:
         servers = doc.get("servers")
         first = servers[0] if isinstance(servers, list) and servers else None
         server_url = first.get("url") if isinstance(first, dict) else None
+        if not isinstance(server_url, str):
+            server_url = _DEFAULT_SERVER_URL  # no servers[0].url: brief default
         try:
-            parts = urlsplit(server_url) if isinstance(server_url, str) else None
-            host = parts.hostname if parts else None
-            port = parts.port if parts else None
+            parts = urlsplit(server_url)
+            host = parts.hostname
+            port = parts.port
+            scheme = parts.scheme
         except ValueError:
-            parts = None
+            host = None
         if not host:
-            decline("missing_server_url", "OpenAPI document has no usable servers[0].url")
+            decline("malformed_server_url", "servers[0].url is not a usable URL")
+            host = None
         else:
             server_base = server_url.rstrip("/")
             if port is None:
-                port = 443 if parts.scheme == "https" else 80
+                port = 443 if scheme == "https" else 80
 
-    paths = doc.get("paths") if doc is not None and host else None
-    if doc is not None and host and not isinstance(paths, dict):
+    paths = doc.get("paths") if host else None
+    if host and not isinstance(paths, dict):
         decline("missing_paths", "OpenAPI document has no paths object")
         paths = None
 
