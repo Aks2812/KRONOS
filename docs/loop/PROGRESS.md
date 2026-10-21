@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 65
-derived_at: 2026-10-21T00:00:01Z
+seq: 66
+derived_at: 2026-10-21T00:00:02Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -4963,5 +4963,43 @@ pending_action:
     then dispatches kronos-reviewer (claude-haiku-5-5, independent, NOT given the builder report) to review the
     brief vs diff and run the suite under .venv. (4) Opus step-5 semantic verification; then GATE-2 merge
     decision re-measuring all ten MERGE-GATE prerequisites in-turn. Pause only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3. [SEQ65]"
+
+## SEQ 66 — S3.1 builder COMPLETE; Opus scope-audit PASS; dispatching independent reviewer (write-ahead)
+seq: 66
+derived_at: 2026-10-21T00:00:02Z
+stage: S3
+phase: Builder (kronos-builder, claude-sonnet-5-5) implemented SPEC_BRIEF11 on claude/s3-infra-ingest-brief11; Opus independently audited the diff; dispatching the independent Haiku reviewer next.
+
+seq65_pending_action_outcome: >
+  COMPLETE. Build branch claude/s3-infra-ingest-brief11 created off origin/main a2feba3, SPEC_BRIEF11.md
+  committed 90f9d18, pushed. kronos-builder (claude-sonnet-5-5) implemented and committed 527341f.
+  Opus independent verification this turn (NOT trusting the builder report alone):
+  (1) whole-window `git diff --name-only a2feba3..HEAD` = exactly the six §3 paths (SPEC_BRIEF11.md,
+  src/kronos/ingest/__init__.py, src/kronos/ingest/infra/__init__.py, src/kronos/ingest/infra/parser.py,
+  tests/fixtures/infra/cybergym_nmap.xml, tests/test_infra_ingest.py) — scope PASS; working tree otherwise
+  only the known untracked rails (.claude/, CLAUDE.md, docs/loop/).
+  (2) src/kronos/ingest/infra/parser.py contains NO .upsert_node/.upsert_edge calls (grep empty) — writes go
+  only through apply_plan/apply_upserts, so test_ingest_contract.py's chokepoint guard holds.
+  (3) imports = stdlib xml.etree.ElementTree + kronos.events/ingest/contract only — NO new dependency.
+  (4) dispatcher edit = +5 lines, ONLY the infra_nmap branch (local import), unknown tool_name still raises
+  NotImplementedError — surgical.
+  (5) parser = two faces (ingest_infra_nmap bare-list :90, ingest_infra_nmap_plan -> IngestPlan :96) on one
+  core (_ingest_infra_nmap_core :26); HOST NodeUpsert props {"source":"nmap"} scope_key=host_id; open-only
+  gate (state != "open" -> DeclinedItem port_not_open); hosts EdgeUpsert; build_report + emit
+  ingest_started/finished/declined.
+  Builder-reported suite under .venv: 3477 passed, 1 skipped (read from pytest tail line, not $?);
+  tests/test_infra_ingest.py = 15 passed; RED-before confirmed (ModuleNotFoundError at collection pre-parser).
+  Note: pytest tail line had no literal "SUMMARY:" prefix; count read from the "N passed, M skipped" line.
+
+pending_action:
+  seq: 66
+  action: >
+    Dispatch kronos-reviewer (claude-haiku-5-5, INDEPENDENT — obtains the diff itself, is NOT given the
+    builder report) to review SPEC_BRIEF11 vs the claude/s3-infra-ingest-brief11 diff (base a2feba3) and run
+    the approved suite under .venv. On reviewer PASS: Opus step-5 semantic verification, then GATE-2 merge
+    decision re-measuring all ten MERGE-GATE prerequisites in-turn (name PR number + head SHA; never --admin,
+    never --auto). On reviewer FAIL: return to builder with the evidence (circuit breaker: 3 attempts then HALT).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3."
