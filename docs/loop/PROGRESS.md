@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 69
-derived_at: 2026-10-21T00:00:05Z
+seq: 70
+derived_at: 2026-10-21T00:00:06Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5124,4 +5124,59 @@ pending_action:
     / test_http_validator.py / test_negative_controls.py). Researcher returns findings only; Opus assesses, then
     authors a bounded S4 SPEC_BRIEF (explicit §3 + §8) and self-approves GATE-1.
   outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ69]"
+
+## SEQ 70 — S4 researcher PASS; architecture blocker found; PAUSE condition #2 (how infra-validation verdicts attach); autonomy does not cover this
+seq: 70
+derived_at: 2026-10-21T00:00:06Z
+stage: S4
+phase: Researcher returned cited findings. S4 is buildable but needs ONE architecture-direction decision that code/doc leave genuinely open and that S6 (web validation) will inherit. §4 PAUSE-DECISION (prose silence) + pause condition #2. The §6 autonomy grant (SEQ 69) relaxes no §4 boundary, so this pauses.
+
+seq69_pending_action_outcome: >
+  COMPLETE. kronos-researcher (claude-sonnet-5) returned (105884 tokens, 39 tool uses). Cited findings:
+  validator contract = (secret_value, target_id, ...) -> ValidationOutcome (validate/types.py:22),
+  dispatched by decoded-SECRET shape via registry.get_validator (registry.py:28,37), orchestrated by
+  run_validation_pass (runner.py:121) over EXTRACTED SECRETs + candidates.find_candidate_targets_for_secret;
+  CandidateTarget.type = Literal["API_ENDPOINT","CLOUD_RESOURCE"] (validate/types.py:16-18) — NO HOST/SERVICE;
+  two merged validators http_validator.py:65 / cloud_validator.py:76 feed run_differential (controls.py:151,
+  kind Literal["http","cloud"]); disposition vocabulary = Classification enum controls.py:29-36
+  {live_discriminated, not_live, authenticated_not_authorized, indiscriminate_target, self_request_malformed,
+  inconclusive}; SECRET.status advanced via lifecycle.advance_secret_status (lifecycle.py:153). HOST/SERVICE
+  have NO status/confidence column (schema.py:30-39, NODE_COLUMNS :223-224); only schema-legal status anchor
+  reachable from SERVICE is FINDING(status,confidence) via ("SERVICE","FINDING")/("HOST","FINDING") edges
+  (schema.py:125,86-91) but NO code creates it. events.ALLOWED_KINDS (events.py:42-50) has no validate_* kind;
+  runner.py does not emit. CyberGym hermetic targets: 127.0.0.1:4566/4567/8091 (existing cloud/http validator
+  tests already hit :4567/:8091 mocked). Research-record §5 tier machinery (CONFIRMED/LIKELY/INCONCLUSIVE,
+  mechanical_tier, downgrade_reason_code) is UNIMPLEMENTED in this checkout (grep zero) — it is a recorded
+  decision, not code. Nearest test precedent: test_cloud_validator.py, test_http_validator.py,
+  test_negative_controls.py (SPEC_BRIEF8 §5.1 hermetic suite). No code executed; no network.
+
+architecture_blocker:
+  why_pause: "Not a routine implementation detail like S3.1's input format. This sets how KRONOS records a validation verdict for a non-SECRET node family, with no code precedent, and S6 web validation inherits the same pattern. Pause condition #2 (architecture direction) + §4 PAUSE-DECISION (prose silence)."
+  Q1_verdict_attachment:
+    question: "Where does an infra-validation verdict attach, given HOST/SERVICE have no status column?"
+    option_A_recommended: "Create a FINDING(status, confidence) node per validated SERVICE exposure, linked by the existing ('SERVICE','FINDING') edge. Schema-legal TODAY, no schema.py edit, reuses FINDING lifecycle. New capability: a validator that creates FINDINGs (no current precedent)."
+    option_B: "Add a SERVICE.status column + an advance_service_status lifecycle, mirroring SECRET. Requires editing schema.py (core data-model change) and lifecycle.py."
+  Q2_disposition_vocabulary:
+    question: "What vocabulary expresses the 'control disposition / verdict tier' §6 asks for?"
+    option_A_recommended: "Reuse the existing validator Classification enum (controls.py:29-36) + add kind='infra' to run_differential. Minimal, consistent with http/cloud."
+    option_B: "Implement the research-record §5 CONFIRMED/LIKELY/INCONCLUSIVE downgrade-only tier machinery now (larger; §5 frames it as a reviewer-side ceiling, a separate concern from the validator Classification)."
+  recommended_bounded_s4_1: >
+    Infra reachability/exposure validator: two-armed hermetic differential against the CyberGym range
+    (positive arm = in-scope open SERVICE reachable at 127.0.0.1:port; negative control arm = a closed or
+    out-of-scope port must NOT validate), kind='infra' added to run_differential, outcome = existing
+    ValidationOutcome/Classification (Q2=A), verdict recorded by creating a FINDING linked to the SERVICE
+    (Q1=A). Likely §3: src/kronos/validate/infra_validator.py (new), src/kronos/validate/controls.py (add
+    'infra' kind), a FINDING-creation helper + an infra validation pass (runner or new module), SPEC_BRIEF12.md,
+    tests/test_infra_validator.py, tests/fixtures/infra/* — to be finalized once Q1/Q2 are answered.
+
+pending_action:
+  seq: 70
+  action: >
+    PAUSE for the maintainer's architecture call on Q1 (verdict attachment: A=FINDING via edge [recommended] vs
+    B=add SERVICE.status) and Q2 (disposition: A=reuse Classification enum [recommended] vs B=build §5 tier
+    machinery now). On the answer (e.g. "Q1=A, Q2=A" or "go with your recommendation"), Opus authors
+    SPEC_BRIEF12 (S4.1), self-approves GATE-1, and runs the loop autonomously through S4->S7 per SEQ 69 without
+    further per-milestone pause, unless another defined pause condition arises. No code written; no branch created.
+  outcome: pending (awaiting maintainer architecture decision Q1/Q2)
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
