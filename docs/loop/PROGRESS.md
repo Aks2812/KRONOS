@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 68
-derived_at: 2026-10-21T00:00:04Z
+seq: 69
+derived_at: 2026-10-21T00:00:05Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5076,4 +5076,52 @@ pending_action:
     decision = pause condition #2 — awaiting maintainer confirmation of the next bounded milestone, OR an
     instruction to continue autonomously through the §6 backlog. No autonomous scope expansion taken.
   outcome: n/a (milestone record; loop idle pending a maintainer next-direction decision)
-  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome still pending — independent of S3."
+  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome still pending — independent of S3. [SEQ68]"
+
+## SEQ 69 — Maintainer grants autonomous §6 execution (S4->S7); S8 still pauses; starting S4, dispatching researcher (write-ahead)
+seq: 69
+derived_at: 2026-10-21T00:00:05Z
+stage: S4
+phase: Maintainer reply "continue autonomously through §6". Standing authority updated. Beginning S4 (infra validation). Per-milestone maintainer pause for S4/S5/S6/S7 is lifted; S8 (agent layer, G2) still pauses.
+
+authority_update:
+  source: "maintainer reply 2026-10-21: 'continue autonomously through §6'; builds on context.md (2026-10-21) and SEQ 55."
+  granted: >
+    Opus runs the full researcher -> Opus -> builder -> Haiku reviewer -> Opus -> GATE-2 loop AUTONOMOUSLY across
+    the research-record §6 backlog WITHOUT a per-milestone maintainer pause, for S4 (infra validation),
+    S5 (web ingestion), S6 (web validation), and S7 (transitive invalidation / staleness). Opus chooses and
+    sequences these, self-approves routine GATE-1, and self-authorizes GATE-2 merges within scope.
+  excluded: >
+    S8 (agent layer, G2) is NOT covered — context.md reserved the agent-layer goal ("web and infrastructure
+    capability work before the agent layer"; "do not expand into a new product or agent-layer goal ... without
+    pausing"). On reaching S8, PAUSE (pause condition #2).
+  unchanged: >
+    Relaxes NO §4 boundary: CyberGym only, no live targets, no client/target-auth inference, §3 file list binds
+    per brief, write-ahead binds before every consequential action, ten MERGE-GATE prerequisites re-measured
+    in-turn per merge, circuit breaker 3 attempts then HALT. The five pause conditions still apply (auth/device,
+    goal/scope/architecture change, missing/ambiguous target or authorization, unresolvable conflict/failure,
+    usage limit).
+
+milestone_selected:
+  id: S4
+  title: "Infra validation — two-armed + control disposition"
+  goal: "G1 (breadth over a second protocol family) + G3 (two-armed evidence, control disposition)"
+  source: "research record v6 §6 sequencing table; depends on S3 (delivered at PR #19 / 19c9464)"
+  rationale: "Extends the S1 negative-control validator interface to the infra protocol family, validating HOST/SERVICE reachability/exposure with a positive arm + negative control(s) and a control disposition, mirroring the merged cloud/http validators. Ingestion-only S3 now feeds it."
+
+pending_action:
+  seq: 69
+  action: >
+    Dispatch kronos-researcher (read-only, claude-sonnet-5) to scope S4 infra validation. Required cited
+    findings (file:line): (1) the S1 negative-control validator interface / base contract and where validators
+    register; (2) the two existing merged validators (cloud, http) — module paths, how each implements the
+    two-armed positive+control structure and emits a control disposition / verdict tier; (3) the advance/status
+    lifecycle a validator drives (advance_secret_status analogue for HOST/SERVICE, or whether HOST/SERVICE have
+    no status and validation attaches elsewhere); (4) the reviewer downgrade-only tier machinery (research
+    record §5) a validator result must satisfy; (5) what "infra validation" means against the CyberGym range
+    (which HOST/SERVICE facts are checkable locally, two-armed, with no live external traffic) and the available
+    fixtures; (6) the event-stream kinds a validator emits; (7) nearest test precedent (test_cloud_validator.py
+    / test_http_validator.py / test_negative_controls.py). Researcher returns findings only; Opus assesses, then
+    authors a bounded S4 SPEC_BRIEF (explicit §3 + §8) and self-approves GATE-1.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
