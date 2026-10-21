@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 71
-derived_at: 2026-10-21T00:00:07Z
+seq: 72
+derived_at: 2026-10-21T00:00:08Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5221,5 +5221,46 @@ pending_action:
     + verify controls.py edit is additive-only. (4) Dispatch kronos-reviewer (claude-haiku-5-5, independent, NOT
     given builder report). (5) Opus step-5, then GATE-2 merge re-measuring all ten prerequisites in-turn (name
     PR + head SHA; never --admin/--auto). Then continue autonomously to S5. Pause only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ71]"
+
+## SEQ 72 — S4.1 build attempt 1 exposed a cross-brief scope-audit landmine; §3 amended to SEAL brief 11's test; GATE-1 re-approved; resume builder (attempt 2/3) (write-ahead)
+seq: 72
+derived_at: 2026-10-21T00:00:08Z
+stage: S4
+phase: Builder (claude-sonnet-5-5) implemented the 4 §3 files (commit 2fc29ff) but the full suite shows 1 failed. The failure is a defect in brief 11's committed test, not in S4.1. Amending brief 12 §3 to fix it, re-approving GATE-1, resuming the builder.
+
+seq71_pending_action_outcome: >
+  PARTIAL. Build branch claude/s4-infra-validate-brief12 created off 19c9464, SPEC_BRIEF12.md committed a92e932,
+  pushed. Builder committed 2fc29ff (controls.py additive kind='infra'; infra_validator.py new;
+  test_infra_validator.py new). Builder-reported suite under .venv: 1 failed, 3488 passed, 1 skipped — the ONLY
+  failure is tests/test_infra_ingest.py::test_K_scope_audit. §8 A-J all pass; RED-before confirmed
+  (ModuleNotFoundError). Builder correctly STOPPED rather than edit a file outside §3.
+
+defect_found:
+  what: "tests/test_infra_ingest.py::test_K_scope_audit (committed by brief 11, SPEC_BRIEF11) diffs a2feba3..HEAD and asserts the set is a subset of brief 11's §3."
+  why_it_fails_now: "The upper bound is HEAD. On any branch built after brief 11 merged to main (19c9464), a2feba3..HEAD also contains SPEC_BRIEF12.md + the S4 files, which are not in brief 11's §3 — so it fails. It is a landmine for EVERY subsequent brief, not specific to S4.1."
+  not_a_weakening: "The fix pins the upper bound to brief 11's merged SHA 19c9464 (a2feba3..19c9464 = brief 11's exact 6-file footprint). Both SHAs immutable -> stable historical assertion that still fails loudly if brief 11's footprint ever differed from its §3. More correct, not weaker."
+  verification_gap_noted: "Builder inferred (did not measure) that the failure predates its change; Opus confirms by construction: a2feba3..19c9464 is brief 11's squash footprint = its 6 §3 files."
+
+brief_amendment:
+  path: SPEC_BRIEF12.md (§2a added; §3 adds path 5; §8 adds criterion K)
+  added_to_section_3: "tests/test_infra_ingest.py (edit: SEAL ONLY — add BRIEF_MERGE='19c9464', pin the diff to a2feba3..19c9464; no other change)."
+  convention_recorded: "A brief's own base..HEAD scope audit is HEAD-relative (correct only on its branch); the NEXT brief seals it by pinning the upper bound to this brief's merge SHA. S5 will seal brief 12's §8-J."
+
+gate1:
+  decision: RE-APPROVED (amended §3 = 5 paths)
+  by: Opus orchestrator (SEQ 69 autonomy)
+  basis: "Amendment is test-only, unblocks S4.1 and all future briefs, and strengthens (not weakens) the scope-audit invariant. Within established scope; no product-code change beyond the already-validated controls.py additive edit."
+
+pending_action:
+  seq: 72
+  action: >
+    Resume kronos-builder (SendMessage, same agent, attempt 2 of 3) to apply the §2a seal to
+    tests/test_infra_ingest.py (BRIEF_MERGE='19c9464'; diff a2feba3..19c9464), re-run the full suite under
+    .venv, confirm 0 failed, and commit (explicit paths) on claude/s4-infra-validate-brief12. Then Opus
+    whole-window scope audit (git diff --name-only 19c9464..HEAD ⊆ amended §3 of 5 paths) + confirm the
+    test_infra_ingest.py diff is the seal only. Then independent reviewer, step-5, GATE-2 (ten prerequisites
+    in-turn). Circuit breaker: this is attempt 2; a 3rd failed attempt HALTs.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
