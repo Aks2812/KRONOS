@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 63
-derived_at: 2026-10-20T00:00:00Z
+seq: 64
+derived_at: 2026-10-21T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -4866,3 +4866,48 @@ pending_action:
     the merged branches claude/finding-b-brief10-9 and claude/finding-c-brief10-10 on origin.
   outcome: n/a (milestone record; loop idle pending a maintainer scope decision)
   carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome pending."
+
+## SEQ 64 — FORK-2 declared COMPLETE by maintainer; next milestone = S3 Infra ingestion (HOST, SERVICE); dispatching researcher to scope S3 (write-ahead)
+seq: 64
+derived_at: 2026-10-21T00:00:00Z
+stage: S3
+phase: FORK-2 closed. Maintainer authorization (file /home/void/context.md, read 2026-10-21) resolves pause condition #2 that held the loop idle at SEQ 63. S3 is the next recorded roadmap milestone (research record v6 §6 sequencing table) in the existing web/infra direction — not a scope expansion.
+
+maintainer_authorization: >
+  Source: /home/void/context.md (916 bytes, mtime 2026-10-21). Verbatim intent: FORK-2 complete; set next
+  KRONOS R&D direction to web and infrastructure capability work BEFORE the agent layer, consistent with the
+  existing research direction; authorized to define ONE bounded next milestone within that web/infra direction;
+  dispatch Sonnet researcher, Opus assesses, then continue the autonomous researcher -> Opus -> builder ->
+  Haiku reviewer -> Opus loop. Boundaries reaffirmed by the maintainer: keep all work LOCAL; stay within
+  existing KRONOS authorization; do NOT begin live-target testing, infer client authorization, expand into a
+  new product or agent-layer goal, or make external-scope changes without pausing. This authorizes defining the
+  recorded next milestone only; it relaxes no §4 boundary.
+
+fork2_completion: >
+  RECORDED COMPLETE. FORK-2 (shape-aware structural scope_guard matcher + its three grounding findings F-A/F-B/F-C)
+  is closed: F-A->PR #16 (d71ebf6), F-C->PR #17 (2b1f3f3), F-B->PR #18 (a2feba3), all MERGED to main; grounding
+  backlog EMPTY (SEQ 63). origin/main HEAD = a2feba300559a2e74305cf8e29d0c0a203c377ba (verified live this turn).
+
+milestone_selected:
+  id: S3
+  title: "Infra ingestion -> HOST, SERVICE nodes"
+  goal: G1 (STRONGER — cross-domain breadth; web/infra before the agent layer)
+  source: "research record v6 §6 sequencing table; S1 (PR #10) and S2 (PR #11) foundations merged; FORK-2 pre-S3 blocker now closed"
+  rationale: "§6: infra's parser is the most deterministic domain, the best first exercise of the S2 ingestion contract, and web discovery (S5) depends on knowing which hosts expose HTTP (S3). Bounded to ingestion only; S4 infra validation is a later milestone."
+  constraints: "CyberGym only; src/kronos ingestion contract ingest(source,target)->list[NodeUpsert|EdgeUpsert]; everything enters at extracted/hypothesis via the upsert allowlist; canonical keys for HOST/SERVICE; no live network, no traffic outside the CyberGym range."
+
+pending_action:
+  seq: 64
+  action: >
+    Dispatch kronos-researcher (read-only, claude-sonnet-5) to scope S3 Infra ingestion WITHOUT deciding
+    anything. Required cited findings: (1) the ingestion-source contract signature and its registration/dispatch
+    site in src/kronos (file:line); (2) how S2 canonical keys are defined and whether HOST/SERVICE keys already
+    exist (schema.py / keys), and the exact gap; (3) the NodeUpsert/EdgeUpsert upsert-allowlist write path and
+    the extracted/hypothesis entry invariant; (4) the owned event-stream emission point ingestion must use;
+    (5) existing infra-shaped test fixtures / CyberGym infra range data available locally; (6) how scope_guard
+    now classifies HOST / ip:port / CIDR identifiers (the FORK-2 matcher) so infra ingestion stays inside it;
+    (7) the nearest merged ingestion precedent (mobile #2 / API) to mirror for structure and tests. Researcher
+    returns findings only; Opus assesses, then authors a bounded S3 SPEC_BRIEF with an explicit §3 file list and
+    §8 acceptance criteria before any GATE-1 / build.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome still pending — not part of S3."
