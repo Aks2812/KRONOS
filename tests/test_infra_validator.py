@@ -25,6 +25,7 @@ SECTION_3 = {
     "src/kronos/validate/controls.py",
     "src/kronos/validate/infra_validator.py",
     "tests/test_infra_validator.py",
+    "tests/test_infra_ingest.py",
 }
 IN_SCOPE_IDS = [f"127.0.0.1:{p}/tcp" for p in (4566, 4567, 8091)]
 OUT_OF_SCOPE_ID = "10.0.0.1:22/tcp"

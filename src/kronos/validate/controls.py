@@ -152,7 +152,9 @@ def run_differential(arms: Sequence[ArmResult], *, kind: Literal["http", "cloud"
     """The only place `discriminated` is ever set `True` (SPEC_BRIEF8
     §3.2). `arms` must be exactly the arms SPEC_BRIEF8 §3.3 (`kind="http"`:
     labels `A_canonical`, `B_negative_control`) or §3.4 (`kind="cloud"`:
-    labels `A_canonical`, `B_bad_secret`, `C_unknown_key`) describe —
+    labels `A_canonical`, `B_bad_secret`, `C_unknown_key`) describe;
+    `kind="infra"` (SPEC_BRIEF12) uses the same two-arm path as "http"
+    (labels `A_canonical`, `B_negative_control`) —
     callers never invent a different arm set or calling convention
     (FORK-I: one chokepoint, not a rule re-derived per validator).
     """
