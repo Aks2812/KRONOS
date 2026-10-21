@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 73
-derived_at: 2026-10-21T00:00:09Z
+seq: 74
+derived_at: 2026-10-21T00:00:10Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5305,5 +5305,34 @@ pending_action:
     Re-run full suite under .venv, confirm 0 failed, refresh totals, commit explicit paths, push. Then Opus
     verifies J green + scope unchanged (still 5 §3 paths), then re-dispatches the independent reviewer for a
     focused re-review (prereq 5 needs an independent PASS), then step-5 + GATE-2 (ten prerequisites in-turn).
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ73]"
+
+## SEQ 74 — S4.1 reviewer re-review PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 74
+derived_at: 2026-10-21T00:00:10Z
+stage: S4
+phase: Build attempt 3 (e72f3df) green; independent reviewer re-review PASS; Opus step-5 PASS. Autonomous GATE-2 merge under SEQ 55. Branch protection not bypassable — HALT (no --admin) if GitHub blocks.
+
+seq73_pending_action_outcome: >
+  SUCCESS (attempt 3/3). Builder applied both fixes (commit e72f3df): added tests/test_infra_ingest.py to
+  SECTION_3 in tests/test_infra_validator.py (fixes §8-J); updated controls.py run_differential docstring to
+  mention kind='infra' (docstring-only). Opus verified: J + K pass; diff still exactly 5 §3 paths; SECTION_3
+  now 5 entries. Independent reviewer re-review at e72f3df: VERDICT PASS, merge-eligible; §8-J PASS, docstring
+  Low resolved, scope clean, A-I/K still PASS, full suite 3489 passed / 1 skipped / 0 failed. Opus step-5:
+  build matches SPEC_BRIEF12 §1/§2/§2a/§8; Q1/Q2 honored; no circuit-breaker (attempt 3 succeeded).
+
+pending_action:
+  seq: 74
+  action: >
+    SELF-AUTHORIZED GATE-2 merge of claude/s4-infra-validate-brief12 (head e72f3df) into main. SAME TURN as the
+    merge: (1) open PR base=main head=claude/s4-infra-validate-brief12 (not draft); (2) re-measure ALL TEN
+    MERGE-GATE prerequisites in-turn — (1 scope=5 §3 paths; 2 ruleset void-rule-kronos active; 3 isDraft false;
+    4 OPEN; 5 independent reviewer PASS + step-5; 6 checks CLEAN/none; 7 full suite 3489 passed 0 failed .venv;
+    8 MERGEABLE + CLEAN + e72f3df not ancestor of origin/main; 9 self-authorized this turn naming PR# + head
+    e72f3df; 10 clean tree, only known untracked rails); (3) if ALL pass: `gh pr merge <n> --squash
+    --match-head-commit e72f3dfe2930974be0d338ce5bfe5203881321a0` — NEVER --admin, NEVER --auto. Record new main
+    SHA + PR MERGED next block, then continue autonomously to S5. If ANY prerequisite fails or GitHub blocks ->
+    HALT and report; no --admin.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
