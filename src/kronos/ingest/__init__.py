@@ -75,6 +75,11 @@ def ingest(raw_tool_output: Any, tool_name: str, engagement: "EngagementGraph") 
         from kronos.ingest.mobile.parser import ingest_mobile_static
 
         return ingest_mobile_static(raw_tool_output, engagement)
+    if tool_name == "infra_nmap":
+        # Local import, same circular-import reason as mobile_static.
+        from kronos.ingest.infra.parser import ingest_infra_nmap
+
+        return ingest_infra_nmap(raw_tool_output, engagement)
     raise NotImplementedError(f"parser for tool_name={tool_name!r} not implemented; real parsers are a later brief")
 
 
