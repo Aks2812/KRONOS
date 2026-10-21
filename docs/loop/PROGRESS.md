@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 67
-derived_at: 2026-10-21T00:00:03Z
+seq: 68
+derived_at: 2026-10-21T00:00:04Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5038,4 +5038,42 @@ pending_action:
     NEVER --auto. Record new main SHA + PR MERGED in the next block. If ANY prerequisite fails or GitHub blocks
     (branch protection) -> HALT and report; no --admin.
   outcome: pending
-  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3."
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3. [SEQ67]"
+
+## SEQ 68 — SPEC_BRIEF11 (S3.1) MERGED to main (PR #19, squash 19c9464); GATE-2 closed; S3 infra ingestion delivered; loop idle pending next-direction decision
+seq: 68
+derived_at: 2026-10-21T00:00:04Z
+stage: S3
+phase: S3.1 (first infra ingestion source) landed on main via autonomous GATE-2 merge under SEQ 55. The maintainer-authorized ONE bounded milestone (context.md 2026-10-21) is delivered. Defining the NEXT milestone (S4 infra validation, or S5 web) is again a scope/direction decision (pause condition #2).
+
+seq67_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope = 6 §3 paths; 2 ruleset
+  void-rule-kronos enforcement=active; 3 isDraft false; 4 state OPEN; 5 independent reviewer PASS + Opus
+  step-5; 6 no checks reported / CLEAN; 7 full suite 3477 passed, 1 skipped, 0 failed under .venv (raw pytest,
+  trustworthy exit); 8 mergeable MERGEABLE + mergeStateStatus CLEAN + head 527341f NOT ancestor of origin/main;
+  9 self-authorized this turn naming PR #19 + head 527341f; 10 clean tree, only known untracked rails).
+  Executed `gh pr merge 19 --squash --match-head-commit 527341f25ac6e599e25b8883c936ba7f88911047` — NO --admin,
+  NO --auto. PR #19 state=MERGED, mergedAt 2026-10-21T14:05:04Z. origin/main a2feba3 -> squash
+  19c94640e4921c80381ddef77a56400f4c048f95.
+
+s3_status: >
+  S3 (research record §6: "Infra ingestion -> HOST, SERVICE") DELIVERED by S3.1. First production source now
+  emits HOST/SERVICE NodeUpserts + 'hosts' edges from nmap XML, conforming to the S2 ingestion contract,
+  scope-gated by the FORK-2 matcher, CyberGym-only. Downstream (canonical keys, reconcile, scope_guard shapes,
+  edge pairs) was pre-existing. No src/ outside ingest/ touched.
+
+next_milestones_available:
+  - "S4 (research record §6): Infra VALIDATION, two-armed + control disposition (G1, G3). Natural next step; extends the validator interface to a second protocol family. Depends on S3 (now met)."
+  - "S5 (research record §6): Web ingestion -> WEB_ENDPOINT, PARAMETER, seeded from S3 (G1)."
+  - "S4 follow-ups carried from SEQ 67: IPv6 SERVICE-id ':' disambiguation; optional decline-event coalescing."
+  - "Housekeeping (optional, outward): delete merged origin branches claude/s3-infra-ingest-brief11, claude/finding-b-brief10-9, claude/finding-c-brief10-10."
+
+pending_action:
+  seq: 68
+  action: >
+    S3.1 complete and merged. The single maintainer-authorized bounded milestone (context.md) is delivered, so
+    the loop is idle. Defining the next milestone (recommended: S4 infra validation) is a scope/direction
+    decision = pause condition #2 — awaiting maintainer confirmation of the next bounded milestone, OR an
+    instruction to continue autonomously through the §6 backlog. No autonomous scope expansion taken.
+  outcome: n/a (milestone record; loop idle pending a maintainer next-direction decision)
+  carried_forward_rails: "SEQ 55 rails edits (CLAUDE.md + /kronos-continue skill) still untracked in the primary checkout; outcome still pending — independent of S3."
