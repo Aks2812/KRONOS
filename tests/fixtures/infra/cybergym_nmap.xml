@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<nmaprun scanner="nmap" args="nmap -oX - 127.0.0.1 10.0.0.1" version="7.94">
+  <host>
+    <status state="up"/>
+    <address addr="127.0.0.1" addrtype="ipv4"/>
+    <ports>
+      <port protocol="tcp" portid="4566"><state state="open"/><service name="http"/></port>
+      <port protocol="tcp" portid="4567"><state state="open"/><service name="http"/></port>
+      <port protocol="tcp" portid="8091"><state state="open"/><service name="http"/></port>
+      <port protocol="tcp" portid="9999"><state state="closed"/><service name="abyss"/></port>
+    </ports>
+  </host>
+  <host>
+    <status state="up"/>
+    <address addr="10.0.0.1" addrtype="ipv4"/>
+    <ports>
+      <port protocol="tcp" portid="22"><state state="open"/><service name="ssh"/></port>
+    </ports>
+  </host>
+</nmaprun>
