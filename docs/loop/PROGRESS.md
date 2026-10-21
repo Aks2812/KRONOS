@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 76
-derived_at: 2026-10-21T00:00:12Z
+seq: 77
+derived_at: 2026-10-21T00:00:13Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5431,5 +5431,54 @@ pending_action:
     dispatcher + seal-only test_infra_validator.py edit. (4) Independent reviewer (claude-haiku-5-5). (5) step-5
     + GATE-2 (ten prerequisites in-turn). Then continue autonomously to S6. Circuit breaker 3 attempts. Pause
     only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5. [SEQ76]"
+
+## SEQ 77 — S5.1 reviewer FAIL (1 High + conformance gaps, all in §3); fix dispatch (build attempt 2/3) (write-ahead)
+seq: 77
+derived_at: 2026-10-21T00:00:13Z
+stage: S5
+phase: Independent reviewer (claude-haiku-5-5) FAIL on brief 13 build (931def5). One real High defect (§8-H invariant violated) + brief-conformance gaps; all fixes are inside §3 (parser.py + test_web_ingest.py). No §3 amendment. Build attempt 2 of 3.
+
+seq76_pending_action_outcome: >
+  BUILT, reviewer FAIL. Build branch claude/s5-web-ingest-brief13 off 079a76f, SPEC_BRIEF13.md committed 6706168;
+  builder committed 931def5 (web/parser.py, web/__init__.py, dispatcher branch, test_web_ingest.py, fixture, brief-12 seal).
+  Opus scope audit PASS (7 §3 paths), additive dispatcher, seal-only test_infra_validator.py, no direct writes,
+  stdlib-only. Suite 3509 passed / 1 skipped. Reviewer found defects below.
+
+reviewer_verdict:
+  verdict: FAIL (do not merge)
+  blocking_high: >
+    §8-H VIOLATED: a malformed port in servers[0].url (e.g. http://127.0.0.1:notaport) raises
+    AttributeError: 'NoneType' object has no attribute 'scheme' out of ingest_web_openapi_plan. Cause
+    (parser.py:63-66,72): host is set before parts.port raises at :64; the except sets parts=None but keeps
+    host; :72 then dereferences parts.scheme. Untrusted input crashes the ingest path; H requires a DeclinedItem,
+    never a raise. No test covers it.
+  medium_brief_deviation: >
+    Brief §2 says server base defaults to http://127.0.0.1 when servers is absent; code instead declines
+    missing_server_url and emits nothing. Fix code to implement the brief's default (not amend the brief —
+    127.0.0.1 default is deliberate for the CyberGym-only context). Add a test.
+  low:
+    - "A string input of 'null' parses to None and is silently ignored (no decline, no event). parser.py:41-52; the is-None branch only covers real None."
+    - "A parameter missing name/in declines correctly (malformed_parameter) but has no test."
+  info:
+    - "test_H_no_socket_io patches only socket.socket, not create_connection — broaden for a stronger hermetic proof."
+    - "Reviewer env caveat: .venv/bin shebangs reference a stale path (/home/void/Void-Projects/KRONOS-void/.venv); the reviewer worked around it with /usr/bin/python3.14 + the intact site-packages. NOT a code defect — Opus's own .venv/bin/python runs worked. Does not block."
+  clean: "Scope audit K, §2a seal (19c9464..079a76f = brief 12's 5 files), additive dispatcher, no forbidden props, no direct writes, no new dep, and A-G/I-L all PASS."
+
+circuit_breaker: "Build attempt 2 of 3 for S5.1. Fixes are deterministic and in-scope. A 3rd failed attempt HALTs."
+
+pending_action:
+  seq: 77
+  action: >
+    Resume kronos-builder (SendMessage, attempt 2/3) to, in §3 files parser.py + test_web_ingest.py ONLY:
+    (1) FIX the High — guard against a bad/missing port: decline (DeclinedItem, reason e.g. 'malformed_server_url')
+    on urlsplit/.port ValueError and never dereference a None parts; the plan face must not raise on any input.
+    (2) Implement brief §2 default server base http://127.0.0.1 when servers[0].url is absent (not decline).
+    (3) Decline a parsed-null (json 'null' -> None) with a DeclinedItem + event. (4) Add tests: bad-port server
+    URL -> declined not raised; absent servers -> default host 127.0.0.1 ingests endpoints; 'null' string ->
+    declined; parameter missing name/in -> declined. (5) Broaden test_H to also patch socket.create_connection.
+    Re-run full suite under .venv, 0 failed, refresh totals, commit explicit paths, push. Then Opus verifies +
+    re-dispatches the independent reviewer (prereq 5 needs an independent PASS), step-5, GATE-2 (ten in-turn).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
