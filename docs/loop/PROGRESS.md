@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 72
-derived_at: 2026-10-21T00:00:08Z
+seq: 73
+derived_at: 2026-10-21T00:00:09Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5262,5 +5262,48 @@ pending_action:
     whole-window scope audit (git diff --name-only 19c9464..HEAD ⊆ amended §3 of 5 paths) + confirm the
     test_infra_ingest.py diff is the seal only. Then independent reviewer, step-5, GATE-2 (ten prerequisites
     in-turn). Circuit breaker: this is attempt 2; a 3rd failed attempt HALTs.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ72]"
+
+## SEQ 73 — S4.1 reviewer FAIL (J only); root cause = stale SECTION_3 after §3 amendment; fix dispatch (build attempt 3/3) (write-ahead)
+seq: 73
+derived_at: 2026-10-21T00:00:09Z
+stage: S4
+phase: Independent reviewer (claude-haiku-5-5) returned FAIL — exactly one blocking defect (§8-J); A-I, K, scope audit, controls.py additive, test_infra_ingest.py seal, and all hard invariants PASS independently. One-line test fix; build attempt 3 of 3.
+
+seq72_pending_action_outcome: >
+  DONE. Builder (SendMessage resume) applied the §2a seal to tests/test_infra_ingest.py (commit c604934,
+  verified by Opus: BRIEF_MERGE='19c9464', diff a2feba3..19c9464, SECTION_3 unchanged). Opus scope audit PASS
+  (5 §3 paths), controls.py additive-only (2 lines), infra_validator.py invariants PASS (no forbidden props;
+  in-scope-only MATCH; pure validator; vulnerable_to edge; hypothesis->reachable with idempotence guard).
+
+reviewer_verdict:
+  verdict: FAIL (do not merge) — one blocking finding
+  blocking: >
+    §8-J test_J_scope_audit FAILS (tests/test_infra_validator.py:174). Its hardcoded SECTION_3 (lines 23-28)
+    has 4 entries and omits the 5th §3 path tests/test_infra_ingest.py (added by the §3 amendment, commit
+    6f1ba8f). git diff --name-only 19c9464..HEAD = 5 files, so the subset assertion fails with "Extra items:
+    'tests/test_infra_ingest.py'". Full suite: 1 failed, 3488 passed, 1 skipped.
+  root_cause: >
+    When Opus amended §3 (SEQ 72) it updated the brief prose but the builder's test_J SECTION_3 (written in
+    attempt 1 with 4 paths) was not updated to match. The attempt-2 'green' was a commit-timing artifact: the
+    git-diff-based test J/K read committed HEAD, and the builder ran pytest before the seal edit entered HEAD,
+    so the diff then showed 4 files. Post-commit it shows 5 -> J fails. (Lesson: base..HEAD-in-pytest scope
+    audits are commit-timing fragile; this is why the seal convention pins to fixed SHAs.)
+  non_blocking:
+    - "Low: controls.py run_differential docstring (controls.py:151-158) still says only http/cloud are valid kinds — stale vs the code now accepting 'infra' (doc-contradicts-code; CLAUDE.md §2)."
+    - "Low: §8-F/-G are weak proxies (substring denylist; socket monkeypatch with a fake probe) — claims hold on measurement; not defects."
+
+circuit_breaker: "This is build attempt 3 of 3 for S4.1. The fix is a deterministic test-data one-liner (plus a doc line). If attempt 3 does not pass, HALT and escalate per CLAUDE.md."
+
+pending_action:
+  seq: 73
+  action: >
+    Resume kronos-builder (SendMessage, attempt 3/3) to: (1) add 'tests/test_infra_ingest.py' to SECTION_3 in
+    tests/test_infra_validator.py (fixes §8-J); (2) update the controls.py run_differential docstring to note
+    kind='infra' uses the two-arm (A_canonical/B_negative_control) path (Low doc fix). Both files are in §3.
+    Re-run full suite under .venv, confirm 0 failed, refresh totals, commit explicit paths, push. Then Opus
+    verifies J green + scope unchanged (still 5 §3 paths), then re-dispatches the independent reviewer for a
+    focused re-review (prereq 5 needs an independent PASS), then step-5 + GATE-2 (ten prerequisites in-turn).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
