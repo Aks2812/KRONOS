@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 70
-derived_at: 2026-10-21T00:00:06Z
+seq: 71
+derived_at: 2026-10-21T00:00:07Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5179,4 +5179,47 @@ pending_action:
     SPEC_BRIEF12 (S4.1), self-approves GATE-1, and runs the loop autonomously through S4->S7 per SEQ 69 without
     further per-milestone pause, unless another defined pause condition arises. No code written; no branch created.
   outcome: pending (awaiting maintainer architecture decision Q1/Q2)
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4. [SEQ70]"
+
+## SEQ 71 — Q1/Q2 answered (FINDING via edge; reuse Classification); SPEC_BRIEF12 (S4.1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+seq: 71
+derived_at: 2026-10-21T00:00:07Z
+stage: S4
+phase: Maintainer answered SEQ 70 — Q1=FINDING via edge, Q2=reuse Classification enum. SPEC_BRIEF12 (S4.1 two-armed infra reachability -> FINDING) authored and GATE-1 self-approved. Resuming autonomous §6 loop (SEQ 69): builder next.
+
+seq70_pending_action_outcome: >
+  RESOLVED by maintainer. Q1 = FINDING via ('SERVICE','vulnerable_to','FINDING') edge (schema.py:125;
+  NO schema.py edit). Q2 = reuse validator Classification enum (controls.py:29-36) + add kind='infra' to
+  run_differential. S4.1 scoped from researcher evidence: FINDING created at status 'hypothesis' then
+  advance_finding_status -> 'reachable' (lifecycle.py; hypothesis->reachable legal; confidence DERIVED 7,
+  reachable-no-evidence — confidence is NODE_PROPS_FORBIDDEN so never passed). EVIDENCE-node storage,
+  CandidateTarget HOST/SERVICE extension, and new event kinds explicitly DEFERRED (brief §9).
+
+brief_authored:
+  path: SPEC_BRIEF12.md
+  stage: S4.1
+  scope: "two-armed infra reachability validator over IN-SCOPE SERVICE nodes; kind='infra' differential reusing the http two-arm logic; verdict persisted as FINDING linked SERVICE --vulnerable_to--> FINDING, status advanced hypothesis->reachable; G3 abstention when not live_discriminated."
+  cybergym_safety: "pass enumerates in-scope SERVICE only; negative control is a CLOSED port on the SAME in-scope host (127.0.0.1) — never a probe to the out-of-scope 10.0.0.1. Reuses existing fixture tests/fixtures/infra/cybergym_nmap.xml read-only."
+
+gate1:
+  decision: SELF-APPROVED
+  by: Opus orchestrator (SEQ 69 autonomy + SEQ 70 architecture decision)
+  basis: "Brief grounded in researcher file:line evidence (controls.py:29-36/151, types.py:22/57-66, schema.py:86-91/125/212, lifecycle.py FINDING_TRANSITIONS/derive_confidence); §3-bounded (4 paths); only additive edit to controls.py (widen kind); no schema/lifecycle/events edit; no new dep; CyberGym-only, hermetic tests."
+
+permitted_files_s4_1:
+  - SPEC_BRIEF12.md
+  - src/kronos/validate/controls.py   # add "infra" to run_differential kind only
+  - src/kronos/validate/infra_validator.py
+  - tests/test_infra_validator.py
+
+pending_action:
+  seq: 71
+  action: >
+    (1) Create build branch claude/s4-infra-validate-brief12 off origin/main (19c9464); commit SPEC_BRIEF12.md
+    (explicit path); push. (2) Dispatch kronos-builder (claude-sonnet-5-5) to implement ONLY the §3 files per
+    SPEC_BRIEF12 §2/§8, tests-first. (3) Opus whole-window scope audit (git diff --name-only 19c9464..HEAD ⊆ §3)
+    + verify controls.py edit is additive-only. (4) Dispatch kronos-reviewer (claude-haiku-5-5, independent, NOT
+    given builder report). (5) Opus step-5, then GATE-2 merge re-measuring all ten prerequisites in-turn (name
+    PR + head SHA; never --admin/--auto). Then continue autonomously to S5. Pause only on a defined pause condition.
+  outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S4."
