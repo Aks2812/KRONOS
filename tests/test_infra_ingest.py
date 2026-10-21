@@ -16,6 +16,7 @@ from kronos.ingest.infra.parser import ingest_infra_nmap, ingest_infra_nmap_plan
 FIXTURE = Path(__file__).parent / "fixtures" / "infra" / "cybergym_nmap.xml"
 SERVICE_PORTS = (4566, 4567, 8091)
 BRIEF_BASE = "a2feba3"
+BRIEF_MERGE = "19c9464"  # brief 11 merged to main (PR #19 squash); seals this audit to brief 11's footprint
 SECTION_3 = {
     "SPEC_BRIEF11.md",
     "src/kronos/ingest/infra/__init__.py",
@@ -165,6 +166,6 @@ def test_source_has_no_direct_graph_writes():
 def test_K_scope_audit():
     root = Path(__file__).parent.parent
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=root, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=root, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
