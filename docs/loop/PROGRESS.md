@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 66
-derived_at: 2026-10-21T00:00:02Z
+seq: 67
+derived_at: 2026-10-21T00:00:03Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5001,5 +5001,41 @@ pending_action:
     the approved suite under .venv. On reviewer PASS: Opus step-5 semantic verification, then GATE-2 merge
     decision re-measuring all ten MERGE-GATE prerequisites in-turn (name PR number + head SHA; never --admin,
     never --auto). On reviewer FAIL: return to builder with the evidence (circuit breaker: 3 attempts then HALT).
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3. [SEQ66]"
+
+## SEQ 67 — S3.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 67
+derived_at: 2026-10-21T00:00:03Z
+stage: S3
+phase: Independent reviewer PASS (MERGE recommended), Opus step-5 semantic review PASS. Autonomous GATE-2 merge under SEQ 55. Branch protection not bypassable — HALT (no --admin) if GitHub blocks.
+
+seq66_pending_action_outcome: >
+  COMPLETE. kronos-reviewer (claude-haiku-5-5, independent, NOT given builder report) returned:
+  VERDICT PASS, MERGE recommended, zero FAIL/Critical/High/Medium. Scope audit K PASS (6 §3 paths,
+  0 dependency-file lines). Suite under .venv: 3477 passed, 1 skipped, no failed (read from summary line,
+  not $?); test_infra_ingest.py 15 passed. Hard invariants all PASS incl. reviewer's own XXE probe
+  (external-entity DOCTYPE -> ElementTree ParseError -> whole-doc DeclinedItem, nothing resolved/emitted)
+  and socket monkeypatch. Non-blocking: weak-assertion notes on A/H/I (claims independently verified true;
+  I backstopped by J's exact counts HOST 2/SERVICE 4/hosts 4); two Low (IPv6 host-id ':' ambiguity — moot,
+  CyberGym range is IPv4-only 127.0.0.1/10.0.0.1; noisy per-port ingest_declined) deferred to S4/follow-up;
+  one Info (hardcoded §3 set in test). Opus step-5: build matches SPEC_BRIEF11 §1/§2/§8; no circuit-breaker.
+
+step5_followups_s4:
+  - "IPv6 SERVICE id / scope_key ':' disambiguation when infra gains IPv6 targets (out of S3.1 IPv4 scope)."
+  - "Optional: collapse per-port ingest_declined events into one summary to reduce scan noise."
+
+pending_action:
+  seq: 67
+  action: >
+    SELF-AUTHORIZED GATE-2 merge of claude/s3-infra-ingest-brief11 (head 527341f) into main. In the SAME TURN
+    as the merge: (1) open PR base=main head=claude/s3-infra-ingest-brief11 (not draft); (2) re-measure ALL TEN
+    MERGE-GATE prerequisites in-turn — (1 scope=6 §3 paths; 2 ruleset void-rule-kronos active; 3 isDraft false;
+    4 state OPEN; 5 independent reviewer PASS + step-5; 6 checks CLEAN/none; 7 suite 3477 passed 0 failed .venv;
+    8 mergeable MERGEABLE + mergeStateStatus CLEAN + 527341f not ancestor of origin/main; 9 self-authorized
+    this turn naming the PR number + head 527341f; 10 clean tree, only known untracked rails); (3) if ALL pass:
+    `gh pr merge <n> --squash --match-head-commit 527341f25ac6e599e25b8883c936ba7f88911047` — NEVER --admin,
+    NEVER --auto. Record new main SHA + PR MERGED in the next block. If ANY prerequisite fails or GitHub blocks
+    (branch protection) -> HALT and report; no --admin.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — not part of S3."
