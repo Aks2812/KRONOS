@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 75
-derived_at: 2026-10-21T00:00:11Z
+seq: 76
+derived_at: 2026-10-21T00:00:12Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5377,5 +5377,59 @@ pending_action:
     CyberGym (the api service on 127.0.0.1:8091) and whether a crawl/HTTP-scan output format must be chosen;
     (7) nearest ingestion test precedent (test_infra_ingest.py). Researcher returns findings only; Opus assesses
     then authors a bounded S5 SPEC_BRIEF (explicit §3 + §8), self-approves GATE-1, and continues the loop.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5. [SEQ75]"
+
+## SEQ 76 — S5 researcher PASS; SPEC_BRIEF13 (S5.1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+seq: 76
+derived_at: 2026-10-21T00:00:12Z
+stage: S5
+phase: Researcher (claude-sonnet-5) returned cited findings for S5. SPEC_BRIEF13 (S5.1 OpenAPI-JSON web ingestion -> WEB_ENDPOINT, PARAMETER) authored and GATE-1 self-approved. Builder next.
+
+seq75_pending_action_outcome: >
+  COMPLETE. Researcher (87925 tokens) returned: WEB_ENDPOINT/PARAMETER schema + NODE_PROPS_ALWAYS
+  (schema.py:40-49,167-168); canonical_key_for_web_endpoint/_parameter EXIST (canonical.py:134,165); edges
+  exposes/has_param (schema.py:103-107); scope-gating — NODE_TYPE_SHAPES empty for both so a URL/param id can
+  NEVER self-gate (scope_guard.py:226,981-983), ingester MUST pass host-shaped scope_key (graph.py:140-151);
+  infra/parser.py is the mirror (two faces + dispatcher branch); "seeded from S3" not schema-enforced but
+  precedented by querying in-scope SERVICE (infra_validator pass, reconcile runner); CyberGym api on
+  127.0.0.1:8091 (routes GET /health, GET /items/{item_id}, hidden POST /internal/... include_in_schema=False);
+  NO web fixture, NO web-input format chosen anywhere. brief 12 test_J still open-pinned (needs seal to 079a76f).
+
+opus_decisions:
+  input_format: "OpenAPI 3 JSON via stdlib json (no dep). Routine milestone-bounding, same class as S3's nmap choice; §6-autonomy covers it."
+  scope_key: "host extracted from the endpoint URL (e.g. 127.0.0.1) — mandatory since empty NODE_TYPE_SHAPES means only a host-shaped scope_key authorizes; mirrors infra scope_key=host_id."
+  seeded_from_s3: "best-effort SERVICE --exposes--> WEB_ENDPOINT when a matching in-scope SERVICE host:port/tcp exists (engagement.get_node check); else WEB_ENDPOINT standalone, no error. Uses existing exposes pair + SERVICE-query precedent."
+  not_a_pause: "Unlike S4's verdict-attachment fork (novel, no precedent, S6-inherited), all S5 choices have clear precedents and correct answers -> resolved autonomously, recorded here for maintainer visibility (report, not a pause)."
+
+brief_authored:
+  path: SPEC_BRIEF13.md
+  stage: S5.1
+  scope: "OpenAPI-JSON web source -> WEB_ENDPOINT (url,method) + PARAMETER (name,param_type=OpenAPI 'in') + has_param; best-effort exposes seeding from S3 SERVICE; two faces on one core; dispatcher branch tool_name='web_openapi'; stdlib json, no dep; CyberGym fixture (127.0.0.1:8091, /health + /items/{item_id})."
+  also_seals: "brief 12 test_J pinned to 079a76f (§2a)."
+
+gate1:
+  decision: SELF-APPROVED
+  by: Opus orchestrator (SEQ 69 autonomy)
+  basis: "Brief grounded in researcher file:line evidence; §3-bounded (7 paths incl. brief-12 seal); additive dispatcher branch only; no schema/scope_guard/canonical/graph edit; no new dep; CyberGym-only, hermetic tests."
+
+permitted_files_s5_1:
+  - SPEC_BRIEF13.md
+  - src/kronos/ingest/web/__init__.py
+  - src/kronos/ingest/web/parser.py
+  - src/kronos/ingest/__init__.py   # add web_openapi dispatch branch only
+  - tests/test_web_ingest.py
+  - tests/fixtures/web/cybergym_openapi.json
+  - tests/test_infra_validator.py   # §2a seal brief 12 test_J to 079a76f only
+
+pending_action:
+  seq: 76
+  action: >
+    (1) Create build branch claude/s5-web-ingest-brief13 off origin/main (079a76f); commit SPEC_BRIEF13.md; push.
+    (2) Dispatch kronos-builder (claude-sonnet-5-5) to implement ONLY the §3 files per SPEC_BRIEF13 §2/§2a/§8,
+    tests-first. (3) Opus whole-window scope audit (git diff --name-only 079a76f..HEAD ⊆ §3) + confirm additive
+    dispatcher + seal-only test_infra_validator.py edit. (4) Independent reviewer (claude-haiku-5-5). (5) step-5
+    + GATE-2 (ten prerequisites in-turn). Then continue autonomously to S6. Circuit breaker 3 attempts. Pause
+    only on a defined pause condition.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
