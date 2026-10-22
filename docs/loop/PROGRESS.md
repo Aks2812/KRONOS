@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 88
-derived_at: 2026-10-22T17:40:00Z
+seq: 89
+derived_at: 2026-10-22T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5942,3 +5942,60 @@ pending_action:
     GATE-2 under thin-Opus discipline. S8 remains a separate pause.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; SEQ 86/87 edited those untracked rails under context.md authorization. Commit/home unchanged — SEQ 55 maintainer-owned question."
+
+## SEQ 89 — S7 targeted researcher PASS; design resolved (option a: secret-derived FINDING producer in runner.py); authoring SPEC_BRIEF15 (S7.1 minimal slice); GATE-1 to self-approve; create branch + dispatch builder (write-ahead)
+seq: 89
+derived_at: 2026-10-22T18:00:00Z
+stage: S7
+phase: Targeted researcher (claude-sonnet-5) confirmed NO secret-derived FINDING exists today (runner.py only advances SECRET + attach_evidence(secret) + authenticates_to; no upsert_node FINDING). Opus resolves the one forced design point and authors SPEC_BRIEF15 (S7.1 minimal vertical slice). Builder next. Thin-Opus discipline (SEQ 86/87).
+
+seq88_pending_action_outcome: >
+  COMPLETE. Researcher (compact handoff; detail to 02-research/findings.md): Q1 no FINDING in the secret path
+  (runner.py:220-240 = attach_evidence target_type=secret + upsert_edge authenticates_to + advance_secret_status;
+  the only FINDING producers are infra_validator.py:43-60 and web_validator.py:44-60, SERVICE/WEB_ENDPOINT-keyed,
+  no secret_id in scope, and neither writes FINDING->SECRET nor attach_evidence for its FINDING). Q3
+  derive_confidence (lifecycle.py:67-90): exploited/reported=10, reachable+evi=9, reachable=7, validated=7,
+  extracted/hypothesis=3, dead/discarded=0, else raise ValueError. Q5a EDGE_PAIRS dict + _rel_table_group_ddl
+  (schema.py:101-144) auto-builds DDL from any new label; ("FINDING","SECRET") exists ONLY under label
+  "references" (anchor, not causal). Q5b FINDING_TRANSITIONS (lifecycle.py:47-53) + advance_finding_status
+  (:216-244) is a plain forward adjacency allowlist; reversibility = add entries in both directions; table-bypass
+  precedent = set_secret_status_from_evidence (:195-213). Q5c graph.upsert_edge (:174-190) has NO python label
+  guard (Kuzu DDL enforces); upsert_node DOES (:116-130). Q4 attach_evidence (evidence.py:57-81) writes
+  EVIDENCE node + "evidences" edge.
+
+opus_design_resolution_s7_1:
+  forced_choice: >
+    Maintainer decision 3 (write derived_from FINDING->SECRET DURING validation) + decision "no fake causal deps"
+    => cannot retrofit onto the reachability validators (no secret there; faking it is forbidden). The only
+    honest, additive place is the SECRET-validation live branch (runner.py), which must CREATE a secret-derived
+    FINDING and attach derived_from. This is option (a); (b) is excluded by the maintainer's own constraint,
+    (c) is a superset. Resolved autonomously (forced + additive + in-scope), flagged here + in the builder/review
+    handoffs for GATE-2 visibility. Reversible if the maintainer prefers a different producer.
+  slice:
+    - "schema.py: add typed edge label derived_from = [(\"FINDING\",\"SECRET\")] to EDGE_PAIRS (DDL auto-built). Distinct from references."
+    - "lifecycle.py: add status requires_revalidation. FINDING_TRANSITIONS: reachable/exploited/reported -> {..., requires_revalidation}; requires_revalidation -> {reachable, exploited, reported, discarded} (reversible; makes 'reported' non-terminal, maintainer-authorized Q2). derive_confidence: requires_revalidation -> 3 (hypothesis tier, <7 cap; stale/needs-recheck, NOT 0/terminal). advance_finding_status stays the single chokepoint (new table edges express the move)."
+    - "NEW src/kronos/validate/invalidation.py: record_secret_finding(engagement, secret_id, candidate) -> finding_id (finding:secret-access:{secret_id}:{candidate_id}, status hypothesis->reachable, upsert_edge derived_from FINDING->SECRET, attach_evidence target_type=finding to preserve proof); and invalidate_findings_for_dead_secret(engagement, secret_id) -> list[str] (MATCH (f:FINDING)-[:derived_from]->(s:SECRET {id}) advance each non-terminal dependent FINDING to requires_revalidation; NEVER delete EVIDENCE/'evidences'/'references'/derived_from edges or nodes; status+confidence change only)."
+    - "runner.py: MINIMAL diff — in the outcome.live branch (~:220-230, secret_id + candidate in scope) add ONE call record_secret_finding(graph, secret_id, candidate). No other runner.py behavior change."
+    - "trigger: SECRET->dead via advance_secret_status; the invalidation pass is called with the now-dead secret_id (NOT auto-wired into advance_secret_status — keeps lifecycle pure)."
+    - "evidence/history preservation (maintainer Q2): invalidation changes status + re-derived confidence only; asserts EVIDENCE nodes + evidences/references/derived_from edges all still present afterward."
+  permitted_files_s7_1:
+    - SPEC_BRIEF15.md
+    - src/kronos/schema.py
+    - src/kronos/lifecycle.py
+    - src/kronos/validate/invalidation.py            # new
+    - src/kronos/validate/runner.py                  # one-call-site addition only
+    - tests/test_invalidation.py                     # new
+    - tests/test_web_validator.py                    # §2a seal brief-14 scope-audit to 17d38a8 only
+  gate1: "TO-SELF-APPROVE after authoring — grounded in researcher file:line evidence; §3-bounded; additive edge+status+producer+pass; runner.py diff is one call; no manifest/.github/cybergym edit; CyberGym-only, hermetic; NO live targets."
+
+pending_action:
+  seq: 89
+  action: >
+    (1) Create branch claude/s7-transitive-invalidation-brief15 off origin/main (17d38a8). (2) Author
+    SPEC_BRIEF15.md per opus_design_resolution_s7_1 (§1 problem, §2 approach, §2a brief-14 seal, §3 the 7 files,
+    §8 acceptance A..). (3) Commit SPEC_BRIEF15.md; push. (4) Self-approve routine GATE-1. (5) Dispatch
+    kronos-builder (claude-sonnet-5-5) to implement ONLY §3, tests-first, returning a COMPACT handoff. (6) Opus
+    whole-window scope audit. (7) Independent reviewer (claude-haiku-5-5). (8) step-5 + GATE-2 (ten in-turn).
+    Circuit breaker 3 attempts. Preserve all authorization boundaries; CyberGym only; NO live targets. S8 pause.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
