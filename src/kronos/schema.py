@@ -131,8 +131,7 @@ EDGE_PAIRS: dict[str, list[tuple[str, str]]] = {
         ("API_ENDPOINT", "HOST"), ("API_ENDPOINT", "CLOUD_RESOURCE"),
         ("HOST", "CLOUD_RESOURCE"), ("SERVICE", "CLOUD_RESOURCE"), ("FINDING", "FINDING"),
     ],
-    "evidences": [("EVIDENCE", "FINDING"), ("EVIDENCE", "SECRET")],
-    "derived_from": [("FINDING", "SECRET")],
+    "evidences": [("EVIDENCE", "FINDING"), ("EVIDENCE", "SECRET")], "derived_from": [("FINDING", "SECRET")],
 }
 
 
