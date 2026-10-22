@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 90
-derived_at: 2026-10-22T18:30:00Z
+seq: 91
+derived_at: 2026-10-22T19:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -6042,5 +6042,47 @@ pending_action:
     runner.py addition, whole-window scope ⊆ §3, the §2a brief-14 seal, no forbidden columns, hermetic (socket
     patched), NO live network. RUN the suite (SUMMARY line, not $?). Return a COMPACT handoff verdict + evidence.
     Then Opus step-5 + GATE-2 (ten in-turn). Reviewer FAIL = attempt 2/3.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
+
+## SEQ 91 — S7.1 reviewer FAIL (1 High, §8-D self-contradiction in brief); brief amended (drop requires_revalidation->reported); GATE-1 re-approved; resume builder attempt 2/3 (write-ahead)
+seq: 91
+derived_at: 2026-10-22T19:00:00Z
+stage: S7
+phase: Independent reviewer (claude-haiku-5-5) FAIL on 996ab22. One blocking High: the brief itself contradicted the report gate. Opus amends the brief (scope-reducing fix, reviewer option a) and resumes the builder. Thin-Opus discipline. Build attempt 2 of 3.
+
+seq90_pending_action_outcome: >
+  BUILT, reviewer FAIL. Reviewer compact handoff: FAIL/DO NOT MERGE. A-C,E-M PASS by substance; D FAIL.
+  Blocking High (lifecycle.py:53 vs :228-231): FINDING_TRANSITIONS permitted requires_revalidation->reported,
+  but advance_finding_status's report gate raises unless current=="exploited" (+anchor/evidence), so that edge
+  raises LifecycleError through the chokepoint. §8-D required the chokepoint to perform each listed transition
+  without raising AND §2b said the gate does not apply to invalidation -> the BRIEF contradicted itself.
+  Reviewer measured it with a stub graph. Suite 3544 passed 1 skipped 0 failed (raw pytest; rtk test run invalid
+  — system python lacks kuzu). LOW: test_C_abstention only not_live (authenticated_not_authorized untested);
+  test_D skips reported->requires_revalidation + chokepoint transitions; §8-H "7 without evidence" untested;
+  §8-I count-unchanged untested; §8-J "outside range" unasserted; record_secret_finding default evidence=None
+  gives confidence 7 not 9 (runner always passes evidence, live path fine). Scope K PASS (7 §3), seal L PASS,
+  runner +4-0 one call, schema +1-1, lifecycle only, no out-of-§3 change, evidence/history preserved (F PASS).
+
+opus_resolution:
+  decision: "Reviewer option (a) — drop requires_revalidation->reported from FINDING_TRANSITIONS. Re-reporting re-earns through the gate (requires_revalidation->exploited->reported with fresh evidence). This PRESERVES the report-gate invariant (option b would change it = architecture change -> rejected). Within maintainer Q2 (reversible invalidation OUT of reported; direct re-entry never required). No maintainer pause needed — this fixes an Opus-authored brief contradiction, reduces scope, changes no goal/boundary/architecture."
+  brief_amended: "SPEC_BRIEF15.md §2b: requires_revalidation -> {reachable, exploited, discarded} (reported removed) + prose; §8-D: requires_revalidation->reported must RAISE, test all listed chokepoint transitions incl reported->requires_revalidation. No §3 change (brief already in §3)."
+  gate1_reapproved: "Amendment is scope-reducing + evidence-grounded; GATE-1 re-self-approved."
+
+circuit_breaker: "Build attempt 2 of 3 for S7.1. A 3rd failed attempt HALTs."
+
+pending_action:
+  seq: 91
+  action: >
+    Resume kronos-builder (SendMessage, attempt 2/3) to, in §3 files ONLY: (1) FIX High — lifecycle.py
+    FINDING_TRANSITIONS: requires_revalidation -> {reachable, exploited, discarded} (remove reported); confirm
+    requires_revalidation->reported raises LifecycleError through advance_finding_status. (2) Strengthen tests
+    per the amended §8-D: test reported->requires_revalidation and each requires_revalidation->{reachable,
+    exploited,discarded} through the chokepoint, and assert requires_revalidation->reported raises. (3) Close the
+    LOW test gaps: authenticated_not_authorized creates no secret-finding; §8-H "7 without evidence"; §8-I FINDING
+    + edge counts unchanged across a double invalidation; §8-J assert no out-of-CyberGym traffic. Re-run full
+    suite under .venv, 0 failed, refresh totals as the final edit, commit explicit paths, push. Return a COMPACT
+    handoff. Then Opus scope audit + re-dispatch the independent reviewer (prereq 5 needs a fresh PASS), step-5,
+    GATE-2 (ten in-turn). CyberGym only; NO live targets.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
