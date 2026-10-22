@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 93
-derived_at: 2026-10-22T20:00:00Z
+seq: 94
+derived_at: 2026-10-22T20:15:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -6169,3 +6169,42 @@ pending_action:
     Then S7.1 done; next = S7.x follow-ups or S8 (S8 remains a separate pause).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
+
+## SEQ 94 — SPEC_BRIEF15 (S7.1) MERGED to main (PR #23, squash 81796b4); GATE-2 closed; S7 transitive-invalidation slice delivered; loop at a next-direction decision
+seq: 94
+derived_at: 2026-10-22T20:15:00Z
+stage: S7 (done) -> next-direction
+phase: S7.1 (transitive invalidation minimal slice) landed on main via autonomous GATE-2 merge under SEQ 55/SEQ 69 + maintainer context.md. derived_from edge + requires_revalidation status + SECRET->dead invalidation pass now live, CyberGym-only, evidence/history preserved.
+
+seq93_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope=7 §3; 2 ruleset void-rule-kronos
+  active; 3 isDraft false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup=[] CLEAN; 7 suite 3547
+  passed 1 skipped 0 failed on 9ca7361; 8 MERGEABLE + CLEAN + 9ca7361 NOT ancestor of origin/main; 9
+  self-authorized this turn naming PR #23 + head 9ca7361; 10 clean tree, only known untracked rails). Executed
+  gh pr merge 23 --squash --match-head-commit 9ca7361... — NO --admin, NO --auto. PR #23 state=MERGED, mergedAt
+  2026-10-22T16:46:32Z. origin/main 17d38a8 -> squash 81796b4884559fc346f473e0595ca157cdc48c14. PR body flagged
+  the secret-derived FINDING producer design decision for maintainer visibility.
+
+s7_status: >
+  S7 (research record §6 "Transitive invalidation / staleness, §7.5") DELIVERED as the minimal vertical slice
+  S7.1. The any_of/blocked_by alternative-route DAG is DEFERRED to a later S7.x per maintainer decision Q1
+  (Option A). The research record's §6 ladder S1-S7 is now complete through S7; S8 (agent layer) is the next
+  roadmap stage.
+
+loop_runs_this_session:
+  - "S5.1 web ingestion MERGED PR #21 (33ab362)."
+  - "S6.1 web validation MERGED PR #22 (17d38a8)."
+  - "Thin-Opus delegation policy change (context.md) applied to the rails (SEQ 86/87)."
+  - "S7.1 transitive invalidation MERGED PR #23 (81796b4)."
+
+pending_action:
+  seq: 94
+  action: >
+    S7.1 complete and merged; the §6 ladder is delivered through S7. Next direction is a maintainer decision:
+    (A) S8 agent layer — a HARD PAUSE (SEQ 69 excludes S8 from autonomy; pause condition #2); needs the
+    maintainer to authorize it as the next bounded milestone. (B) S7.x DAG extension (any_of/blocked_by) — the
+    maintainer DEFERRED it (decision Q1), so starting it is a next-direction decision, not autonomous. (C) the
+    S7.x LOW test/doc follow-ups (SEQ 93) — small, in-scope, could be a quick brief if the maintainer wants them.
+    Loop PAUSED for next-direction; no autonomous scope expansion into S8 or deferred S7.x.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
