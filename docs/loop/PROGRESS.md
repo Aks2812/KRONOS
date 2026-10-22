@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 82
-derived_at: 2026-10-22T15:45:00Z
+seq: 83
+derived_at: 2026-10-22T16:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5683,5 +5683,44 @@ pending_action:
     §2a brief-13 seal. RUN the approved suite (read SUMMARY: line, not $?). Return verdict + evidence. Then Opus
     step-5 semantic verify; if PASS, GATE-2 (ten prerequisites re-measured in-turn, open PR, merge within scope).
     A reviewer FAIL = build attempt 2/3.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
+
+## SEQ 83 — S6.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 83
+derived_at: 2026-10-22T16:00:00Z
+stage: S6
+phase: Independent reviewer (claude-haiku-5-5) VERDICT PASS / merge-eligible on ee0439b (§8 A-L + §3 all PASS; 2 LOW + 1 INFO, none outside §3, none a §8 failure). Opus step-5 PASS. Autonomous GATE-2 merge under SEQ 55/SEQ 69 (§6 autonomy, S4->S7). Branch protection void-rule-kronos active, NOT bypassable — HALT (no --admin) if GitHub blocks.
+
+seq82_pending_action_outcome: >
+  COMPLETE. Reviewer PASS: A (run_differential kind="http" three arm sets), B (outcome invariant +
+  inconclusive), C/D (in-scope-only, 10.0.0.1 never probed, FINDING finding:web-reachable:<eid> status
+  reachable confidence 7 derived, one vulnerable_to edge, out-of-scope no FINDING), E (abstention x3),
+  F (no leak), G (socket.socket + socket.create_connection patched), H (control same origin diff CONTROL_PATH),
+  I (idempotent), J (whole-window 4 paths ⊆ §3), K (no forbidden columns, no requests import), L (brief-13 seal).
+  controls.py 0 diff lines (kind="http" reuse). Suite raw pytest 3530 passed 1 skipped 0 failed (exit 0).
+  2 LOW (test_C/G assert host not port 8091; test_H uses hardcoded REAL_PATHS) + 1 INFO (brief cites SEQ 81
+  GATE-1, outside diff) — all in §3, none block.
+
+step5_opus_verify:
+  verdict: PASS
+  basis: "Build matches SPEC_BRIEF14 §1/§2/§2a/§8. The 2 LOW are in-§3 test-strengthening nits, not §8 failures or scope breaches -> do not block; recorded as S7 follow-ups. §6-unverifiable is a non-issue (§6 is the research-record roadmap section, not a brief section). No circuit-breaker (attempt 1 PASS)."
+
+step5_followups_s7:
+  - "test_web_validator.py test_C/test_G — assert the probe host AND port 8091 (CyberGym range), not host alone."
+  - "test_web_validator.py test_H — derive the real-path set from the ingested graph, not a hardcoded REAL_PATHS."
+
+pending_action:
+  seq: 83
+  action: >
+    SELF-AUTHORIZED GATE-2 merge of claude/s6-web-validation-brief14 (head ee0439b) into main. SAME TURN as the
+    merge: (1) branch already pushed to origin; (2) open PR base=main head=claude/s6-web-validation-brief14 (NOT
+    draft); (3) re-measure ALL TEN MERGE-GATE prerequisites in-turn — 1 scope=4 §3 paths; 2 ruleset void-rule-kronos
+    enforcement=active; 3 isDraft false; 4 state OPEN; 5 independent reviewer PASS + Opus step-5 PASS; 6 checks
+    CLEAN/none; 7 suite 3530 passed 0 failed (raw pytest); 8 mergeable MERGEABLE + mergeStateStatus CLEAN + ee0439b
+    NOT ancestor of origin/main; 9 self-authorized this turn naming PR number + head ee0439b; 10 clean tree, only
+    known untracked rails; (4) if ALL pass: `gh pr merge <n> --squash --match-head-commit
+    ee0439bdc859102aabf0de4c8659b2dd70be5bf4` — NEVER --admin, NEVER --auto. Record new main SHA + PR MERGED in the
+    next block. If ANY prerequisite fails or GitHub blocks -> HALT and report; no --admin. Then continue to S7.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
