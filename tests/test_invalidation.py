@@ -134,7 +134,7 @@ def test_D_transitions_and_confidence(env):
     fid = record_secret_finding(g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
     # reachable/exploited/reported -> requires_revalidation, and out to each allowed target,
     # all through the chokepoint without raising.
-    for start, path in (("reachable", []), ("exploited", ["exploited"]), ("reported", ["reported"])):
+    for start, path in (("reachable", []), ("exploited", ["exploited"]), ("reported", ["exploited", "reported"])):
         for step in path:
             advance_finding_status(g, fid, step)
         assert g.get_node("FINDING", fid)["status"] == start
