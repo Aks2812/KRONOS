@@ -50,7 +50,7 @@ FINDING_TRANSITIONS: dict[str, set[str]] = {
     "exploited": {"reported", "discarded", "requires_revalidation"},
     "reported": {"requires_revalidation"},
     "discarded": set(),
-    "requires_revalidation": {"reachable", "exploited", "reported", "discarded"},
+    "requires_revalidation": {"reachable", "exploited", "discarded"},
 }
 
 _OUT_OF_SCOPE_NOTE = "reachable target(s) out-of-scope; recorded only, not actionable"

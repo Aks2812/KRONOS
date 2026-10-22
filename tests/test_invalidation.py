@@ -15,6 +15,7 @@ from kronos.evidence import store_evidence
 from kronos.graph import EngagementGraph
 from kronos.lifecycle import (
     FINDING_TRANSITIONS,
+    LifecycleError,
     advance_finding_status,
     advance_secret_status,
     derive_confidence,
@@ -126,12 +127,32 @@ def test_C_abstention_creates_no_finding(env):
 def test_D_transitions_and_confidence(env):
     for s in ("reachable", "exploited", "reported"):
         assert "requires_revalidation" in FINDING_TRANSITIONS[s]
-    assert FINDING_TRANSITIONS["requires_revalidation"] == {"reachable", "exploited", "reported", "discarded"}
+    assert FINDING_TRANSITIONS["requires_revalidation"] == {"reachable", "exploited", "discarded"}
     for ev in (True, False):
         assert derive_confidence("finding", "requires_revalidation", ev) == 3
-    fid = record_secret_finding(env.g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
-    advance_finding_status(env.g, fid, "requires_revalidation")
-    advance_finding_status(env.g, fid, "reachable")
+    g = env.g
+    fid = record_secret_finding(g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
+    # reachable/exploited/reported -> requires_revalidation, and out to each allowed target,
+    # all through the chokepoint without raising.
+    for start, path in (("reachable", []), ("exploited", ["exploited"]), ("reported", ["reported"])):
+        for step in path:
+            advance_finding_status(g, fid, step)
+        assert g.get_node("FINDING", fid)["status"] == start
+        advance_finding_status(g, fid, "requires_revalidation")
+        advance_finding_status(g, fid, "reachable")
+    for target in ("reachable", "exploited"):
+        advance_finding_status(g, fid, "requires_revalidation")
+        advance_finding_status(g, fid, target)
+        if target == "exploited":
+            advance_finding_status(g, fid, "requires_revalidation")
+    # re-reporting directly from requires_revalidation is refused (report gate: must be exploited)
+    with pytest.raises(LifecycleError):
+        advance_finding_status(g, fid, "reported")
+    # re-report path: requires_revalidation -> exploited -> reported
+    advance_finding_status(g, fid, "exploited")
+    advance_finding_status(g, fid, "reported")
+    advance_finding_status(g, fid, "requires_revalidation")
+    advance_finding_status(g, fid, "discarded")
 
 
 def test_E_transitive_invalidation_preserves_history(env):
@@ -222,3 +243,41 @@ def test_M_no_forbidden_columns():
     assert src.count('"status":') == 1  # set once, at create
     assert "advance_finding_status(" in src
     assert "import requests" not in src
+
+
+def test_C_authenticated_not_authorized_creates_no_finding(env):
+    out = ValidationOutcome(
+        live=False, evidence=b"proof", detail="403", classification="authenticated_not_authorized", discriminated=True
+    )
+    with patch("kronos.validate.http_validator.validate_api_token") as m:
+        m.return_value = out
+        run_validation_pass(env.g, str(env.dir))
+    assert _count(env.g, "MATCH (f:FINDING) RETURN count(f)") == 0
+
+
+def test_H_revalidation_without_evidence_restores_confidence_7(env):
+    g = env.g
+    fid = record_secret_finding(g, env.sid, CAND)  # no evidence attached
+    assert g.get_node("FINDING", fid)["confidence"] == 7
+    advance_finding_status(g, fid, "requires_revalidation")
+    assert g.get_node("FINDING", fid)["confidence"] == 3
+    advance_finding_status(g, fid, "reachable")
+    assert g.get_node("FINDING", fid)["confidence"] == 7
+
+
+def test_I_double_invalidation_is_idempotent_on_graph(env):
+    g = env.g
+    record_secret_finding(g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
+    _make_secret_reachable(env)
+    advance_secret_status(g, env.sid, "dead")
+    invalidate_findings_for_dead_secret(g, env.sid)
+    qs = [
+        "MATCH (f:FINDING) RETURN count(f)",
+        "MATCH ()-[r:vulnerable_to]->(:FINDING) RETURN count(r)",
+        "MATCH ()-[r:derived_from]->() RETURN count(r)",
+        "MATCH ()-[r:evidences]->(:FINDING) RETURN count(r)",
+    ]
+    before = [_count(g, q) for q in qs]
+    assert before == [1, 1, 1, 1]
+    assert invalidate_findings_for_dead_secret(g, env.sid) == []
+    assert [_count(g, q) for q in qs] == before
