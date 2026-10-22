@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 80
-derived_at: 2026-10-22T15:13:04Z
+seq: 81
+derived_at: 2026-10-22T15:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5592,3 +5592,60 @@ pending_action:
     S4's, or S8).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
+
+## SEQ 81 — S6 researcher PASS; S6 design resolved by S4 analogy (recorded, not a pause); authoring SPEC_BRIEF14; GATE-1 to self-approve; create branch + dispatch builder (write-ahead)
+seq: 81
+derived_at: 2026-10-22T15:30:00Z
+stage: S6
+phase: Researcher (claude-sonnet-5) returned cited S6 findings. S6 = Web validation, two-armed (research record §6 S6) — the HTTP mirror of S4 infra reachability. Opus resolves the design by S4 analogy and authors SPEC_BRIEF14. Builder next.
+
+seq80_pending_action_outcome: >
+  COMPLETE. Researcher returned: S4 precedent = src/kronos/validate/infra_validator.py (validate_service_reachable
+  pure fn :28; run_differential kind="infra" :29; record_infra_finding FINDING-via-edge :43-55; advance_finding_status
+  reachable :lifecycle; CONTROL_PORT 9999 structural control :20-21). Classification enum reused (controls.py:29-36);
+  run_differential two-arm http path already defined (controls.py:151-205, labels A_canonical/B_negative_control).
+  WEB_ENDPOINT/PARAMETER schema (schema.py:40-49,167-168); vulnerable_to already includes (WEB_ENDPOINT,FINDING)
+  (schema.py:125). canonical_key_for_finding returns None today + FINDING merge guard-blocked (canonical.py:226-229,
+  merge.py:165-179) — inherited constraint, same as S4, not web-specific. events.py has no validate_* kind; S4 emits
+  none (events.py untouched) — S6 mirrors. WEB_ENDPOINT/PARAMETER scope-shape families empty (scope_guard.py:217,226)
+  so validator trusts the already-stamped in_scope column (as S4 does for SERVICE :73). CyberGym web surface:
+  /health + /items/{item_id} in-scope & ingested (no auth boundary); hidden /internal/v1/admin/export deliberately
+  include_in_schema=False, NOT ingested, NOT in the S5 fixture (SPEC_BRIEF13.md:84).
+
+opus_decisions_s6:
+  scope: "S6.1 = web REACHABILITY validation, the minimal in-scope HTTP mirror of S4.1. Walks in-scope WEB_ENDPOINT nodes, two-armed differential, records SERVICE-style FINDING via WEB_ENDPOINT --vulnerable_to--> FINDING. NOT auth/vuln validation; does NOT target the deliberately-excluded hidden route; no scope expansion."
+  control_arm: "Structural negative control, mirroring S4's closed-port: a derived non-existent path on the SAME in-scope host (run_differential canonical A_canonical succeeds=2xx & control B_negative_control fails=non-2xx -> live_discriminated; both 2xx -> indiscriminate_target; canonical non-2xx -> not_live). No credential/derive_negative_control needed (web nodes carry no secret)."
+  differential_kind: "Reuse run_differential kind='http' (already defined two-arm path controls.py:151-205). NO new kind, NO controls.py edit if 'http' already covers it; if a literal widening is needed it is the ONLY controls.py change, mirroring S4's 'infra' addition."
+  verdict_attach: "Inherited from S4/SEQ 70: FINDING via edge + reuse Classification enum. finding_id deterministic f'finding:web-reachable:{endpoint_id}'; status hypothesis->reachable via advance_finding_status; confidence derived by lifecycle (do NOT set). Forbidden cols (confidence,in_scope,merged_into) never passed; status create-only."
+  runner_wiring: "Standalone pass run_web_validation_pass, mirroring run_infra_validation_pass; NOT wired into runner.py (SECRET runner). events.py untouched."
+  purity_hermetic: "validate_web_endpoint_reachable is PURE (caller supplies two probed ArmResults); the real HTTP probe hits CyberGym 127.0.0.1:8091 ONLY; tests inject fake probes / mock HTTP -> no live network in tests (assert both socket.socket and socket.create_connection patched, A-L)."
+  not_a_pause: >
+    Per SEQ 76 logic + the SEQ 76 'S6-inherited' framing: every S6 choice has a clear S4 precedent and a correct
+    minimal in-scope answer, so resolved autonomously and recorded here for maintainer visibility (report, not a
+    pause). The ONLY thing that WOULD be a pause (condition #2) is a maintainer intent that S6 validate MORE than
+    reachability (e.g. the hidden auth route) — that would materially expand scope; the minimal reading taken here
+    needs no approval and expands nothing. Flagged in the pause/finish report for visibility.
+
+gate1:
+  decision: TO-SELF-APPROVE after brief authored
+  basis: "Brief grounded in researcher file:line evidence; §3-bounded; mirrors merged S4.1 pattern; additive standalone pass; no schema/lifecycle/types/events/runner/manifest edit; at most a one-literal controls.py widening; no new dep; CyberGym-only, hermetic tests."
+
+planned_permitted_files_s6_1:
+  - SPEC_BRIEF14.md
+  - src/kronos/validate/web_validator.py            # new
+  - src/kronos/validate/controls.py                 # edit ONLY IF 'http' kind needs widening; else NOT touched
+  - tests/test_web_validator.py                      # new
+  - tests/test_web_ingest.py                         # §2a seal ONLY (pin brief-13 scope-audit upper bound to 33ab362), if its test_K needs it
+  note: "Final §3 fixed when the brief is authored against the live main tree; controls.py and the test_web_ingest seal included only if actually required, else dropped from §3."
+
+pending_action:
+  seq: 81
+  action: >
+    (1) Create build branch claude/s6-web-validation-brief14 off origin/main (33ab362). (2) Read the live S4
+    template (SPEC_BRIEF12.md, validate/infra_validator.py, tests/test_infra_validator.py, controls.py) and author
+    SPEC_BRIEF14.md mirroring it for web reachability per opus_decisions_s6. (3) Commit SPEC_BRIEF14.md; push.
+    (4) Self-approve routine GATE-1. (5) Dispatch kronos-builder (claude-sonnet-5-5) to implement ONLY §3 files,
+    tests-first. (6) Opus whole-window scope audit. (7) Independent reviewer (claude-haiku-5-5). (8) step-5 +
+    GATE-2 (ten prerequisites in-turn). Circuit breaker 3 attempts. Pause only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
