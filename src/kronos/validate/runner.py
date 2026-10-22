@@ -45,6 +45,7 @@ from kronos.evidence import attach_evidence, get_evidence
 from kronos.lifecycle import advance_secret_status
 from kronos.validate.candidates import find_candidate_targets_for_secret
 from kronos.validate.controls import Classification
+from kronos.validate.invalidation import record_secret_finding
 from kronos.validate.registry import classify_validator_kind, get_validator
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -228,6 +229,9 @@ def run_validation_pass(
                 )
                 graph.upsert_edge("authenticates_to", secret_id, "SECRET", candidate.id, candidate.type)
                 _advance_through(graph, secret_id)
+                record_secret_finding(
+                    graph, secret_id, candidate, evidence=outcome.evidence, engagement_dir=engagement_dir
+                )
             elif outcome.classification == "authenticated_not_authorized":
                 attach_evidence(
                     graph,

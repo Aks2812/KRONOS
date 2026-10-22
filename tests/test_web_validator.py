@@ -25,6 +25,7 @@ from kronos.validate.web_validator import (
 ROOT = Path(__file__).parent.parent
 FIXTURE = ROOT / "tests" / "fixtures" / "web" / "cybergym_openapi.json"
 BRIEF_BASE = "33ab362"
+BRIEF_MERGE = "17d38a8"  # brief 14 merged to main (PR #22 squash); seals this audit to brief 14's footprint
 SECTION_3 = {
     "SPEC_BRIEF14.md",
     "src/kronos/validate/web_validator.py",
@@ -180,7 +181,7 @@ def test_I_idempotent(g):
 
 def test_J_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
 

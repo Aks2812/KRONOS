@@ -46,10 +46,11 @@ SECRET_TRANSITIONS: dict[str, set[str]] = {
 
 FINDING_TRANSITIONS: dict[str, set[str]] = {
     "hypothesis": {"reachable", "discarded"},
-    "reachable": {"exploited", "discarded"},
-    "exploited": {"reported", "discarded"},
-    "reported": set(),
+    "reachable": {"exploited", "discarded", "requires_revalidation"},
+    "exploited": {"reported", "discarded", "requires_revalidation"},
+    "reported": {"requires_revalidation"},
     "discarded": set(),
+    "requires_revalidation": {"reachable", "exploited", "discarded"},
 }
 
 _OUT_OF_SCOPE_NOTE = "reachable target(s) out-of-scope; recorded only, not actionable"
@@ -87,6 +88,8 @@ def derive_confidence(entity_type: Literal["secret", "finding"], status: str, ha
         return 3
     if status in ("dead", "discarded"):
         return 0
+    if status == "requires_revalidation":
+        return 3
     raise ValueError(f"unrecognized ({entity_type!r}, {status!r}) for derive_confidence")
 
 
