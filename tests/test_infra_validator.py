@@ -20,6 +20,7 @@ from kronos.validate.types import ValidationOutcome
 
 FIXTURE = Path(__file__).parent / "fixtures" / "infra" / "cybergym_nmap.xml"
 BRIEF_BASE = "19c9464"
+BRIEF_MERGE = "079a76f"  # brief 12 merged to main (PR #20 squash); seals this audit to brief 12's footprint
 SECTION_3 = {
     "SPEC_BRIEF12.md",
     "src/kronos/validate/controls.py",
@@ -170,6 +171,6 @@ def test_I_idempotent(g):
 def test_J_scope_audit():
     root = Path(__file__).parent.parent
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=root, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=root, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
