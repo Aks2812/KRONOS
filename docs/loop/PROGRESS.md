@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 84
-derived_at: 2026-10-22T16:10:00Z
+seq: 85
+derived_at: 2026-10-22T16:25:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5762,3 +5762,49 @@ pending_action:
     stop and ask the maintainer to confirm the next bounded milestone. No autonomous scope expansion.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
+
+## SEQ 85 — S7 researcher PASS; S7 classified PAUSE condition #2 (architecture-direction fork, no precedent); awaiting maintainer design decisions
+seq: 85
+derived_at: 2026-10-22T16:25:00Z
+stage: S7
+phase: Researcher (claude-sonnet-5) returned cited S7 findings. Opus read §7.5 in full (kronos/loop-state). S7 (transitive invalidation / staleness) is a genuine architecture-direction fork with NO precedent — PAUSE condition #2. Loop paused for maintainer design decisions. No brief authored, no code change.
+
+seq84_pending_action_outcome: >
+  CLASSIFIED. S7 = research record §6 "Transitive invalidation / staleness (§7.5)", G3, NOT the agent layer
+  (that is S8, which still pauses). Within SEQ 69's S4->S7 autonomous grant for ROUTINE work, but the research
+  shows S7 is non-routine: it reverses a core invariant and invents new schema+lifecycle primitives with no
+  precedent, which is exactly pause condition #2 (materially change architecture direction) + §4 PAUSE-DECISION
+  (prose silence where a value is needed). Autonomy does NOT cover an architecture-direction change.
+
+researcher_findings_s7:
+  lifecycle: "lifecycle.py:47-53 FINDING_TRANSITIONS = {hypothesis->{reachable,discarded}, reachable->{exploited,discarded}, exploited->{reported,discarded}, reported->set(), discarded->set()}. FORWARD-ONLY; reported/discarded terminal. NO requires_revalidation, NO confirmed status. derive_confidence (67-90) RAISES ValueError on any unmapped status. advance_finding_status (216-244) forward-only chokepoint. Backward-move precedent exists ONLY for SECLET via recompute_status_from_evidence (168-192), reconcile-only."
+  schema: "schema.py:101-135 EDGE_PAIRS has NO derived_from (labels: hosts,exposes,has_param,contains,leaks,references,authenticates_to,grants,shares_cred_with,depends_on,vulnerable_to,resolves_to,chains_to,evidences). references (115) includes (FINDING,SECRET)+(FINDING,EVIDENCE) — the only existing FINDING->dependency edge a walk could use. FINDING cols (86-91): no derived_from column. NODE_PROPS_CREATE_ONLY FINDING status (188-191)."
+  validators: "web_validator.record_web_finding (44-60) + infra_validator.record_infra_finding write ONLY vulnerable_to asset->FINDING + advance to reachable. NEITHER writes references FINDING->SECRET nor any derived_from. => nothing populates a FINDING->dependency edge today; a transitive pass has nothing to walk until one is established."
+  reconcile: "merge.py _tombstone (138-148) single-node status write; _carry_over/_delete_loser_edges (84-135) walk EDGE_PAIRS for ONE loser->survivor pair, never cross-type transitively. FINDING merge guard (165-180) raises NotImplementedError. runner (252-279) sequential per-type, no cascading downstream walk. No transitive-revocation precedent."
+  events: "events.py:42-50 ALLOWED_KINDS = {ingest_started,ingest_finished,ingest_declined,reconcile_merged,reconcile_skipped_uncertain_key}. NO revalidation/staleness kind; emit raises on unknown."
+  trigger: "No rotation/scope-change/node-deletion detector found. Closest in-lifecycle 'rotation' = SECRET advancing to 'dead' (lifecycle.py:41,44 reachable->{dead}, dead terminal). upsert_node ON MATCH SET for in_scope (graph.py:152-154) may flip scope silently (unconfirmed this session)."
+  s7_5_prose: >
+    §7.5 source = research record 'evidence-gated plan DAG with transitive revocation' (line 930-942):
+    derived_from edges (explicit); revoke on evidence 'disproven or lost' -> active AND completed dependent
+    objectives blocked transitively; blocked_by = all predecessors, any_of = one per alternative group;
+    'neither phase nor ATT&CK tactic implies a DAG dependency'; read-before-write for staleness prevention.
+    Verify: rotate a fixture credential, every dependent finding -> requires_revalidation, none remains CONFIRMED.
+    This is a design INTENT, not an implementation spec — load-bearing values undetermined (see pause_questions).
+
+pause_condition: "#2 (materially change architecture direction) + §4 PAUSE-DECISION (prose silence). Not resolvable from existing evidence/precedent."
+
+pause_questions:
+  Q1_scope: "S7.1 minimal vertical slice (derived_from edge + requires_revalidation status + a transitive pass triggered by SECRET->dead walking the dependency edge; DEFER any_of/blocked_by alternative-route DAG to later S7.x) [RECOMMENDED], OR full DAG (blocked_by+any_of+derived_from) in one brief?"
+  Q2_lifecycle_invariant: "Authorize reversing the forward-only FINDING lifecycle: add requires_revalidation as a BACKWARD transition. Which sources may move to it (rec: reachable,exploited,reported)? Can it move back (rec: ->reachable on revalidation, ->discarded)? derive_confidence value (rec: hypothesis-tier low)? Confirm it pulls a finding out of terminal 'reported' (record's 'none remains CONFIRMED'; CONFIRMED=reporting tier, FINDING-status analogue=reported)."
+  Q3_trigger_and_edges: "Trigger for S7.1 (rec: SECRET advancing to 'dead' via advance_secret_status — existing in-lifecycle rotation; no new external detector). Source of the dependency edge (rec: EITHER reuse references FINDING->SECRET as the link OR have validators write derived_from — pick one). NOTE nothing populates references FINDING->SECRET today either, so the brief must ALSO establish the dependency edge or there is nothing to walk."
+  Q4_core_file_edits: "Confirm src/kronos/schema.py (new edge) and src/kronos/lifecycle.py (new status + transition) are in-scope for the S7 brief §3. They are NOT in §4's never-edit list, but carry invariants 6+ briefs preserved."
+
+pending_action:
+  seq: 85
+  action: >
+    PAUSED at a real boundary (pause condition #2). Awaiting maintainer decisions on Q1-Q4 above. On answers:
+    Opus folds them into SPEC_BRIEF15 (S7.1), self-approves routine GATE-1 only for the parts the answers make
+    routine, dispatches builder, reviewer, GATE-2. Do NOT author or build S7 before the answers land. The §6
+    autonomous loop (S4->S7) otherwise remains live; S8 (agent layer) remains a separate pause.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S7."
