@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 83
-derived_at: 2026-10-22T16:00:00Z
+seq: 84
+derived_at: 2026-10-22T16:10:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5722,5 +5722,43 @@ pending_action:
     known untracked rails; (4) if ALL pass: `gh pr merge <n> --squash --match-head-commit
     ee0439bdc859102aabf0de4c8659b2dd70be5bf4` — NEVER --admin, NEVER --auto. Record new main SHA + PR MERGED in the
     next block. If ANY prerequisite fails or GitHub blocks -> HALT and report; no --admin. Then continue to S7.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
+
+## SEQ 84 — SPEC_BRIEF14 (S6.1) MERGED to main (PR #22, squash 17d38a8); GATE-2 closed; S6 web validation delivered
+seq: 84
+derived_at: 2026-10-22T16:10:00Z
+stage: S6
+phase: S6.1 (first web validator) landed on main via autonomous GATE-2 merge under SEQ 55/SEQ 69 (§6 autonomy). Two-armed web reachability now produces evidence-backed FINDINGs over in-scope WEB_ENDPOINT nodes, CyberGym-only.
+
+seq83_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope=4 §3 paths; 2 ruleset
+  void-rule-kronos enforcement=active; 3 isDraft false; 4 state OPEN; 5 independent reviewer PASS + Opus step-5
+  PASS; 6 statusCheckRollup=[] CLEAN; 7 suite raw pytest 3530 passed 1 skipped 0 failed on ee0439b; 8 mergeable
+  MERGEABLE + mergeStateStatus CLEAN (after GitHub recomputed from UNKNOWN) + head ee0439b NOT ancestor of
+  origin/main; 9 self-authorized this turn naming PR #22 + head ee0439b; 10 clean tree, only known untracked
+  rails). Executed `gh pr merge 22 --squash --match-head-commit ee0439bdc859102aabf0de4c8659b2dd70be5bf4` —
+  NO --admin, NO --auto. PR #22 state=MERGED, mergedAt 2026-10-22T15:33:10Z. origin/main 33ab362 -> squash
+  17d38a89cc45c2f3079829bf8f9e0b7955e5669c.
+
+s6_status: >
+  S6 (research record §6: "Web validation, two-armed + control disposition") DELIVERED by S6.1. Third real
+  protocol family validated (after SECRET/api_token S1/S8 and infra S4). The research record's "first usable
+  milestone — reachable at S6" (five-domain, evidence-validated engagement, two-armed proof + verdict tier +
+  control disposition) is now within reach via manual operator runs.
+
+next_milestones_available:
+  - "S7 (research record §6): the row after S6 in the §6 roadmap. Its exact content was truncated in the compressed table read; the record frames post-S6 as the agent layer ('agent layer then multiplies working system'). If S7 = agent layer, that is a materially new architecture direction -> likely pause condition #2; Opus must first read the live §6 roadmap from kronos/loop-state to classify it before dispatching."
+  - "S6/S7 test-strengthening follow-ups (SEQ 83): assert probe host AND port 8091; derive real-path set from the graph."
+  - "Housekeeping (optional, outward): delete merged origin branches claude/s5-web-ingest-brief13, claude/s6-web-validation-brief14."
+
+pending_action:
+  seq: 84
+  action: >
+    S6.1 complete and merged. Before continuing, Opus reads the live research-record §6 roadmap (kronos/loop-state)
+    to classify S7: if S7 is another in-scope ingestion/validation capability within the established goals/scope,
+    continue autonomously (researcher -> brief -> GATE-1 -> build -> review -> GATE-2) under SEQ 69; if S7 is the
+    agent layer or otherwise a material change to goals/scope/architecture direction, that is pause condition #2 —
+    stop and ask the maintainer to confirm the next bounded milestone. No autonomous scope expansion.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
