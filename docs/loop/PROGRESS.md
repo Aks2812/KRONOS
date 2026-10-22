@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 78
-derived_at: 2026-10-22T00:00:00Z
+seq: 79
+derived_at: 2026-10-22T00:10:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5516,5 +5516,44 @@ pending_action:
     (6) whole-window scope ⊆ §3; (7) §2a seal of brief-12 test_J to 079a76f; and RUN the approved suite (read the
     SUMMARY: line, not $?). Return verdict + evidence. Then Opus step-5 semantic verify; if PASS, GATE-2 (ten
     prerequisites re-measured in-turn, open PR, merge within scope). A reviewer FAIL = build attempt 3/3 (last).
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
+
+## SEQ 79 — S5.1 reviewer PASS (attempt 2) + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 79
+derived_at: 2026-10-22T00:10:00Z
+stage: S5
+phase: Independent reviewer (claude-haiku-5-5) returned VERDICT PASS / merge-eligible on bed025c; 3 LOW findings, all inside §3, none a §8 failure, none outside scope. Opus step-5 semantic review PASS (§8 A-L all green; LOW findings are quality nits beyond brief scope, no §3 amendment, no circuit-breaker). Autonomous GATE-2 merge under SEQ 55/SEQ 69 (§6 autonomy covers S5). Branch protection void-rule-kronos active and NOT bypassable — HALT (no --admin) if GitHub blocks.
+
+seq78_pending_action_outcome: >
+  COMPLETE. Reviewer PASS: §8-H bad-port declines not raises (parser.py:63-72, test_H_bad_server_url_declined_not_raised);
+  §2 default http://127.0.0.1 ingests (parser.py:25,60-62, test_absent_servers_defaults_to_loopback); 'null'->None
+  declines+emits (parser.py:45,50-52,38, test_H_bad_input_declined_not_raised); PARAMETER missing name/in declines
+  (parser.py:106-110, test_parameter_missing_name_or_in_declined); test_H patches socket.create_connection
+  (test_web_ingest.py:165-166); whole-window scope = 7 §3 paths; §2a seal = one BRIEF_MERGE line only; dispatcher
+  additive (ingest/__init__.py:83-86), no schema/scope_guard/canonical/graph/manifest edit, stdlib-only, no new dep;
+  no live network (grep rc=1). Suite raw pytest 3516 passed, 1 skipped, 0 FAILED (two runs). A-L all PASS.
+
+step5_opus_verify:
+  verdict: PASS
+  basis: "Build matches SPEC_BRIEF13 §1/§2/§2a/§8. Reviewer's 3 LOW (non-string server url defaults vs declines; path key w/o leading slash; no event-assert test) are out-of-brief quality nits, not §8 acceptance failures and not scope breaches -> do not block; recorded as S6 follow-ups. No circuit-breaker (attempt 2 PASS)."
+
+step5_followups_s6:
+  - "parser.py:60-62 — decline a present-but-non-string servers[0].url instead of silently defaulting to 127.0.0.1."
+  - "parser.py:96 — normalise path keys missing a leading '/' (currently concatenate into a malformed URL)."
+  - "test — assert the ingest_declined event payload for null/other declines."
+
+pending_action:
+  seq: 79
+  action: >
+    SELF-AUTHORIZED GATE-2 merge of claude/s5-web-ingest-brief13 (head bed025c) into main. SAME TURN as the merge:
+    (1) push branch to origin; (2) open PR base=main head=claude/s5-web-ingest-brief13 (NOT draft); (3) re-measure
+    ALL TEN MERGE-GATE prerequisites in-turn — 1 scope=7 §3 paths; 2 ruleset void-rule-kronos enforcement=active;
+    3 isDraft false; 4 state OPEN; 5 independent reviewer PASS + Opus step-5 PASS; 6 checks CLEAN/none; 7 suite 3516
+    passed 0 failed (raw pytest); 8 mergeable MERGEABLE + mergeStateStatus CLEAN + bed025c NOT ancestor of origin/main;
+    9 self-authorized this turn naming PR number + head bed025c; 10 clean tree, only known untracked rails;
+    (4) if ALL pass: `gh pr merge <n> --squash --match-head-commit bed025c6305657cab8018f5d3709679caea4e123` —
+    NEVER --admin, NEVER --auto. Record new main SHA + PR MERGED in the next block. If ANY prerequisite fails or
+    GitHub blocks -> HALT and report; no --admin. Then continue autonomously to S6.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
