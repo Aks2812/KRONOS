@@ -42,8 +42,15 @@ statuses and make it reversible (maintainer Q2):
 "exploited":            {"reported", "discarded", "requires_revalidation"},
 "reported":             {"requires_revalidation"},          # was terminal; now invalidatable
 "discarded":            set(),
-"requires_revalidation":{"reachable", "exploited", "reported", "discarded"},
+"requires_revalidation":{"reachable", "exploited", "discarded"},
 ```
+**Re-reporting re-earns through the gate (amended after the S7.1 attempt-1 review).**
+`requires_revalidation` does **NOT** transition directly to `reported`: the existing report gate in
+`advance_finding_status` (`lifecycle.py:228-231`) requires `current == "exploited"` (plus the usual
+anchor/evidence), and bypassing it would silently restore a reported verdict — exactly the "do not
+silently erase/restore prior facts" rule (maintainer Q2). A revalidated finding climbs back the
+normal way: `requires_revalidation → reachable → exploited → reported`, re-earning each gate with
+fresh evidence. This keeps the report gate unchanged (reviewer option a, not b).
 (`hypothesis` unchanged.) In `derive_confidence` add, before the final `raise`:
 `if status == "requires_revalidation": return 3` (hypothesis tier, `< 7` cap — stale/needs-recheck,
 **not** `0`, which is the terminal `dead`/`discarded` value). `advance_finding_status` stays the
@@ -132,9 +139,11 @@ C. **Runner wiring (hermetic)** — a live-secret validation run (fake validator
    branches create no such FINDING.
 D. **Status + transitions** — `FINDING_TRANSITIONS` permits `reachable→requires_revalidation`,
    `exploited→requires_revalidation`, `reported→requires_revalidation`, and
-   `requires_revalidation→{reachable,exploited,reported,discarded}`;
-   `derive_confidence("finding","requires_revalidation", <any>)==3`; `advance_finding_status`
-   performs each of these without raising.
+   `requires_revalidation→{reachable,exploited,discarded}` (NOT directly to `reported` — re-reporting
+   goes back through the gate via `exploited`); `derive_confidence("finding","requires_revalidation",
+   <any>)==3`; `advance_finding_status` performs each of these transitions without raising, and
+   `requires_revalidation→reported` directly **raises** `LifecycleError` (the gate still holds). Test
+   every listed transition through the chokepoint, including `reported→requires_revalidation`.
 E. **Transitive invalidation** — given a SECRET with a dependent `derived_from` FINDING, after
    `advance_secret_status(g, sid, "dead")` then
    `invalidate_findings_for_dead_secret(g, sid)`, the dependent FINDING has
