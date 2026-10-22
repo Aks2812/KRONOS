@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 81
-derived_at: 2026-10-22T15:30:00Z
+seq: 82
+derived_at: 2026-10-22T15:45:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5647,5 +5647,41 @@ pending_action:
     (4) Self-approve routine GATE-1. (5) Dispatch kronos-builder (claude-sonnet-5-5) to implement ONLY §3 files,
     tests-first. (6) Opus whole-window scope audit. (7) Independent reviewer (claude-haiku-5-5). (8) step-5 +
     GATE-2 (ten prerequisites in-turn). Circuit breaker 3 attempts. Pause only on a defined pause condition.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
+
+## SEQ 82 — S6.1 builder COMPLETE (ee0439b); Opus scope+seal audit PASS; dispatching independent reviewer (write-ahead)
+seq: 82
+derived_at: 2026-10-22T15:45:00Z
+stage: S6
+phase: Builder (claude-sonnet-5-5) implemented SPEC_BRIEF14 on claude/s6-web-validation-brief14, HEAD ee0439b. Opus whole-window scope audit + seal-only audit PASS. Dispatching Haiku reviewer for an independent PASS (MERGE-GATE prereq 5).
+
+seq81_pending_action_outcome: >
+  COMPLETE. Branch claude/s6-web-validation-brief14 off 33ab362; SPEC_BRIEF14.md committed 028de89; GATE-1
+  self-approved; builder committed ee0439b (web_validator.py new, test_web_validator.py new, test_web_ingest.py
+  §2a seal). Builder: full suite SUMMARY 3530 passed, 1 skipped, 0 failed; A-L mapped to named tests; whole-window
+  diff = 4 paths. Opus INDEPENDENT re-measure: git diff --name-only 33ab362..HEAD = exactly {SPEC_BRIEF14.md,
+  src/kronos/validate/web_validator.py, tests/test_web_ingest.py, tests/test_web_validator.py} ⊆ §3 -> PASS; the
+  test_web_ingest.py diff is seal-only (2 insertions 1 deletion: BRIEF_MERGE="33ab362" + f"{BRIEF_BASE}..{BRIEF_MERGE}"
+  range) -> PASS. No controls.py/schema/engine edit (not in the window).
+
+opus_assessment:
+  scope: PASS (4/4 §3 paths, whole-window)
+  seal: PASS (seal-only, matches §2a)
+  note: "Independent reviewer must re-verify §8 A-L semantics + run the suite; Opus does not self-substitute for prereq-5 independent review."
+
+circuit_breaker: "Build attempt 1 of 3 for S6.1 (builder self-corrected 2 of its OWN test bugs RED->GREEN before commit; still attempt 1 — one committed build)."
+
+pending_action:
+  seq: 82
+  action: >
+    Dispatch kronos-reviewer (claude-haiku-5-5), isolated from the builder report, with SPEC_BRIEF14 §2/§2a/§8 and
+    the diff 33ab362..HEAD: independently confirm A-L, the FINDING-via-edge verdict attach (WEB_ENDPOINT
+    --vulnerable_to--> FINDING, status reachable, confidence 7 derived not set), no forbidden columns, kind="http"
+    reuse with NO controls.py edit, control arm = same origin different CONTROL_PATH, hermetic (socket.socket +
+    socket.create_connection patched, no requests import), in-scope-only pass, whole-window scope ⊆ §3, and the
+    §2a brief-13 seal. RUN the approved suite (read SUMMARY: line, not $?). Return verdict + evidence. Then Opus
+    step-5 semantic verify; if PASS, GATE-2 (ten prerequisites re-measured in-turn, open PR, merge within scope).
+    A reviewer FAIL = build attempt 2/3.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S6."
