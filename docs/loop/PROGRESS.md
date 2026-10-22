@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 87
-derived_at: 2026-10-22T17:15:00Z
+seq: 88
+derived_at: 2026-10-22T17:40:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5848,14 +5848,14 @@ pending_action:
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; this task EDITS those same untracked rails under explicit maintainer authorization — their commit/home remains the SEQ 55 maintainer-owned question, unchanged here."
 
-## SEQ 87 — thin-Opus policy change COMPLETE (5 rails files edited, verified); S7 pause (SEQ 85 Q1-Q4) remains the open action
+## SEQ 87 — thin-Opus policy change COMPLETE (6 rails files edited, verified); S7 pause (SEQ 85 Q1-Q4) remains the open action
 seq: 87
 derived_at: 2026-10-22T17:15:00Z
 stage: policy (done) -> returns to S7 pause
 phase: Maintainer-authorized delegation-policy change (context.md / SEQ 86) applied to the untracked working-tree rails and verified. No code, brief, goal, boundary, or model pin changed. The S7 architecture-fork pause (SEQ 85) is the authoritative open action.
 
 seq86_pending_action_outcome: >
-  COMPLETE. Edited 5 working-tree rails files: (1) CLAUDE.md — added "Cost discipline — Opus stays thin"
+  COMPLETE. Edited 6 working-tree rails files: (1) CLAUDE.md — added "Cost discipline — Opus stays thin"
   block to the Delegation policy (workers own depth + persist detailed evidence to their pipeline artifact +
   return a compact handoff [conclusion/paths/verification/unresolved/recommended-next-action]; Opus consumes
   only the compact handoff, no repeated investigation, no broad-context reads, no lengthy narration except to
@@ -5888,3 +5888,57 @@ pending_action:
     before the answers.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; this task edited those same untracked rails under the context.md authorization. Their commit/home is unchanged and remains the SEQ 55 maintainer-owned question."
+
+## SEQ 88 — SEQ 87 file-count reconciled (6 not 5); S7 decisions Q1-Q4 recorded (maintainer context.md 2026-10-22); targeted researcher follow-up dispatched for the secret-validation finding-creation path (write-ahead)
+seq: 88
+derived_at: 2026-10-22T17:40:00Z
+stage: S7
+phase: Maintainer answered S7 Q1-Q4 and asked to reconcile the SEQ 87 count. Reconciliation done; S7 pause (SEQ 85) released by maintainer decision. Before authoring SPEC_BRIEF15, Opus dispatches ONE targeted researcher follow-up to pin where a secret-derived FINDING is created (so the typed derived_from edge can be written there). Running under the new thin-Opus discipline (SEQ 86/87).
+
+seq87_reconciliation: >
+  SEQ 87 said "five working-tree rails" but enumerated six. Verified by edit-marker grep + settings check:
+  the actual edited set is SIX files — CLAUDE.md, .claude/agents/kronos-researcher.md, kronos-builder.md,
+  kronos-reviewer.md, .claude/roles/kronos-orchestrator.md, .claude/settings.local.json. (The find -mmin
+  extras under .claude/pipeline/ and skills/ carry no edit markers; their mtimes are from the branch
+  checkout/stash-pop, not edits.) SEQ 87 wording corrected in place 5 -> 6 (a factual content fix, not a
+  top-header correction; no new SEQ block opened solely for that). No functional change to the policy edits.
+
+s7_decisions_maintainer:
+  Q1_scope: "Option A — minimal vertical slice first. DEFER any_of + blocked_by alternative-route DAG to a later S7.x."
+  Q2_requires_revalidation: >
+    Authorized as a REVERSIBLE invalidation state for when a causal dependency becomes stale. May move a
+    previously reachable / exploited / reported FINDING OUT of its current operational status. MUST preserve
+    immutable historical reporting and validation evidence — do NOT silently erase prior facts (EVIDENCE nodes,
+    the 'evidences'/'references' edges, and the record that it was reported/validated stay intact; invalidation
+    changes status + re-derived confidence only, never deletes or rewrites evidence/history).
+  Q3_trigger_and_edge: >
+    Initial trigger = existing SECRET -> dead transition via advance_secret_status. Establish and POPULATE an
+    explicit, TYPED FINDING -> SECRET 'derived_from' edge DURING validation, giving invalidation a reliable
+    causal path. Do NOT treat the generic 'references' edge as a causal dependency unless its documented
+    semantics already require that (they do not — references is FINDING->SECRET/EVIDENCE anchor, not causal).
+  Q4_file_scope: "schema.py and lifecycle.py ARE in SPEC_BRIEF15's §3 permitted-file scope."
+  boundaries: "Preserve all existing KRONOS authorization boundaries. NO live-target testing. CyberGym only."
+
+open_fact_for_brief: >
+  Q3 says write derived_from 'during validation', but the two shipped validators (infra_validator,
+  web_validator) produce REACHABILITY findings not derived from any SECRET. The secret-validation path
+  (runner.py / http_validator validate_api_token / candidates.py) is where a secret-dependent FINDING would be
+  created — but the S7 researcher did not confirm that path actually creates a FINDING node today. The minimal
+  slice needs that exact creation point to attach derived_from. => one targeted researcher follow-up.
+
+pending_action:
+  seq: 88
+  action: >
+    Dispatch kronos-researcher (claude-sonnet-5) for a TARGETED follow-up (not a broad re-investigation):
+    (1) Does the SECRET-validation path create a FINDING node today? Where exactly (runner.py / http_validator /
+    candidates.py), file:line, and what edges/status it sets? (2) If a secret-derived FINDING is created, the
+    exact point to add a typed FINDING->SECRET 'derived_from' edge. (3) derive_confidence's exact value map
+    (lifecycle.py:67-90) so the brief can state the requires_revalidation confidence. (4) Confirm whether any
+    EVIDENCE/'evidences' linkage exists that invalidation must preserve. (5) How a new edge label is added to
+    EDGE_PAIRS + DDL (schema.py) and a new status + transition to FINDING_TRANSITIONS/derive_confidence
+    (lifecycle.py), with the exact structures to edit. Return a COMPACT handoff (conclusion/paths/verification/
+    unresolved/recommended next action); orchestrator saves full detail to 02-research/findings.md. Then Opus
+    authors SPEC_BRIEF15 (S7.1 minimal slice), self-approves routine GATE-1, and runs builder -> reviewer ->
+    GATE-2 under thin-Opus discipline. S8 remains a separate pause.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; SEQ 86/87 edited those untracked rails under context.md authorization. Commit/home unchanged — SEQ 55 maintainer-owned question."
