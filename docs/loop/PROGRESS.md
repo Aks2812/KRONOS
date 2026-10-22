@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 92
-derived_at: 2026-10-22T19:30:00Z
+seq: 93
+derived_at: 2026-10-22T20:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -6124,5 +6124,48 @@ pending_action:
     evidence; graph-count idempotence), evidence/history preservation, whole-window scope ⊆ §3, the §2a seal, and
     hermetic/no-live-network. RUN the suite (SUMMARY line, not $?). Return a COMPACT handoff verdict. Then Opus
     step-5 + GATE-2 (ten in-turn). A FAIL = attempt 3/3 (last). CyberGym only; NO live targets.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
+
+## SEQ 93 — S7.1 reviewer PASS (attempt 2) + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 93
+derived_at: 2026-10-22T20:00:00Z
+stage: S7
+phase: Independent reviewer (claude-haiku-5-5) VERDICT PASS / merge-eligible on 9ca7361; §8-D HIGH cleared; all A-M PASS by substance; 8 LOW (test-strengthening/doc/style), none blocking, none outside §3. Opus step-5 PASS. Autonomous GATE-2 merge under SEQ 55/SEQ 69 + maintainer context.md ("continue the autonomous loop"). Branch protection active, NOT bypassable — HALT (no --admin) if GitHub blocks.
+
+seq92_pending_action_outcome: >
+  COMPLETE. Reviewer PASS: §8-D fix verified (requires_revalidation->{reachable,exploited,discarded}, reported
+  removed, lifecycle.py:53; reachable/exploited/reported->requires_revalidation and
+  requires_revalidation->{reachable,exploited,discarded} pass the chokepoint; requires_revalidation->reported
+  RAISES LifecycleError; re-report via exploited works; derive_confidence requires_revalidation=3). A-M all PASS
+  by substance (producer, derived_from distinct key, runner one-call, transitive invalidation conf 3, evidence/
+  history preserved, selectivity, reversibility conf 9/7, graph-count idempotence, scope 7 §3, brief-14 seal, no
+  forbidden columns). Suite raw pytest 3547 passed 1 skipped 0 failed (.venv; rtk test invalid — system python no
+  kuzu). 8 LOW: reported-dependent not exercised in the pass; §8-J no explicit outside-range assert (sockets
+  globally patched); test_M presence-check; schema.py:134 one-line style; derive_confidence docstring omits the
+  new tier; record_secret_finding kw extras (brief-allowed); duplicate test-name prefixes; re-run producer on an
+  invalidated FINDING untested (safe via create-only status + hypothesis guard). None blocking; none outside §3.
+
+step5_opus_verify:
+  verdict: PASS
+  basis: "Build matches amended SPEC_BRIEF15 §1/§2/§2a/§8. The 8 LOW are quality/test-strengthening nits, not §8 failures or scope breaches -> S7.x follow-ups. Secret-derived FINDING producer (runner.py outcome.live) is the SEQ 89 autonomously-resolved point, forced by maintainer decision 3 + 'no fake causal deps', additive + reversible; surfaced in the PR for maintainer visibility. No circuit-breaker trip (attempt 2 PASS)."
+
+step5_followups_s7x:
+  - "Exercise the invalidation pass on a reported-status dependent (not just exploited)."
+  - "test_invalidation.py §8-J: assert explicitly no connection to any non-127.0.0.1 host."
+  - "Strengthen test_M beyond a presence check; add a re-run-producer-on-invalidated-FINDING test; add requires_revalidation->3 to the derive_confidence docstring."
+
+pending_action:
+  seq: 93
+  action: >
+    SELF-AUTHORIZED GATE-2 merge of claude/s7-transitive-invalidation-brief15 (head 9ca7361) into main. SAME TURN
+    as the merge: (1) branch pushed; (2) open PR base=main head=... (NOT draft), PR body FLAGS the secret-derived
+    FINDING producer design decision for maintainer visibility; (3) re-measure ALL TEN MERGE-GATE prerequisites
+    in-turn — 1 scope=7 §3; 2 ruleset void-rule-kronos active; 3 isDraft false; 4 OPEN; 5 reviewer PASS + step-5
+    PASS; 6 checks CLEAN/none; 7 suite 3547 passed 0 failed; 8 mergeable MERGEABLE + CLEAN + 9ca7361 NOT ancestor
+    of origin/main; 9 self-authorized this turn naming PR# + head 9ca7361; 10 clean tree, only known untracked
+    rails; (4) if ALL pass: gh pr merge <n> --squash --match-head-commit 9ca7361e0770fa5120841b0ce78ac5efad02e17a
+    — NEVER --admin/--auto. Record new main SHA + PR MERGED next block. Any red prereq or GitHub block -> HALT.
+    Then S7.1 done; next = S7.x follow-ups or S8 (S8 remains a separate pause).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
