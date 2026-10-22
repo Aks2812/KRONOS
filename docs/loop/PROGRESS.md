@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 89
-derived_at: 2026-10-22T18:00:00Z
+seq: 90
+derived_at: 2026-10-22T18:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5997,5 +5997,50 @@ pending_action:
     kronos-builder (claude-sonnet-5-5) to implement ONLY §3, tests-first, returning a COMPACT handoff. (6) Opus
     whole-window scope audit. (7) Independent reviewer (claude-haiku-5-5). (8) step-5 + GATE-2 (ten in-turn).
     Circuit breaker 3 attempts. Preserve all authorization boundaries; CyberGym only; NO live targets. S8 pause.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
+
+## SEQ 90 — S7.1 builder COMPLETE (996ab22); Opus scope+brief-integrity audit PASS; dispatching independent reviewer (write-ahead)
+seq: 90
+derived_at: 2026-10-22T18:30:00Z
+stage: S7
+phase: Builder (claude-sonnet-5-5) implemented SPEC_BRIEF15 on claude/s7-transitive-invalidation-brief15, HEAD 996ab22. Opus whole-window scope audit + brief-integrity check PASS. Dispatching Haiku reviewer (MERGE-GATE prereq 5). Thin-Opus discipline.
+
+seq89_pending_action_outcome: >
+  COMPLETE. Builder (compact handoff): suite 3544 passed, 1 skipped, 0 failed; final commit 996ab22. Opus
+  INDEPENDENT re-measure: git diff --name-only 17d38a8..HEAD = exactly {SPEC_BRIEF15.md, src/kronos/schema.py,
+  src/kronos/lifecycle.py, src/kronos/validate/invalidation.py, src/kronos/validate/runner.py,
+  tests/test_invalidation.py, tests/test_web_validator.py} -> 7 paths ⊆ §3 PASS. Brief INTACT (168 lines, sha
+  634cf55...; the builder's "garbled" was its own compressed read, NOT file corruption). derived_from added as a
+  DISTINCT EDGE_PAIRS key on schema.py:134 appended to the evidences physical line — deliberately keeps
+  schema.py line numbers stable so out-of-§3 test_scope_guard.py pinned citations stay green (sound; avoids a
+  cross-brief breakage). runner.py = one record_secret_finding call in the outcome.live branch (+import).
+  record_secret_finding takes evidence=/engagement_dir= kw extras (authorized by §2d).
+
+opus_assessment:
+  scope: PASS (7/7 §3 paths, whole-window)
+  brief_integrity: PASS (168 lines, not corrupted)
+  substance_coverage: >
+    Builder relabeled §8 E-J test letters but ALL brief A-M substance is covered in test_invalidation.py:
+    A typed edge; B producer; C runner-wiring+abstention; D transitions+confidence=3; E transitive invalidation
+    + history-preserved + idempotent (brief E+F+I, incl. second-call ==[] at :150); F exploited/reported sources
+    invalidated; G non-secret + other-status untouched + H other-secret untouched (brief G selectivity);
+    I revalidation reversible (brief H); J no-network; K scope audit; L brief-14 seal; M no forbidden columns.
+    Label divergence is a wording note for the reviewer, not a missing-criterion gap.
+  design_decision_flagged: "Secret-derived FINDING producer added at runner.py outcome.live branch (opus_design_resolution_s7_1, SEQ 89) — the one autonomously-resolved point; reviewer + maintainer see it at GATE-2."
+
+circuit_breaker: "Build attempt 1 of 3 for S7.1."
+
+pending_action:
+  seq: 90
+  action: >
+    Dispatch kronos-reviewer (claude-haiku-5-5), isolated from the builder report, with SPEC_BRIEF15 (READ IT
+    DIRECTLY — 168 lines, intact) §2/§2a/§8 and the diff 17d38a8..HEAD: independently confirm the brief's A-M by
+    SUBSTANCE (note the builder reorganized the E-J test letters), the typed derived_from FINDING->SECRET edge
+    (distinct from references), requires_revalidation reversible status + derive_confidence=3, the SECRET->dead
+    transitive pass PRESERVING all EVIDENCE/edges (maintainer Q2 — no silent erasure), selectivity, the one-call
+    runner.py addition, whole-window scope ⊆ §3, the §2a brief-14 seal, no forbidden columns, hermetic (socket
+    patched), NO live network. RUN the suite (SUMMARY line, not $?). Return a COMPACT handoff verdict + evidence.
+    Then Opus step-5 + GATE-2 (ten in-turn). Reviewer FAIL = attempt 2/3.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
