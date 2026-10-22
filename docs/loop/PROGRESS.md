@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 85
-derived_at: 2026-10-22T16:25:00Z
+seq: 86
+derived_at: 2026-10-22T17:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5808,3 +5808,42 @@ pending_action:
     autonomous loop (S4->S7) otherwise remains live; S8 (agent layer) remains a separate pause.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S7."
+
+## SEQ 86 — MAINTAINER-AUTHORIZED pipeline/policy change (context.md 2026-10-22): thin-Opus delegation for lower Opus output cost; applying rails edits (write-ahead)
+seq: 86
+derived_at: 2026-10-22T17:00:00Z
+stage: policy (out-of-band maintainer task; interrupts the S7 pause, which resumes after)
+phase: Maintainer wrote /home/void/context.md — an explicit written instruction to change the KRONOS delegation policy for lower Opus consumption. This is the §4 exception ("explicit, written maintainer instruction to change the pipeline, recorded in the checkpoint as such"). Opus edits the untracked working-tree rails (CLAUDE.md + .claude/) accordingly.
+
+authorization:
+  source: /home/void/context.md (2026-10-22)
+  scope_of_authorization: >
+    Change the project-local delegation policy to make Opus a THIN supervisory orchestrator and cut Opus
+    output volume (observed ~91% of current cost, driven by Opus output). EXPLICITLY unchanged by this task:
+    KRONOS goals, authorization boundaries, model defaults/pins (researcher claude-sonnet-5, builder
+    claude-sonnet-5-5, reviewer claude-haiku-5-5, orchestrator Opus 4.8), current implementation work, the
+    five-step Sonnet-researcher -> Opus -> Sonnet-builder -> Haiku-reviewer -> Opus workflow, and all five
+    pause conditions. Do not interrupt an active worker (none running).
+
+cost_audit:
+  observed_contributor: "Maintainer-supplied usage report: Opus ~91% of current cost; dominant driver = Opus OUTPUT volume (lengthy progress narration + re-emitting worker findings in reports/checkpoints)."
+  session_meter: "caveman-stats hook did not fire via Skill invocation (only fires on the /caveman-stats slash command); live per-session numbers unavailable this turn — not fabricated. Maintainer report is the audit basis."
+
+planned_edits:
+  - "CLAUDE.md (project): add a 'Cost discipline — thin Opus' block inside the Delegation policy: workers own investigation/build/review and persist detailed evidence to their pipeline artifact; return a COMPACT handoff (conclusion, paths, verification, unresolved issues, recommended next action); Opus consumes only compact handoffs, does NOT repeat worker investigation, does NOT read broad repo context, does NOT emit lengthy progress narration except to resolve a material conflict; Opus turns are concise and decision-shaped (dispatch/accept/request-targeted-follow-up/escalate/stop); routine orchestration at the LOWEST supported Opus effort, raised only for material architecture decisions, evidence conflicts, scope changes, or merge-gate evaluation. Preserve 5-step workflow, 5 pause conditions, model aliases, authorization boundaries verbatim."
+  - ".claude/agents/kronos-researcher.md, kronos-builder.md, kronos-reviewer.md: add a 'Compact handoff' section (conclusion / paths / verification / unresolved / recommended next action). Tool sets and model pins UNCHANGED. Detailed evidence persists where the write-path owner already puts it (researcher & reviewer detail saved by the orchestrator to 02-research/findings.md and 04-review/review-evidence.json; builder detail in its commits/git log — builder still never edits .claude/ per §4). The handoff RETURNED to Opus is compact."
+  - ".claude/roles/kronos-orchestrator.md: add a 'Cost discipline' pointer (thin Opus; lowest routine effort; concise decision verbs) deferring to CLAUDE.md."
+  - ".claude/settings.local.json: gate Playwright MCP to manual-only (enabledMcpjsonServers [] ) — KRONOS needs no browser automation; re-enable manually when a task requires it. Health-check/setup skills (session-health-check, spawn-engineering-team) documented user-invoked-only; kronos-continue already is."
+deviation_flagged:
+  - "Literal 'workers write detailed evidence to project artifacts': read-only researcher and reviewer keep their current tool sets (no Write) for safety and to not expand write surface into .claude/; their detail is persisted by the orchestrator (the existing owner-of-write-path split). The cost goal (compact handoff to Opus, thin Opus output) is met regardless. Flagged for maintainer visibility; reversible by granting those agents scoped pipeline Write if desired."
+
+pending_action:
+  seq: 86
+  action: >
+    Apply the planned_edits to the untracked working-tree rails (CLAUDE.md, .claude/agents/*.md,
+    .claude/roles/kronos-orchestrator.md, .claude/settings.local.json). Verify: model pins unchanged; 5-step +
+    5 pause conditions intact; no src/ or SPEC_BRIEF touched; settings.local.json valid JSON. Record outcome in
+    the next block with the file list, cost contributors, and the expected savings mechanism. Then the S7 pause
+    (SEQ 85, Q1-Q4) remains open and governs resumption.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; this task EDITS those same untracked rails under explicit maintainer authorization — their commit/home remains the SEQ 55 maintainer-owned question, unchanged here."
