@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 91
-derived_at: 2026-10-22T19:00:00Z
+seq: 92
+derived_at: 2026-10-22T19:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -6084,5 +6084,45 @@ pending_action:
     suite under .venv, 0 failed, refresh totals as the final edit, commit explicit paths, push. Return a COMPACT
     handoff. Then Opus scope audit + re-dispatch the independent reviewer (prereq 5 needs a fresh PASS), step-5,
     GATE-2 (ten in-turn). CyberGym only; NO live targets.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
+
+## SEQ 92 — S7.1 builder attempt 2 COMPLETE (9ca7361); Opus scope audit + fix-verify PASS; re-dispatching independent reviewer (write-ahead)
+seq: 92
+derived_at: 2026-10-22T19:30:00Z
+stage: S7
+phase: Builder attempt 2 landed 9ca7361 (lifecycle.py + test_invalidation.py only since 32e040d). Opus whole-window scope audit + §8-D fix verify PASS. Re-dispatching Haiku reviewer for a FRESH independent PASS (MERGE-GATE prereq 5 needs a PASS on the current HEAD). Still attempt 2 of 3. Thin-Opus.
+
+seq91_pending_action_outcome: >
+  COMPLETE. Builder (compact handoff): suite 3547 passed, 1 skipped, 0 failed; HEAD 9ca7361; changed only
+  src/kronos/lifecycle.py + tests/test_invalidation.py since 32e040d. Opus INDEPENDENT re-measure:
+  (1) lifecycle.py:53 FINDING_TRANSITIONS["requires_revalidation"] = {"reachable","exploited","discarded"}
+  (reported REMOVED — the §8-D High fix); reachable/exploited/reported -> requires_revalidation intact (49-51);
+  derive_confidence requires_revalidation -> 3 (:91). (2) whole-window git diff --name-only 17d38a8..HEAD = the
+  same 7 §3 paths -> PASS. LOW gaps closed per builder: test_C_authenticated_not_authorized_creates_no_finding,
+  test_H_revalidation_without_evidence_restores_confidence_7, test_I_double_invalidation_is_idempotent_on_graph
+  (FINDING + vulnerable_to/derived_from/evidences counts stable). §8-J left unchanged (builder read the J note as
+  garbled — its own compressed read; original test_J already patches socket.socket + socket.create_connection; the
+  "outside-range" assert was a non-blocking LOW, deferred). Builder mislabeled "attempt 3" — this is build attempt
+  2 (the internal RED test_D->GREEN was within attempt 2, not a new attempt).
+
+opus_assessment:
+  scope: PASS (7/7 §3 paths, whole-window)
+  high_fixed: "requires_revalidation->reported removed from the table; re-reporting re-earns via exploited. Report gate unchanged."
+  design_decision_flagged: "Secret-derived FINDING producer at runner.py outcome.live branch (SEQ 89) — still the one autonomously-resolved point; visible to reviewer + maintainer at GATE-2."
+
+circuit_breaker: "Build attempt 2 of 3 for S7.1."
+
+pending_action:
+  seq: 92
+  action: >
+    Dispatch kronos-reviewer (claude-haiku-5-5), isolated from the builder report, with the amended SPEC_BRIEF15
+    (READ DIRECTLY) §2b/§8-D and the diff 17d38a8..HEAD at 9ca7361: independently confirm the §8-D fix
+    (requires_revalidation->{reachable,exploited,discarded} through the chokepoint without raising;
+    requires_revalidation->reported RAISES LifecycleError; reported->requires_revalidation works), the full A-M by
+    substance, the LOW gaps now closed (authenticated_not_authorized no-finding; revalidation conf 7 without
+    evidence; graph-count idempotence), evidence/history preservation, whole-window scope ⊆ §3, the §2a seal, and
+    hermetic/no-live-network. RUN the suite (SUMMARY line, not $?). Return a COMPACT handoff verdict. Then Opus
+    step-5 + GATE-2 (ten in-turn). A FAIL = attempt 3/3 (last). CyberGym only; NO live targets.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged by this stage."
