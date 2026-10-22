@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 86
-derived_at: 2026-10-22T17:00:00Z
+seq: 87
+derived_at: 2026-10-22T17:15:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5847,3 +5847,44 @@ pending_action:
     (SEQ 85, Q1-Q4) remains open and governs resumption.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; this task EDITS those same untracked rails under explicit maintainer authorization — their commit/home remains the SEQ 55 maintainer-owned question, unchanged here."
+
+## SEQ 87 — thin-Opus policy change COMPLETE (5 rails files edited, verified); S7 pause (SEQ 85 Q1-Q4) remains the open action
+seq: 87
+derived_at: 2026-10-22T17:15:00Z
+stage: policy (done) -> returns to S7 pause
+phase: Maintainer-authorized delegation-policy change (context.md / SEQ 86) applied to the untracked working-tree rails and verified. No code, brief, goal, boundary, or model pin changed. The S7 architecture-fork pause (SEQ 85) is the authoritative open action.
+
+seq86_pending_action_outcome: >
+  COMPLETE. Edited 5 working-tree rails files: (1) CLAUDE.md — added "Cost discipline — Opus stays thin"
+  block to the Delegation policy (workers own depth + persist detailed evidence to their pipeline artifact +
+  return a compact handoff [conclusion/paths/verification/unresolved/recommended-next-action]; Opus consumes
+  only the compact handoff, no repeated investigation, no broad-context reads, no lengthy narration except to
+  resolve a material conflict; concise decision-shaped turns dispatch/accept/follow-up/escalate/stop; lowest
+  Opus effort for routine, raised only for architecture/conflict/scope/MERGE-GATE; Playwright MCP + health-check/
+  setup skills gated). (2-4) .claude/agents/kronos-researcher.md, kronos-builder.md, kronos-reviewer.md — added a
+  "Compact handoff" section each; tool sets + model pins UNCHANGED. (5) .claude/roles/kronos-orchestrator.md —
+  "Cost discipline" pointer. Plus .claude/settings.local.json — enabledMcpjsonServers [] (Playwright manual-only).
+  VERIFIED: settings.local.json valid JSON; model pins intact (claude-sonnet-5 / claude-sonnet-5-5 /
+  claude-haiku-5-5); five-step workflow + five pause conditions untouched in CLAUDE.md; no src/ or SPEC_BRIEF
+  file changed. Deviation (flagged SEQ 86): read-only researcher/reviewer keep no-Write tool sets; orchestrator
+  persists their detail to the pipeline artifact — compact-handoff/thin-Opus goal met without expanding write
+  surface into .claude/.
+
+expected_savings_mechanism: >
+  Cuts Opus OUTPUT (the ~91% contributor): Opus no longer re-emits worker findings or long per-turn narration;
+  it ingests a compact handoff (cheap input/cache-read) and emits a short decision. Lowest-effort routine turns
+  reduce Opus reasoning tokens on dispatch/accept/checkpoint. Gating Playwright MCP + auto-skills trims
+  session-context tool overhead. Savings are directional (no measured before/after captured this turn; the
+  caveman-stats hook did not fire via Skill invocation). No model default or pin changed.
+
+pending_action:
+  seq: 87
+  action: >
+    Policy task done. The authoritative open action is the S7 PAUSE recorded at SEQ 85: awaiting maintainer
+    answers to Q1 (S7.1 minimal slice vs full DAG), Q2 (authorize the backward requires_revalidation lifecycle
+    transition + its sources/return/confidence), Q3 (invalidation trigger + source of the derived_from/dependency
+    edge), Q4 (confirm schema.py + lifecycle.py are in §3). On answers, Opus authors SPEC_BRIEF15 and runs the
+    loop under the new thin-Opus discipline. S8 (agent layer) remains a separate pause. No autonomous S7 work
+    before the answers.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked; this task edited those same untracked rails under the context.md authorization. Their commit/home is unchanged and remains the SEQ 55 maintainer-owned question."
