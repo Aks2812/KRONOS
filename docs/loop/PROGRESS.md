@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 79
-derived_at: 2026-10-22T00:10:00Z
+seq: 80
+derived_at: 2026-10-22T15:13:04Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5555,5 +5555,40 @@ pending_action:
     (4) if ALL pass: `gh pr merge <n> --squash --match-head-commit bed025c6305657cab8018f5d3709679caea4e123` —
     NEVER --admin, NEVER --auto. Record new main SHA + PR MERGED in the next block. If ANY prerequisite fails or
     GitHub blocks -> HALT and report; no --admin. Then continue autonomously to S6.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
+
+## SEQ 80 — SPEC_BRIEF13 (S5.1) MERGED to main (PR #21, squash 33ab362); GATE-2 closed; S5 web ingestion delivered; continuing to S6
+seq: 80
+derived_at: 2026-10-22T15:13:04Z
+stage: S5
+phase: S5.1 (first web ingestion source) landed on main via autonomous GATE-2 merge under SEQ 55/SEQ 69 (§6 autonomy). WEB_ENDPOINT/PARAMETER now emitted from OpenAPI-JSON, scope-gated by host-shaped scope_key, best-effort seeded from S3 SERVICE, CyberGym-only.
+
+seq79_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope=7 §3 paths; 2 ruleset
+  void-rule-kronos enforcement=active; 3 isDraft false; 4 state OPEN; 5 independent reviewer PASS + Opus step-5
+  PASS; 6 statusCheckRollup=[] CLEAN; 7 suite raw pytest 3516 passed 1 skipped 0 failed on bed025c; 8 mergeable
+  MERGEABLE + mergeStateStatus CLEAN + head bed025c NOT ancestor of origin/main; 9 self-authorized this turn
+  naming PR #21 + head bed025c; 10 clean tree, only known untracked rails). Executed
+  `gh pr merge 21 --squash --match-head-commit bed025c6305657cab8018f5d3709679caea4e123` — NO --admin, NO --auto.
+  PR #21 state=MERGED, mergedAt 2026-10-22T15:13:04Z. origin/main 079a76f -> squash 33ab362fd7c9a1b70fee246769536b7a1c41d579.
+
+s5_status: >
+  S5 (research record §6: "Web ingestion -> WEB_ENDPOINT, PARAMETER, seeded from S3") DELIVERED by S5.1 as the
+  first web source (OpenAPI-JSON). Conforms to the S2 ingestion contract, FORK-2 scope matcher, CyberGym-only.
+
+next_milestones_available:
+  - "S6 (research record §6): next in the §6 backlog. Opus to scope via researcher before authoring a brief."
+  - "S5 step-5 follow-ups (carried): non-string server url decline; path-key leading-slash normalise; decline-event assert test."
+  - "Housekeeping (optional, outward): delete merged origin branches (claude/s5-web-ingest-brief13 and earlier merged heads)."
+
+pending_action:
+  seq: 80
+  action: >
+    S5.1 complete and merged. Under SEQ 69 autonomous §6 execution (S4->S7; S8 still pauses), continue to S6:
+    dispatch kronos-researcher (claude-sonnet-5) read-only to scope the S6 milestone from research record §6 +
+    repo state, return cited findings; Opus then authors SPEC_BRIEF14, self-approves routine GATE-1, and runs
+    the build/review/merge loop. Pause only on a defined pause condition (e.g. a novel architecture fork like
+    S4's, or S8).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
