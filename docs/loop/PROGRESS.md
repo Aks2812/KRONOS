@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 77
-derived_at: 2026-10-21T00:00:13Z
+seq: 78
+derived_at: 2026-10-22T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: FORK-2
@@ -5480,5 +5480,41 @@ pending_action:
     declined; parameter missing name/in -> declined. (5) Broaden test_H to also patch socket.create_connection.
     Re-run full suite under .venv, 0 failed, refresh totals, commit explicit paths, push. Then Opus verifies +
     re-dispatches the independent reviewer (prereq 5 needs an independent PASS), step-5, GATE-2 (ten in-turn).
+  outcome: pending
+  carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
+
+## SEQ 78 — S5.1 builder attempt 2 COMPLETE (bed025c); Opus scope+semantic PASS; re-dispatching independent reviewer (write-ahead)
+seq: 78
+derived_at: 2026-10-22T00:00:00Z
+stage: S5
+phase: Builder attempt 2 of 3 landed bed025c on claude/s5-web-ingest-brief13. Opus whole-window scope audit + semantic spot-check PASS. Re-dispatching Haiku reviewer for an independent PASS (MERGE-GATE prereq 5). No §3 amendment.
+
+seq77_pending_action_outcome: >
+  COMPLETE. Builder committed bed025c ("review fixes: bad-port never raises, default server http://127.0.0.1,
+  decline 'null', hermetic create_connection. DONE: all 4. Suite 3516 passed 1 skipped."). Opus whole-window
+  scope audit git diff --name-only 079a76f..HEAD = exactly the 7 §3 paths (SPEC_BRIEF13.md, ingest/__init__.py,
+  ingest/web/__init__.py, ingest/web/parser.py, tests/fixtures/web/cybergym_openapi.json, test_infra_validator.py,
+  test_web_ingest.py) — PASS. Semantic spot-check of parser.py:54-79: port read inside try; except ValueError sets
+  host=None; no deref of a None parts; default server base _DEFAULT_SERVER_URL on absent servers[0].url — the §8-H
+  raise and the §2 default both addressed. origin/main still 079a76f (brief base). No PR yet.
+
+opus_assessment:
+  scope: PASS (7/7 §3 paths, whole-window audit)
+  high_fix_present: "parser.py — port/scheme read inside try/except ValueError, host=None on failure, no None-parts deref; plan face no longer raises on bad port."
+  default_server: "parser.py — _DEFAULT_SERVER_URL used when servers[0].url absent/non-str (brief §2)."
+  note: "Independent reviewer must re-verify all four fixes + broadened test_H + the full A-L suite; Opus does not self-substitute for prereq-5 independent review."
+
+circuit_breaker: "Still build attempt 2 of 3 for S5.1; this is verification of that attempt, not a new attempt."
+
+pending_action:
+  seq: 78
+  action: >
+    Dispatch kronos-reviewer (claude-haiku-5-5), isolated from the builder report, with SPEC_BRIEF13 §2/§2a/§8 and
+    the diff 079a76f..HEAD: independently confirm (1) the §8-H bad-port fix declines (never raises) on the plan
+    face; (2) §2 default server base http://127.0.0.1 on absent servers; (3) 'null'/None input declines with an
+    event; (4) parameter missing name/in declines + has a test; (5) test_H patches socket.create_connection;
+    (6) whole-window scope ⊆ §3; (7) §2a seal of brief-12 test_J to 079a76f; and RUN the approved suite (read the
+    SUMMARY: line, not $?). Return verdict + evidence. Then Opus step-5 semantic verify; if PASS, GATE-2 (ten
+    prerequisites re-measured in-turn, open PR, merge within scope). A reviewer FAIL = build attempt 3/3 (last).
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked in the primary checkout; outcome pending — independent of S5."
