@@ -19,6 +19,7 @@ ROOT = Path(__file__).parent
 FIXTURE = ROOT / "fixtures" / "web" / "cybergym_openapi.json"
 NMAP_FIXTURE = ROOT / "fixtures" / "infra" / "cybergym_nmap.xml"
 BRIEF_BASE = "079a76f"
+BRIEF_MERGE = "33ab362"  # brief 13 merged to main (PR #21 squash); seals this audit to brief 13's footprint
 SECTION_3 = {
     "SPEC_BRIEF13.md",
     "src/kronos/ingest/web/__init__.py",
@@ -230,7 +231,7 @@ def test_J_idempotent(g, doc):
 
 def test_K_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT.parent, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT.parent, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
 
