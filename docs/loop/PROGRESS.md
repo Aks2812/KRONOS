@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: S8 (Increment 2)
@@ -6210,8 +6210,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 2)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
@@ -6254,8 +6254,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
 
 ## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 1 build)
 phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
 
@@ -6317,8 +6317,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
 
 ## SEQ 97 — S8.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 1 merge)
 phase: S8.1 agent-layer Increment 1 — reviewed PASS, merging.
 
@@ -6356,8 +6356,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 98 — SPEC_BRIEF16 (S8.1) MERGED to main (PR #24, squash f4559a2); GATE-2 closed; agent-layer Increment 1 delivered; next = Increment 2
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 1 done) -> Increment 2
 phase: S8.1 agent-layer Increment 1 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
 
@@ -6400,8 +6400,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 99 — resuming S8 Increment 2 (autonomous per SEQ 98 + context.md); dispatching researcher for Increment-2 scoping (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 2)
 phase: S8.2 agent-layer Increment 2 — reviewer + rails as the commit gate, no live execution.
 
@@ -6438,8 +6438,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 100 — S8.2 research synthesized; SPEC_BRIEF17 (Increment 2) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 2 build)
 phase: S8.2 agent-layer Increment 2 — reviewer + rails as commit gate, no live execution.
 
@@ -6490,8 +6490,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 101 — S8.2 builder attempt 1 exposed an own-brief cross-brief landmine; SPEC_BRIEF17 amended (§2c); GATE-1 re-approved; resume builder attempt 2/3 (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
 stage: S8 (Increment 2 build, attempt 2/3)
 phase: S8.2 agent-layer Increment 2.
 
@@ -6530,9 +6530,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 102 — S8.2 reviewer FAIL #1 (§8-I partial write); SPEC_BRIEF17 §2b amended to two-phase commit; GATE-1 re-approved; return to builder (review-fix 1/3) (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
-stage: S8 (Increment 2 merge)
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
+stage: S8 (Increment 2 done) -> Increment 3
 phase: S8.2 agent-layer Increment 2.
 
 seq101_pending_action_outcome: >
@@ -6577,9 +6577,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 103 — S8.2 reviewer RE-REVIEW PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 103
-derived_at: 2026-10-23T07:00:00Z
-stage: S8 (Increment 2 merge)
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
+stage: S8 (Increment 2 done) -> Increment 3
 phase: S8.2 agent-layer Increment 2 — reviewed PASS, merging.
 
 seq102_pending_action_outcome: >
@@ -6610,5 +6610,52 @@ pending_action:
     MERGE-GATE prerequisites naming the exact PR number + head e608240; squash-merge
     (--match-head-commit e608240, NO --admin, NO --auto) only if all ten PASS; never on a red prerequisite.
     Then SEQ 104 records the merge outcome.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
+
+## SEQ 104 — SPEC_BRIEF17 (S8.2) MERGED to main (PR #25, squash a9f37ec); GATE-2 closed; agent-layer Increment 2 delivered; next = Increment 3
+seq: 104
+derived_at: 2026-10-23T07:10:00Z
+stage: S8 (Increment 2 done) -> Increment 3
+phase: S8.2 agent-layer Increment 2 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
+
+seq103_pending_action_outcome: >
+  SUCCESS. All ten MERGE-GATE prerequisites re-measured PASS in-turn (1 scope=8 paths ⊆ §3; 2 ruleset
+  void-rule-kronos active; 3 isDraft false; 4 OPEN; 5 reviewer re-review PASS + Opus step-5 PASS; 6
+  statusCheckRollup=[] CLEAN; 7 suite 3622 passed 1 skipped 0 failed on e608240; 8 MERGEABLE + CLEAN +
+  e608240 NOT ancestor of origin/main; 9 self-authorized naming PR #25 + head e608240; 10 tracked tree
+  clean, only known untracked rails). gh pr merge 25 --squash --match-head-commit e608240 — NO --admin,
+  NO --auto. PR #25 MERGED, mergedAt 2026-10-23T05:57:43Z. origin/main f4559a2 -> squash a9f37ec.
+
+delivered:
+  increment_2: >
+    src/kronos/agent/reviewer.py (Reviewer protocol, ReviewVerdict, MockReviewer, validate_verdict,
+    LEGAL_TARGET_TYPES, COMMIT_STATUS) + two-phase commit gate in dispatcher.py. Dispatcher is now the
+    sole graph-writer, gated by validate_verdict (no-upgrade rail: approved verdict must be hypothesis +
+    legal target_type) AND scope_guard.is_in_scope. Atomic (Phase 1 adjudicate-all, Phase 2 commit-only).
+    Committed proposal = FINDING at hypothesis (confidence 0) + vulnerable_to/derived_from edge. No live
+    execution, no network, no promotion. reviewer=None preserves Increment-1 zero-write path.
+  review_history: "reviewer FAIL #1 (§8-I partial write) -> §2b two-phase amend -> re-review PASS (circuit breaker 1/3, never near HALT)."
+  brief_amendments: "§2c (retire dispatcher from no-writer rail); §2b (two-phase for §8-I atomicity); §8-I/§8-J strengthened."
+  pipeline_artifacts: ".claude/pipeline/02-research/findings.md + 03-build/build-report.md saved by Opus."
+  non_blocking_backlog:
+    - "SECRET/WEB_ENDPOINT by-id scope gate fails closed (empty id-shape family, scope_guard.py:231/226); derived_from reachable only via _commit, not run_once in production. Increment 3 must plan the SECRET/web commit/execute path."
+    - "LOW contracts.py:38 'complete' truthiness ('false' string); contracts.py extra-key policy — still Increment-2/3 hardening candidates."
+    - "S7.x DAG deferred; S7.x LOW follow-ups backlog."
+
+loop_runs_this_session:
+  - "S8.0 research + arch-definition."
+  - "S8.1 Increment 1 MERGED PR #24 (f4559a2)."
+  - "S8.2 Increment 2 MERGED PR #25 (a9f37ec)."
+
+pending_action:
+  seq: 104
+  action: >
+    S8.2 (Increment 2) complete and merged. Next within the authorized S8 direction (context.md: Increments
+    1-3) is Increment 3: executor behind the gate, CyberGym range ONLY — the first increment that actually
+    EXECUTES a reviewer-approved proposal against a target (inside the CyberGym range), producing evidence
+    that can promote a FINDING past hypothesis. This is AUTONOMOUS within the authorized S8 direction and
+    CyberGym-only (no live targets, no scope change), BUT it introduces execution, so it is a sensible
+    reporting checkpoint. researcher -> Opus brief + GATE-1 -> builder -> reviewer -> Opus GATE-2.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
