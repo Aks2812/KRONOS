@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 96
-derived_at: 2026-10-23T01:00:00Z
+seq: 97
+derived_at: 2026-10-23T02:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: S8 (research)
@@ -6210,8 +6210,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 96
-derived_at: 2026-10-23T01:00:00Z
+seq: 97
+derived_at: 2026-10-23T02:00:00Z
 stage: S8 (research)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
@@ -6254,8 +6254,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
 
 ## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 96
-derived_at: 2026-10-23T01:00:00Z
+seq: 97
+derived_at: 2026-10-23T02:00:00Z
 stage: S8 (Increment 1 build)
 phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
 
@@ -6315,3 +6315,42 @@ pending_action:
     Haiku reviewer (kronos-reviewer) against the brief + diff + approved tests.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
+
+## SEQ 97 — S8.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 97
+derived_at: 2026-10-23T02:00:00Z
+stage: S8 (Increment 1 merge)
+phase: S8.1 agent-layer Increment 1 — reviewed PASS, merging.
+
+seq96_pending_action_outcome: >
+  SUCCESS. Builder (kronos-builder, claude-sonnet-5) built SPEC_BRIEF16 on
+  claude/s8-agent-increment1-brief16; HEAD 5c82ee1 (22ab4d7 tests, 5c82ee1 impl). Suite SUMMARY: 3586
+  passed, 1 skipped, 0 failed. Opus independently re-verified: whole-window git diff --name-only
+  81796b4..HEAD = 9 paths all in §3; §2a brief-15 seal is 2-spot only (BRIEF_MERGE=81796b4 added, range
+  flipped to ..{BRIEF_MERGE}); zero writer calls in src/kronos/agent/. Builder evidence saved to
+  .claude/pipeline/03-build/build-report.md. One process note: builder's RED run uncaptured (missing kuzu
+  on first run) — non-blocking.
+
+review:
+  reviewer: "kronos-reviewer (claude-haiku-5-5), independent, no build report passed"
+  verdict: "PASS / MERGE — no blocking findings"
+  suite: "SUMMARY: 3586 passed, 1 skipped, 0 failed (rtk test); raw .venv pytest exit 0 zero FAILED; 1 skip pre-existing, not agent-related; 39 agent tests, 56 passed in the three touched files"
+  section_8: "A-N ALL PASS (F hostile-output rejection top+intent; I zero-side-effect invariant node+edge counts unchanged; N no-writer source scan; K sockets patched). Expectations trace to brief prose, no change-detectors."
+  brief_integrity: "brief SHA-256 340a4239...4cb9 matches working file + HEAD blob."
+  non_blocking_findings:
+    - "LOW contracts.py:38 bool(payload.get('complete')) treats string 'false' as truthy — spec-literal ('truthy'); harden in Increment 2."
+    - "LOW test_agent_contracts.py:114-121 test N matches exact writer names, not advance_* prefix nor imports — §8 N lists exact names, PASS."
+    - "LOW test_agent_dispatcher.py:94-104 test K patches socket.socket + socket.create_connection (per §8 K), not getaddrinfo."
+    - "INFO contracts.py:55 extra unknown intent keys silently accepted — brief silent."
+  opus_step5: "PASS. Increment 1 matches research-record §8 (dispatcher skeleton sole-writer/zero writes; read-only planner via kronos.query read helpers; strict contracts reject hostile fields; mock driver; zero LLM/network). Brief §9 done-criteria met. LOW findings all Increment-2 hardening, not blocking."
+
+pending_action:
+  seq: 97
+  action: >
+    SELF-AUTHORIZE GATE-2 merge of SPEC_BRIEF16 (S8.1) under SEQ 55 authority. In the SAME turn as the
+    merge: push claude/s8-agent-increment1-brief16 (HEAD 5c82ee1) to origin; open a PR to main; re-measure
+    all ten MERGE-GATE prerequisites naming the exact PR number + head 5c82ee1; merge by squash
+    (--match-head-commit 5c82ee1, NO --admin, NO --auto) only if all ten PASS; never merge on a red
+    prerequisite. Then SEQ 98 records the merge outcome.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
