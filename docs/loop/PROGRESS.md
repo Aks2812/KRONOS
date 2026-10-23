@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 (Increment 3 build)
+stage: S8 (Increment 3 merge)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6210,9 +6210,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
-stage: S8 (Increment 3 build)
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
+stage: S8 (Increment 3 merge)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
 seq94_pending_action_outcome: >
@@ -6254,8 +6254,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
 
 ## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 1 build)
 phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
 
@@ -6317,8 +6317,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
 
 ## SEQ 97 — S8.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 1 merge)
 phase: S8.1 agent-layer Increment 1 — reviewed PASS, merging.
 
@@ -6356,8 +6356,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 98 — SPEC_BRIEF16 (S8.1) MERGED to main (PR #24, squash f4559a2); GATE-2 closed; agent-layer Increment 1 delivered; next = Increment 2
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 1 done) -> Increment 2
 phase: S8.1 agent-layer Increment 1 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
 
@@ -6400,9 +6400,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 99 — resuming S8 Increment 2 (autonomous per SEQ 98 + context.md); dispatching researcher for Increment-2 scoping (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
-stage: S8 (Increment 3 build)
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
+stage: S8 (Increment 3 merge)
 phase: S8.2 agent-layer Increment 2 — reviewer + rails as the commit gate, no live execution.
 
 seq98_pending_action_outcome: >
@@ -6438,8 +6438,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 100 — S8.2 research synthesized; SPEC_BRIEF17 (Increment 2) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 2 build)
 phase: S8.2 agent-layer Increment 2 — reviewer + rails as commit gate, no live execution.
 
@@ -6490,8 +6490,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 101 — S8.2 builder attempt 1 exposed an own-brief cross-brief landmine; SPEC_BRIEF17 amended (§2c); GATE-1 re-approved; resume builder attempt 2/3 (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 2 build, attempt 2/3)
 phase: S8.2 agent-layer Increment 2.
 
@@ -6530,8 +6530,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 102 — S8.2 reviewer FAIL #1 (§8-I partial write); SPEC_BRIEF17 §2b amended to two-phase commit; GATE-1 re-approved; return to builder (review-fix 1/3) (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 2 done) -> Increment 3
 phase: S8.2 agent-layer Increment 2.
 
@@ -6577,8 +6577,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 103 — S8.2 reviewer RE-REVIEW PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 2 done) -> Increment 3
 phase: S8.2 agent-layer Increment 2 — reviewed PASS, merging.
 
@@ -6614,8 +6614,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 104 — SPEC_BRIEF17 (S8.2) MERGED to main (PR #25, squash a9f37ec); GATE-2 closed; agent-layer Increment 2 delivered; next = Increment 3
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
 stage: S8 (Increment 2 done) -> Increment 3
 phase: S8.2 agent-layer Increment 2 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
 
@@ -6661,9 +6661,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 105 — resuming S8 Increment 3 (autonomous, hermetic executor only); dispatching researcher for scoping (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
-stage: S8 (Increment 3 build)
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
+stage: S8 (Increment 3 merge)
 phase: S8.3 agent-layer Increment 3 — executor behind the gate, CyberGym range only. HERMETIC/mock build; NO live execution in this increment.
 
 seq104_pending_action_outcome: >
@@ -6703,9 +6703,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 106 — S8.3 research synthesized; SPEC_BRIEF18 (Increment 3) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 106
-derived_at: 2026-10-23T07:50:00Z
-stage: S8 (Increment 3 build)
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
+stage: S8 (Increment 3 merge)
 phase: S8.3 agent-layer Increment 3 — executor behind gate, promotion hypothesis->reachable; hermetic/mock, no live execution.
 
 seq105_pending_action_outcome: >
@@ -6751,5 +6751,47 @@ pending_action:
     tests-first (test_agent_executor.py per §8 A-M), then executor.py + the two agent-file edits, then §2a
     brief-17 seal in test_agent_commit.py. Stage explicit paths only. On return: Opus scope-audit + semantic
     review, then dispatch the independent Haiku reviewer.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
+
+## SEQ 107 — S8.3 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
+seq: 107
+derived_at: 2026-10-23T08:10:00Z
+stage: S8 (Increment 3 merge)
+phase: S8.3 agent-layer Increment 3 — reviewed PASS, merging. Completes the context.md S8 Increments 1-3 ladder.
+
+seq106_pending_action_outcome: >
+  SUCCESS. Builder (kronos-builder, claude-sonnet-5) built SPEC_BRIEF18 at aeda521; Opus aligned §8-C wording
+  (own brief defect: committed-unpromoted FINDING keeps create-time confidence 0/<7, not 3) at ace94af — no
+  rebuild (test already asserted <7). Suite SUMMARY: 3636 passed, 1 skipped, 0 failed. Opus audit PASS
+  (6 paths ⊆ §3; Phase-3 promotion via attach_evidence->advance_finding_status gated on succeeded+evidence,
+  only on committed findings; §2a seal 2-spot). Independent reviewer (kronos-reviewer, claude-haiku-5-5, no
+  build report) re-reviewed: PASS / MERGE, no blocking findings.
+
+review:
+  verdict: "PASS / MERGE"
+  suite: "3636 passed, 1 skipped, 0 failed (raw .venv pytest; 28 agent tests)"
+  section_8: "A-M ALL PASS. B promotion(EVIDENCE node+evidences edge kind agent_execution_proof, reachable, confidence 9); C evidenceless not promoted (<7, no EVIDENCE); D failed not promoted; E executor behind gate (spy: saw only committed intent); F engagement_dir ValueError; G backward-compat; H atomicity; I no network; J chokepoints-only; K end-to-end; L/M seals."
+  promotion_correctness: "dispatcher.py:65-77 Phase 3 only if executor not None, only over committed; promote iff outcome.succeeded and evidence is not None; attach_evidence then advance_finding_status; run_once never sets status/confidence directly."
+  no_live_executor: "executor.py defines only Executor protocol + MockExecutor + ExecutionOutcome + EVIDENCE_KIND; no socket/subprocess/http. No concrete live executor."
+  non_blocking_low:
+    - "L-1 test_agent_executor.py:191-193 non-vacuity line weak (substantive run_once body scan at :187-190 is real)."
+    - "L-2 test_agent_executor.py:121-122 stale comment says 'Brief §8 C says confidence 3'; HEAD brief says 0 — misleads reader. Fix in a future cleanup."
+  opus_step5: "PASS. Matches record §8 Increment 3; §9 A-M met. LOW findings non-blocking test-quality; backlog."
+
+branch_and_commits:
+  build_branch: "claude/s8-agent-increment3-brief18"
+  head: "ace94af"
+  key_commits: "fb8c3cd brief · aeda521 build · ace94af §8-C align"
+
+pending_action:
+  seq: 107
+  action: >
+    SELF-AUTHORIZE GATE-2 merge of SPEC_BRIEF18 (S8.3) under SEQ 55. SAME turn as merge: push
+    claude/s8-agent-increment3-brief18 (HEAD ace94af); open PR to main; re-measure all ten MERGE-GATE
+    prerequisites naming the PR number + head ace94af; squash-merge (--match-head-commit ace94af, NO --admin,
+    NO --auto) only if all ten PASS. Then SEQ 108 records the merge and that the context.md S8 Increments 1-3
+    ladder is COMPLETE -> next-direction decision (Increment 4+ loop-breaker/timeout/observability is BEYOND
+    the authorized 1-3 grant = pause condition #2).
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
