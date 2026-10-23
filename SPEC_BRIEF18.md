@@ -131,7 +131,10 @@ B. **Promotion happy path** — with a committed FINDING at `hypothesis`, an exe
    `agent_execution_proof`), advance the finding to `reachable`, and include its id in
    `DispatcherResult.promoted`; `derive`d confidence is `9` (reachable with evidence).
 C. **G3 evidenceless rail** — an outcome `succeeded=True, evidence=None` does **not** promote: the finding
-   stays `hypothesis` (confidence `3`), no EVIDENCE node/edge is created, and `promoted == ()`.
+   stays `hypothesis` with its **commit-time confidence unchanged** — the unpromoted finding never passes
+   through `advance_finding_status`/`derive_confidence`, so its confidence stays the create value `0`
+   (certainly `< 7`, below the `reachable` floor) — no EVIDENCE node/edge is created, and `promoted == ()`.
+   (Assert `confidence < 7` and status `hypothesis`, not a specific promoted value.)
 D. **Failed execution** — an outcome `succeeded=False` (with or without evidence) does **not** promote:
    finding stays `hypothesis`; `promoted == ()`.
 E. **Executor is behind the gate** — a proposal that was rejected or out-of-scope (never committed in
