@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 95
-derived_at: 2026-10-23T00:00:00Z
+seq: 96
+derived_at: 2026-10-23T01:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: S8 (research)
@@ -6210,8 +6210,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 95
-derived_at: 2026-10-23T00:00:00Z
+seq: 96
+derived_at: 2026-10-23T01:00:00Z
 stage: S8 (research)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
@@ -6252,3 +6252,66 @@ pending_action:
     product code this turn.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
+
+## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+seq: 96
+derived_at: 2026-10-23T01:00:00Z
+stage: S8 (Increment 1 build)
+phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
+
+seq95_pending_action_outcome: >
+  SUCCESS. Sonnet researcher (kronos-researcher, alias claude-sonnet-5) returned cited S8.0 scoping
+  findings (26 tool uses); Opus saved them to .claude/pipeline/02-research/findings.md and retrieved the
+  research-record S8 design itself (RR.md §6:1318 + §8:1649-1665) because the read-only researcher had no
+  git access to kronos/loop-state. S8 design is PRE-DECIDED by the record: spine = one deterministic
+  dispatcher loop as sole graph-writer; planner(reason, read-only) + executor(explore) as structured
+  proposers; KRONOS reviewer fills Cairn's evidenceless slot; scope_guard/lifecycle/budget/cleanup are hard
+  rails; strict JSON contracts + mock driver = deterministic tests. Increments (RR.md:1663): 1 dispatcher
+  skeleton + read-only planner, zero side effects, strict contracts, mock driver · 2 reviewer + rails commit
+  gate, no live execution · 3 executor behind gate, CyberGym-only · 4+ loop-breaker/timeout/observability.
+
+milestone_and_exit_criteria:
+  s8_milestone: "Agent layer Increments 1-3 (RR.md §6:1318, Goal G2), built increment-by-increment."
+  this_brief: "Increment 1 ONLY (SPEC_BRIEF16 = S8.1)."
+  exit_criteria_increment_1: >
+    §8 A-N pass, 0 failed; the dispatcher run performs ZERO graph side effects (node+edge counts identical
+    before/after a full run — the Increment-1 invariant); strict contract rejects hostile payloads
+    (status/in_scope/confidence/merged_into) at the boundary; mock-driver end-to-end runs at zero LLM/zero
+    network; purely additive (new src/kronos/agent/ package of 5 modules + 2 new test files + brief-15 seal);
+    no existing source module edited; whole-window scope audit 81796b4..HEAD ⊆ §3. Increments 2 (reviewer +
+    rails commit gate) and 3 (executor) are explicitly OUT OF SCOPE here.
+
+gate_1:
+  decision: SELF-APPROVED
+  authority: "SEQ 55 authority model + /home/void/context.md 2026-10-23 (SEQ 95 authorization)."
+  validation: >
+    Brief validated against researcher findings + research-record §8. Increment 1 introduces NO graph node
+    type, NO edge label, NO schema/scope_guard/lifecycle change (writes nothing to the graph), touches NO
+    hard-boundary file (manifest.py/.github/cybergym untouched), is CyberGym-only with no live network. The
+    cross-brief landmine is handled: §2a seals brief-15's test_invalidation.py ..HEAD audit to 81796b4.
+
+branch_and_commits:
+  build_branch: "claude/s8-agent-increment1-brief16 (off origin/main @ 81796b4)"
+  brief_commit: "8bed324 docs(SPEC_BRIEF16)"
+
+scope_section_3_permitted:
+  - SPEC_BRIEF16.md
+  - src/kronos/agent/__init__.py (new)
+  - src/kronos/agent/contracts.py (new)
+  - src/kronos/agent/drivers.py (new)
+  - src/kronos/agent/planner.py (new)
+  - src/kronos/agent/dispatcher.py (new)
+  - tests/test_agent_contracts.py (new)
+  - tests/test_agent_dispatcher.py (new)
+  - tests/test_invalidation.py (edit: §2a brief-15 seal ONLY, two spots)
+
+pending_action:
+  seq: 96
+  action: >
+    Dispatch the Sonnet builder (kronos-builder, claude-sonnet-5) to implement SPEC_BRIEF16 strictly within
+    §3: tests-first (test_agent_contracts.py + test_agent_dispatcher.py per §8 A-N), then the
+    src/kronos/agent/ package, then the §2a brief-15 seal in test_invalidation.py. Stage explicit paths only,
+    never git add -A. On builder return: Opus scope-audit + semantic review, then dispatch the independent
+    Haiku reviewer (kronos-reviewer) against the brief + diff + approved tests.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
