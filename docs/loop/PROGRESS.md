@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: S8 (Increment 2)
@@ -6210,8 +6210,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 stage: S8 (Increment 2)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
@@ -6254,8 +6254,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
 
 ## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 stage: S8 (Increment 1 build)
 phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
 
@@ -6317,8 +6317,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
 
 ## SEQ 97 — S8.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 stage: S8 (Increment 1 merge)
 phase: S8.1 agent-layer Increment 1 — reviewed PASS, merging.
 
@@ -6356,8 +6356,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 98 — SPEC_BRIEF16 (S8.1) MERGED to main (PR #24, squash f4559a2); GATE-2 closed; agent-layer Increment 1 delivered; next = Increment 2
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 stage: S8 (Increment 1 done) -> Increment 2
 phase: S8.1 agent-layer Increment 1 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
 
@@ -6400,8 +6400,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 99 — resuming S8 Increment 2 (autonomous per SEQ 98 + context.md); dispatching researcher for Increment-2 scoping (write-ahead)
-seq: 99
-derived_at: 2026-10-23T05:30:00Z
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
 stage: S8 (Increment 2)
 phase: S8.2 agent-layer Increment 2 — reviewer + rails as the commit gate, no live execution.
 
@@ -6434,5 +6434,57 @@ pending_action:
     brief can decide whether to touch schema.py/scope_guard.py or reuse existing types); (4) the current
     brief-16 scope-audit landmine to seal (tests/test_agent_dispatcher.py BRIEF_BASE=81796b4 ..HEAD → seal to
     f4559a2). Returns cited findings; Opus saves to 02-research/findings.md, then authors SPEC_BRIEF17.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
+
+## SEQ 100 — S8.2 research synthesized; SPEC_BRIEF17 (Increment 2) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+seq: 100
+derived_at: 2026-10-23T05:50:00Z
+stage: S8 (Increment 2 build)
+phase: S8.2 agent-layer Increment 2 — reviewer + rails as commit gate, no live execution.
+
+seq99_pending_action_outcome: >
+  SUCCESS. Sonnet researcher (kronos-researcher, claude-sonnet-5, 32 tool uses) returned cited Increment-2
+  findings; Opus saved them to .claude/pipeline/02-research/findings.md. Key: no reviewer exists in code;
+  a hypothesis-tier FINDING + vulnerable_to/derived_from edge is an existing schema-legal record, so
+  Increment 2 stays ADDITIVE (no schema.py/scope_guard.py edit); upsert_node STAMPS in_scope but does NOT
+  reject out-of-scope (graph.py:147-151), so the commit gate checks scope explicitly and skips the write;
+  the only live unsealed ..HEAD audit is tests/test_agent_dispatcher.py:109.
+
+design_decisions_opus:
+  - "Intent/contracts.py UNCHANGED (would break merged Increment-1 tests). Commit params (target_type, status) live on a NEW ReviewVerdict contract."
+  - "Reviewer is OPTIONAL on the dispatcher (reviewer=None -> exact Increment-1 zero-side-effect behaviour preserved, backward-compatible)."
+  - "No-upgrade rail = validate_verdict rejects any approved verdict whose status != 'hypothesis' or whose target_type is not in LEGAL_TARGET_TYPES (the 8 types legal for vulnerable_to/derived_from). This is the testable 'downgrade never upgrade' (locked decision 9)."
+  - "Commit = upsert_node('FINDING', hypothesis) + one edge; out-of-scope/rejected/upgraded -> write nothing. No advance_finding_status, no network, no live execution."
+
+gate_1:
+  decision: SELF-APPROVED
+  authority: "SEQ 55 authority model + context.md 2026-10-23 (S8 Increments 1-3)."
+  validation: >
+    Validated against researcher findings + record §8/locked-decision-9. Additive: one new reviewer.py + two
+    small edits to Increment-1 agent files (dispatcher.py optional reviewer+commit, __init__.py exports) +
+    two new test files + the brief-16 seal. No schema/scope_guard/lifecycle/graph/non-agent-source edit. No
+    hard-boundary file. CyberGym-only, no live network. Landmine: §2a seals test_agent_dispatcher.py:109 to f4559a2.
+
+branch_and_commits:
+  build_branch: "claude/s8-agent-increment2-brief17 (off origin/main @ f4559a2)"
+  brief_commit: "f28d001 docs(SPEC_BRIEF17)"
+
+scope_section_3_permitted:
+  - SPEC_BRIEF17.md
+  - src/kronos/agent/reviewer.py (new)
+  - src/kronos/agent/dispatcher.py (edit: optional reviewer + commit gate + committed field)
+  - src/kronos/agent/__init__.py (edit: export reviewer surface only)
+  - tests/test_agent_reviewer.py (new)
+  - tests/test_agent_commit.py (new)
+  - tests/test_agent_dispatcher.py (edit: §2a brief-16 seal ONLY, two spots)
+
+pending_action:
+  seq: 100
+  action: >
+    Dispatch the Sonnet builder (kronos-builder, claude-sonnet-5) to implement SPEC_BRIEF17 strictly within
+    §3: tests-first (test_agent_reviewer.py + test_agent_commit.py per §8 A-O), then reviewer.py + the two
+    agent-file edits, then the §2a brief-16 seal in test_agent_dispatcher.py. Stage explicit paths only. On
+    return: Opus scope-audit + semantic review, then dispatch the independent Haiku reviewer.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
