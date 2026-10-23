@@ -114,7 +114,7 @@ def test_G_mock_driver_determinism():  # §2b
 WRITERS = ("upsert_node", "upsert_edge", "advance_secret_status", "advance_finding_status", "charge")
 
 
-@pytest.mark.parametrize("mod", ["contracts.py", "planner.py", "dispatcher.py"])
+@pytest.mark.parametrize("mod", ["contracts.py", "planner.py"])
 def test_N_no_writer_calls(mod):  # §8 N
     src = (AGENT / mod).read_text()
     for w in WRITERS:

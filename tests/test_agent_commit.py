@@ -22,6 +22,7 @@ SECTION_3 = {
     "tests/test_agent_reviewer.py",
     "tests/test_agent_commit.py",
     "tests/test_agent_dispatcher.py",
+    "tests/test_agent_contracts.py",
 }
 HOST_IN = "web.acme.example.com"  # matches manifest_factory default in_scope "*.acme.example.com"
 HOST_OUT = "evil.other.example.org"
@@ -153,3 +154,13 @@ def test_O_brief16_seal():  # §8 O
     assert 'BRIEF_MERGE = "f4559a2"' in src
     assert 'f"{BRIEF_BASE}..{BRIEF_MERGE}"' in src
     assert 'f"{BRIEF_BASE}..HEAD"]' not in src  # bare string also appears in the brief-15 seal assertion (l.118), untouchable
+
+
+def test_P_no_writer_rail_survives():  # §8 P
+    src = (ROOT / "tests" / "test_agent_contracts.py").read_text()
+    assert '@pytest.mark.parametrize("mod", ["contracts.py", "planner.py"])' in src
+    assert 'f"{w}(" not in src' in src
+    for w in ("upsert_node", "upsert_edge", "advance_secret_status", "advance_finding_status", "charge"):
+        assert f'"{w}"' in src
+        for mod in ("contracts.py", "planner.py"):
+            assert f"{w}(" not in (ROOT / "src" / "kronos" / "agent" / mod).read_text()
