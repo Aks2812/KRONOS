@@ -14,6 +14,7 @@ from kronos.schema import ALL_NODE_TABLES
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "f4559a2"
+BRIEF_MERGE = "a9f37ec"  # brief 17 merged to main (PR #25 squash); seals this audit to brief 17's footprint
 SECTION_3 = {
     "SPEC_BRIEF17.md",
     "src/kronos/agent/reviewer.py",
@@ -160,7 +161,7 @@ def test_M_no_live_network(g, nonet):  # §8 M
 
 def test_N_scope_audit():  # §8 N
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
 
