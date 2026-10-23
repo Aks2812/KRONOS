@@ -36,9 +36,14 @@ def run_once(engagement, driver: Driver, reviewer: Reviewer | None = None) -> Di
     result = plan(summarize(engagement), driver)
     committed: list[str] = []
     if reviewer is not None and not result.complete:
+        # Phase 1: adjudicate every intent; no writes, so a violation leaves the graph untouched.
+        verdicts = []
         for intent in result.intents:
             verdict = reviewer.review(intent)
             validate_verdict(verdict)
+            verdicts.append((intent, verdict))
+        # Phase 2: commit.
+        for intent, verdict in verdicts:
             if verdict.approved and engagement.scope.is_in_scope(
                 intent.target_id, node_type=verdict.target_type, target_kind="id"
             ):

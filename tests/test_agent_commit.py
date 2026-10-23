@@ -106,6 +106,20 @@ def test_I_hostile_verdict(g, bad):  # §8 I
     assert _counts(g) == before
 
 
+def test_I_multi_intent_atomic(g):  # §8 I (two-phase: later hostile verdict, earlier approved)
+    from kronos.agent import MockDriver as D
+
+    for bad in (ReviewVerdict(True, "HOST", "exploited"), ReviewVerdict(True, "IDENTITY", "hypothesis")):
+        before = _counts(g)
+        drv = D([{"intents": [
+            {"kind": "a", "target_id": HOST_IN, "rationale": "r"},
+            {"kind": "b", "target_id": HOST_IN, "rationale": "r"},
+        ]}])
+        with pytest.raises(ReviewViolation):
+            run_once(g, drv, MockReviewer([OK, bad]))
+        assert _counts(g) == before
+
+
 def test_J_no_forbidden_columns():  # §8 J
     import inspect
 
@@ -113,7 +127,9 @@ def test_J_no_forbidden_columns():  # §8 J
     for col in ("confidence", "in_scope", "merged_into", '"id"'):
         assert col not in src
     assert "advance_finding_status" not in src
-    assert '"status": "hypothesis"' in src or "COMMIT_STATUS" in src
+    from kronos.agent import COMMIT_STATUS
+
+    assert COMMIT_STATUS == "hypothesis" and '"status": COMMIT_STATUS' in src
 
 
 def test_K_backward_compat_zero_side_effects(g, nonet):  # §8 K
