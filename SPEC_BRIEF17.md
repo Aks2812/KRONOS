@@ -63,10 +63,16 @@ reviewer contract, so Increment 1's merged tests keep passing.
   `committed: tuple[str, ...] = ()` (the FINDING ids committed this step).
 - `run_once(engagement, driver, reviewer=None) -> DispatcherResult` — add the optional `reviewer`
   parameter. When `reviewer is None`, behaviour is **exactly Increment 1** (plan only; `committed == ()`;
-  zero side effects). When a `reviewer` is given and the result is not `complete`, for each proposed
-  `Intent`: `verdict = reviewer.review(intent)`; `validate_verdict(verdict)`; **commit iff**
-  `verdict.approved` **and** `engagement.scope.is_in_scope(intent.target_id,
-  node_type=verdict.target_type, target_kind="id")` is true — otherwise write nothing for that intent.
+  zero side effects). When a `reviewer` is given and the result is not `complete`, run in **two phases so a
+  later rejection never leaves a partial write** (§8-I, SEQ 102 amendment):
+  - **Phase 1 — adjudicate, no writes.** For *every* proposed `Intent`, call `verdict =
+    reviewer.review(intent)` then `validate_verdict(verdict)`, collecting the `(intent, verdict)` pairs.
+    If any verdict raises `ReviewViolation`, it propagates here — **before any `upsert_*`** — so the graph
+    is left completely untouched.
+  - **Phase 2 — commit.** For each adjudicated pair, **commit iff** `verdict.approved` **and**
+    `engagement.scope.is_in_scope(intent.target_id, node_type=verdict.target_type, target_kind="id")` —
+    otherwise write nothing for that pair. Phase 2 performs only `upsert_*` and never raises on an
+    already-validated verdict, so either all eligible commits land or (on a Phase-1 violation) none do.
 - `run(engagement, driver, *, max_steps, reviewer=None)` — thread `reviewer` through to `run_once`
   (keyword-only addition; existing callers unaffected).
 - **Commit** (new private helper `_commit(engagement, intent, verdict) -> str`): deterministic
@@ -155,11 +161,16 @@ G. **Out-of-scope → writes nothing** — with a manifest that excludes the tar
    `DispatcherResult.committed == ()`.
 H. **Rejected → writes nothing** — a reviewer returning `approved=False` commits nothing (counts
    unchanged, `committed == ()`).
-I. **Hostile verdict → writes nothing** — a reviewer returning an approved verdict with a non-`hypothesis`
-   status or an illegal target_type causes `run_once` to raise `ReviewViolation` and the graph is unchanged
-   (node+edge counts identical; nothing partially written).
+I. **Hostile verdict → nothing partially written (atomic, two-phase)** — a run with **multiple** intents
+   where a **later** verdict is hostile (non-`hypothesis` status or illegal target_type) raises
+   `ReviewViolation` and the graph is **completely unchanged** — node and edge counts identical to before
+   the run, with **no** FINDING or edge from any **earlier** approved/in-scope intent (Phase 1 adjudicates
+   all intents before Phase 2 commits any). The single-intent hostile case is also covered. Measure
+   node+edge counts before and after and assert equality.
 J. **No forbidden columns** — the commit never passes `confidence`/`in_scope`/`merged_into`/`id` to
-   `upsert_node`, and sets `status` only at create (structural/source assertion on `dispatcher.py`).
+   `upsert_node`, and sets `status` only at create (structural/source assertion on `dispatcher.py`). The
+   assertion must **actually fail** if a forbidden column were present — no always-true disjunct
+   (e.g. `or "COMMIT_STATUS" in src`) that makes the check vacuous.
 K. **Backward-compatible zero-side-effect path** — `run_once(engagement, driver)` and `run(engagement,
    driver, max_steps=N)` **with no reviewer** still perform zero side effects (node+edge counts identical
    before/after) and return `committed == ()` — Increment 1's invariant is preserved.
