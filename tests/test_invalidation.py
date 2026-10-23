@@ -27,6 +27,7 @@ from kronos.validate.types import ValidationOutcome
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "17d38a8"
+BRIEF_MERGE = "81796b4"  # brief 15 merged to main (PR #23 squash); seals this audit to brief 15's footprint
 SECTION_3 = {
     "SPEC_BRIEF15.md",
     "src/kronos/schema.py",
@@ -224,7 +225,7 @@ def test_J_no_network(env):
 
 def test_K_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
 
