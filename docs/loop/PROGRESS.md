@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 94
-derived_at: 2026-10-22T20:15:00Z
+seq: 95
+derived_at: 2026-10-23T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: FORK-2
+stage: S8 (research)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6208,3 +6208,47 @@ pending_action:
     Loop PAUSED for next-direction; no autonomous scope expansion into S8 or deferred S7.x.
   outcome: pending
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
+
+## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
+seq: 95
+derived_at: 2026-10-23T00:00:00Z
+stage: S8 (research)
+phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
+
+seq94_pending_action_outcome: >
+  RESOLVED. SEQ 94 paused for a next-direction decision (pause condition #2). Maintainer ruled via
+  /home/void/context.md (2026-10-23): "Authorize A: begin S8 as the next KRONOS milestone." S7.1 recorded
+  COMPLETE. S7.x any_of/blocked_by DAG extension stays DEFERRED. S7.x LOW test+doc follow-ups retained as
+  NON-BLOCKING backlog. No autonomous scope change was taken before this ruling.
+
+authorization:
+  source: "/home/void/context.md, 2026-10-23 (maintainer)"
+  grant: >
+    Begin S8 with a BOUNDED research and architecture-definition phase for the KRONOS agent layer. Focus:
+    orchestration, task contracts, tool interfaces, validation gates, evidence flow, failure handling, and the
+    relationship between the new agent layer and the completed web/infrastructure capabilities. Dispatch the
+    Sonnet researcher first; Opus assesses evidence, defines the bounded S8 milestone + exit criteria, then
+    continues the established autonomous researcher -> Opus -> builder -> Haiku reviewer -> Opus workflow within
+    this approved direction.
+  boundaries_unchanged: >
+    CyberGym-only; existing authorization boundaries; NO live-target testing; no scope expansion beyond the
+    agent-layer direction authorized here. §4 hard boundaries intact. Pause ONLY if S8 requires a material
+    change to KRONOS goals, authorization boundaries, or core architecture beyond this agent-layer direction.
+
+live_repo_verified:
+  origin_main: 81796b4884559fc346f473e0595ca157cdc48c14
+  pr_23: "MERGED @ 81796b4 (mergedAt 2026-10-22T16:46:32Z)"
+  open_prs: "#13, #14 — pre-existing stale drafts, unrelated to S8"
+  worktree: "fresh loop-state worktree in session scratchpad @ 166c9bc before this write"
+
+pending_action:
+  seq: 95
+  action: >
+    Dispatch the Sonnet researcher (claude-sonnet-5, kronos-researcher agent) for a READ-ONLY S8.0 scoping pass:
+    map the current KRONOS pipeline/runner architecture and the completed web/infra capabilities, and gather
+    cited evidence on how an agent layer would attach — orchestration, task contracts, tool interfaces,
+    validation gates, evidence flow, failure handling. Researcher RETURNS cited findings; Opus saves them to
+    02-research/findings.md, then defines the bounded S8 milestone + exit criteria. NO build, NO file edits to
+    product code this turn.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
