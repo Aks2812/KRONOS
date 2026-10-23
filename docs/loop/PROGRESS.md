@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 98
-derived_at: 2026-10-23T05:05:00Z
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 (research)
+stage: S8 (Increment 2)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6210,9 +6210,9 @@ pending_action:
   carried_forward_rails: "SEQ 55 rails edits still untracked; unchanged. Thin-Opus policy edits (SEQ 86/87) also live in those untracked rails."
 
 ## SEQ 95 — MAINTAINER AUTHORIZED OPTION A: BEGIN S8 AGENT LAYER (bounded research + architecture-definition phase); dispatching Sonnet researcher (write-ahead)
-seq: 98
-derived_at: 2026-10-23T05:05:00Z
-stage: S8 (research)
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
+stage: S8 (Increment 2)
 phase: S8.0 bounded research + architecture-definition for the KRONOS agent layer.
 
 seq94_pending_action_outcome: >
@@ -6254,8 +6254,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branch; unchanged."
 
 ## SEQ 96 — S8.0 research synthesized; SPEC_BRIEF16 (S8.1 = agent-layer Increment 1) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
-seq: 98
-derived_at: 2026-10-23T05:05:00Z
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
 stage: S8 (Increment 1 build)
 phase: S8.1 agent-layer Increment 1 — dispatcher skeleton + read-only planner, zero side effects, strict contracts, mock driver.
 
@@ -6317,8 +6317,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files on the work branches; unchanged."
 
 ## SEQ 97 — S8.1 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push branch + open PR + re-measure ten prerequisites in-turn (write-ahead)
-seq: 98
-derived_at: 2026-10-23T05:05:00Z
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
 stage: S8 (Increment 1 merge)
 phase: S8.1 agent-layer Increment 1 — reviewed PASS, merging.
 
@@ -6356,8 +6356,8 @@ pending_action:
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
 
 ## SEQ 98 — SPEC_BRIEF16 (S8.1) MERGED to main (PR #24, squash f4559a2); GATE-2 closed; agent-layer Increment 1 delivered; next = Increment 2
-seq: 98
-derived_at: 2026-10-23T05:05:00Z
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
 stage: S8 (Increment 1 done) -> Increment 2
 phase: S8.1 agent-layer Increment 1 landed on main via autonomous GATE-2 merge (SEQ 55 + context.md 2026-10-23).
 
@@ -6396,5 +6396,43 @@ pending_action:
     the hard rails (scope_guard/lifecycle/budget/cleanup). This is AUTONOMOUS within the authorized S8
     direction (not a pause condition): researcher -> Opus brief + GATE-1 self-approve -> builder -> reviewer
     -> Opus GATE-2. Loop reporting checkpoint only; continuation needs no maintainer approval.
+  outcome: pending
+  carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
+
+## SEQ 99 — resuming S8 Increment 2 (autonomous per SEQ 98 + context.md); dispatching researcher for Increment-2 scoping (write-ahead)
+seq: 99
+derived_at: 2026-10-23T05:30:00Z
+stage: S8 (Increment 2)
+phase: S8.2 agent-layer Increment 2 — reviewer + rails as the commit gate, no live execution.
+
+seq98_pending_action_outcome: >
+  CONTINUING. SEQ 98 recorded Increment 1 merged (PR #24, f4559a2) and named Increment 2 as the autonomous
+  next step within the maintainer-authorized S8 direction (context.md 2026-10-23: Increments 1-3). No pause
+  condition applies. /kronos-continue re-verified: highest block SEQ 98, origin/main f4559a2, PR #24 MERGED.
+  Top header stage lagged ("S8 (research)"); carried forward to "S8 (Increment 2)" in this same write-ahead
+  commit per the no-correction-loop rule.
+
+increment_2_scope_intent: >
+  Record §8 (RR.md:1649-1665) + locked decision 9 (reviewer LLM may downgrade, NEVER upgrade) + §4.8
+  (reviewer fills Cairn's evidenceless slot; control plane sole writer). Increment 2 = the dispatcher, given
+  the planner's validated proposals, runs each through a REVIEWER (structured; mock in tests) that may reject
+  or downgrade but never upgrade, and commits approved proposals to the graph ONLY through the existing hard
+  rails (scope_guard in-scope + lifecycle chokepoint) at hypothesis tier — NO live execution (executor is
+  Increment 3). Rejected/out-of-scope/hostile proposals write nothing. Exact graph representation and any
+  schema/scope_guard touch to be scoped by the researcher BEFORE Opus authors the brief, to avoid the
+  node-type-shape (NODE_TYPE_SHAPE_EVIDENCE) and EDGE_PAIRS landmines.
+
+pending_action:
+  seq: 99
+  action: >
+    Dispatch the Sonnet researcher (kronos-researcher, claude-sonnet-5) READ-ONLY to scope Increment 2:
+    (1) how the KRONOS reviewer concept is defined today and where (locked decision 9 downgrade-only); (2) the
+    exact write path a dispatcher commit must use (upsert_node/upsert_edge + advance_finding_status chokepoint
+    + scope_guard.is_in_scope gate) and what minimal graph record represents a reviewer-approved,
+    not-yet-executed proposal (e.g. a FINDING at hypothesis tier); (3) whether that record needs a NEW node
+    type / edge label / NODE_TYPE_SHAPE_EVIDENCE row / schema DDL (and if so, cite the exact lines so the
+    brief can decide whether to touch schema.py/scope_guard.py or reuse existing types); (4) the current
+    brief-16 scope-audit landmine to seal (tests/test_agent_dispatcher.py BRIEF_BASE=81796b4 ..HEAD → seal to
+    f4559a2). Returns cited findings; Opus saves to 02-research/findings.md, then authors SPEC_BRIEF17.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
