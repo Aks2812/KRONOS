@@ -99,6 +99,18 @@ No edit to `contracts.py`, `planner.py`, `drivers.py`, `schema.py`, `scope_guard
 (`81796b4..f4559a2` is exactly brief-16's merged paths.) Do **not** touch `test_agent_dispatcher.py:117-118`
 (the brief-15-seal assertion strings for `test_invalidation.py`) or any other line.
 
+## §2c — Retire the dispatcher from the Increment-1 no-writer rail (AMENDMENT, SEQ 101)
+Increment 1 shipped `tests/test_agent_contracts.py::test_N_no_writer_calls`, parametrized over
+`["contracts.py", "planner.py", "dispatcher.py"]` (`test_agent_contracts.py:117`), asserting none of the
+three contains a writer call (`upsert_node(`/`upsert_edge(`/`advance_*`/`charge`). Increment 2 makes the
+dispatcher the **sole graph-writer** (record §8 "control plane sole writer") via `_commit` in §2(b), so
+`dispatcher.py` must now contain `upsert_node(`/`upsert_edge(`. The no-writer rail's real intent — that the
+planner and the contract layer never write — is **preserved and still enforced**: edit `test_N`'s
+`parametrize` list to drop **only** `"dispatcher.py"`, leaving `["contracts.py", "planner.py"]`. Change
+**only** that one list; do not weaken the assertion body, and do not remove `contracts.py` or `planner.py`.
+The dispatcher's write discipline is instead enforced by §8-J (no forbidden columns; `status` set only at
+create) and by the commit gate's scope/verdict checks.
+
 ## §3 — Permitted files (ONLY these; whole-window `git diff --name-only f4559a2..HEAD` ⊆ set)
 1. `SPEC_BRIEF17.md`
 2. `src/kronos/agent/reviewer.py` (new)
@@ -107,6 +119,7 @@ No edit to `contracts.py`, `planner.py`, `drivers.py`, `schema.py`, `scope_guard
 5. `tests/test_agent_reviewer.py` (new)
 6. `tests/test_agent_commit.py` (new)
 7. `tests/test_agent_dispatcher.py` (edit: §2a brief-16 seal ONLY — two spots)
+8. `tests/test_agent_contracts.py` (edit: §2c — drop `"dispatcher.py"` from `test_N`'s `parametrize` list ONLY)
 
 Base = `origin/main` @ `f4559a2`. Never `git add -A`; stage explicit paths only.
 Do **NOT** edit `contracts.py`, `planner.py`, `drivers.py`, `schema.py`, `scope_guard.py`, `lifecycle.py`,
@@ -159,14 +172,22 @@ M. **No live network** — monkeypatch both `socket.socket` and `socket.create_c
 N. **Scope audit (whole window)** — `git diff --name-only f4559a2..HEAD` ⊆ the §3 set (audit the whole
    window, not just expected files). This test defines `BRIEF_BASE = "f4559a2"` and uses
    `f"{BRIEF_BASE}..HEAD"`.
-O. **Brief-16 seal** — `tests/test_agent_dispatcher.py` contains `BRIEF_MERGE = "f4559a2"`, uses
-   `f"{BRIEF_BASE}..{BRIEF_MERGE}"`, and no longer contains `f"{BRIEF_BASE}..HEAD"` (the §2a seal landed,
-   seal-only).
+O. **Brief-16 seal** — `tests/test_agent_dispatcher.py` contains `BRIEF_MERGE = "f4559a2"` and its diff-range
+   call uses `f"{BRIEF_BASE}..{BRIEF_MERGE}"` (the §2a seal landed, seal-only). Note: the bare literal
+   `f"{BRIEF_BASE}..HEAD"` legitimately still appears inside the unrelated brief-15 seal-assertion string
+   (`test_agent_dispatcher.py:118`, which §2a forbids touching), so assert on the **range call** —
+   `f"{BRIEF_BASE}..HEAD"]` (the diff invocation with its closing bracket) is **absent** — not on the bare
+   string.
+P. **No-writer rail survives (§2c)** — `tests/test_agent_contracts.py::test_N_no_writer_calls` is
+   parametrized over exactly `["contracts.py", "planner.py"]` (no `"dispatcher.py"`), and still asserts
+   each contains no `upsert_node(`/`upsert_edge(`/`advance_secret_status(`/`advance_finding_status(`/
+   `charge(`. `src/kronos/agent/contracts.py` and `src/kronos/agent/planner.py` remain writer-free.
 
 ## §9 — Done when
-A–O pass under the project suite with 0 failed (totals refreshed as the final edit, after the last suite
+A–P pass under the project suite with 0 failed (totals refreshed as the final edit, after the last suite
 run, per CLAUDE.md §4), the whole-window scope audit holds, the change is additive (one new `reviewer.py`,
-two small edits to Increment-1 agent files, two new test files, plus the brief-16 seal), a committed
+two small edits to Increment-1 agent files, two new test files, the brief-16 seal, and the §2c one-line
+test_N parametrize edit), a committed
 proposal is a FINDING at `hypothesis` only (no promotion, no live execution, no network), out-of-scope /
 rejected / upgraded proposals write nothing, and no non-agent source module is edited. CyberGym-only,
 hermetic, no live targets, no live network.
