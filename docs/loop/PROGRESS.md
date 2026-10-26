@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 123
+seq: 124
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 observability rung; SPEC_BRIEF21 GATE-2 merge (SEQ 123)
+stage: S8 Increment 4 all rungs MERGED (loop-breaker + conclude-on-timeout + observability); next-direction pause (SEQ 124)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7054,4 +7054,19 @@ action: self-authorize GATE-2 SPEC_BRIEF21; push branch claude/s8-agent-incremen
 brief: SPEC_BRIEF21.md sha256 ea4411b00cd447cef6c5a4118f4ab4af622c7b0f82195cbdc94226fedde98e77; base main 5803bcd; head d9ec3e4.
 constraints: within option-A/observability scope (hermetic Increment 4 agent-layer); never merge on a red prereq; no scope expansion.
 outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 124 — SPEC_BRIEF21 (S8.4 Increment 4 observability) MERGED main (PR #29, squash 1405ed7); Increment 4 ladder complete; next-direction pause
+
+seq: 124
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 ladder complete (loop-breaker + conclude-on-timeout @ 5803bcd + observability @ 1405ed7); next-direction pause
+seq123_pending_action_outcome: SUCCESS — ten MERGE-GATE prereqs re-measured PASS in-turn (1 scope=4 §3; 2 void-rule-kronos 25333712 active; 3 draft=false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 3646 passed/1 skipped/0 failed head d9ec3e4; 8 MERGEABLE CLEAN + head NOT-ancestor origin/main; 9 PR #29 head=d9ec3e4; 10 tree clean, only known untracked rails). Merged --squash --match-head-commit d9ec3e4, NO --admin, NO --auto. PR #29 MERGED 2026-10-26T02:37:52Z; origin/main 5803bcd..1405ed7.
+findings_carried: R21-1/R21-2 INFO only (summarize_run([]) IndexError, brief-excluded; no §8-O gap). No blocking.
+increment4_status: RR.md §8 ladder "4+ loop-breaker, conclude-on-timeout, observability" — all three rungs now shipped to main (PR #28 loop-breaker+conclude-on-timeout; PR #29 observability). "4+" may admit further rungs but none named in §8.
+next_direction_options: >
+B = live CyberGym execution, still needs §6 target+action+window (pause #3; no model may infer). D =
+stop S8 / move to next stage per CE.md. Further Increment-4+ observability depth (e.g. events.py
+emission, form B deferred at SEQ 120) is a possible rung but not named/authorized. Maintainer chooses.
+outcome: COMPLETE
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
