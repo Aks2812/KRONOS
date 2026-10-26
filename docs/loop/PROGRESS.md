@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 115
+seq: 116
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 (option A); SPEC_BRIEF20 build phase (SEQ 115)
+stage: S8 Increment 4 (option A); SPEC_BRIEF20 review phase (SEQ 116)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6948,5 +6948,17 @@ scope_s3: SPEC_BRIEF20.md | src/kronos/agent/dispatcher.py | tests/test_agent_di
 design: add timed_out:bool=False to DispatcherResult; run gains deadline + injectable clock; conclude-on-timeout loop-breaker appends terminal timed_out result (committed=(), promoted=()) = hypotheses only; run_once + Inc1-3 chokepoints + frozen test_L/M (brief16 window 81796b4..f4559a2) untouched.
 gate1: SELF-APPROVED (routine) — brief derived from RR.md §8 prose + researcher-cited current run()/run_once mechanics; hermetic, no live execution, 3-file §3.
 constraints: CyberGym only; no live targets; zero network; whole-window git diff --name-only 5cf93c9..HEAD ⊆ §3.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 116 — SPEC_BRIEF20 builder COMPLETE; Opus build-assess PASS; dispatching kronos-reviewer (write-ahead)
+
+seq: 116
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 (option A); review phase
+prev_outcome: SEQ 115 builder dispatch COMPLETE — fa5a2bc on claude/s8-agent-increment4-brief20 (head fa5a2bc). Whole-window diff 5cf93c9..HEAD = 3 paths ⊆ §3; additive +44 (dispatcher +14, test +30); matches §2 (timed_out field, deadline/clock kw params, top-of-loop conclude-on-timeout, ValueError deadline<=0, test_N 4 sub-criteria). Build-report.md stale (brief18); builder detail persisted to commit fa5a2bc message + git log.
+action: dispatch kronos-reviewer (independent) on SPEC_BRIEF20 §3 vs diff + approved local pytest; reviewer obtains diff itself, writes 04-review/review-evidence.json.
+brief: SPEC_BRIEF20.md sha256 e76d8ca41232c7f1f2d405c660307f570074bb84d6faaa7b7685d43a01ec5aa8; branch head fa5a2bc.
+constraints: CyberGym only; no live targets; zero network; PASS/FAIL from SUMMARY line not $? (rtk test exits 0 on fail).
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
