@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 136
+seq: 137
 derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF23 build COMPLETE (seal edit, 8760bf4, suite green); dispatching kronos-reviewer (SEQ 136)
+stage: SPEC_BRIEF23 reviewer FAIL (F-1: test_agent_live_driver.py SECTION_3 missing 5th path); return to builder (SEQ 137)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7231,5 +7231,18 @@ action: dispatch kronos-reviewer (independent, NOT given builder report) on SPEC
 brief: SPEC_BRIEF23.md sha256 91f0afe35206ba449a447dddfbe24a226868ca792aca14b514ef62f9f70f6e1c; branch claude/s8-agent-live-driver-brief23 head 8760bf4.
 scope_s3: SPEC_BRIEF23.md | src/kronos/agent/live_driver.py | src/kronos/agent/__init__.py | tests/test_agent_live_driver.py | tests/test_agent_live_executor.py (5 paths).
 constraints: CyberGym only; add no dependency; zero network/LLM in tests; reviewer isolated from builder report; PASS/FAIL from SUMMARY line not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 137 — SPEC_BRIEF23 reviewer FAIL (F-1 blocking): test_agent_live_driver.py SECTION_3 lists 4 paths not 5 → its test_F2 fails, suite 1 failed; return to builder (write-ahead)
+
+seq: 137
+derived_at: 2026-10-26T00:00:00Z
+stage: live-agent build; BRIEF23 build phase (F-1 fix)
+prev_outcome: SEQ 136 reviewer FAIL — code correct (Driver Protocol + §9 PASS; §8 A–E,K,F3 PASS; whole-window git diff --name-only 056f441..8760bf4 ⊆ 5-path §3; test_L/test_M untouched 0-diff). BLOCKING F-1: tests/test_agent_live_driver.py:16-21 SECTION_3 has 4 entries, missing "tests/test_agent_live_executor.py" required by §8 F2; test_F2_scope_audit_whole_window fails at :99 (AssertionError {'tests/test_agent_live_executor.py'}); .venv raw pytest SUMMARY 1 failed/3667 passed/1 skipped → G2 not met. Non-blocking F-3 LOW: weak prompt substring assert ("7"/"13"); meets brief prose, deferred.
+action: re-dispatch kronos-builder — add "tests/test_agent_live_executor.py" to SECTION_3 in tests/test_agent_live_driver.py (§3 item 4); rerun full suite green; refresh totals as last edit. BRIEF23 fix attempt 2 (distinct failure from SEQ 135 seal; circuit breaker 3-attempt NOT tripped).
+brief: SPEC_BRIEF23.md sha256 91f0afe35206ba449a447dddfbe24a226868ca792aca14b514ef62f9f70f6e1c; branch claude/s8-agent-live-driver-brief23 head 8760bf4.
+scope_s3: tests/test_agent_live_driver.py (SECTION_3 one-line additive fix only).
+constraints: CyberGym only; add no dependency; zero network/LLM in tests; whole-window 056f441..HEAD ⊆ 5-path §3; test_L/test_M in test_agent_dispatcher.py untouched+green; PASS/FAIL from SUMMARY not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
