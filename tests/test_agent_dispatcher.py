@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import socket
 import subprocess
 from pathlib import Path
@@ -12,10 +13,12 @@ from kronos.agent import (
     DispatcherResult,
     GraphSummary,
     MockDriver,
+    RunSummary,
     plan,
     run,
     run_once,
     summarize,
+    summarize_run,
 )
 from kronos.schema import ALL_NODE_TABLES
 
@@ -147,3 +150,37 @@ def test_N_conclude_on_timeout(g):  # §8 N
     for bad in (0, -1.0):
         with pytest.raises(ValueError):
             run(g, MockDriver([{"complete": True}]), max_steps=3, deadline=bad)
+
+
+def test_O_run_summary(g):  # §8 O
+    def dr(steps, complete=False, timed_out=False, committed=(), promoted=()):
+        return DispatcherResult(
+            complete=complete, proposed_intents=(), steps=steps,
+            committed=committed, promoted=promoted, timed_out=timed_out,
+        )
+
+    # conclusion precedence (§2): timed_out, then complete, else max_steps
+    assert summarize_run([dr(1), dr(1, complete=True)]).conclusion == "complete"
+    assert summarize_run([dr(1), dr(0, timed_out=True)]).conclusion == "timed_out"
+    assert summarize_run([dr(1, complete=True, timed_out=True)]).conclusion == "timed_out"
+    assert summarize_run([dr(1), dr(1)]).conclusion == "max_steps"
+    # total_steps exact sum, including a steps=0 timeout result; aggregates in list order
+    inp = [
+        dr(1, committed=("a", "b"), promoted=("a",)),
+        dr(3, committed=("c",), promoted=("c", "b")),
+        dr(0, timed_out=True),
+    ]
+    s = summarize_run(inp)
+    assert s.total_steps == 4
+    assert s.committed == ("a", "b", "c")
+    assert s.promoted == ("a", "c", "b")
+    assert s.results == tuple(inp)
+    # frozen
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        s.total_steps = 0
+    assert isinstance(s, RunSummary)
+    # composition with run()
+    res = run(g, MockDriver([{"complete": True}]), max_steps=3)
+    cs = summarize_run(res)
+    assert cs.conclusion == "complete"
+    assert cs.total_steps == sum(r.steps for r in res)

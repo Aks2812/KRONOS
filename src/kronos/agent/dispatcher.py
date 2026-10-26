@@ -25,6 +25,32 @@ class DispatcherResult:
     timed_out: bool = False
 
 
+@dataclass(frozen=True)
+class RunSummary:
+    results: tuple[DispatcherResult, ...]
+    total_steps: int
+    conclusion: str
+    committed: tuple[str, ...]
+    promoted: tuple[str, ...]
+
+
+def summarize_run(results: list[DispatcherResult]) -> RunSummary:
+    last = results[-1]
+    if last.timed_out:
+        conclusion = "timed_out"
+    elif last.complete:
+        conclusion = "complete"
+    else:
+        conclusion = "max_steps"
+    return RunSummary(
+        results=tuple(results),
+        total_steps=sum(r.steps for r in results),
+        conclusion=conclusion,
+        committed=tuple(c for r in results for c in r.committed),
+        promoted=tuple(p for r in results for p in r.promoted),
+    )
+
+
 def _commit(engagement, intent: Intent, verdict: ReviewVerdict) -> str:
     finding_id = f"finding:agent-proposal:{intent.kind}:{intent.target_id}"
     engagement.upsert_node(
