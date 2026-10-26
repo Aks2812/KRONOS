@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 118
+seq: 119
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 loop-breaker/conclude-on-timeout rung MERGED; next-direction pause (SEQ 118)
+stage: S8 Increment 4 observability rung AUTHORIZED; research/scoping (SEQ 119)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6989,4 +6989,16 @@ conclude-on-timeout only — materially new direction, pause #2). B = live Cyber
 needs §6 target+action+window (pause #3; no model may infer). D = per SEQ 108 remaining. Maintainer
 chooses next direction.
 outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 119 — MAINTAINER next-direction: AUTHORIZE Increment 4 observability rung (hermetic/mock, no live execution); dispatching kronos-researcher (write-ahead)
+
+seq: 119
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 observability rung — research/scoping
+prev_outcome: SEQ 118 COMPLETE — loop-breaker + conclude-on-timeout rung merged (PR #28, 5803bcd).
+maintainer_decision: "authorize observability rung" — lifts pause-#2 for Increment 4 observability ONLY; bounded, hermetic/mock, agent-layer, NO live execution, zero network. B (live CyberGym) still deferred (pause #3, needs §6 target+action+window); no model may infer it.
+action: dispatch kronos-researcher (read-only) to scope the observability rung — RR.md §8 ladder "4+ … observability" + current src/kronos/agent/dispatcher.py run/run_once + DispatcherResult surface; returns cited findings bounding a 3-file §3 brief. No decisions.
+scope_guard: observability stays hermetic/mock, agent-layer only; NOT live targets, NOT §6, no scope beyond authorized ladder rung.
+outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
