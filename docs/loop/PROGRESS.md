@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 114
+seq: 115
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 (option A authorized); research/scoping (SEQ 114)
+stage: S8 Increment 4 (option A); SPEC_BRIEF20 build phase (SEQ 115)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6934,5 +6934,19 @@ maintainer_decision: >
   naming target + action + time window (pause #3); no model may infer it. C already complete at SEQ 113.
 action: dispatch kronos-researcher (read-only) to scope Increment 4 from RR.md:1665 (loop-breaker / conclude-on-timeout) + current dispatcher.run_once / executor loop; returns cited findings for a bounded brief.
 scope_guard: Increment 4 stays hermetic/mock, agent-layer only; NOT live targets, NOT §6, no scope beyond the authorized ladder rung.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 115 — SPEC_BRIEF20 (S8.4 Increment 4: loop-breaker + conclude-on-timeout) authored; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+seq: 115
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 (option A); build phase
+prev_outcome: SEQ 114 — maintainer authorized A; researcher scoped Inc 4 (RR.md KRONOS_RESEARCH_RECORD.md §8 ladder: "4+ loop-breaker, conclude-on-timeout, observability"; "conclude-on-timeout yields hypotheses only").
+action: dispatch kronos-builder on SPEC_BRIEF20 §3 (3 files); branch claude/s8-agent-increment4-brief20 off main 5cf93c9.
+brief: SPEC_BRIEF20.md sha256 e76d8ca41232c7f1f2d405c660307f570074bb84d6faaa7b7685d43a01ec5aa8; branch head 5b3bc7f.
+scope_s3: SPEC_BRIEF20.md | src/kronos/agent/dispatcher.py | tests/test_agent_dispatcher.py
+design: add timed_out:bool=False to DispatcherResult; run gains deadline + injectable clock; conclude-on-timeout loop-breaker appends terminal timed_out result (committed=(), promoted=()) = hypotheses only; run_once + Inc1-3 chokepoints + frozen test_L/M (brief16 window 81796b4..f4559a2) untouched.
+gate1: SELF-APPROVED (routine) — brief derived from RR.md §8 prose + researcher-cited current run()/run_once mechanics; hermetic, no live execution, 3-file §3.
+constraints: CyberGym only; no live targets; zero network; whole-window git diff --name-only 5cf93c9..HEAD ⊆ §3.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
