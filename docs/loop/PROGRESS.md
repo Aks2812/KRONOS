@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 124
+seq: 125
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 all rungs MERGED (loop-breaker + conclude-on-timeout + observability); next-direction pause (SEQ 124)
+stage: merged brief20/brief21 branches deleted; option B selected, BLOCKED on §6 (pause #3) (SEQ 125)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7069,4 +7069,16 @@ B = live CyberGym execution, still needs §6 target+action+window (pause #3; no 
 stop S8 / move to next stage per CE.md. Further Increment-4+ observability depth (e.g. events.py
 emission, form B deferred at SEQ 120) is a possible rung but not named/authorized. Maintainer chooses.
 outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 125 — merged branches deleted; maintainer selects option B (live CyberGym execution); BLOCKED on §6 authorization (pause #3)
+
+seq: 125
+derived_at: 2026-10-25T00:00:00Z
+stage: option B selected; awaiting explicit §6 target+action+window
+prev_outcome: SEQ 124 COMPLETE (Increment 4 ladder shipped). Maintainer: "delete the merged branches & proceed to item 1".
+cleanup: deleted merged remote+local branches claude/s8-agent-increment4-brief20 (PR #28) and claude/s8-agent-increment4-obs-brief21 (PR #29); both confirmed PR state MERGED before deletion. Other older claude/* branches left intact (out of request).
+pause_decision: option B = live CyberGym executor execution. HARD BOUNDARY (CLAUDE.md §4; v7 §6 live-use gate; kronos-continue step 6): no live exploit/execution action unless current WRITTEN authorization explicitly names target + action + time window; no model may infer or create it. "proceed to item 1" selects direction but supplies none of the three → BLOCKED, pause #3. Still CyberGym only; no external/live targets; no scope expansion.
+action: none live — awaiting maintainer's explicit §6 values (1) CyberGym target id/range, (2) action permitted, (3) time window. No researcher/builder/executor dispatched until supplied.
+outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
