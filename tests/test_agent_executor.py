@@ -27,6 +27,7 @@ from kronos.schema import ALL_NODE_TABLES
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "a9f37ec"
+BRIEF_MERGE = "5b7001d"  # sealed at the Brief18 merge; later briefs have their own audits
 SECTION_3 = {
     "SPEC_BRIEF18.md",
     "src/kronos/agent/executor.py",
@@ -118,8 +119,8 @@ def test_C_evidenceless_not_promoted(g, tmp_path):  # §8 C
     assert res.committed == (FID,) and res.promoted == ()
     node = g.get_node("FINDING", FID)
     assert node["status"] == "hypothesis"
-    # Brief §8 C says "confidence 3", but _commit (Inc-2) is create-only (confidence 0) and nothing here may
-    # write it; assert only the hypothesis cap (< 7). Flagged as a brief inconsistency in the handoff.
+    # SPEC_BRIEF18 §8 C: create-time confidence is 0 (_commit is create-only); nothing here may write it,
+    # so assert only the hypothesis cap (< 7).
     assert node["confidence"] < 7
     assert _evidence_n(g) == 0
 
@@ -184,13 +185,14 @@ def test_J_chokepoints_only():  # §8 J
     assert 'EVIDENCE_KIND' in src
     # strip the Phase-1/2 helper _commit (pre-existing create-only write) and inspect the rest
     body = inspect.getsource(dispatcher.run_once)
-    for forbidden in ('"confidence"', '"status"', "'confidence'", "'status'", '"in_scope"', '"merged_into"',
-                      "upsert_node", "upsert_edge", "_set_finding_fields"):
+    forbidden_patterns = ('"confidence"', '"status"', "'confidence'", "'status'", '"in_scope"', '"merged_into"',
+                          "upsert_node", "upsert_edge", "_set_finding_fields")
+    for forbidden in forbidden_patterns:
         assert forbidden not in body
     assert not re.search(r"\.(status|confidence)\s*=[^=]", body)
-    # non-vacuity: the patterns do detect a direct write
+    # non-vacuity: the same tuple used for the scan flags a direct write
     bad = 'engagement.upsert_node("FINDING", fid, {"status": "reachable", "confidence": 9})'
-    assert '"status"' in bad and '"confidence"' in bad
+    assert any(f in bad for f in forbidden_patterns)
 
 
 def test_K_end_to_end(g, nonet, tmp_path):  # §8 K
@@ -206,7 +208,7 @@ def test_K_end_to_end(g, nonet, tmp_path):  # §8 K
 
 def test_L_scope_audit():  # §8 L
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
 
