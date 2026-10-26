@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 117
+seq: 118
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 (option A); SPEC_BRIEF20 GATE-2 merge (SEQ 117)
+stage: S8 Increment 4 loop-breaker/conclude-on-timeout rung MERGED; next-direction pause (SEQ 118)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6974,4 +6974,19 @@ action: self-authorize GATE-2 SPEC_BRIEF20; push branch claude/s8-agent-incremen
 brief: SPEC_BRIEF20.md sha256 e76d8ca41232c7f1f2d405c660307f570074bb84d6faaa7b7685d43a01ec5aa8; base main 5cf93c9; head fa5a2bc.
 constraints: within option-A scope (hermetic Increment 4 agent-layer); never merge on a red prereq; no scope expansion.
 outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 118 — SPEC_BRIEF20 (S8.4 Increment 4 loop-breaker + conclude-on-timeout) MERGED main (PR #28, squash 5803bcd); next-direction pause
+
+seq: 118
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 first rung done (loop-breaker + conclude-on-timeout); next-direction pause
+seq117_pending_action_outcome: SUCCESS — ten MERGE-GATE prereqs re-measured PASS in-turn (1 scope=3 §3; 2 void-rule-kronos ruleset 25333712 active; 3 draft=false; 4 state OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 3645 passed/1 skipped/0 failed head fa5a2bc; 8 MERGEABLE CLEAN + head NOT-ancestor origin/main; 9 PR #28 head=fa5a2bc; 10 tree clean, only known untracked rails). Merged --squash --match-head-commit fa5a2bc, NO --admin, NO --auto. PR #28 MERGED 2026-10-26T02:13:29Z; origin/main 5cf93c9..5803bcd.
+findings_carried: R-1 LOW dispatcher.py:109 overlong line (style only, not fixed); R-2/R-3 INFO. No blocking.
+next_direction_options: >
+Increment 4 remaining rung = observability (NOT authorized by SEQ 114, which named loop-breaker +
+conclude-on-timeout only — materially new direction, pause #2). B = live CyberGym execution, still
+needs §6 target+action+window (pause #3; no model may infer). D = per SEQ 108 remaining. Maintainer
+chooses next direction.
+outcome: COMPLETE
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
