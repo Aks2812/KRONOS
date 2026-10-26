@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 128
+seq: 129
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: option B §6 live run COMPLETE — X-SCORE 3/3; agent-layer live Driver held on LLM pause (SEQ 128)
+stage: live-agent build — LLM pause resolved (sonnet5 example); scoping live Executor design (SEQ 129)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7122,4 +7122,19 @@ seq127_pending_action_outcome: SUCCESS — ran `PYTHONPATH=. .venv/bin/python cy
 boundaries_held: no cybergym/ edit (ran its script); no manifest.py/.github/.claude edit; no repo files changed; CyberGym only, no external target; zero LLM.
 held_item: agent-layer live run (dispatcher + live Driver + live Executor) NOT built/run — live Driver blocked by LLM-endpoint PAUSE-DECISION (no model/endpoint in src/). Candidate build §3 (researcher): src/kronos/agent/live_executor.py + tests/test_agent_live_executor.py (Executor half buildable; Driver half needs LLM decision). Awaiting maintainer: which model/endpoint for live Driver.reason(), or confirm agent-layer live run is out of scope for now.
 outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 129 — LLM pause-decision RESOLVED (sonnet5 as example model/endpoint); provider list DEFERRED; dispatching researcher to scope live-Executor design (write-ahead)
+
+seq: 129
+derived_at: 2026-10-25T00:00:00Z
+stage: live-agent build sequencing; research for live Executor (BRIEF22)
+prev_outcome: SEQ 128 §6 live run COMPLETE (X-SCORE 3/3). Maintainer resolved the LLM pause: "use sonnet 5 for now as the example for model/endpoint".
+model_decision: live Driver (future BRIEF23) model alias = claude-sonnet-5; endpoint = session ANTHROPIC_BASE_URL http://127.0.0.1:8787 (Anthropic-compatible). EXAMPLE/placeholder only.
+provider_list_deferred: maintainer named future providers (blackfrostai.com, abliteration.ai, orcarouter.ai, experientiallabs.ai, hinoki.security, refuseless.com) for post-R&D use. NOT fetched, NOT integrated now. SAFETY FLAG: some (abliteration/refuseless) read as refusal-removed/uncensored models — integrating any needs its own explicit review when reached, even inside CyberGym sandbox. Deferred; no action now.
+topology_note: RR.md §8 settled agent layer = ONE dispatcher loop + ONE independent supervisor. Maintainer ">1 orchestrators & 2 workers" read as model-per-role config, NOT a topology change. A real single-loop topology change would be a pause-#2 architecture decision; not assumed.
+sequencing: BRIEF22 = live Executor (deterministic, hermetic tests, dispatches agent intents to existing real validators) FIRST; BRIEF23 = live Driver (sonnet5 LLM) NEXT; then §6-gated agent-driven live run (reuses SEQ 126 grant: same target/action/window, non-destructive).
+design_gap: Executor.execute(intent) receives only Intent(kind,target_id,rationale); validators need secret_value + resolved target from the engagement graph. LiveExecutor must be constructed with the engagement and resolve (secret_value, target, validator) by target_id; intent.kind taxonomy couples to BRIEF23 Driver. High-impact design → researcher pass before briefing.
+action: dispatch kronos-researcher (read-only) — how run_validation_pass (src/kronos/validate/runner.py) resolves (secret_value, target, validator) per chain from the graph; node/edge types + fields holding secret value and authenticates_to target; proposed intent.kind->validator mapping + LiveExecutor construction/resolution design + candidate §3. Returns cited findings; no decisions, no execution.
+outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
