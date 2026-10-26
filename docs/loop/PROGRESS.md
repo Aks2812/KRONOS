@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 116
+seq: 117
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 (option A); SPEC_BRIEF20 review phase (SEQ 116)
+stage: S8 Increment 4 (option A); SPEC_BRIEF20 GATE-2 merge (SEQ 117)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6960,5 +6960,18 @@ prev_outcome: SEQ 115 builder dispatch COMPLETE — fa5a2bc on claude/s8-agent-i
 action: dispatch kronos-reviewer (independent) on SPEC_BRIEF20 §3 vs diff + approved local pytest; reviewer obtains diff itself, writes 04-review/review-evidence.json.
 brief: SPEC_BRIEF20.md sha256 e76d8ca41232c7f1f2d405c660307f570074bb84d6faaa7b7685d43a01ec5aa8; branch head fa5a2bc.
 constraints: CyberGym only; no live targets; zero network; PASS/FAIL from SUMMARY line not $? (rtk test exits 0 on fail).
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 117 — SPEC_BRIEF20 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push+PR+re-measure 10 in-turn (write-ahead)
+
+seq: 117
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 (option A); GATE-2 merge
+prev_outcome: SEQ 116 reviewer (kronos-reviewer, haiku) PASS — N/F/G/K all PASS; suite 3645 passed / 1 skipped / 0 failed (raw pytest, repo .venv); frozen test_L/M + run_once body untouched; findings R-1 LOW (dispatcher.py:109 overlong line, style) + R-2/R-3 INFO only; evidence .claude/pipeline/04-review/review-evidence.json.
+step5: PASS — diff matches §2 (additive +44); §8-N 4 sub-criteria met; scope ⊆ §3 (3 paths); hermetic/mock, no live execution, zero network; R-1 LOW accepted (style-only, no rebuild).
+action: self-authorize GATE-2 SPEC_BRIEF20; push branch claude/s8-agent-increment4-brief20, open PR base main head fa5a2bc, re-measure ten MERGE-GATE prereqs in-turn, merge --squash --match-head-commit fa5a2bc (no --admin, no --auto) iff all ten green.
+brief: SPEC_BRIEF20.md sha256 e76d8ca41232c7f1f2d405c660307f570074bb84d6faaa7b7685d43a01ec5aa8; base main 5cf93c9; head fa5a2bc.
+constraints: within option-A scope (hermetic Increment 4 agent-layer); never merge on a red prereq; no scope expansion.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
