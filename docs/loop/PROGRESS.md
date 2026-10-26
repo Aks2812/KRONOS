@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 134
-derived_at: 2026-10-25T00:00:00Z
+seq: 135
+derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF23 (live Driver) authored; GATE-1 self-approved; build phase (SEQ 134)
+stage: SPEC_BRIEF23 build INCOMPLETE — §3 item 5 seal edit unapplied, suite red; re-dispatching builder (SEQ 135)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7205,5 +7205,18 @@ brief: SPEC_BRIEF23.md sha256 84985113a34186a15138b0f166936bb3542a890cd37b328a9b
 scope_s3: SPEC_BRIEF23.md | src/kronos/agent/live_driver.py | src/kronos/agent/__init__.py | tests/test_agent_live_driver.py
 gate1: SELF-APPROVED (routine) — code + hermetic tests only, NO live LLM, NO network, NO new dependency, 4-file §3 off contracts/planner/budget/validate.
 constraints: CyberGym only; add no dependency; zero network/LLM in tests; whole-window git diff --name-only 056f441..HEAD ⊆ §3; PASS/FAIL from SUMMARY line not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 135 — SPEC_BRIEF23 builder dispatch INCOMPLETE: §3 item 5 seal edit unapplied → suite red; re-dispatching builder (write-ahead)
+
+seq: 135
+derived_at: 2026-10-26T00:00:00Z
+stage: live-agent build; BRIEF23 build phase (seal-edit completion)
+prev_outcome: SEQ 134 builder dispatch INCOMPLETE — LiveDriver + hermetic tests A–E,K,F2 landed (4fe4e77) and §3 amended to authorize item 5 (c126c68), but the §3-item-5 seal edit to tests/test_agent_live_executor.py was NOT applied; its test_F2_scope_audit_whole_window still uses `..HEAD` and FAILS (verified .venv pytest: tests/test_agent_live_executor.py:214 AssertionError, 3 brief23 files extra vs brief22 SECTION_3).
+action: re-dispatch kronos-builder to apply SPEC_BRIEF23 §3-item-5 seal edit ONLY — tests/test_agent_live_executor.py: add BRIEF_MERGE="056f441"; change window to f"{BRIEF_BASE}..{BRIEF_MERGE}" (test_L/test_M precedent); then full suite green, totals refreshed last; whole-window `git diff --name-only 056f441..HEAD` ⊆ 5-path §3.
+brief: SPEC_BRIEF23.md sha256 91f0afe35206ba449a447dddfbe24a226868ca792aca14b514ef62f9f70f6e1c; branch claude/s8-agent-live-driver-brief23 head c126c68.
+scope_s3: tests/test_agent_live_executor.py (item 5 seal edit only; items 1–4 already landed at 4fe4e77).
+constraints: CyberGym only; add no dependency; zero network/LLM in tests; test_L/test_M in test_agent_dispatcher.py untouched+green; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
