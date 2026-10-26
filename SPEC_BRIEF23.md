@@ -55,7 +55,8 @@ Export `LiveDriver` from `src/kronos/agent/__init__.py` alongside `Driver`/`Mock
 1. `SPEC_BRIEF23.md`
 2. `src/kronos/agent/live_driver.py` (new module: `LiveDriver`)
 3. `src/kronos/agent/__init__.py` (edit: import + `__all__` entry for `LiveDriver`)
-4. `tests/test_agent_live_driver.py` (new: §8 criteria)
+4. `tests/test_agent_live_driver.py` (new: §8 criteria; its F2 `SECTION_3` lists all five §3 paths)
+5. `tests/test_agent_live_executor.py` (**seal edit only**: SPEC_BRIEF22's `test_F2_scope_audit_whole_window` used window `BRIEF_BASE..HEAD`, which fails on every branch after brief22 because `HEAD` then contains later briefs' files. Add `BRIEF_MERGE = "056f441"` (the brief22 merge commit) and change the window to `f"{BRIEF_BASE}..{BRIEF_MERGE}"`, sealing it to brief22's own footprint — exactly as `test_L`/`test_M` in `test_agent_dispatcher.py` seal to `BRIEF_MERGE`. No other change to this file.)
 
 Base = `origin/main` @ `056f441`. Never `git add -A`; stage explicit paths only.
 Do **NOT** edit `contracts.py`, `planner.py`, `drivers.py`, `dispatcher.py`, `executor.py`,
@@ -86,7 +87,11 @@ E. **Prompt carries the summary + is pass-through.** Assert the prompt the fake 
    has length 5 (no truncation), which `validate_reason_payload` then rejects with
    `ContractViolation` (proves the Driver defers to the contract gate, per D3).
 K. **No network** — a `test_K`-style assertion proves `reason` opens no socket on every path above.
-F2. **Scope audit (whole window)** — `git diff --name-only 056f441..HEAD` ⊆ the §3 set.
+F2. **Scope audit (whole window)** — `git diff --name-only 056f441..HEAD` ⊆ the §3 set (now five
+   paths, including `tests/test_agent_live_executor.py`).
+F3. **brief22 F2 sealed** — `tests/test_agent_live_executor.py::test_F2_scope_audit_whole_window`
+   uses window `f"{BRIEF_BASE}..{BRIEF_MERGE}"` (`BRIEF_MERGE = "056f441"`), **not** `..HEAD`, so it
+   is pinned to brief22's footprint and passes on this and later branches.
 G2. **Suite green** — full `pytest` reports `0 failed` on the final commit (totals refreshed as the
    last edit); `test_L`/`test_M` in `test_agent_dispatcher.py` untouched and green.
 
