@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 122
+seq: 123
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 observability rung; SPEC_BRIEF21 review phase (SEQ 122)
+stage: S8 Increment 4 observability rung; SPEC_BRIEF21 GATE-2 merge (SEQ 123)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7040,5 +7040,18 @@ prev_outcome: SEQ 121 builder dispatch COMPLETE — head d9ec3e4 on claude/s8-ag
 action: dispatch kronos-reviewer (independent) on SPEC_BRIEF21 §3 vs diff + approved local pytest; reviewer obtains diff itself, writes 04-review/review-evidence.json.
 brief: SPEC_BRIEF21.md sha256 ea4411b00cd447cef6c5a4118f4ab4af622c7b0f82195cbdc94226fedde98e77; base main 5803bcd; head d9ec3e4.
 constraints: CyberGym only; no live targets; zero network; PASS/FAIL from SUMMARY line not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 123 — SPEC_BRIEF21 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push+PR+re-measure 10 in-turn (write-ahead)
+
+seq: 123
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 observability rung; GATE-2 merge
+prev_outcome: SEQ 122 reviewer (kronos-reviewer, haiku) PASS — O/J/N/K/F/G all PASS; suite 3646 passed / 1 skipped / 0 failed (raw pytest); run/run_once/DispatcherResult/_commit sha-identical base..head; frozen test_L/M untouched; findings R21-1/R21-2 INFO only (summarize_run([]) IndexError, brief excludes empty input — not a defect); evidence .claude/pipeline/04-review/review-evidence.json.
+step5: PASS — diff additive (dispatcher +26, __init__ +2/-2, test_O); §8-O criteria met; scope ⊆ §3 (4 paths); hermetic, no live execution, zero network; INFO findings accepted, no rebuild.
+action: self-authorize GATE-2 SPEC_BRIEF21; push branch claude/s8-agent-increment4-obs-brief21, open PR base main head d9ec3e4, re-measure ten MERGE-GATE prereqs in-turn, merge --squash --match-head-commit d9ec3e4 (no --admin, no --auto) iff all ten green.
+brief: SPEC_BRIEF21.md sha256 ea4411b00cd447cef6c5a4118f4ab4af622c7b0f82195cbdc94226fedde98e77; base main 5803bcd; head d9ec3e4.
+constraints: within option-A/observability scope (hermetic Increment 4 agent-layer); never merge on a red prereq; no scope expansion.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
