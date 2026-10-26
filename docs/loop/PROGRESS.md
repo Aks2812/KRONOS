@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 108
-derived_at: 2026-10-23T08:20:00Z
+seq: 109
+derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 (Increments 1-3 COMPLETE) -> next-direction
+stage: S8 next-direction pause (SEQ 108) held open; Wave-1 rails change R1/R2/R3/R6 in progress (SEQ 109)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6844,3 +6844,26 @@ pending_action:
     No autonomous scope expansion past the 1-3 grant.
   outcome: pending
   carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits still live as untracked files; unchanged."
+
+## SEQ 109 — MAINTAINER-AUTHORIZED RAILS CHANGE: Wave-1 thin-Opus optimization R1/R2/R3/R6 (context.md 2026-10-25); write-ahead, outcome pending
+seq: 109
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 next-direction pause (SEQ 108) HELD OPEN; orthogonal maintainer-authorized rails change in progress
+authorization: >
+  Explicit written maintainer instruction = /home/void/context.md (2026-10-25). This is the §4
+  exception that permits editing the loop's own .claude/ rails ("the only exception is an explicit,
+  written maintainer instruction ... which must be recorded in the checkpoint as such") — recorded
+  here AS SUCH. It approves ONLY Wave-1 R1,R2,R3,R6 of the thin-Opus plan. It is NOT a KRONOS
+  goal/success/scope/architecture change, and it does NOT authorize S8 Increment 4+.
+prev_outcome: SEQ 108 S8 next-direction pause still pending (A/B/C/D not chosen); unaffected by this change.
+action: >
+  Apply, as project-local policy edits only: R1 (compact dispatches — standing rules live in the role
+  defs; a dispatch carries only task delta + brief ref + paths + constraints + expected compact return);
+  R2 (compact SEQ-block schema — 1-line prev_outcome, action <=2 lines, evidence as artifact pointers
+  only); R3 (pointer-based evidence); R6 (no worker-output re-narration — accept/dispatch-next/follow-up/
+  escalate/stop only).
+files_to_change: CLAUDE.md; .claude/agents/kronos-researcher.md; .claude/agents/kronos-builder.md; .claude/agents/kronos-reviewer.md; .claude/roles/kronos-orchestrator.md
+preserve: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence, and the S8 next-direction pause. Do NOT resume S8 Increment 4+.
+measurement: the existing LOW cleanup-backlog increment is the first before/after unit WHEN later authorized; metrics via /caveman-stats (Opus output tokens per increment, orchestration-turn count, dispatch/checkpoint/status size, guardrail integrity).
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits live as untracked files; unchanged. This SEQ 109 adds Wave-1 R1/R2/R3/R6 to those same untracked rails files (CLAUDE.md + .claude/)."
