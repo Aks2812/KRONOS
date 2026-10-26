@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 125
+seq: 126
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: merged brief20/brief21 branches deleted; option B selected, BLOCKED on §6 (pause #3) (SEQ 125)
+stage: option B §6 authorization RECORDED (maintainer); scoping live-executor build (SEQ 126)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7080,5 +7080,23 @@ prev_outcome: SEQ 124 COMPLETE (Increment 4 ladder shipped). Maintainer: "delete
 cleanup: deleted merged remote+local branches claude/s8-agent-increment4-brief20 (PR #28) and claude/s8-agent-increment4-obs-brief21 (PR #29); both confirmed PR state MERGED before deletion. Other older claude/* branches left intact (out of request).
 pause_decision: option B = live CyberGym executor execution. HARD BOUNDARY (CLAUDE.md §4; v7 §6 live-use gate; kronos-continue step 6): no live exploit/execution action unless current WRITTEN authorization explicitly names target + action + time window; no model may infer or create it. "proceed to item 1" selects direction but supplies none of the three → BLOCKED, pause #3. Still CyberGym only; no external/live targets; no scope expansion.
 action: none live — awaiting maintainer's explicit §6 values (1) CyberGym target id/range, (2) action permitted, (3) time window. No researcher/builder/executor dispatched until supplied.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 126 — option B §6 authorization RECORDED (maintainer, written); dispatching kronos-researcher to scope live-executor build + run feasibility (write-ahead)
+
+seq: 126
+derived_at: 2026-10-25T00:00:00Z
+stage: option B — §6 authorized; research/scoping of live-executor build
+prev_outcome: SEQ 125 BLOCKED on §6. Maintainer confirmed the proposed §6 values in writing: "confirmed, proceed everything u propose now & report the result."
+s6_authorization:
+  granted_by: maintainer (this session, 2026-10-25), explicit written confirmation of Opus-proposed values; NOT model-inferred.
+  target: cybergym-x-instrument-v1 — local Docker CyberGym range on 127.0.0.1 (ports 4566/4567/8091) + scope_manifest.yaml in_scope assets (127.0.0.1*, localhost*, com.kronos.cybergym.*, kronos-cybergym-*, arn:aws:s3:::kronos-cybergym-*). NO external/live target.
+  action: non-destructive explore/validate ONLY (scope_manifest destructive_allowed:false); executor explore -> EVIDENCE, graded vs ground_truth.yaml K=3 chains. No destructive, no exfiltration beyond grading.
+  window: now / this session (2026-10-25); bounded tighter than manifest window 2026-01-01..2125-12-08.
+  basis: cybergym/scope_manifest.yaml (signed, maintainer-owned, never edited by loop).
+constraints_unchanged: CyberGym only; cybergym/ + manifest.py + .github/ + .claude/ never edited; §3 still binds per future brief; write-ahead before each consequential action incl. the live run.
+gap: no live Driver/Executor exists — only MockDriver (drivers.py:15) + MockExecutor (executor.py:24). B is multi-step: (1) build real live Driver/Executor behind the gate; (2) stand up range; (3) gated live run; (4) grade vs ground_truth.
+action: dispatch kronos-researcher (read-only) to scope — how cybergym range stands up (kronos_validation_run.py, docker-compose, selftest.py), what a live Driver/Executor must implement vs the Protocols, environment feasibility (Docker present? LLM endpoint for live reason()?), and what the live run + grading entail. Returns cited findings; no decisions, no execution.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
