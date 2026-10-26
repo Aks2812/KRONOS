@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 113
+seq: 114
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 LOW-backlog CLEARED (option C merged); next-direction pause (SEQ 108 A/B/D remain) (SEQ 113)
+stage: S8 Increment 4 (option A authorized); research/scoping (SEQ 114)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6921,4 +6921,18 @@ action: none pending; S8 LOW backlog (L-1 vacuity, contracts.py:38 truthiness, L
 next_direction: SEQ 108 options A (Increment 4+), B (live §6 run), D (stop S8) remain; each is a pause-#2 scope change needing maintainer authorization. Option C now done.
 measurement: this increment is the first Wave-1 before/after unit — 1 researcher + 1 builder + 1 reviewer dispatch, compact R1 dispatches, R2 SEQ blocks 109-113; run /caveman-stats for Opus output-token comparison.
 outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 114 — MAINTAINER next-direction: AUTHORIZE option A (S8 agent-layer Increment 4: loop-breaker + conclude-on-timeout, hermetic/mock); B deferred (needs §6 target/action/window); C done
+seq: 114
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 (option A) — research/scoping
+prev_outcome: SEQ 113 COMPLETE (option C / SPEC_BRIEF19 merged 5cf93c9).
+maintainer_decision: >
+  "continue to maintainer A first, then B & C." A = AUTHORIZED now — lifts pause-#2 for Increment 4
+  ONLY; bounded, hermetic/mock, NO live execution. B = NOT started: requires explicit §6 authorization
+  naming target + action + time window (pause #3); no model may infer it. C already complete at SEQ 113.
+action: dispatch kronos-researcher (read-only) to scope Increment 4 from RR.md:1665 (loop-breaker / conclude-on-timeout) + current dispatcher.run_once / executor loop; returns cited findings for a bounded brief.
+scope_guard: Increment 4 stays hermetic/mock, agent-layer only; NOT live targets, NOT §6, no scope beyond the authorized ladder rung.
+outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
