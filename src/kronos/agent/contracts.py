@@ -35,7 +35,10 @@ def validate_reason_payload(payload: dict) -> ReasonResult:
     raw = payload.get("intents") or []
     if not isinstance(raw, (list, tuple)):
         raise ContractViolation("intents must be a list")
-    complete = bool(payload.get("complete"))
+    # Policy: unknown keys are intentionally ignored; only FORBIDDEN_FIELDS are rejected (create-only contract model).
+    complete = payload.get("complete", False)
+    if not isinstance(complete, bool):
+        raise ContractViolation("complete must be a bool")
     if complete and raw:
         raise ContractViolation("complete and intents cannot coexist")
     if not complete and not raw:

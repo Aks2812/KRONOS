@@ -29,6 +29,20 @@ def test_A_valid_complete():  # §2a(ii),(vi): complete -> intents == ()
     assert isinstance(r, ReasonResult) and r.complete is True and r.intents == ()
 
 
+@pytest.mark.parametrize("bad", ["false", "true", 1, 0, [], None, {}])
+def test_B_complete_must_be_bool(bad):  # SPEC_BRIEF19 §8 B
+    with pytest.raises(ContractViolation):
+        validate_reason_payload({"complete": bad})
+    with pytest.raises(ContractViolation):
+        validate_reason_payload({"complete": bad, "intents": [_intent()]})
+
+
+def test_C_complete_optional():  # SPEC_BRIEF19 §8 C
+    assert validate_reason_payload({"intents": [_intent()]}).complete is False
+    assert validate_reason_payload({"complete": True}).complete is True
+    assert validate_reason_payload({"complete": False, "intents": [_intent()]}).complete is False
+
+
 @pytest.mark.parametrize("n", range(1, MAX_INTENTS + 1))
 def test_B_valid_intents(n):  # §8 B: 1..MAX_INTENTS, order preserved
     payload = {"intents": [_intent(i) for i in range(n)]}
