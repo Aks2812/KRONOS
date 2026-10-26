@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 133
+seq: 134
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: live Executor MERGED (PR #30); next = BRIEF23 live Driver (sonnet5) (SEQ 133)
+stage: SPEC_BRIEF23 (live Driver) authored; GATE-1 self-approved; build phase (SEQ 134)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7190,5 +7190,20 @@ findings_carried: F-1 LOW (test_K omits cloud path name; nonet covers), F-2/F-3 
 next: BRIEF23 = live Driver using sonnet5 (SEQ 129 model decision: alias claude-sonnet-5, endpoint ANTHROPIC_BASE_URL http://127.0.0.1:8787). Driver.reason(summary)->dict proposing intents; validated by validate_reason_payload; planner.plan passes through. LLM calls = new capability + budget (llm_tokens/llm_cost_usd) consumption.
 action: dispatch kronos-researcher (read-only) to scope live Driver — Driver Protocol + validate_reason_payload/ReasonResult contract (contracts.py), what reason() dict must contain (intents schema, FORBIDDEN_FIELDS, MAX_INTENTS), how to call the Anthropic-compatible endpoint from repo (any existing client? requests? sdk?), structured-output/JSON parsing approach, budget llm_tokens charging hook, and hermetic test strategy (inject a fake model client — NO live LLM in unit tests). Candidate §3. Returns cited findings; no decisions.
 note_live_run: the §6-gated agent-driven live run (dispatcher + live Driver + LiveExecutor vs CyberGym range) remains a later step under SEQ 126 grant; confirm grant still covers LLM-driven non-destructive validate before running.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 134 — SPEC_BRIEF23 (live Driver) authored; design PAUSE-DECISIONs resolved by Opus (routine, in-scope, no new dep); GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+
+seq: 134
+derived_at: 2026-10-25T00:00:00Z
+stage: live-agent build; BRIEF23 build phase
+prev_outcome: SEQ 133 researcher COMPLETE — reason() contract (contracts.py:29-59: {"complete":bool,"intents":[{kind,target_id,rationale}]} ≤MAX_INTENTS=4, FORBIDDEN_FIELDS, complete XOR intents); GraphSummary input = 3 counts only; NO LLM client/SDK/env-read in repo; only requests==2.32.3 available; budget llm_tokens/llm_cost_usd ceilings default 0, no charger wired. 5 PAUSE-DECISIONs.
+design_decisions_opus: routine agent-layer design (no goal/scope change) — D1 injected client callable client(prompt:str)->str, constructor LiveDriver(client,*,model="claude-sonnet-5"), NO env read, NO new dep (real wrapper later uses requests); D2 prompt embeds GraphSummary counts only (no secrets); D3 extract first JSON object (tolerate ```json fence), json.loads, no-JSON->ValueError, return dict as-is (validate_reason_payload is the gate, Driver does not validate/truncate); D4 budget charging DEFERRED to live-run step (as BRIEF22 deferred), llm_tokens budget.yaml opt-in is a run-time config decision. BRIEF23 hermetic: injected fake client, no real LLM, no network.
+action: dispatch kronos-builder on SPEC_BRIEF23 §3 (4 files); branch claude/s8-agent-live-driver-brief23 off main 056f441 (brief commit 14ade34).
+brief: SPEC_BRIEF23.md sha256 84985113a34186a15138b0f166936bb3542a890cd37b328a9be5c84e00fe3071; branch head 14ade34.
+scope_s3: SPEC_BRIEF23.md | src/kronos/agent/live_driver.py | src/kronos/agent/__init__.py | tests/test_agent_live_driver.py
+gate1: SELF-APPROVED (routine) — code + hermetic tests only, NO live LLM, NO network, NO new dependency, 4-file §3 off contracts/planner/budget/validate.
+constraints: CyberGym only; add no dependency; zero network/LLM in tests; whole-window git diff --name-only 056f441..HEAD ⊆ §3; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
