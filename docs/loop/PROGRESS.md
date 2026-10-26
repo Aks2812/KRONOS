@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 119
+seq: 120
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 observability rung AUTHORIZED; research/scoping (SEQ 119)
+stage: S8 Increment 4 observability rung — PAUSE-DECISION on form (SEQ 120)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7000,5 +7000,18 @@ prev_outcome: SEQ 118 COMPLETE — loop-breaker + conclude-on-timeout rung merge
 maintainer_decision: "authorize observability rung" — lifts pause-#2 for Increment 4 observability ONLY; bounded, hermetic/mock, agent-layer, NO live execution, zero network. B (live CyberGym) still deferred (pause #3, needs §6 target+action+window); no model may infer it.
 action: dispatch kronos-researcher (read-only) to scope the observability rung — RR.md §8 ladder "4+ … observability" + current src/kronos/agent/dispatcher.py run/run_once + DispatcherResult surface; returns cited findings bounding a 3-file §3 brief. No decisions.
 scope_guard: observability stays hermetic/mock, agent-layer only; NOT live targets, NOT §6, no scope beyond authorized ladder rung.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 120 — kronos-researcher COMPLETE; observability rung form UNDETERMINED by prose → PAUSE-DECISION (CLAUDE.md §4)
+
+seq: 120
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 observability rung — PAUSE-DECISION, awaiting maintainer form choice
+prev_outcome: SEQ 119 researcher (kronos-researcher, sonnet) COMPLETE — cited findings returned. Key facts: RR.md §8 (read by Opus on kronos/loop-state, line 1665) names the rung only as the word "observability"; §8 design prose (1655-1664) is silent on WHAT to observe or FORM. dispatcher.run returns list[DispatcherResult] with no run-level aggregate (dispatcher.py:88-116); gaps = no total-steps, no single conclusion-reason field (complete vs max_steps vs timeout), no aggregate committed/promoted. Existing in-repo observability patterns: src/kronos/events.py:1-77 (emit() JSON-line chokepoint, ALLOWED_KINDS allow-list, never fails the run); src/kronos/agent/planner.py:13-27 (GraphSummary frozen summary struct + Counter). test_agent_dispatcher.py has 9 tests (test_H..test_N); frozen test_L/test_M (brief-16 window) quoted for a future seal.
+pause_decision: observability FORM is a value prose does not fix (§4 "prose silence where a value is needed is a PAUSE-DECISION"). Two grounded options presented to maintainer:
+  A = run-level summary struct (new frozen RunSummary in dispatcher.py: total_steps, conclusion reason enum, aggregate committed/promoted counts) wrapping list[DispatcherResult]; pure in-memory, hermetic; matches planner.GraphSummary precedent. 3-file §3 (brief, dispatcher.py, test_agent_dispatcher.py).
+  B = event emission: wire dispatcher into existing src/kronos/events.py chokepoint (emit per-step + timeout events to events.jsonl, new ALLOWED_KINDS); matches events.py precedent. Would also edit src/kronos/events.py (ALLOWED_KINDS) → 4-file §3, still hermetic.
+action: none — awaiting maintainer choice of observability form (A, B, or other). No code until form fixed.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
