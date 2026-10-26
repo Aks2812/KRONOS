@@ -9,6 +9,7 @@ from kronos.agent.contracts import (
 from kronos.agent.dispatcher import DispatcherResult, RunSummary, run, run_once, summarize_run
 from kronos.agent.drivers import Driver, MockDriver
 from kronos.agent.executor import EVIDENCE_KIND, ExecutionOutcome, Executor, MockExecutor
+from kronos.agent.live_executor import LiveExecutor
 from kronos.agent.planner import GraphSummary, plan, summarize
 from kronos.agent.reviewer import (
     COMMIT_STATUS,
@@ -26,5 +27,5 @@ __all__ = [
     "DispatcherResult", "run_once", "run", "RunSummary", "summarize_run",
     "Reviewer", "MockReviewer", "ReviewVerdict", "ReviewViolation", "validate_verdict",
     "LEGAL_TARGET_TYPES", "COMMIT_STATUS",
-    "Executor", "MockExecutor", "ExecutionOutcome", "EVIDENCE_KIND",
+    "Executor", "MockExecutor", "LiveExecutor", "ExecutionOutcome", "EVIDENCE_KIND",
 ]
