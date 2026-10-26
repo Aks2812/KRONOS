@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 109
+seq: 110
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 next-direction pause (SEQ 108) held open; Wave-1 rails change R1/R2/R3/R6 in progress (SEQ 109)
+stage: S8 next-direction pause (SEQ 108) resumes; Wave-1 rails change R1/R2/R3/R6 COMPLETE (SEQ 110)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6867,3 +6867,21 @@ preserve: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scop
 measurement: the existing LOW cleanup-backlog increment is the first before/after unit WHEN later authorized; metrics via /caveman-stats (Opus output tokens per increment, orchestration-turn count, dispatch/checkpoint/status size, guardrail integrity).
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 rails edits live as untracked files; unchanged. This SEQ 109 adds Wave-1 R1/R2/R3/R6 to those same untracked rails files (CLAUDE.md + .claude/)."
+
+## SEQ 110 — Wave-1 thin-Opus rails change R1/R2/R3/R6 COMPLETE; S8 next-direction pause (SEQ 108) resumes
+seq: 110
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 next-direction pause (SEQ 108) — rails Wave-1 done; loop back at that A/B/C/D decision
+prev_outcome: SEQ 109 SUCCESS — R1/R2/R3/R6 applied to the untracked working-tree rails and verified.
+action: none pending from this change; loop returns to the SEQ 108 A/B/C/D next-direction decision (unchanged, still pending).
+files_changed: >
+  CLAUDE.md (R1 dispatch-delta "Handoffs are lean"; Cost-discipline header L59; R3 L78; R6 L82;
+  R2 "Compact checkpoint schema" L85; §4 write-ahead R2 pointer). .claude/agents/kronos-researcher.md,
+  .claude/agents/kronos-builder.md, .claude/agents/kronos-reviewer.md (R1 standing-rules note, 1 line each).
+  .claude/roles/kronos-orchestrator.md (Wave-1 refinements pointer L53-57). All untracked working-tree
+  rails, same class as SEQ 55 / 86 / 87.
+r2_schema: "## SEQ N = 1-line prev_outcome + action <=2 lines + evidence as pointers only (SHA / PR# / artifact path / file:line); never copied-in findings. This block conforms."
+preserved: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence. S8 Increment 4+ NOT resumed.
+measurement_baseline: LOW cleanup-backlog increment is the first before/after unit WHEN later authorized; metrics via /caveman-stats.
+outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 rails edits all live as untracked files; unchanged."
