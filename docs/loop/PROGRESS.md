@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 121
+seq: 122
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 observability rung; SPEC_BRIEF21 build phase (SEQ 121)
+stage: S8 Increment 4 observability rung; SPEC_BRIEF21 review phase (SEQ 122)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7028,5 +7028,17 @@ scope_s3: SPEC_BRIEF21.md | src/kronos/agent/dispatcher.py | src/kronos/agent/__
 design: add frozen RunSummary (results/total_steps/conclusion/committed/promoted) + pure summarize_run(results)->RunSummary to dispatcher.py; export both in __init__; run/run_once/DispatcherResult untouched (preserves test_J/N/K + frozen L/M). conclusion precedence last.timed_out>last.complete>max_steps. Matches planner.summarize->GraphSummary precedent.
 gate1: SELF-APPROVED (routine) — derived from RR.md §8 "observability" + researcher-cited dispatcher.run gaps + maintainer-chosen form A; hermetic, no live execution, 4-file §3.
 constraints: CyberGym only; no live targets; zero network; whole-window git diff --name-only 5803bcd..HEAD ⊆ §3; PASS/FAIL from SUMMARY line not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 122 — SPEC_BRIEF21 builder COMPLETE; Opus build-assess PASS; dispatching kronos-reviewer (write-ahead)
+
+seq: 122
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 observability rung; review phase
+prev_outcome: SEQ 121 builder dispatch COMPLETE — head d9ec3e4 on claude/s8-agent-increment4-obs-brief21. Whole-window diff 5803bcd..HEAD = 4 paths ⊆ §3; additive (dispatcher +26 RunSummary+summarize_run, __init__ +2/-2 exports, test_O added); run/run_once/DispatcherResult/_commit byte-identical; conclusion precedence timed_out>complete>max_steps matches §2. Builder suite (raw pytest .venv): 3646 passed / 1 skipped / 0 failed; test_J/K/L/M/N + test_O all pass.
+action: dispatch kronos-reviewer (independent) on SPEC_BRIEF21 §3 vs diff + approved local pytest; reviewer obtains diff itself, writes 04-review/review-evidence.json.
+brief: SPEC_BRIEF21.md sha256 ea4411b00cd447cef6c5a4118f4ab4af622c7b0f82195cbdc94226fedde98e77; base main 5803bcd; head d9ec3e4.
+constraints: CyberGym only; no live targets; zero network; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
