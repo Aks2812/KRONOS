@@ -9,6 +9,7 @@ from kronos.agent.contracts import (
 from kronos.agent.dispatcher import DispatcherResult, RunSummary, run, run_once, summarize_run
 from kronos.agent.drivers import Driver, MockDriver
 from kronos.agent.executor import EVIDENCE_KIND, ExecutionOutcome, Executor, MockExecutor
+from kronos.agent.live_driver import LiveDriver
 from kronos.agent.live_executor import LiveExecutor
 from kronos.agent.planner import GraphSummary, plan, summarize
 from kronos.agent.reviewer import (
@@ -23,7 +24,7 @@ from kronos.agent.reviewer import (
 
 __all__ = [
     "validate_reason_payload", "ReasonResult", "Intent", "ContractViolation", "MAX_INTENTS",
-    "FORBIDDEN_FIELDS", "Driver", "MockDriver", "GraphSummary", "summarize", "plan",
+    "FORBIDDEN_FIELDS", "Driver", "MockDriver", "LiveDriver", "GraphSummary", "summarize", "plan",
     "DispatcherResult", "run_once", "run", "RunSummary", "summarize_run",
     "Reviewer", "MockReviewer", "ReviewVerdict", "ReviewViolation", "validate_verdict",
     "LEGAL_TARGET_TYPES", "COMMIT_STATUS",
