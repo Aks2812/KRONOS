@@ -117,3 +117,33 @@ def test_M_brief15_seal():  # §8 M
     assert 'BRIEF_MERGE = "81796b4"' in src
     assert 'f"{BRIEF_BASE}..{BRIEF_MERGE}"' in src
     assert 'f"{BRIEF_BASE}..HEAD"' not in src
+
+
+def _fake_clock(step=1.0):
+    t = [-step]
+
+    def clock():
+        t[0] += step
+        return t[0]
+
+    return clock
+
+
+def test_N_conclude_on_timeout(g):  # §8 N
+    # timeout fires: clock advances 1.0 per call, deadline 2.5, driver never completes
+    res = run(g, MockDriver([{"intents": [INTENT]}] * 50), max_steps=50, deadline=2.5, clock=_fake_clock())
+    last = res[-1]
+    assert last.timed_out is True and last.complete is False
+    assert last.committed == () and last.promoted == ()
+    assert len(res) < 50
+    assert not any(r.timed_out for r in res[:-1])
+    # no premature timeout: completes before deadline
+    res = run(g, MockDriver([{"intents": [INTENT]}, {"complete": True}]), max_steps=10, deadline=1000.0, clock=_fake_clock())
+    assert res[-1].complete is True and res[-1].timed_out is False
+    # backward compat: deadline=None
+    res = run(g, MockDriver([{"intents": [INTENT]}, {"complete": True}, {"intents": [INTENT]}]), max_steps=10)
+    assert len(res) == 2 and res[-1].complete and not any(r.timed_out for r in res)
+    # deadline <= 0 rejected
+    for bad in (0, -1.0):
+        with pytest.raises(ValueError):
+            run(g, MockDriver([{"complete": True}]), max_steps=3, deadline=bad)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from kronos.agent.contracts import Intent
@@ -20,6 +22,7 @@ class DispatcherResult:
     steps: int
     committed: tuple[str, ...] = ()
     promoted: tuple[str, ...] = ()
+    timed_out: bool = False
 
 
 def _commit(engagement, intent: Intent, verdict: ReviewVerdict) -> str:
@@ -90,11 +93,22 @@ def run(
     reviewer: Reviewer | None = None,
     executor: Executor | None = None,
     engagement_dir=None,
+    deadline: float | None = None,
+    clock: Callable[[], float] | None = None,
 ) -> list[DispatcherResult]:
     if max_steps < 1:
         raise ValueError("max_steps must be >= 1")
+    if deadline is not None and deadline <= 0:
+        raise ValueError("deadline must be > 0")
+    clock = clock or time.monotonic
+    start = clock()
     results: list[DispatcherResult] = []
     for _ in range(max_steps):
+        if deadline is not None and clock() - start >= deadline:
+            results.append(
+                DispatcherResult(complete=False, proposed_intents=(), steps=0, committed=(), promoted=(), timed_out=True)
+            )
+            break
         r = run_once(engagement, driver, reviewer, executor, engagement_dir)
         results.append(r)
         if r.complete:
