@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 140
+seq: 141
 derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF23 (live Driver) MERGED main (PR #31, squash 73cbe8b); next-direction PAUSE (§6 LLM-driven live run) (SEQ 140)
+stage: MAINTAINER-AUTHORIZED RAILS CHANGE — Wave-2 thin-Opus optimization R4/R5/R7/R8/R9 (context.md); write-ahead, outcome pending (SEQ 141)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7284,3 +7284,17 @@ next_options: (a) authorize §6 LLM-driven live run [explicit grant required]; (
 merged_branch: claude/s8-agent-live-driver-brief23 (remote deleted post-merge; local retained — checked-out, cannot delete current branch without switch that drops untracked rails).
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 141 — MAINTAINER-AUTHORIZED RAILS CHANGE: Wave-2 thin-Opus optimization R4/R5/R7/R8/R9 (context.md); write-ahead, outcome pending
+
+seq: 141
+derived_at: 2026-10-26T00:00:00Z
+stage: SPEC_BRIEF23 next-direction pause (SEQ 140) HELD OPEN; orthogonal maintainer-authorized rails change in progress
+authorization: Explicit written maintainer instruction = /home/void/context.md (read 2026-10-26). CLAUDE.md §4 exception permitting edits to the loop's own .claude/ rails ("the only exception is an explicit, written maintainer instruction ... must be recorded in the checkpoint as such") — recorded here AS SUCH. Approves ONLY Wave-2 R4/R5/R7/R8/R9. NOT a KRONOS goal/success/scope/architecture change. Does NOT authorize BRIEF23 §9 LLM-driven live run; SEQ 140 §6 pause preserved (context.md line 38) — this update grants no target/action/budget/credential/time window.
+prev_outcome: SEQ 140 SUCCESS (BRIEF23 live Driver MERGED PR #31 squash 73cbe8b). S8 live run remains §6-paused, unaffected.
+measurement_wave1: best-available before/after, Opus checkpoint output per SEQ block (proxy; historical per-session /caveman-stats UNAVAILABLE — session-scoped). PRE thin-opus era SEQ 86-108 avg 3506 B / 46.0 L per block (n=23). POST Wave-1 SEQ 111-140 avg 1598 B / 14.3 L per block (n=30). Per-brief POST stable 13.3-14.8 L/block across BRIEF19..23 (varied complexity) — isolable R2-schema signal. NOT workload-equivalent (PRE band includes multi-attempt rule-matrix BRIEF10.x; POST are single-slice agent-layer) → correlational, NO causal savings claim.
+regression_check: NONE material across SEQ 109-140. Gate integrity (10 MERGE-GATE prereqs present SEQ 112/117/123/132/139); reviewer independence (independent FAILs SEQ 116/122/131/136 — F-1 caught this run); traceability (sha256/SHA/SEQ pointers every block); scope enforcement (whole-window ⊆ §3 every merge); verification quality (suite SUMMARY + step-5 every increment). Compact R2 preserved all gate evidence.
+action: implement Wave-2 project-local rails edits — R4 (Opus output budgets: dispatch ≤8L, decision ≤6L, checkpoint ≤6L, status ≤5L, pause/finish ≤12L, no routine narration), R5 (effort tiering formalized + report if per-turn control unavailable), R7 (fixed 5-field worker returns; builder canonical evidence → reviewer via git, NO Opus re-summary, reviewer still NEVER gets builder report — independence preserved), R8 (compact SPEC-brief convention: canonical policy reference replaces global gate/rail boilerplate; every brief-specific scope/file/behavior/negative-case/criterion/evidence/exit preserved), R9 (compact /kronos-continue response). Canonical text → CLAUDE.md; pointers → .claude/roles/kronos-orchestrator.md, .claude/agents/kronos-{researcher,builder,reviewer}.md, .claude/skills/kronos-continue/SKILL.md. All untracked working-tree rails (same class SEQ 55 / 86/87 / 109).
+preserve: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence, source/test authority, and BRIEF23 §9 live run NOT authorized.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 + SEQ 141 Wave-2 rails edits all untracked working-tree files; unchanged in git."
