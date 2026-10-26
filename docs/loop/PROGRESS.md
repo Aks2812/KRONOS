@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 137
+seq: 138
 derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF23 reviewer FAIL (F-1: test_agent_live_driver.py SECTION_3 missing 5th path); return to builder (SEQ 137)
+stage: SPEC_BRIEF23 F-1 fix COMPLETE (0007c50, suite green); re-dispatching kronos-reviewer (SEQ 138)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7244,5 +7244,18 @@ action: re-dispatch kronos-builder — add "tests/test_agent_live_executor.py" t
 brief: SPEC_BRIEF23.md sha256 91f0afe35206ba449a447dddfbe24a226868ca792aca14b514ef62f9f70f6e1c; branch claude/s8-agent-live-driver-brief23 head 8760bf4.
 scope_s3: tests/test_agent_live_driver.py (SECTION_3 one-line additive fix only).
 constraints: CyberGym only; add no dependency; zero network/LLM in tests; whole-window 056f441..HEAD ⊆ 5-path §3; test_L/test_M in test_agent_dispatcher.py untouched+green; PASS/FAIL from SUMMARY not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 138 — SPEC_BRIEF23 F-1 fix COMPLETE (SECTION_3 5th path, commit 0007c50); Opus build-assess PASS; re-dispatching kronos-reviewer (write-ahead)
+
+seq: 138
+derived_at: 2026-10-26T00:00:00Z
+stage: live-agent build; BRIEF23 re-review phase
+prev_outcome: SEQ 137 builder COMPLETE — F-1 fix committed 0007c50 (single additive line "tests/test_agent_live_executor.py" into SECTION_3 at tests/test_agent_live_driver.py; Opus verified git show 0007c50 = 1 insertion, no other hunk); .venv raw pytest SUMMARY 3668 passed/1 skipped/0 failed; whole-window git diff --name-only 056f441..HEAD ⊆ 5-path §3; no hard-coded suite total to refresh.
+action: re-dispatch kronos-reviewer (independent, NOT given builder report) on SPEC_BRIEF23 vs local diff 056f441..0007c50; re-verify §8 F2 + G2 (prior FAIL) and confirm A–E,K,F3,§9 still hold; run approved tests.
+brief: SPEC_BRIEF23.md sha256 91f0afe35206ba449a447dddfbe24a226868ca792aca14b514ef62f9f70f6e1c; branch claude/s8-agent-live-driver-brief23 head 0007c50.
+scope_s3: SPEC_BRIEF23.md | src/kronos/agent/live_driver.py | src/kronos/agent/__init__.py | tests/test_agent_live_driver.py | tests/test_agent_live_executor.py (5 paths).
+constraints: CyberGym only; add no dependency; zero network/LLM in tests; reviewer isolated from builder report; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
