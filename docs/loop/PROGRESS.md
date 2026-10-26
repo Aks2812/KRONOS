@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 141
+seq: 142
 derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: MAINTAINER-AUTHORIZED RAILS CHANGE — Wave-2 thin-Opus optimization R4/R5/R7/R8/R9 (context.md); write-ahead, outcome pending (SEQ 141)
+stage: Wave-2 rails change COMPLETE (R4/R5/R7/R8/R9); S8 next-direction + §6 live-run pause (SEQ 140) resumes (SEQ 142)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7298,3 +7298,17 @@ action: implement Wave-2 project-local rails edits — R4 (Opus output budgets: 
 preserve: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence, source/test authority, and BRIEF23 §9 live run NOT authorized.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 + SEQ 141 Wave-2 rails edits all untracked working-tree files; unchanged in git."
+
+## SEQ 142 — Wave-2 thin-Opus rails change COMPLETE (R4/R5/R7/R8/R9); maintainer-authorized; no guardrail regression; S8 §6 live-run pause preserved
+
+seq: 142
+derived_at: 2026-10-26T00:00:00Z
+stage: Wave-2 rails change complete; loop returns to SEQ 140 next-direction + §6 live-run pause
+prev_outcome: SEQ 141 SUCCESS — Wave-2 R4/R5/R7/R8/R9 implemented as project-local rails edits; no material guardrail regression found pre-implementation; BRIEF23 §9 LLM-driven live run NOT authorized (SEQ 140 §6 pause preserved, context.md line 38 — no target/action/budget/credential/window granted).
+files_changed: CLAUDE.md (new "Wave-2 refinements" block in Cost discipline: R4 output budgets, R5 effort tiering, R7 fixed worker returns, R8 compact brief convention, R9 compact /kronos-continue, ≤2 decision points); .claude/roles/kronos-orchestrator.md (Wave-2 pointer); .claude/agents/kronos-builder.md + kronos-researcher.md + kronos-reviewer.md (R7 fixed-return note, 1 block each; reviewer independence explicitly preserved); .claude/skills/kronos-continue/SKILL.md (R9 compact resume). All untracked working-tree rails (same class SEQ 55 / 86/87 / 109).
+r5_effort_control: per-turn Opus effort NOT self-applicable by orchestrator in this harness (effort is session-level, set at launch / via /model) — policy recorded; mechanical per-turn effort switching NOT applied and NOT claimed (context.md line 16).
+measurement_wave1: proxy = Opus checkpoint output per SEQ block; historical per-session /caveman-stats UNAVAILABLE. PRE SEQ 86-108 avg 3506 B / 46.0 L per block (n=23); POST SEQ 111-140 avg 1598 B / 14.3 L (n=30); POST per-brief 13.3-14.8 L stable across BRIEF19..23. NOT workload-equivalent (PRE = multi-attempt rule-matrix BRIEF10.x; POST = single-slice agent-layer) → correlational, NO causal savings claim.
+next_measurement_unit: the next clean equivalent-workload single-slice increment (researcher→builder→reviewer→merge), measured by this-session /caveman-stats Opus output tokens + its checkpoint block line counts, compared against BRIEF23 (7 blocks, ~14 L/block) as the Wave-1-only baseline.
+preserved: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence, source/test authority; S8 live run still §6-paused.
+outcome: COMPLETE
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 + SEQ 141/142 Wave-2 rails edits all untracked working-tree files; unchanged in git."
