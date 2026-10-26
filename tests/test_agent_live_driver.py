@@ -18,6 +18,7 @@ SECTION_3 = {
     "src/kronos/agent/live_driver.py",
     "src/kronos/agent/__init__.py",
     "tests/test_agent_live_driver.py",
+    "tests/test_agent_live_executor.py",
 }
 SUMMARY = GraphSummary(finding_count=7, secret_count=13, findings_by_status=(("open", 5), ("closed", 2)))
 
