@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 130
+seq: 131
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: live-agent build — SPEC_BRIEF22 (live Executor) authored; GATE-1 self-approved; build phase (SEQ 130)
+stage: live-agent build — SPEC_BRIEF22 builder COMPLETE; review phase (SEQ 131)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7151,5 +7151,18 @@ brief: SPEC_BRIEF22.md sha256 e525e67d03b8fccccb7c1b730a729c5c24f492e9df2b328145
 scope_s3: SPEC_BRIEF22.md | src/kronos/agent/live_executor.py | src/kronos/agent/__init__.py | tests/test_agent_live_executor.py
 gate1: SELF-APPROVED (routine) — code + hermetic tests only, NO live run, NO network, 4-file §3 off validate/ core.
 constraints: CyberGym only; no live run in this brief; zero network in tests; whole-window git diff --name-only 1405ed7..HEAD ⊆ §3; PASS/FAIL from SUMMARY line not $?.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 131 — SPEC_BRIEF22 builder COMPLETE; Opus build-assess PASS; dispatching kronos-reviewer (write-ahead)
+
+seq: 131
+derived_at: 2026-10-25T00:00:00Z
+stage: live-agent build; BRIEF22 review phase
+prev_outcome: SEQ 130 builder COMPLETE — head 709458d on claude/s8-agent-live-executor-brief22. Whole-window diff 1405ed7..HEAD = 4 paths ⊆ §3; 0 validate/ edits; live_executor.py matches §2 D1-D4 + mapping (evidence=outcome.evidence or None, first-live-wins, else last non-live, else "no eligible candidate"); _decode_secret_value mirrors runner. Builder suite (raw pytest .venv): 3662 passed / 1 skipped / 0 failed; 16 new tests A-G,K,F2; test_L/M untouched.
+builder_notes: (1) Executor not @runtime_checkable so builder dropped an isinstance check (brief did not require); (2) test file uses own engagement_graph fixture scoped *.acme.example.com + arn:aws:s3:::* (default conftest scope marked URL endpoints out-of-scope) — hermetic unit-test fixture choice, validators injected, acceptable.
+action: dispatch kronos-reviewer (independent) on SPEC_BRIEF22 §3 vs diff + approved local pytest; reviewer obtains diff itself, writes 04-review/review-evidence.json.
+brief: SPEC_BRIEF22.md sha256 e525e67d03b8fccccb7c1b730a729c5c24f492e9df2b328145740b02a069c4a6; base main 1405ed7; head 709458d.
+constraints: CyberGym only; zero network in tests; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
