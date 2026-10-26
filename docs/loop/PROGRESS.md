@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 112
+seq: 113
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 LOW-backlog cleanup (option C); SPEC_BRIEF19 GATE-2 merge (SEQ 112)
+stage: S8 LOW-backlog CLEARED (option C merged); next-direction pause (SEQ 108 A/B/D remain) (SEQ 113)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -6909,4 +6909,16 @@ step5: PASS — L-1 guard bound to forbidden_patterns tuple; contracts.py comple
 f1_decision: ACCEPT — test_L seal a9f37ec..5b7001d within §3, mechanically required for §8-G, precedent Brief18 §2a / test_M; brief19 owns its window audit via §8-F (review PASS). F-2 Low: §8-A prose imprecise, guard non-vacuous, no change.
 evidence: .claude/pipeline/04-review/review-evidence.json; head bfde33f; base 5b7001d.
 outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 113 — SPEC_BRIEF19 (S8 LOW cleanup) MERGED main (PR #27, squash 5cf93c9); backlog cleared; loop back at S8 next-direction pause
+seq: 113
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 LOW-backlog cleared; next-direction pause (SEQ 108 options A/B/D remain)
+seq112_pending_action_outcome: SUCCESS — ten MERGE-GATE prereqs re-measured PASS in-turn (1 scope=4 ⊆ §3; 2 void-rule-kronos active; 3 isDraft false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 suite 3644 passed/1 skipped/0 failed on bfde33f; 8 MERGEABLE CLEAN + bfde33f NOT-ancestor origin/main; 9 PR #27 head bfde33f; 10 tree clean, only known untracked rails). pr merge 27 --squash --match-head-commit bfde33f — NO --admin, NO --auto. PR #27 MERGED 2026-10-26T01:32:36Z; origin/main 5b7001d -> squash 5cf93c9.
+prev_outcome: SEQ 112 self-authorized GATE-2 executed successfully.
+action: none pending; S8 LOW backlog (L-1 vacuity, contracts.py:38 truthiness, L-2 comment, extra-key policy) cleared. Loop returns to the SEQ 108 next-direction decision.
+next_direction: SEQ 108 options A (Increment 4+), B (live §6 run), D (stop S8) remain; each is a pause-#2 scope change needing maintainer authorization. Option C now done.
+measurement: this increment is the first Wave-1 before/after unit — 1 researcher + 1 builder + 1 reviewer dispatch, compact R1 dispatches, R2 SEQ blocks 109-113; run /caveman-stats for Opus output-token comparison.
+outcome: COMPLETE
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
