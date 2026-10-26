@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 120
+seq: 121
 derived_at: 2026-10-25T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: S8 Increment 4 observability rung — PAUSE-DECISION on form (SEQ 120)
+stage: S8 Increment 4 observability rung; SPEC_BRIEF21 build phase (SEQ 121)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7013,5 +7013,20 @@ pause_decision: observability FORM is a value prose does not fix (§4 "prose sil
   A = run-level summary struct (new frozen RunSummary in dispatcher.py: total_steps, conclusion reason enum, aggregate committed/promoted counts) wrapping list[DispatcherResult]; pure in-memory, hermetic; matches planner.GraphSummary precedent. 3-file §3 (brief, dispatcher.py, test_agent_dispatcher.py).
   B = event emission: wire dispatcher into existing src/kronos/events.py chokepoint (emit per-step + timeout events to events.jsonl, new ALLOWED_KINDS); matches events.py precedent. Would also edit src/kronos/events.py (ALLOWED_KINDS) → 4-file §3, still hermetic.
 action: none — awaiting maintainer choice of observability form (A, B, or other). No code until form fixed.
+outcome: pending
+carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
+
+## SEQ 121 — SPEC_BRIEF21 (S8.4 Increment 4 observability: run-level RunSummary) authored; form A; GATE-1 SELF-APPROVED; dispatching builder (write-ahead)
+
+seq: 121
+derived_at: 2026-10-25T00:00:00Z
+stage: S8 Increment 4 observability rung; build phase
+prev_outcome: SEQ 120 PAUSE-DECISION resolved — maintainer chose form A (run-level RunSummary struct) over B (events.py emission).
+action: dispatch kronos-builder on SPEC_BRIEF21 §3 (4 files); branch claude/s8-agent-increment4-obs-brief21 off main 5803bcd (brief commit 5cbc80d).
+brief: SPEC_BRIEF21.md sha256 ea4411b00cd447cef6c5a4118f4ab4af622c7b0f82195cbdc94226fedde98e77; branch head 5cbc80d.
+scope_s3: SPEC_BRIEF21.md | src/kronos/agent/dispatcher.py | src/kronos/agent/__init__.py | tests/test_agent_dispatcher.py
+design: add frozen RunSummary (results/total_steps/conclusion/committed/promoted) + pure summarize_run(results)->RunSummary to dispatcher.py; export both in __init__; run/run_once/DispatcherResult untouched (preserves test_J/N/K + frozen L/M). conclusion precedence last.timed_out>last.complete>max_steps. Matches planner.summarize->GraphSummary precedent.
+gate1: SELF-APPROVED (routine) — derived from RR.md §8 "observability" + researcher-cited dispatcher.run gaps + maintainer-chosen form A; hermetic, no live execution, 4-file §3.
+constraints: CyberGym only; no live targets; zero network; whole-window git diff --name-only 5803bcd..HEAD ⊆ §3; PASS/FAIL from SUMMARY line not $?.
 outcome: pending
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 rails edits untracked; unchanged."
