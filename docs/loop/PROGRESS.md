@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 169
+seq: 170
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: resolves_to consumer design SELECTED (read-only query.resolve_host); authoring SPEC_BRIEF27; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF27 (read-only resolves_to consumer query.resolve_host) MERGED main (PR #35, squash a5373b4); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7585,4 +7585,14 @@ action: self-authorize GATE-2 (authority model SEQ 55). Re-measure all 10 MERGE-
 brief: SPEC_BRIEF27.md sha256 aa727d4de6a2567105b803fb4e4aec7c10ff35e0b2c9eeccc6b681ebef32d51b; base origin/main 31ca3b5; head e747439; PR #35.
 constraints: CyberGym only; hermetic; no new dep; merge only on 10/10 green; no scope change.
 pending_action: re-measure 10 prereqs in-turn; merge PR #35 at e747439 if 10/10 green; then record SUCCESS + next-direction.
-outcome: pending
+outcome: SUCCESS — 10/10 re-measured PASS in-turn; merged --squash --match-head-commit e747439; PR #35 MERGED a5373b4.
+
+## SEQ 170 — SPEC_BRIEF27 (read-only resolves_to consumer) MERGED main (PR #35, squash a5373b4); next-direction PAUSE
+
+seq: 170
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 169 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn (1 scope 4⊆§3; 2 rails active; 3 draft=false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 suite 3739 passed/1 skipped/0 failed head e747439; 8 MERGEABLE CLEAN + NOT-ancestor; 9 PR #35 head=e747439; 10 tree clean, untracked = known rails only). Merged --squash --match-head-commit e747439, NO --admin/--auto.
+action: PAUSE for maintainer next-direction. resolves_to now has a producer (brief26) AND a read-only consumer query.resolve_host (brief27). Remaining substantive rungs (IDENTITY/TECHNOLOGY consumers, reconcile-side use) are prose-silent → PAUSE-DECISION (§4). context.md DNS authorization satisfied; no live target.
+brief: SPEC_BRIEF27.md sha256 aa727d4de6a2567105b803fb4e4aec7c10ff35e0b2c9eeccc6b681ebef32d51b; merged base 31ca3b5 -> origin/main a5373b4.
+pending_action: await maintainer next-direction. Open LOW follow-ups (optional, in-scope): F-L1 query.resolve_host docstring query.py:150 "cycle-safe via a visited set" stale (cycle now DFS back-edge); brief26 reviewer LOWs (vacuous id assert test_dns_ingest.py:134; FQDN regex no 63/253 cap parser.py:24; narrow nonet). S8 §6 live-run paused since SEQ 140 (needs §6 target/action/window authorization — not present).
+outcome: SUCCESS (rung complete)
