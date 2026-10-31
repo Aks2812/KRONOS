@@ -147,7 +147,9 @@ def _is_ip(value: str) -> bool:
 
 def resolve_host(graph: "EngagementGraph", name: str, only_in_scope: bool = True) -> dict[str, Any]:
     """Read-only: IP terminals an FQDN HOST resolves to via `resolves_to`
-    edges (CNAME chains followed, BFS, cycle-safe via a visited set).
+    edges (CNAME chains followed, BFS). `visited` dedups expansion only; cycle
+    detection is a DFS back-edge check (an edge to an FQDN on the current
+    DFS path), so a diamond is not a cycle.
 
     Evidence, not authorization: never writes, never sets `in_scope`, and
     never promotes an out-of-scope IP into an in-scope result. Abstains via

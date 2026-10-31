@@ -119,6 +119,7 @@ def test_query_graph_rejects_unknown_filter_key(engagement_graph):
 # ---- SPEC_BRIEF27 resolve_host (hermetic; expected values from brief prose) ----
 
 B27_BASE = "31ca3b5"
+B27_MERGE = "a5373b4"
 B27_SECTION_3 = {
     "SPEC_BRIEF27.md",
     "src/kronos/query.py",
@@ -275,7 +276,7 @@ def test_B27_N_no_network(rg, monkeypatch):
 
 def test_B27_J_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B27_BASE}..HEAD"], capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B27_BASE}..{B27_MERGE}"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B27_SECTION_3, set(out) - B27_SECTION_3
 
@@ -290,3 +291,28 @@ def test_B27_J3_multipath_cycle(rg):
         ("b.example.com", "c.example.com"),
     )
     assert resolve_host(rg, "a.example.com")["status"] == "cycle_detected"
+
+
+# ---- SPEC_BRIEF28 (hermetic) ----
+
+B28_BASE = "a5373b4"
+B28_SECTION_3 = {
+    "SPEC_BRIEF28.md",
+    "src/kronos/query.py",
+    "src/kronos/ingest/dns/parser.py",
+    "tests/test_dns_ingest.py",
+    "tests/test_query.py",
+}
+
+
+def test_B28_A_resolve_host_docstring():
+    doc = resolve_host.__doc__
+    assert "via a visited set" not in doc
+    assert "DFS" in doc and "back-edge" in doc
+
+
+def test_B28_J_scope_audit():
+    out = subprocess.run(
+        ["git", "diff", "--name-only", f"{B28_BASE}..HEAD"], capture_output=True, text=True, check=True
+    ).stdout.split()
+    assert set(out) <= B28_SECTION_3, set(out) - B28_SECTION_3
