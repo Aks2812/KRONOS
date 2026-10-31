@@ -54,10 +54,13 @@ D4. **Traversal (BFS, deterministic, cycle-safe).** Breadth-first from the norma
       if `in_scope`, and any terminal dropped for being out of scope sets `excluded_out_of_scope=True`.
       When `only_in_scope=False`: intermediates and terminals are not scope-filtered (diagnostic use);
       `excluded_out_of_scope` is `False`.
-    - **Cycle.** If BFS re-reaches an FQDN already in `visited` (e.g. `a→b→a`), set
-      `status="cycle_detected"` and stop expanding that branch; terminals already collected from
-      acyclic branches are still returned. Cycle detection is what bounds the traversal (a finite graph
-      with a visited-set terminates; no `max_hops` knob is introduced).
+    - **Cycle.** The `visited` set bounds the traversal by never re-expanding an FQDN already
+      expanded: a **diamond** — two CNAME paths converging on one intermediate FQDN — is expanded once
+      and is **not** a cycle (it resolves normally; the shared IP de-duplicates per D5). A **cycle** is
+      a `resolves_to` edge back to an FQDN already on the *current branch's path* (an ancestor), e.g.
+      `a→b→a`: set `status="cycle_detected"` and stop expanding that branch; terminals already
+      collected from acyclic branches are still returned. (A finite graph with a visited-set
+      terminates; no `max_hops` knob is introduced.)
 
 D5. **Deterministic result.** `terminals` is the **sorted, de-duplicated** list of kept terminal IP id
     strings (MERGE semantics mean the same IP reached by two paths appears once; the sort makes output
