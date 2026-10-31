@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 159
+seq: 160
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: DNS-resolution producer rung — impl+seal COMPLETE, suite green; dispatching reviewer (write-ahead SEQ 159); S8 §6 live-run still paused (SEQ 140)
+stage: DNS-resolution producer rung — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 160); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7484,4 +7484,14 @@ prev_outcome: SEQ 158 seal COMPLETE. tests/test_agent_live_executor.py:222 B25_M
 action: Opus build-assess PASS; scope verified.
 brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; base 4ff38f4; head 1cdbbd8.
 pending_action: dispatch kronos-reviewer (claude-haiku-5-5) independent review at head 1cdbbd8 against brief §8 A-K,L.
+outcome: pending
+
+## SEQ 160 — SPEC_BRIEF26 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push+PR+re-measure 10 in-turn (write-ahead)
+
+seq: 160
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 159 reviewer PASS·MERGE. Suite 3724 passed,1 skipped,0 failed head 1cdbbd8; scope 6 ⊆ §3; criteria A-L PASS; 3 LOW nits (vacuous id assert, FQDN regex no 63/253 cap, narrow nonet) non-blocking, not §8/§2 violations. Opus step-5 PASS: parser.py D2 fail-closed parse, D3 decline reasons, deterministic _norm_fqdn, D4 HOST+HOST+resolves_to nodes-before-edge source=dns scope_key, D6 dispatch branch, D7 stdlib/no-events.
+action: SELF-AUTHORIZE GATE-2 — open PR branch claude/dns-resolves-brief26 (head 1cdbbd8) to main; re-measure all 10 MERGE-GATE prereqs SAME turn; merge --squash --match-head-commit, NO --admin/--auto, only if 10/10 green. Session posture: ask-tier inert under bypassPermissions (kronos-railcheck); merge authorized by authority model SEQ 55, gated by the 10-prereq re-measure.
+brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; head 1cdbbd8; base origin/main 4ff38f4.
+constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green.
 outcome: pending
