@@ -133,3 +133,27 @@ def test_N_no_writer_calls(mod):  # §8 N
     src = (AGENT / mod).read_text()
     for w in WRITERS:
         assert f"{w}(" not in src, f"{mod} calls {w}"
+
+
+# ---- SPEC_BRIEF24 §8-J: any_of / blocked_by contract validation ----
+@pytest.mark.parametrize("field", ["any_of", "blocked_by"])
+@pytest.mark.parametrize("bad", ["probe:x", [1], ["ok", None], {"a": "b"}, 5])
+def test_P_J_dep_field_negative(field, bad):
+    item = _intent()
+    item[field] = bad
+    with pytest.raises(ContractViolation):
+        validate_reason_payload({"intents": [item]})
+
+
+@pytest.mark.parametrize("field", ["any_of", "blocked_by"])
+@pytest.mark.parametrize("good", [["a:1", "b:2"], ("a:1",), []])
+def test_P_J_dep_field_accepted(field, good):
+    item = _intent()
+    item[field] = good
+    got = getattr(validate_reason_payload({"intents": [item]}).intents[0], field)
+    assert got == tuple(good) and isinstance(got, tuple)
+
+
+def test_P_J_dep_default_empty():
+    it = validate_reason_payload({"intents": [_intent()]}).intents[0]
+    assert it.any_of == () and it.blocked_by == ()
