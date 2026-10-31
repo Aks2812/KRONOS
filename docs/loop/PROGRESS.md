@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 143
-derived_at: 2026-10-26T00:00:00Z
+seq: 144
+derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung build (write-ahead SEQ 143); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF24 dependency-DAG rung — builder COMPLETE, F-1 fixed, suite green; re-dispatching reviewer (write-ahead SEQ 144); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7324,3 +7324,13 @@ brief: SPEC_BRIEF24.md sha256 e78308110776a223e4080a068d61fee58749877125b2f08ca0
 pending_action: dispatch kronos-builder on new branch claude/s8-agent-depdag-brief24 off 73cbe8b; implement §3 only; §8 A–K.
 outcome: pending
 carried_forward_rails: "SEQ 55 + 86/87 + 109 + 141/142 rails edits untracked; unchanged."
+
+## SEQ 144 — SPEC_BRIEF24 builder COMPLETE + reviewer FAIL(F-1) fixed; suite green; re-dispatching kronos-reviewer (write-ahead)
+
+seq: 144
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 143 COMPLETE (builder ran; prior review FAIL F-1 §8 L2 at head 0ff65f6).
+action: F-1 fix committed e214058 (§3 item 6: tests/test_agent_live_driver.py in SECTION_3_B24). Suite 3697 passed, 1 skipped (raw .venv pytest, exit 0). Scope clean: 6 files ⊆ §3.
+brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head e214058.
+pending_action: dispatch kronos-reviewer (claude-haiku-5-5) for independent re-review at head e214058; prior F-2 LOW carried for assessment.
+outcome: pending
