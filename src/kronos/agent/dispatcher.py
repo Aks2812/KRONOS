@@ -6,7 +6,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from kronos.agent.contracts import Intent
+from kronos.agent.contracts import ContractViolation, Intent
 from kronos.agent.drivers import Driver
 from kronos.agent.executor import EVIDENCE_KIND, Executor
 from kronos.agent.planner import plan, summarize
@@ -23,6 +23,7 @@ class DispatcherResult:
     committed: tuple[str, ...] = ()
     promoted: tuple[str, ...] = ()
     timed_out: bool = False
+    withheld: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -65,6 +66,43 @@ def _commit(engagement, intent: Intent, verdict: ReviewVerdict) -> str:
     return finding_id
 
 
+def _key(intent: Intent) -> str:
+    return f"{intent.kind}:{intent.target_id}"
+
+
+def _topo_order(intents) -> list[int]:
+    """Phase 0 (SPEC_BRIEF24 D5/D6): fail-closed dependency validation + stable Kahn order.
+
+    Pure. Without any dependency field it returns list order and validates nothing.
+    """
+    n = len(intents)
+    if not any(i.any_of or i.blocked_by for i in intents):
+        return list(range(n))
+    index: dict[str, int] = {}
+    for pos, intent in enumerate(intents):
+        k = _key(intent)
+        if k in index:
+            raise ContractViolation(f"duplicate intent key {k!r} in a batch with dependencies")
+        index[k] = pos
+    deps: list[set[int]] = []
+    for intent in intents:
+        refs = set()
+        for ref in (*intent.any_of, *intent.blocked_by):
+            if ref not in index:
+                raise ContractViolation(f"unknown dependency reference {ref!r}")
+            refs.add(index[ref])
+        deps.append(refs)
+    order: list[int] = []
+    done: set[int] = set()
+    while len(order) < n:
+        ready = next((p for p in range(n) if p not in done and deps[p] <= done), None)
+        if ready is None:
+            raise ContractViolation("dependency cycle")
+        order.append(ready)
+        done.add(ready)
+    return order
+
+
 def run_once(
     engagement,
     driver: Driver,
@@ -75,7 +113,9 @@ def run_once(
     if executor is not None and engagement_dir is None:
         raise ValueError("engagement_dir is required when an executor is given")
     result = plan(summarize(engagement), driver)
+    order = _topo_order(result.intents)  # phase 0: raises before any adjudication/write
     committed: list[tuple[str, Intent]] = []
+    withheld: list[str] = []
     promoted: list[str] = []
     if reviewer is not None and not result.complete:
         # Phase 1: adjudicate every intent; no writes, so a violation leaves the graph untouched.
@@ -85,11 +125,20 @@ def run_once(
             validate_verdict(verdict)
             verdicts.append((intent, verdict))
         # Phase 2: commit.
-        for intent, verdict in verdicts:
+        satisfied: set[str] = set()
+        for pos in order:
+            intent, verdict = verdicts[pos]
+            if not (
+                all(r in satisfied for r in intent.blocked_by)
+                and (not intent.any_of or any(r in satisfied for r in intent.any_of))
+            ):
+                withheld.append(_key(intent))
+                continue
             if verdict.approved and engagement.scope.is_in_scope(
                 intent.target_id, node_type=verdict.target_type, target_kind="id"
             ):
                 committed.append((_commit(engagement, intent, verdict), intent))
+                satisfied.add(_key(intent))
         # Phase 3: execute only gated, committed findings; promote only on success WITH evidence.
         if executor is not None:
             for finding_id, intent in committed:
@@ -108,6 +157,7 @@ def run_once(
     return DispatcherResult(
         complete=result.complete, proposed_intents=result.intents, steps=1,
         committed=tuple(f for f, _ in committed), promoted=tuple(promoted),
+        withheld=tuple(withheld),
     )
 
 
