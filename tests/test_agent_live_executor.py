@@ -252,7 +252,9 @@ def _svc(g, sid=SVC_IN, port=4566):
 
 
 def _web(g, url=WEB_IN, method="GET"):
-    g.upsert_node("WEB_ENDPOINT", url, {"url": url, "method": method, "source": "t"})
+    from urllib.parse import urlsplit
+
+    g.upsert_node("WEB_ENDPOINT", url, {"url": url, "method": method, "source": "t"}, scope_key=urlsplit(url).hostname)
 
 
 def _arm25(success):
