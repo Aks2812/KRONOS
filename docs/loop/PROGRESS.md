@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 171
+seq: 172
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF28 (DNS hygiene: docstring + meaningful assert + FQDN 63/253 limits) GATE-1 self-approved; dispatching builder; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF28 (DNS hygiene) build COMPLETE (1f43b02); dispatching reviewer; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7606,4 +7606,14 @@ action: authored SPEC_BRIEF28 (§3 = 5 files: SPEC_BRIEF28.md, query.py docstrin
 brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base origin/main a5373b4; branch claude/dns-hygiene-brief28.
 constraints: CyberGym only; hermetic (no live net/§6); no new dep; correctness/test-hardening only, no refactor/schema/capability; scope ⊆ §3; seal brief27 audit to a5373b4.
 pending_action: dispatch builder for D1-D3 + §8 A-K tests within §3; on build return → independent review → GATE-2; then dispatch researcher decision memo (IDENTITY/TECHNOLOGY producer vs reconcile-side resolves_to), no impl.
+outcome: COMPLETE — builder (claude-sonnet-5-5) 1f43b02; RED-before 5 failed → GREEN 3746 passed/1 skipped/0 failed; scope 5⊆§3.
+
+## SEQ 172 — SPEC_BRIEF28 build COMPLETE (in-scope); dispatching kronos-reviewer (write-ahead)
+
+seq: 172
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: builder (claude-sonnet-5-5) 1f43b02: D1 query.py resolve_host docstring (visited=expansion-dedup, cycle=DFS back-edge, diamond not cycle, no code change); D2 test_F_per_record_declines meaningful EdgeUpsert assertion (label/from_id/to_id, edge count==1); D3 _norm_fqdn parser.py length limits (label 1..63, total ≤253 → None → malformed_fqdn, fail-closed); §8 A docstring guard, C/D label+total boundary, E compat, J scope audit, S seal B27→a5373b4. RED-before 5 failed → GREEN full suite 3746 passed/1 skipped/0 failed (.venv pytest). Whole-window a5373b4..HEAD = 5 paths ⊆ §3.
+action: dispatch kronos-reviewer (claude-haiku-5-5) — independent review brief28 vs diff a5373b4..1f43b02 + approved pytest; verify D1-D3, §8 A/C/D/E/J/S/K, fail-closed 63/253, compat, scope ⊆ §3, brief27 seal pinned; draws only brief + diff, never builder report.
+brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base a5373b4; head 1f43b02; branch claude/dns-hygiene-brief28.
+constraints: CyberGym only; hermetic; no new dep; correctness/hardening only; scope ⊆ §3.
 outcome: pending
