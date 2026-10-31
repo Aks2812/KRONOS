@@ -195,6 +195,7 @@ SECTION_3_B24 = {
     "src/kronos/agent/dispatcher.py",
     "tests/test_agent_dispatcher.py",
     "tests/test_agent_contracts.py",
+    "tests/test_agent_live_driver.py",
 }
 H_X, H_Y, H_Z, H_W = (f"{n}.acme.example.com" for n in ("x", "y", "z", "w"))
 _OK = ReviewVerdict(approved=True, target_type="HOST", status="hypothesis")
