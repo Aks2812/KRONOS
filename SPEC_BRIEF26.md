@@ -100,6 +100,15 @@ D7. **No lifecycle events, no new dependency, no env var, no network, no §6, no
    do not touch `NodeUpsert`/`EdgeUpsert`/`apply_upserts`/`_resolve_node_type` or any other branch)
 5. `tests/test_dns_ingest.py` (new; §8 tests, mirroring `tests/test_infra_ingest.py` /
    `tests/test_web_ingest.py`)
+6. **`tests/test_agent_live_executor.py` (seal-only edit, amendment):**
+   brief25's `test_B25_J_scope_audit_whole_window` uses the unsealed window `f"{B25_BASE}..HEAD"`
+   (`B25_BASE="98636e5"`), which trips on every later branch that adds a path outside brief25's §3 set
+   — brief26 adds its own files. Add `B25_MERGE = "4ff38f4"` (brief25's PR #33 squash merge on `main`,
+   SEQ 155) and change **that one test's** window to `f"{B25_BASE}..{B25_MERGE}"`, pinning the audit to
+   brief25's footprint — exactly as brief25 §3 item 4 sealed brief24 and brief22 pinned its own seal.
+   **No other change to this file**; the brief22 seal already pinned there stays untouched, and no
+   other test or constant changes. Mechanically required for suite-green (§8 K). (Amendment recorded
+   2026-10-31; self-approved GATE-1, no scope expansion, no new capability.)
 
 Base = `origin/main` @ `4ff38f4`. Never `git add -A`; stage explicit paths only. **Add no new
 dependency.** Do **NOT** edit `src/kronos/schema.py`, `scope_guard.py`, `reconcile/*`, `canonical.py`,
@@ -139,6 +148,11 @@ I. **No network.** A `nonet`-style socket assertion proves the parse + plan path
 J. **Scope audit (whole window).** `git diff --name-only 4ff38f4..HEAD` ⊆ the §3 set, asserted with a
    distinct base constant `B26_BASE = "4ff38f4"` and window `f"{B26_BASE}..HEAD"` (never
    `f"{BRIEF_BASE}..HEAD"`, so the frozen brief seals stay green).
+L. **brief25 audit sealed (§3 item 6 amendment).** `tests/test_agent_live_executor.py::test_B25_J_scope_audit_whole_window`
+   uses window `f"{B25_BASE}..{B25_MERGE}"` with `B25_MERGE = "4ff38f4"`, **not** `..HEAD`, so it is
+   pinned to brief25's footprint and passes on this and later branches; the brief22 seal in that file
+   and all other tests/constants are unchanged (asserted by zero other deleted lines there).
+
 K. **Suite green.** Full `pytest` reports `0 failed` on the final commit (totals refreshed as the last
    edit); all pre-existing tests and the brief22/23/24/25 seals untouched and green.
 
