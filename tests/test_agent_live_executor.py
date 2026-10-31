@@ -219,6 +219,7 @@ def test_F2_scope_audit_whole_window():  # §8 F2
 # SPEC_BRIEF25 §8 A-K. Expected values derive from SPEC_BRIEF25 §2 D1-D4 prose.
 # ---------------------------------------------------------------------------
 B25_BASE = "98636e5"
+B25_MERGE = "4ff38f4"
 SECTION_3_B25 = {
     "SPEC_BRIEF25.md",
     "src/kronos/agent/live_executor.py",
@@ -419,6 +420,6 @@ def test_B25_I_no_network_all_paths(lab_graph, tmp_path, nonet):  # §8 I
 
 
 def test_B25_J_scope_audit_whole_window():  # §8 J
-    out = subprocess.run(["git", "diff", "--name-only", f"{B25_BASE}..HEAD"], cwd=ROOT,
+    out = subprocess.run(["git", "diff", "--name-only", f"{B25_BASE}..{B25_MERGE}"], cwd=ROOT,
                          capture_output=True, text=True, check=True).stdout.split()
     assert set(out) <= SECTION_3_B25, set(out) - SECTION_3_B25

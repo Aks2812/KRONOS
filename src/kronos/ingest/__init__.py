@@ -85,6 +85,11 @@ def ingest(raw_tool_output: Any, tool_name: str, engagement: "EngagementGraph") 
         from kronos.ingest.web.parser import ingest_web_openapi
 
         return ingest_web_openapi(raw_tool_output, engagement)
+    if tool_name == "dns_records":
+        # Local import, same circular-import reason as mobile_static.
+        from kronos.ingest.dns.parser import ingest_dns_records
+
+        return ingest_dns_records(raw_tool_output, engagement)
     raise NotImplementedError(f"parser for tool_name={tool_name!r} not implemented; real parsers are a later brief")
 
 
