@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 148
+seq: 149
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung MERGED to main (PR #32, squash 98636e5); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF25 (S8 executor probe_service/probe_web) GATE-1 self-approved; dispatching builder (write-ahead SEQ 149); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7374,3 +7374,15 @@ action: PAUSE for maintainer next-direction. Dispatcher any_of/blocked_by depend
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; merged base 73cbe8b -> origin/main 98636e5.
 pending_action: await maintainer next-direction (new hermetic backlog brief, or §6 live-run grant, or stop).
 outcome: SUCCESS (rung complete)
+
+## SEQ 149 — SPEC_BRIEF25 (S8 executor probe_service/probe_web, hermetic/mock) GATE-1 self-approved; dispatching builder (write-ahead)
+
+seq: 149
+derived_at: 2026-10-31T00:00:00Z
+stage: S8 agent-executor probe wiring rung (hermetic/mock); build
+authorization: maintainer next-direction 2026-10-31 — next highest-priority hermetic backlog increment; hermetic/mock verification only; NO §6/live network/LLM/budget/SECRET-WEB commit-execute. Not a goal/scope/architecture change.
+prev_outcome: SEQ 148 SUCCESS (brief24 merged PR #32 98636e5). Researcher backlog (read-only): 3 hermetic-eligible candidates; selected #1 (executor wiring for infra/web reachability) — strongest G2-over-G1, lowest ambiguity, brief-ready. #2 DNS-ingester (consumerless edge + unspecified format), #3 IDENTITY (prose-silence PAUSE) deferred.
+selection_evidence: src/kronos/agent/live_executor.py:44-46 (only kind==validate); infra_validator.py:28,43 + web_validator.py:29,44 zero agent callers; mirrors SPEC_BRIEF22 single-target shape.
+brief: SPEC_BRIEF25.md sha256 535f030cdde090f229d7bcb34f4376c6fca492b2be343d4af8047afcd9b6ce89; §3={SPEC_BRIEF25.md, src/kronos/agent/live_executor.py, tests/test_agent_live_executor.py}; base origin/main 98636e5.
+pending_action: commit SPEC_BRIEF25.md on branch claude/s8-executor-probe-brief25 (off 98636e5); dispatch kronos-builder (claude-sonnet-5-5) to implement §3 only (RED tests §8 A-K first, then impl); hermetic.
+outcome: pending
