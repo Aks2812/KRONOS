@@ -8,6 +8,7 @@ resource into a provable cross-domain chain.
 
 from __future__ import annotations
 
+import ipaddress
 from typing import TYPE_CHECKING, Any
 
 from kronos.evidence import get_evidence  # noqa: F401 - re-exported per SPEC.md's named interface list
@@ -134,3 +135,75 @@ def find_paths(
             "length": length,
         })
     return paths
+
+
+def _is_ip(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
+
+
+def resolve_host(graph: "EngagementGraph", name: str, only_in_scope: bool = True) -> dict[str, Any]:
+    """Read-only: IP terminals an FQDN HOST resolves to via `resolves_to`
+    edges (CNAME chains followed, BFS, cycle-safe via a visited set).
+
+    Evidence, not authorization: never writes, never sets `in_scope`, and
+    never promotes an out-of-scope IP into an in-scope result. Abstains via
+    `status` (unknown_host / unresolved / cycle_detected) when the stored
+    edges are insufficient. Makes no freshness claim (edges carry no time).
+    """
+    norm = name.lower()
+    if norm.endswith("."):
+        norm = norm[:-1]
+
+    def result(status: str, terminals: list[str], excluded: bool) -> dict[str, Any]:
+        return {
+            "name": norm,
+            "status": status,
+            "terminals": sorted(set(terminals)),
+            "excluded_out_of_scope": excluded,
+        }
+
+    res = graph.execute("MATCH (h:HOST {id: $id}) RETURN h.in_scope AS in_scope", {"id": norm})
+    if not res.has_next():
+        return result("unknown_host", [], False)
+    start_in_scope = bool(res.get_next()[0])
+    if only_in_scope and not start_in_scope:
+        return result("unresolved", [], True)
+    if _is_ip(norm):
+        return result("unresolved", [], False)
+
+    visited: set[str] = set()
+    terminals: set[str] = set()
+    excluded = False
+    cycle = False
+    queue: list[tuple[str, frozenset[str]]] = [(norm, frozenset())]
+    while queue:
+        current, ancestors = queue.pop(0)
+        if current in visited:
+            continue
+        visited.add(current)
+        path = ancestors | {current}
+        rows = graph.execute(
+            "MATCH (a:HOST {id:$id})-[:resolves_to]->(b:HOST) RETURN b.id AS id, b.in_scope AS in_scope",
+            {"id": current},
+        )
+        while rows.has_next():
+            bid, b_in_scope = rows.get_next()
+            if only_in_scope and not b_in_scope:
+                excluded = True
+                continue
+            if _is_ip(bid):
+                terminals.add(bid)
+            elif bid in path:
+                cycle = True  # back-edge to an FQDN on the current path
+            else:
+                queue.append((bid, path))
+
+    if cycle:
+        return result("cycle_detected", list(terminals), excluded)
+    if terminals:
+        return result("resolved", list(terminals), excluded)
+    return result("unresolved", [], excluded)
