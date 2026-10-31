@@ -146,6 +146,12 @@ J2. **Cycle abstention.** `a.example.com → b.example.com → a.example.com` (a
    terminal) → `status="cycle_detected"`, `terminals==[]` (traversal terminates; no fabricated
    resolution). A cycle with one acyclic branch to `1.2.3.4` → `status="cycle_detected"`,
    `terminals==["1.2.3.4"]`.
+J3. **Multi-path cycle (per-path detection).** A graph where a cycle closes only on a branch reached
+   after the cycle's node was first expanded via another branch — e.g. `a→b`, `a→c`, `c→b`, `b→c` (all
+   in-scope FQDNs, no IP terminal) — → `status="cycle_detected"` (the `b↔c` cycle is on the
+   `a→c→b→c` / `a→b→c→b` branch). Asserts D4's rule that a cycle is a back-edge to an FQDN on the
+   **current branch's path**, checked on every edge and not suppressed by the `visited` expansion-dedup;
+   abstention must not degrade to `unresolved` when a real cycle exists.
 R. **Read-only / no authorization side effect.** After `resolve_host`, the graph is unchanged: node
    count and edge count equal the pre-call counts, no new `HOST`/`FINDING`/`SECRET` node exists, and no
    node's `in_scope` changed. (Asserts the consumer neither writes nor approves.)
