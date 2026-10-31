@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 165
+seq: 166
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7544,4 +7544,14 @@ prev_outcome: reviewer (claude-haiku-5-5) FAIL·DO-NOT-MERGE. Suite 3738 passed/
 action: Opus step-5 adjudication — D4 literal ("already in visited") contradicts D6 ("a resolves_to cycle was reached") and shipped test test_B27_E_diamond_is_not_a_cycle:189; a diamond is not a cycle. Builder impl+tests CORRECT per D6; D4 phrasing is the defect → amend D4 cycle bullet doc-only (visited=termination/dedup; cycle=path-ancestor re-reach) per CLAUDE.md §2. §8 J2 (a→b→a) unaffected. No code/test change, no rebuild. F-2/F-3 LOW non-blocking (import add required by new tests; dead None cosmetic). Resolvable from brief's own D6 → NOT a maintainer pause.
 brief: SPEC_BRIEF27.md pre-amend sha256 fbdaf4ffb6fbe7c38457724eb15a4d3efd13faaaa4a985c13f5e2858af9ae912; base 31ca3b5; head 81f8d7e; branch claude/resolves-consumer-brief27.
 pending_action: amend D4 doc-only, commit/push branch; re-verify whole-window `git diff --name-only 31ca3b5..HEAD` ⊆ §3 on new head; then self-authorize GATE-2 — open PR, re-measure all 10 MERGE-GATE prereqs in-turn (incl. suite on merge head), merge --squash --match-head-commit if 10/10 green, NO --admin/--auto.
+outcome: COMPLETE — D4 aligned doc-only (52b53eb, touched SPEC_BRIEF27.md only); scope 4⊆§3 on new head; PR #35 opened.
+
+## SEQ 166 — SPEC_BRIEF27 GATE-2 re-measure: 9/10 green, prereq-5 RED (reviewer verdict FAIL); merge WITHHELD, re-review dispatched (write-ahead)
+
+seq: 166
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: D4 amended doc-only (52b53eb); suite re-measured on merge head 3738 passed/1 skipped/0 failed (.venv pytest, raw, SUMMARY line); PR #35 OPEN main←claude/resolves-consumer-brief27 head 52b53eb.
+action: Re-measured 10 MERGE-GATE prereqs in-turn: 1 scope 4⊆§3 PASS; 2 rails active PASS; 3 draft=false PASS; 4 OPEN PASS; 6 statusCheckRollup [] CLEAN PASS; 7 suite 3738/1/0 PASS; 8 MERGEABLE/CLEAN + NOT-ancestor PASS; 9 PR head=52b53eb=local PASS; 10 tree clean, untracked = .claude/+CLAUDE.md+docs/loop/ (known rails) PASS. Prereq 5 RED: Opus step-5 PASS but reviewer recorded verdict = FAIL (F-1, now moot after D4 align, code/tests unchanged); rails forbid merge on a red prereq. Merge WITHHELD. Re-dispatch kronos-reviewer on 52b53eb for independent PASS (draws brief+diff only). Not a maintainer pause.
+brief: SPEC_BRIEF27.md post-amend sha256 fa668bd4493f91027cf4178233657efc0d8713700e057441505a32a68b56783e; base 31ca3b5; head 52b53eb; PR #35.
+pending_action: await reviewer re-verdict on 52b53eb. On PASS → re-measure 10 prereqs in-turn, merge --squash --match-head-commit 52b53eb (NO --admin/--auto). On FAIL → evidence to builder (circuit breaker, attempt tracking).
 outcome: pending
