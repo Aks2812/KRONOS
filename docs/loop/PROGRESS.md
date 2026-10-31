@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 164
+seq: 165
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7534,4 +7534,14 @@ prev_outcome: SEQ 163 brief27 authored (afcff5f) + routine GATE-1 self-approved;
 action: dispatch kronos-reviewer (claude-haiku-5-5) — independent review brief27 vs diff 31ca3b5..81f8d7e + run approved pytest; reviewer draws only brief + diff, never builder report.
 brief: SPEC_BRIEF27.md sha256 fbdaf4ffb6fbe7c38457724eb15a4d3efd13faaaa4a985c13f5e2858af9ae912; base 31ca3b5; head 81f8d7e; branch claude/resolves-consumer-brief27.
 constraints: CyberGym only; hermetic (no live net/LLM/§6); no new dep; scope ⊆ §3.
+outcome: pending
+
+## SEQ 165 — SPEC_BRIEF27 reviewer FAIL (F-1) adjudicated: Opus-owned brief D4↔D6 defect; amend D4 doc-only; then GATE-2 (write-ahead)
+
+seq: 165
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: reviewer (claude-haiku-5-5) FAIL·DO-NOT-MERGE. Suite 3738 passed/1 skipped/0 failed (.venv pytest, head 81f8d7e); whole-window scope 4⊆§3 PASS; §8 A-L PASS; evidence .claude/pipeline/04-review/review-evidence.json. Blocking F-1 (query.py:192): cycle flagged only on current-path ancestor re-reach, but D4 literal says re-reach of FQDN in `visited` → cycle_detected (intermediate diamond). LOW F-2 (test_query.py:12 import-line edit), LOW F-3 (test_query.py:118 dead None).
+action: Opus step-5 adjudication — D4 literal ("already in visited") contradicts D6 ("a resolves_to cycle was reached") and shipped test test_B27_E_diamond_is_not_a_cycle:189; a diamond is not a cycle. Builder impl+tests CORRECT per D6; D4 phrasing is the defect → amend D4 cycle bullet doc-only (visited=termination/dedup; cycle=path-ancestor re-reach) per CLAUDE.md §2. §8 J2 (a→b→a) unaffected. No code/test change, no rebuild. F-2/F-3 LOW non-blocking (import add required by new tests; dead None cosmetic). Resolvable from brief's own D6 → NOT a maintainer pause.
+brief: SPEC_BRIEF27.md pre-amend sha256 fbdaf4ffb6fbe7c38457724eb15a4d3efd13faaaa4a985c13f5e2858af9ae912; base 31ca3b5; head 81f8d7e; branch claude/resolves-consumer-brief27.
+pending_action: amend D4 doc-only, commit/push branch; re-verify whole-window `git diff --name-only 31ca3b5..HEAD` ⊆ §3 on new head; then self-authorize GATE-2 — open PR, re-measure all 10 MERGE-GATE prereqs in-turn (incl. suite on merge head), merge --squash --match-head-commit if 10/10 green, NO --admin/--auto.
 outcome: pending
