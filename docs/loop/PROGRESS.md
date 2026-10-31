@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 163
+seq: 164
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7525,3 +7525,13 @@ action: PAUSE for maintainer next-direction. resolves_to now has its first produ
 brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; merged base 4ff38f4 -> origin/main 31ca3b5.
 pending_action: await maintainer next-direction. Open LOW follow-ups (brief26 reviewer, optional): vacuous id assert test_dns_ingest.py:134; FQDN regex no 63/253 length cap parser.py:24; narrow nonet. Remaining hermetic candidate: resolves_to consumer (reconcile/query), IDENTITY/TECHNOLOGY (prose-silence PAUSE).
 outcome: SUCCESS (rung complete)
+
+## SEQ 164 — SPEC_BRIEF27 build COMPLETE (in-scope); dispatching kronos-reviewer (write-ahead)
+
+seq: 164
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 163 brief27 authored (afcff5f) + routine GATE-1 self-approved; builder implemented query.resolve_host + §8 tests + brief26 seal (81f8d7e). Whole-window `git diff --name-only 31ca3b5..HEAD` = 4 paths ⊆ §3 (SPEC_BRIEF27.md, src/kronos/query.py, tests/test_query.py, tests/test_dns_ingest.py).
+action: dispatch kronos-reviewer (claude-haiku-5-5) — independent review brief27 vs diff 31ca3b5..81f8d7e + run approved pytest; reviewer draws only brief + diff, never builder report.
+brief: SPEC_BRIEF27.md sha256 fbdaf4ffb6fbe7c38457724eb15a4d3efd13faaaa4a985c13f5e2858af9ae912; base 31ca3b5; head 81f8d7e; branch claude/resolves-consumer-brief27.
+constraints: CyberGym only; hermetic (no live net/LLM/§6); no new dep; scope ⊆ §3.
+outcome: pending
