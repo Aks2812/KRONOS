@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 155
+seq: 156
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF25 (S8 executor probe_service/probe_web) MERGED main (PR #33, squash 4ff38f4); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
+stage: DNS-resolution producer rung — maintainer-authorized (context.md 2026-10-31); dispatching researcher for canonical source format (write-ahead SEQ 156); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7446,3 +7446,12 @@ action: PAUSE for maintainer next-direction. Agent executor can now dispatch pro
 brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; merged base 98636e5 -> origin/main 4ff38f4.
 pending_action: await maintainer next-direction (new hermetic backlog brief, or §6 live-run grant, or stop). Remaining hermetic candidates: DNS-resolution ingester (resolves_to, G1; unspecified source format), IDENTITY/TECHNOLOGY ingester (G1; prose-silence PAUSE).
 outcome: SUCCESS (rung complete)
+
+## SEQ 156 — MAINTAINER-AUTHORIZED next rung: DNS-resolution producer (hermetic); source-format PAUSE lifted this rung only; dispatching researcher (write-ahead)
+
+seq: 156
+derived_at: 2026-10-31T00:00:00Z
+authorization: maintainer context.md /home/void/context.md 2026-10-31 — authorize DNS-resolution producer as next bounded hermetic increment; LIFT source-format PAUSE-DECISION THIS RUNG ONLY; researcher-first; Opus selects format from evidence + defines bounded contract/invariants. Required: fail-closed parsing, deterministic normalization, provenance retention, scope enforcement, malformed/negative tests, abstention. FORBIDDEN: §6/live network/external target/LLM/budget/IDENTITY-TECHNOLOGY. Preserve untracked rails. If format not confidently selectable from repo evidence -> STOP with alternatives + recommended decision, do not implement an assumption.
+prev_outcome: SEQ 155 SUCCESS (brief25 merged PR #33 4ff38f4). origin/main 4ff38f4.
+pending_action: dispatch kronos-researcher (claude-sonnet-5) read-only — inspect resolves_to consumer/schema/evidence-contract/adapters + prior ingestion briefs (infra nmap, web OpenAPI); compare viable DNS source representations; recommend a deterministic canonical internal format + adapter boundary (avoid coupling KRONOS contracts to a tool-specific format unless evidence requires). Then Opus decision+brief.
+outcome: pending
