@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 146
+seq: 147
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung — §8 K fix built (commit 8182e3e), suite green; re-dispatching reviewer attempt 3/3 (write-ahead SEQ 146); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF24 dependency-DAG rung — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 147); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7353,4 +7353,14 @@ prev_outcome: SEQ 145 builder fix COMPLETE. nonet fixture added to test_P_B..tes
 action: Opus build-assess PASS; scope whole-window 73cbe8b..8182e3e ⊆ §3 verified.
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head 8182e3e.
 pending_action: dispatch kronos-reviewer (claude-haiku-5-5) independent re-review at head 8182e3e (reviewer attempt 3/3; circuit breaker HALT if FAIL).
+outcome: pending
+
+## SEQ 147 — SPEC_BRIEF24 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push+PR+re-measure 10 in-turn (write-ahead)
+
+seq: 147
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 146 reviewer re-review PASS·MERGE (attempt 3/3). Suite 3697 passed,1 skipped,0 failed head 8182e3e; scope 6 ⊆ §3; test_L/M untouched; only LOW notes. Opus step-5 PASS: contracts.py:58-67 + dispatcher.py:69-104 phase-0 fail-closed (dup/unknown/cycle incl self-ref), :128-141 D4 gate on satisfied=committed, stable Kahn, withheld default () — matches §2 D1-D7, §8 A-K,I,J,L2,F3,G2.
+action: SELF-AUTHORIZE GATE-2 — open PR branch claude/s8-agent-depdag-brief24 (head 8182e3e) to main; re-measure all 10 MERGE-GATE prereqs SAME turn; merge --squash --match-head-commit, NO --admin/--auto, only if 10/10 green.
+brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; head 8182e3e; base origin/main 73cbe8b.
+constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green, never on a red prereq.
 outcome: pending
