@@ -13,6 +13,7 @@ from kronos.agent import ContractViolation, GraphSummary, Intent, LiveDriver, Re
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "056f441"
+BRIEF_MERGE = "73cbe8b"
 SECTION_3 = {
     "SPEC_BRIEF23.md",
     "src/kronos/agent/live_driver.py",
@@ -95,6 +96,6 @@ def test_E_prompt_carries_summary_and_passthrough(nonet):  # §8 E
 
 
 def test_F2_scope_audit_whole_window():  # §8 F2
-    out = subprocess.run(["git", "diff", "--name-only", f"{BRIEF_BASE}..HEAD"], cwd=ROOT,
+    out = subprocess.run(["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT,
                          capture_output=True, text=True, check=True).stdout.split()
     assert set(out) <= SECTION_3, set(out) - SECTION_3

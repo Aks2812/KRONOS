@@ -7,6 +7,7 @@ from dataclasses import dataclass
 MAX_INTENTS = 4
 FORBIDDEN_FIELDS = frozenset({"status", "in_scope", "confidence", "merged_into"})
 _INTENT_KEYS = ("kind", "target_id", "rationale")
+_DEP_KEYS = ("any_of", "blocked_by")
 
 
 class ContractViolation(ValueError):
@@ -18,6 +19,8 @@ class Intent:
     kind: str
     target_id: str
     rationale: str
+    any_of: tuple[str, ...] = ()
+    blocked_by: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -55,5 +58,11 @@ def validate_reason_payload(payload: dict) -> ReasonResult:
         for k in _INTENT_KEYS:
             if not isinstance(item.get(k), str):
                 raise ContractViolation(f"intent {k!r} missing or not a str")
-        intents.append(Intent(item["kind"], item["target_id"], item["rationale"]))
+        deps = {}
+        for k in _DEP_KEYS:
+            v = item.get(k, ())
+            if not isinstance(v, (list, tuple)) or not all(isinstance(e, str) for e in v):
+                raise ContractViolation(f"intent {k!r} must be a list of str")
+            deps[k] = tuple(v)
+        intents.append(Intent(item["kind"], item["target_id"], item["rationale"], **deps))
     return ReasonResult(complete=complete, intents=tuple(intents))

@@ -13,6 +13,7 @@ from kronos.agent import (
     DispatcherResult,
     GraphSummary,
     MockDriver,
+    ReviewVerdict,
     RunSummary,
     plan,
     run,
@@ -184,3 +185,136 @@ def test_O_run_summary(g):  # §8 O
     cs = summarize_run(res)
     assert cs.conclusion == "complete"
     assert cs.total_steps == sum(r.steps for r in res)
+
+
+# ---- SPEC_BRIEF24 §8 (dependency DAG: any_of / blocked_by). Expected values from brief §2 prose. ----
+B24_BASE = "73cbe8b"
+SECTION_3_B24 = {
+    "SPEC_BRIEF24.md",
+    "src/kronos/agent/contracts.py",
+    "src/kronos/agent/dispatcher.py",
+    "tests/test_agent_dispatcher.py",
+    "tests/test_agent_contracts.py",
+    "tests/test_agent_live_driver.py",
+}
+H_X, H_Y, H_Z, H_W = (f"{n}.acme.example.com" for n in ("x", "y", "z", "w"))
+_OK = ReviewVerdict(approved=True, target_type="HOST", status="hypothesis")
+_NO = ReviewVerdict(approved=False, target_type="HOST", status="hypothesis")
+
+
+def _key(host):
+    return f"probe:{host}"
+
+
+def _fid(host):
+    return f"finding:agent-proposal:probe:{host}"
+
+
+def _it(host, **deps):
+    d = {"kind": "probe", "target_id": host, "rationale": "r"}
+    d.update(deps)
+    return d
+
+
+@pytest.fixture
+def g24(g):
+    for h in (H_X, H_Y, H_Z, H_W):
+        g.upsert_node("HOST", h, {"source": "t"})
+    return g
+
+
+@pytest.fixture
+def nonet(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
+def _run24(g, intents, verdicts):
+    from kronos.agent import MockReviewer
+
+    return run_once(g, MockDriver([{"intents": intents}]), MockReviewer(verdicts))
+
+
+def test_P_A_blocked_by_satisfied(g24, nonet):  # §8 A
+    res = _run24(g24, [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)])], [_OK, _OK])
+    assert res.committed == (_fid(H_X), _fid(H_Y)) and res.withheld == () and not nonet
+
+
+def test_P_B_blocked_by_unsatisfied(g24, nonet):  # §8 B (rejected, then out of scope)
+    res = _run24(g24, [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)])], [_NO, _OK])
+    assert res.committed == () and res.withheld == (_key(H_Y),)
+    g24.upsert_node("HOST", "evil.other.example.org", {"source": "t"})
+    res = _run24(
+        g24,
+        [_it("evil.other.example.org"), _it(H_Y, blocked_by=[_key("evil.other.example.org")])],
+        [_OK, _OK],
+    )
+    assert res.committed == () and res.withheld == (_key(H_Y),)
+
+
+def test_P_C_any_of(g24, nonet):  # §8 C
+    z = _it(H_Z, any_of=[_key(H_X), _key(H_W)])
+    res = _run24(g24, [_it(H_X), _it(H_W), z], [_NO, _OK, _OK])
+    assert res.committed == (_fid(H_W), _fid(H_Z)) and res.withheld == ()
+    res = _run24(g24, [_it(H_X), _it(H_W), z], [_NO, _NO, _OK])
+    assert res.committed == () and res.withheld == (_key(H_Z),)
+    # eligible but itself rejected: not withheld, just not committed
+    res = _run24(g24, [_it(H_X), _it(H_W), z], [_OK, _NO, _NO])
+    assert res.committed == (_fid(H_X),) and res.withheld == ()
+
+
+def test_P_D_transitive_withholding(g24, nonet):  # §8 D
+    res = _run24(
+        g24,
+        [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)]), _it(H_Z, blocked_by=[_key(H_Y)])],
+        [_NO, _OK, _OK],
+    )
+    assert res.committed == () and res.withheld == (_key(H_Y), _key(H_Z))
+
+
+@pytest.mark.parametrize(
+    "intents",
+    [
+        [_it(H_X), _it(H_Y, blocked_by=["nope:0"])],  # E unknown ref
+        [_it(H_X), _it(H_Y, any_of=["nope:0"])],  # E unknown ref via any_of
+        [_it(H_X, blocked_by=[_key(H_Y)]), _it(H_Y, blocked_by=[_key(H_X)])],  # F cycle
+        [_it(H_X, blocked_by=[_key(H_X)])],  # F self-reference
+        [_it(H_X), _it(H_X), _it(H_Y, blocked_by=[_key(H_X)])],  # G duplicate key with deps
+    ],
+)
+def test_P_EFG_fail_closed_no_writes(g24, intents, nonet):  # §8 E, F, G
+    from kronos.agent import ContractViolation, MockReviewer
+
+    before = _counts(g24)
+    assert before[0] > 0  # non-vacuity
+    with pytest.raises(ContractViolation):
+        run_once(g24, MockDriver([{"intents": intents}]), MockReviewer([_OK] * 4))
+    assert _counts(g24) == before
+
+
+def test_P_H_topo_order(g24, nonet):  # §8 H
+    # verdicts are consumed in list order (phase 1): Y first, then X
+    res = _run24(g24, [_it(H_Y, blocked_by=[_key(H_X)]), _it(H_X)], [_OK, _OK])
+    assert res.committed == (_fid(H_X), _fid(H_Y)) and res.withheld == ()
+
+
+def test_P_I_backward_compat_golden(g24, nonet):  # §8 I
+    from kronos.agent import MockReviewer
+
+    res = run_once(g24, MockDriver([{"intents": [_it(H_Y), _it(H_X), _it(H_Y)]}]), MockReviewer([_OK, _NO, _OK]))
+    # pre-change behaviour: list order, duplicates allowed, rejected skipped
+    assert res.committed == (_fid(H_Y), _fid(H_Y)) and res.promoted == () and res.withheld == ()
+
+
+def test_P_L2_scope_audit_b24():  # §8 L2
+    out = subprocess.run(
+        ["git", "diff", "--name-only", f"{B24_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.split()
+    assert set(out) <= SECTION_3_B24
