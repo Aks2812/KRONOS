@@ -81,12 +81,23 @@ D5. **No new dependency, no env var, no budget wiring, no live run.** Imports ad
    validator modules and `controls`; do **not** touch the existing `"validate"` path or `_decode_secret_value`).
 3. `tests/test_agent_live_executor.py` (append §8 tests after the existing tests; do **not** modify or
    delete any existing test or constant — brief22's tests stay frozen and green).
+4. **`tests/test_agent_dispatcher.py` (seal-only edit, amendment):**
+   brief24's `test_P_L2_scope_audit_b24` (line 316-320) uses the unsealed window
+   `f"{B24_BASE}..HEAD"` (`B24_BASE="73cbe8b"`), which trips on every later branch that adds a path
+   outside brief24's §3 set — brief25 adds `SPEC_BRIEF25.md` and `tests/test_agent_live_executor.py`.
+   Add `B24_MERGE = "98636e5"` (brief24's PR #32 squash merge on `main`, SEQ 148) and change that one
+   test's window to `f"{B24_BASE}..{B24_MERGE}"`, pinning the audit to brief24's own footprint —
+   exactly as brief24 §3 item 6 sealed brief23's F2 and as `test_L`/`test_M` seal. **No other change
+   to this file**; `test_L`/`test_M` and their constants stay frozen and green. Mechanically required
+   for suite-green (§8 K). (Amendment recorded 2026-10-31; self-approved GATE-1, no scope expansion,
+   no new capability.)
 
 Base = `origin/main` @ `98636e5`. Never `git add -A`; stage explicit paths only. **Add no new
-dependency.** Do **NOT** edit `src/kronos/validate/*` (import only), `contracts.py`, `dispatcher.py`,
-`__init__.py`, `schema.py`, `planner.py`, `drivers.py`, `live_driver.py`, `executor.py`, `reviewer.py`,
-anything under `src/kronos/budget/`, `requirements.txt`, `pyproject.toml`, `manifest.py`, `.github/`,
-or anything under `cybergym/`. The frozen brief22 `LiveExecutor` tests must stay untouched and green.
+dependency.** Do **NOT** edit `src/kronos/validate/*` (import only), `src/kronos/agent/contracts.py`,
+`src/kronos/agent/dispatcher.py`, `__init__.py`, `schema.py`, `planner.py`, `drivers.py`,
+`live_driver.py`, `executor.py`, `reviewer.py`, anything under `src/kronos/budget/`,
+`requirements.txt`, `pyproject.toml`, `manifest.py`, `.github/`, or anything under `cybergym/`. The
+frozen brief22 `LiveExecutor` tests and brief23/24 seal tests must stay untouched and green.
 
 ## §8 — Acceptance criteria (tests-as-rules; expected values from §2 prose, not observed behaviour)
 
@@ -124,6 +135,11 @@ I. **No network** — a `nonet`-style socket assertion proves `execute` opens no
 J. **Scope audit (whole window)** — `git diff --name-only 98636e5..HEAD` ⊆ the §3 set, asserted in a
    test using a distinct base constant `B25_BASE = "98636e5"` and window `f"{B25_BASE}..HEAD"` (never
    `f"{BRIEF_BASE}..HEAD"`, so the frozen brief22/23 seal tests stay green).
+L3. **brief24 L2 sealed (§3 item 4 amendment)** — `tests/test_agent_dispatcher.py::test_P_L2_scope_audit_b24`
+   uses window `f"{B24_BASE}..{B24_MERGE}"` with `B24_MERGE = "98636e5"`, **not** `..HEAD`, so it is
+   pinned to brief24's footprint and passes on this and later branches; `test_L`/`test_M` and their
+   constants are unchanged (asserted by zero deleted lines to those tests).
+
 K. **Suite green** — full `pytest` reports `0 failed` on the final commit (totals refreshed as the last
    edit); all pre-existing tests, including brief22 `LiveExecutor` tests and the brief22/23/24 seals,
    untouched and green.
