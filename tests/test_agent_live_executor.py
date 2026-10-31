@@ -213,3 +213,212 @@ def test_F2_scope_audit_whole_window():  # §8 F2
     out = subprocess.run(["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=ROOT,
                          capture_output=True, text=True, check=True).stdout.split()
     assert set(out) <= SECTION_3, set(out) - SECTION_3
+
+
+# ---------------------------------------------------------------------------
+# SPEC_BRIEF25 §8 A-K. Expected values derive from SPEC_BRIEF25 §2 D1-D4 prose.
+# ---------------------------------------------------------------------------
+B25_BASE = "98636e5"
+SECTION_3_B25 = {
+    "SPEC_BRIEF25.md",
+    "src/kronos/agent/live_executor.py",
+    "tests/test_agent_live_executor.py",
+    "tests/test_agent_dispatcher.py",
+}
+SVC_IN = "127.0.0.1:4566/tcp"
+SVC_OUT = "10.0.0.1:22/tcp"
+WEB_IN = "http://127.0.0.1:8091/api/items"
+WEB_OUT = "http://10.0.0.1:8091/api/items"
+
+
+@pytest.fixture
+def lab_graph(tmp_path, manifest_factory, signing_keypair):
+    from kronos.graph import EngagementGraph
+
+    _, pub = signing_keypair
+    manifest = manifest_factory(scope={"in_scope": ["127.0.0.1*"], "excluded": []})
+    return EngagementGraph.init_engagement(tmp_path / "lab.kz", manifest, pub)
+
+
+def _count_q(g, q):
+    return g.execute(q).get_next()[0]
+
+
+def _findings(g):
+    return _count_q(g, "MATCH (f:FINDING) RETURN count(f)")
+
+
+def _svc(g, sid=SVC_IN, port=4566):
+    g.upsert_node("SERVICE", sid, {"port": port, "protocol": "tcp", "source": "t"})
+
+
+def _web(g, url=WEB_IN, method="GET"):
+    from urllib.parse import urlsplit
+
+    g.upsert_node("WEB_ENDPOINT", url, {"url": url, "method": method, "source": "t"}, scope_key=urlsplit(url).hostname)
+
+
+def _arm25(success):
+    from kronos.validate.controls import ArmResult
+
+    return ArmResult(label="probe", success=success, status_code=200 if success else 404)
+
+
+def _svc_probe(live=True, calls=None):
+    from kronos.validate.infra_validator import CONTROL_PORT
+
+    def probe(host, port):
+        if calls is not None:
+            calls.append((host, port))
+        if live:
+            return _arm25(port != CONTROL_PORT)
+        return _arm25(True)  # canonical and control indistinguishable
+
+    return probe
+
+
+def _web_probe(live=True, calls=None):
+    from urllib.parse import urlsplit
+
+    from kronos.validate.web_validator import CONTROL_PATH
+
+    def probe(url, method):
+        if calls is not None:
+            calls.append((url, method))
+        if live:
+            return _arm25(urlsplit(url).path != CONTROL_PATH)
+        return _arm25(True)
+
+    return probe
+
+
+def _pi(kind, target):
+    return Intent(kind=kind, target_id=target, rationale="r")
+
+
+def test_B25_A_probe_service_live(lab_graph, tmp_path, nonet):  # §8 A (D2)
+    from kronos.validate.infra_validator import CONTROL_PORT
+
+    _svc(lab_graph)
+    calls = []
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(True, calls)).execute(_pi("probe_service", SVC_IN))
+    fid = f"finding:infra-reachable:{SVC_IN}"
+    assert out.succeeded is True and out.detail == fid
+    assert calls == [("127.0.0.1", 4566), ("127.0.0.1", CONTROL_PORT)]
+    assert _findings(lab_graph) == before + 1
+    assert _count_q(lab_graph, f"MATCH (s:SERVICE {{id: '{SVC_IN}'}})-[r:vulnerable_to]->(f:FINDING {{id: '{fid}'}}) RETURN count(r)") == 1
+    assert not nonet
+
+
+def test_B25_B_probe_service_abstain(lab_graph, tmp_path, nonet):  # §8 B (D2)
+    _svc(lab_graph)
+    assert lab_graph.get_node("SERVICE", SVC_IN)
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(False)).execute(_pi("probe_service", SVC_IN))
+    assert out.succeeded is False and out.detail == "abstained"
+    assert _findings(lab_graph) == before
+    assert not nonet
+
+
+def test_B25_C_probe_service_out_of_scope(lab_graph, tmp_path, nonet):  # §8 C (D2 scope gate)
+    _svc(lab_graph, SVC_OUT, 22)
+    assert lab_graph.get_node("SERVICE", SVC_OUT)["in_scope"] is False
+    calls = []
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(True, calls)).execute(_pi("probe_service", SVC_OUT))
+    assert out.succeeded is False and out.detail.startswith("SERVICE out of scope:")
+    assert calls == [] and _findings(lab_graph) == before
+    assert not nonet
+
+
+def test_B25_D_probe_service_missing(lab_graph, tmp_path, nonet):  # §8 D (D2)
+    calls = []
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(True, calls)).execute(_pi("probe_service", "nope:1/tcp"))
+    assert out.succeeded is False and out.detail == "no SERVICE node: nope:1/tcp"
+    assert calls == [] and not nonet
+
+
+def test_B25_E_probe_service_unconfigured(lab_graph, tmp_path, nonet):  # §8 E (D2)
+    _svc(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=None).execute(_pi("probe_service", SVC_IN))
+    assert out.succeeded is False and out.detail == "no service probe configured"
+    assert not nonet
+
+
+def test_B25_F_probe_web_live(lab_graph, tmp_path, nonet):  # §8 F (D3)
+    from kronos.validate.web_validator import CONTROL_PATH
+
+    _web(lab_graph)
+    calls = []
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, web_probe=_web_probe(True, calls)).execute(_pi("probe_web", WEB_IN))
+    fid = f"finding:web-reachable:{WEB_IN}"
+    assert out.succeeded is True and out.detail == fid
+    assert calls == [(WEB_IN, "GET"), (f"http://127.0.0.1:8091{CONTROL_PATH}", "GET")]
+    assert _findings(lab_graph) == before + 1
+    assert _count_q(lab_graph, f"MATCH (w:WEB_ENDPOINT {{id: '{WEB_IN}'}})-[r:vulnerable_to]->(f:FINDING {{id: '{fid}'}}) RETURN count(r)") == 1
+    assert not nonet
+
+
+def test_B25_F_probe_web_abstain(lab_graph, tmp_path, nonet):  # §8 F (D3)
+    _web(lab_graph)
+    assert lab_graph.get_node("WEB_ENDPOINT", WEB_IN)
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, web_probe=_web_probe(False)).execute(_pi("probe_web", WEB_IN))
+    assert out.succeeded is False and out.detail == "abstained"
+    assert _findings(lab_graph) == before
+    assert not nonet
+
+
+def test_B25_F_probe_web_out_of_scope(lab_graph, tmp_path, nonet):  # §8 F (D3)
+    _web(lab_graph, WEB_OUT)
+    assert lab_graph.get_node("WEB_ENDPOINT", WEB_OUT)["in_scope"] is False
+    calls = []
+    before = _findings(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, web_probe=_web_probe(True, calls)).execute(_pi("probe_web", WEB_OUT))
+    assert out.succeeded is False and out.detail.startswith("WEB_ENDPOINT out of scope:")
+    assert calls == [] and _findings(lab_graph) == before
+    assert not nonet
+
+
+def test_B25_F_probe_web_missing(lab_graph, tmp_path, nonet):  # §8 F (D3)
+    calls = []
+    out = LiveExecutor(lab_graph, tmp_path, web_probe=_web_probe(True, calls)).execute(_pi("probe_web", "http://127.0.0.1/none"))
+    assert out.succeeded is False and out.detail == "no WEB_ENDPOINT node: http://127.0.0.1/none"
+    assert calls == [] and not nonet
+
+
+def test_B25_F_probe_web_unconfigured(lab_graph, tmp_path, nonet):  # §8 F (D3)
+    _web(lab_graph)
+    out = LiveExecutor(lab_graph, tmp_path, web_probe=None).execute(_pi("probe_web", WEB_IN))
+    assert out.succeeded is False and out.detail == "no web probe configured"
+    assert not nonet
+
+
+def test_B25_G_validate_unchanged(lab_graph, tmp_path, nonet):  # §8 G (D4)
+    out = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(True)).execute(_pi("validate", "secret:nope"))
+    assert out.succeeded is False and out.detail == "no SECRET node: secret:nope"
+    assert not nonet
+
+
+def test_B25_H_unknown_kind_unchanged(lab_graph, tmp_path, nonet):  # §8 H (D4)
+    out = LiveExecutor(lab_graph, tmp_path).execute(_pi("frobnicate", SVC_IN))
+    assert out.succeeded is False and out.detail == "unhandled intent kind: frobnicate"
+    assert not nonet
+
+
+def test_B25_I_no_network_all_paths(lab_graph, tmp_path, nonet):  # §8 I
+    _svc(lab_graph)
+    _web(lab_graph)
+    ex = LiveExecutor(lab_graph, tmp_path, service_probe=_svc_probe(True), web_probe=_web_probe(True))
+    for kind, tgt in [("probe_service", SVC_IN), ("probe_web", WEB_IN), ("probe_service", "x:1/tcp"),
+                      ("probe_web", "http://x"), ("validate", "secret:nope"), ("zzz", "t")]:
+        ex.execute(_pi(kind, tgt))
+    assert not nonet
+
+
+def test_B25_J_scope_audit_whole_window():  # §8 J
+    out = subprocess.run(["git", "diff", "--name-only", f"{B25_BASE}..HEAD"], cwd=ROOT,
+                         capture_output=True, text=True, check=True).stdout.split()
+    assert set(out) <= SECTION_3_B25, set(out) - SECTION_3_B25

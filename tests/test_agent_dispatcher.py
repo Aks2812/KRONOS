@@ -189,6 +189,7 @@ def test_O_run_summary(g):  # §8 O
 
 # ---- SPEC_BRIEF24 §8 (dependency DAG: any_of / blocked_by). Expected values from brief §2 prose. ----
 B24_BASE = "73cbe8b"
+B24_MERGE = "98636e5"
 SECTION_3_B24 = {
     "SPEC_BRIEF24.md",
     "src/kronos/agent/contracts.py",
@@ -315,6 +316,6 @@ def test_P_I_backward_compat_golden(g24, nonet):  # §8 I
 
 def test_P_L2_scope_audit_b24():  # §8 L2
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B24_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B24_BASE}..{B24_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3_B24
