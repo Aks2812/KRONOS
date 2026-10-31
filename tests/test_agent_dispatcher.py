@@ -247,7 +247,7 @@ def test_P_A_blocked_by_satisfied(g24, nonet):  # §8 A
     assert res.committed == (_fid(H_X), _fid(H_Y)) and res.withheld == () and not nonet
 
 
-def test_P_B_blocked_by_unsatisfied(g24):  # §8 B (rejected, then out of scope)
+def test_P_B_blocked_by_unsatisfied(g24, nonet):  # §8 B (rejected, then out of scope)
     res = _run24(g24, [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)])], [_NO, _OK])
     assert res.committed == () and res.withheld == (_key(H_Y),)
     g24.upsert_node("HOST", "evil.other.example.org", {"source": "t"})
@@ -259,7 +259,7 @@ def test_P_B_blocked_by_unsatisfied(g24):  # §8 B (rejected, then out of scope)
     assert res.committed == () and res.withheld == (_key(H_Y),)
 
 
-def test_P_C_any_of(g24):  # §8 C
+def test_P_C_any_of(g24, nonet):  # §8 C
     z = _it(H_Z, any_of=[_key(H_X), _key(H_W)])
     res = _run24(g24, [_it(H_X), _it(H_W), z], [_NO, _OK, _OK])
     assert res.committed == (_fid(H_W), _fid(H_Z)) and res.withheld == ()
@@ -270,7 +270,7 @@ def test_P_C_any_of(g24):  # §8 C
     assert res.committed == (_fid(H_X),) and res.withheld == ()
 
 
-def test_P_D_transitive_withholding(g24):  # §8 D
+def test_P_D_transitive_withholding(g24, nonet):  # §8 D
     res = _run24(
         g24,
         [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)]), _it(H_Z, blocked_by=[_key(H_Y)])],
@@ -289,7 +289,7 @@ def test_P_D_transitive_withholding(g24):  # §8 D
         [_it(H_X), _it(H_X), _it(H_Y, blocked_by=[_key(H_X)])],  # G duplicate key with deps
     ],
 )
-def test_P_EFG_fail_closed_no_writes(g24, intents):  # §8 E, F, G
+def test_P_EFG_fail_closed_no_writes(g24, intents, nonet):  # §8 E, F, G
     from kronos.agent import ContractViolation, MockReviewer
 
     before = _counts(g24)
@@ -299,13 +299,13 @@ def test_P_EFG_fail_closed_no_writes(g24, intents):  # §8 E, F, G
     assert _counts(g24) == before
 
 
-def test_P_H_topo_order(g24):  # §8 H
+def test_P_H_topo_order(g24, nonet):  # §8 H
     # verdicts are consumed in list order (phase 1): Y first, then X
     res = _run24(g24, [_it(H_Y, blocked_by=[_key(H_X)]), _it(H_X)], [_OK, _OK])
     assert res.committed == (_fid(H_X), _fid(H_Y)) and res.withheld == ()
 
 
-def test_P_I_backward_compat_golden(g24):  # §8 I
+def test_P_I_backward_compat_golden(g24, nonet):  # §8 I
     from kronos.agent import MockReviewer
 
     res = run_once(g24, MockDriver([{"intents": [_it(H_Y), _it(H_X), _it(H_Y)]}]), MockReviewer([_OK, _NO, _OK]))
