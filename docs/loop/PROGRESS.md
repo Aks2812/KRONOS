@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 172
+seq: 173
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF28 (DNS hygiene) build COMPLETE (1f43b02); dispatching reviewer; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF28 (DNS hygiene) reviewer PASS + step-5 PASS; self-authorizing GATE-2 merge; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7616,4 +7616,15 @@ prev_outcome: builder (claude-sonnet-5-5) 1f43b02: D1 query.py resolve_host docs
 action: dispatch kronos-reviewer (claude-haiku-5-5) — independent review brief28 vs diff a5373b4..1f43b02 + approved pytest; verify D1-D3, §8 A/C/D/E/J/S/K, fail-closed 63/253, compat, scope ⊆ §3, brief27 seal pinned; draws only brief + diff, never builder report.
 brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base a5373b4; head 1f43b02; branch claude/dns-hygiene-brief28.
 constraints: CyberGym only; hermetic; no new dep; correctness/hardening only; scope ⊆ §3.
+outcome: COMPLETE — reviewer (claude-haiku-5-5) PASS·MERGE on 1f43b02.
+
+## SEQ 173 — SPEC_BRIEF28 reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 MERGE; re-measure 10 in-turn (write-ahead)
+
+seq: 173
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: reviewer PASS·MERGE on 1f43b02 — suite 3746 passed/1 skipped/0 failed; scope 5⊆§3; boundary probe label 63 ok/64 declined, total 253 ok/254 declined, host.example.com ok, empty label declined; parser.py diff 2 lines (_norm_fqdn only), query.py docstring-only; brief27 seal pinned a5373b4; LOW rtk-SUMMARY-not-captured non-blocking (raw pytest is the gate). Opus step-5 PASS: docstring matches shipped DFS; D2 asserts real producer output; D3 fail-closed; compat preserved.
+action: self-authorize GATE-2 (authority model SEQ 55). Open PR main←claude/dns-hygiene-brief28 head 1f43b02; re-measure all 10 MERGE-GATE prereqs THIS turn; merge --squash --match-head-commit 1f43b02, NO --admin/--auto, only if 10/10 green.
+brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base origin/main a5373b4; head 1f43b02.
+constraints: CyberGym only; hermetic; no new dep; merge only on 10/10 green; no scope change.
+pending_action: open PR; re-measure 10 prereqs in-turn; merge at 1f43b02 if 10/10 green; then record SUCCESS + dispatch researcher decision memo (IDENTITY/TECHNOLOGY vs reconcile-side resolves_to, read-only, no impl).
 outcome: pending
