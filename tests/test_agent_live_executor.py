@@ -223,6 +223,7 @@ SECTION_3_B25 = {
     "SPEC_BRIEF25.md",
     "src/kronos/agent/live_executor.py",
     "tests/test_agent_live_executor.py",
+    "tests/test_agent_dispatcher.py",
 }
 SVC_IN = "127.0.0.1:4566/tcp"
 SVC_OUT = "10.0.0.1:22/tcp"
