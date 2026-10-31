@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 162
+seq: 163
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: resolves_to consumer AUTHORIZED (context.md 2026-10-31, this rung only); researcher dispatched; S8 §6 live-run still paused (SEQ 140)
+stage: resolves_to consumer design SELECTED (read-only query.resolve_host); authoring SPEC_BRIEF27; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7504,6 +7504,16 @@ prev_outcome: SEQ 159 reviewer PASS·MERGE. Suite 3724 passed,1 skipped,0 failed
 action: SELF-AUTHORIZE GATE-2 — open PR branch claude/dns-resolves-brief26 (head 1cdbbd8) to main; re-measure all 10 MERGE-GATE prereqs SAME turn; merge --squash --match-head-commit, NO --admin/--auto, only if 10/10 green. Session posture: ask-tier inert under bypassPermissions (kronos-railcheck); merge authorized by authority model SEQ 55, gated by the 10-prereq re-measure.
 brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; head 1cdbbd8; base origin/main 4ff38f4.
 constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green.
+outcome: pending
+
+## SEQ 163 — researcher PASS; Opus design SELECTED (read-only query consumer); authoring SPEC_BRIEF27 + GATE-1 (write-ahead)
+
+seq: 163
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 162 researcher returned (a712ffc, claude-sonnet-5): NO existing resolves_to consumer; find_paths generic read pattern (query.py:85); canonical.py:103 never merges FQDN<->IP; edge carries no props; m:n/CNAME chains real; no query-side abstention type; scope via is_in_scope, consumer cannot set in_scope.
+action: Opus design = smallest useful = PURE READ consumer query.resolve_host(graph, name): follows resolves_to FQDN->IP incl CNAME chains, scope-gated (find_paths spirit), returns dict {name, terminals:[sorted in-scope IPs], status: resolved|unresolved|cycle_detected, excluded_out_of_scope:bool}. Many IPs = normal (all returned). Cycle = abstain. NEVER creates node / sets in_scope / emits finding. Plain-dict return (no new framework).
+section3: 4 files — SPEC_BRIEF27.md(new); src/kronos/query.py(add resolve_host); tests/test_query.py(resolve_host tests + brief27 own ..HEAD scope audit); tests/test_dns_ingest.py(SEAL ONLY: B26_MERGE="31ca3b5", test_J window 4ff38f4..31ca3b5). base=31ca3b5.
+pending_action: author SPEC_BRIEF27.md, self-approve routine GATE-1, dispatch kronos-builder.
 outcome: pending
 
 ## SEQ 161 — SPEC_BRIEF26 (DNS-resolution producer) MERGED main (PR #34, squash 31ca3b5); next-direction PAUSE
