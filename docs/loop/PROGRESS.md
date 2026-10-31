@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 145
+seq: 146
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung — reviewer FAIL §8 K (socket guard gap); return to builder (write-ahead SEQ 145); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF24 dependency-DAG rung — §8 K fix built (commit 8182e3e), suite green; re-dispatching reviewer attempt 3/3 (write-ahead SEQ 146); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7343,4 +7343,14 @@ prev_outcome: SEQ 144 reviewer re-review FAIL. Only miss: §8 K nonet guard on t
 action: evidence .claude/pipeline/04-review/review-evidence.json; Opus concurs K FAIL per prose.
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head e214058.
 pending_action: dispatch kronos-builder (claude-sonnet-5-5) — add nonet socket guard to run_once-invoking §8 tests test_P_B..test_P_I in tests/test_agent_dispatcher.py (§3 item 4 only; do not touch test_L/test_M); refresh totals as last edit; then re-review (reviewer attempt 3/3).
+outcome: pending
+
+## SEQ 146 — SPEC_BRIEF24 §8 K fix COMPLETE (nonet guard on test_P_B..test_P_I); re-dispatching kronos-reviewer attempt 3/3 (write-ahead)
+
+seq: 146
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 145 builder fix COMPLETE. nonet fixture added to test_P_B..test_P_I (tests/test_agent_dispatcher.py:250,262,273,292,302,308); commit 8182e3e. Full suite 3697 passed,1 skipped (.venv). Scope clean 6 files ⊆ §3.
+action: Opus build-assess PASS; scope whole-window 73cbe8b..8182e3e ⊆ §3 verified.
+brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head 8182e3e.
+pending_action: dispatch kronos-reviewer (claude-haiku-5-5) independent re-review at head 8182e3e (reviewer attempt 3/3; circuit breaker HALT if FAIL).
 outcome: pending
