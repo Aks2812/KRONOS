@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 166
+seq: 167
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7554,4 +7554,14 @@ prev_outcome: D4 amended doc-only (52b53eb); suite re-measured on merge head 373
 action: Re-measured 10 MERGE-GATE prereqs in-turn: 1 scope 4⊆§3 PASS; 2 rails active PASS; 3 draft=false PASS; 4 OPEN PASS; 6 statusCheckRollup [] CLEAN PASS; 7 suite 3738/1/0 PASS; 8 MERGEABLE/CLEAN + NOT-ancestor PASS; 9 PR head=52b53eb=local PASS; 10 tree clean, untracked = .claude/+CLAUDE.md+docs/loop/ (known rails) PASS. Prereq 5 RED: Opus step-5 PASS but reviewer recorded verdict = FAIL (F-1, now moot after D4 align, code/tests unchanged); rails forbid merge on a red prereq. Merge WITHHELD. Re-dispatch kronos-reviewer on 52b53eb for independent PASS (draws brief+diff only). Not a maintainer pause.
 brief: SPEC_BRIEF27.md post-amend sha256 fa668bd4493f91027cf4178233657efc0d8713700e057441505a32a68b56783e; base 31ca3b5; head 52b53eb; PR #35.
 pending_action: await reviewer re-verdict on 52b53eb. On PASS → re-measure 10 prereqs in-turn, merge --squash --match-head-commit 52b53eb (NO --admin/--auto). On FAIL → evidence to builder (circuit breaker, attempt tracking).
+outcome: FAIL — reviewer re-verdict FAIL (real code defect F-1); merge withheld; returning to builder.
+
+## SEQ 167 — SPEC_BRIEF27 re-review FAIL (F-1 HIGH code defect); return to builder (attempt 2); Opus adds §8 J3 (write-ahead)
+
+seq: 167
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: reviewer (claude-haiku-5-5) FAIL·DO-NOT-MERGE on 52b53eb. Suite 3738 passed/1 skipped/0 failed; scope 4⊆§3 PASS; §8 A-L PASS; D4 prose now matches D6. HIGH F-1 (src/kronos/query.py:185-187 visited-prune): a cycle reached after its target was already expanded via another branch is reported `unresolved` not `cycle_detected` (shape a→b, a→c, c→b, b→c); D4 corrected contract requires cycle_detected. LOW F-2: no existing test covers that shape. evidence .claude/pipeline/04-review/review-evidence.json.
+action: F-1 is a genuine code defect (not a brief defect — D4/D6 are correct, impl misses a multi-path back-edge). Return to step-3 builder (implementation attempt 2; circuit-breaker 3, not yet reached). Opus (brief author) adds prose-derived §8 J3 (multi-path cycle → cycle_detected) to SPEC_BRIEF27.md (§3 item 1). Builder fixes query.py so cycle detection examines the current path on every edge, not only on first expansion, adds the J3 regression test in tests/test_query.py, refreshes totals. §3 files unchanged (query.py + test_query.py + brief). PR #35 stays OPEN; merge WITHHELD.
+brief: SPEC_BRIEF27.md pre-J3 sha256 fa668bd4493f91027cf4178233657efc0d8713700e057441505a32a68b56783e; base 31ca3b5; head 52b53eb; PR #35.
+pending_action: Opus add §8 J3 doc-only + push branch; dispatch kronos-builder (claude-sonnet-5-5) to fix query.py cycle detection + add §8 J3 test within §3; on build return re-review, then GATE-2.
 outcome: pending
