@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 160
+seq: 161
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: DNS-resolution producer rung — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 160); S8 §6 live-run still paused (SEQ 140)
+stage: DNS-resolution producer MERGED main (PR #34, squash 31ca3b5); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7495,3 +7495,13 @@ action: SELF-AUTHORIZE GATE-2 — open PR branch claude/dns-resolves-brief26 (he
 brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; head 1cdbbd8; base origin/main 4ff38f4.
 constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green.
 outcome: pending
+
+## SEQ 161 — SPEC_BRIEF26 (DNS-resolution producer) MERGED main (PR #34, squash 31ca3b5); next-direction PAUSE
+
+seq: 161
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 160 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn (1 scope 6 ⊆ §3; 2 ruleset active; 3 draft=false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 3724 passed/1 skipped/0 failed head 1cdbbd8; 8 MERGEABLE CLEAN + NOT-ancestor; 9 PR #34 head=1cdbbd8; 10 tree clean, known rails only). Merged --squash --match-head-commit 1cdbbd8, NO --admin/--auto.
+action: PAUSE for maintainer next-direction. resolves_to now has its first producer (ingest tool_name="dns_records", hermetic). No consumer yet (out of scope this rung). context.md DNS authorization satisfied.
+brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782; merged base 4ff38f4 -> origin/main 31ca3b5.
+pending_action: await maintainer next-direction. Open LOW follow-ups (brief26 reviewer, optional): vacuous id assert test_dns_ingest.py:134; FQDN regex no 63/253 length cap parser.py:24; narrow nonet. Remaining hermetic candidate: resolves_to consumer (reconcile/query), IDENTITY/TECHNOLOGY (prose-silence PAUSE).
+outcome: SUCCESS (rung complete)
