@@ -8,6 +8,7 @@ resource into a provable cross-domain chain.
 
 from __future__ import annotations
 
+import ipaddress
 from typing import TYPE_CHECKING, Any
 
 from kronos.evidence import get_evidence  # noqa: F401 - re-exported per SPEC.md's named interface list
@@ -134,3 +135,93 @@ def find_paths(
             "length": length,
         })
     return paths
+
+
+def _is_ip(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
+
+
+def resolve_host(graph: "EngagementGraph", name: str, only_in_scope: bool = True) -> dict[str, Any]:
+    """Read-only: IP terminals an FQDN HOST resolves to via `resolves_to`
+    edges (CNAME chains followed, BFS, cycle-safe via a visited set).
+
+    Evidence, not authorization: never writes, never sets `in_scope`, and
+    never promotes an out-of-scope IP into an in-scope result. Abstains via
+    `status` (unknown_host / unresolved / cycle_detected) when the stored
+    edges are insufficient. Makes no freshness claim (edges carry no time).
+    """
+    norm = name.lower()
+    if norm.endswith("."):
+        norm = norm[:-1]
+
+    def result(status: str, terminals: list[str], excluded: bool) -> dict[str, Any]:
+        return {
+            "name": norm,
+            "status": status,
+            "terminals": sorted(set(terminals)),
+            "excluded_out_of_scope": excluded,
+        }
+
+    res = graph.execute("MATCH (h:HOST {id: $id}) RETURN h.in_scope AS in_scope", {"id": norm})
+    if not res.has_next():
+        return result("unknown_host", [], False)
+    start_in_scope = bool(res.get_next()[0])
+    if only_in_scope and not start_in_scope:
+        return result("unresolved", [], True)
+    if _is_ip(norm):
+        return result("unresolved", [], False)
+
+    visited: set[str] = set()
+    terminals: set[str] = set()
+    excluded = False
+    adj: dict[str, list[str]] = {}
+    queue: list[str] = [norm]
+    while queue:
+        current = queue.pop(0)
+        if current in visited:
+            continue  # dedups expansion only; cycle detection is the DFS below
+        visited.add(current)
+        adj[current] = []
+        rows = graph.execute(
+            "MATCH (a:HOST {id:$id})-[:resolves_to]->(b:HOST) RETURN b.id AS id, b.in_scope AS in_scope",
+            {"id": current},
+        )
+        while rows.has_next():
+            bid, b_in_scope = rows.get_next()
+            if only_in_scope and not b_in_scope:
+                excluded = True
+                continue
+            if _is_ip(bid):
+                terminals.add(bid)
+            else:
+                adj[current].append(bid)
+                queue.append(bid)
+
+    # Cycle = back-edge to an FQDN on the current DFS path (ancestor), checked on
+    # every edge; a diamond (shared node not on the path) is not a cycle.
+    cycle = False
+    done: set[str] = set()
+    on_path: set[str] = {norm}
+    stack = [(norm, iter(adj[norm]))]
+    while stack and not cycle:
+        node, it = stack[-1]
+        nxt = next(it, None)
+        if nxt is None:
+            stack.pop()
+            on_path.discard(node)
+            done.add(node)
+        elif nxt in on_path:
+            cycle = True
+        elif nxt not in done:
+            on_path.add(nxt)
+            stack.append((nxt, iter(adj[nxt])))
+
+    if cycle:
+        return result("cycle_detected", list(terminals), excluded)
+    if terminals:
+        return result("resolved", list(terminals), excluded)
+    return result("unresolved", [], excluded)

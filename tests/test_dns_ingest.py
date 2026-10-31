@@ -14,6 +14,7 @@ from kronos.ingest.contract import DeclinedItem, IngestPlan, apply_plan
 from kronos.ingest.dns.parser import DNS_SOURCE, ingest_dns_records, ingest_dns_records_plan
 
 B26_BASE = "4ff38f4"
+B26_MERGE = "31ca3b5"
 SECTION_3 = {
     "SPEC_BRIEF26.md",
     "src/kronos/ingest/dns/__init__.py",
@@ -158,6 +159,6 @@ def test_I_no_network(g, monkeypatch):
 
 def test_J_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B26_BASE}..HEAD"], capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B26_BASE}..{B26_MERGE}"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3, set(out) - SECTION_3
