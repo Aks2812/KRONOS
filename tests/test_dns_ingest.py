@@ -20,6 +20,7 @@ SECTION_3 = {
     "src/kronos/ingest/dns/parser.py",
     "src/kronos/ingest/__init__.py",
     "tests/test_dns_ingest.py",
+    "tests/test_agent_live_executor.py",
 }
 
 
