@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 167
+seq: 168
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7564,4 +7564,14 @@ prev_outcome: reviewer (claude-haiku-5-5) FAIL·DO-NOT-MERGE on 52b53eb. Suite 3
 action: F-1 is a genuine code defect (not a brief defect — D4/D6 are correct, impl misses a multi-path back-edge). Return to step-3 builder (implementation attempt 2; circuit-breaker 3, not yet reached). Opus (brief author) adds prose-derived §8 J3 (multi-path cycle → cycle_detected) to SPEC_BRIEF27.md (§3 item 1). Builder fixes query.py so cycle detection examines the current path on every edge, not only on first expansion, adds the J3 regression test in tests/test_query.py, refreshes totals. §3 files unchanged (query.py + test_query.py + brief). PR #35 stays OPEN; merge WITHHELD.
 brief: SPEC_BRIEF27.md pre-J3 sha256 fa668bd4493f91027cf4178233657efc0d8713700e057441505a32a68b56783e; base 31ca3b5; head 52b53eb; PR #35.
 pending_action: Opus add §8 J3 doc-only + push branch; dispatch kronos-builder (claude-sonnet-5-5) to fix query.py cycle detection + add §8 J3 test within §3; on build return re-review, then GATE-2.
+outcome: COMPLETE — §8 J3 added doc-only (997778b); builder fix (e747439): cycle detection = DFS back-edge over adjacency map, visited bounds expansion only.
+
+## SEQ 168 — SPEC_BRIEF27 build attempt-2 COMPLETE (F-1 fixed, in-scope); dispatching kronos-reviewer (write-ahead)
+
+seq: 168
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: builder (claude-sonnet-5-5) e747439: resolve_host cycle detection now per-path DFS back-edge over adjacency map (visited bounds expansion only); new test_B27_J3_multipath_cycle (a→b,a→c,c→b,b→c → cycle_detected); RED-before/GREEN-after; suite 3739 passed/1 skipped/0 failed (.venv pytest). Whole-window 31ca3b5..HEAD = 4 paths ⊆ §3; build commit touched query.py + test_query.py only. Builder-noted LOW: query.py:150 docstring "cycle-safe via a visited set" now stale.
+action: dispatch kronos-reviewer (claude-haiku-5-5) — independent review brief27 vs diff 31ca3b5..e747439 + run approved pytest; verify F-1 shape now cycle_detected, J2/diamond unchanged, §8 A-L+J3, scope ⊆ §3; draws only brief + diff, never builder report. Assess docstring LOW.
+brief: SPEC_BRIEF27.md sha256 aa727d4de6a2567105b803fb4e4aec7c10ff35e0b2c9eeccc6b681ebef32d51b; base 31ca3b5; head e747439; branch claude/resolves-consumer-brief27; PR #35.
+constraints: CyberGym only; hermetic; no new dep; scope ⊆ §3.
 outcome: pending
