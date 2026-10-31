@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 154
+seq: 155
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF25 — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 154); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF25 (S8 executor probe_service/probe_web) MERGED main (PR #33, squash 4ff38f4); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7436,3 +7436,13 @@ action: SELF-AUTHORIZE GATE-2 — open PR branch claude/s8-executor-probe-brief2
 brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; head 429d812; base origin/main 98636e5.
 constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green, never on a red prereq.
 outcome: pending
+
+## SEQ 155 — SPEC_BRIEF25 (S8 executor probe_service/probe_web) MERGED main (PR #33, squash 4ff38f4); next-direction PAUSE
+
+seq: 155
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 154 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn (1 scope 4 ⊆ §3; 2 ruleset active deletion/non_fast_forward/pull_request; 3 draft=false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 3711 passed/1 skipped/0 failed head 429d812; 8 MERGEABLE CLEAN + NOT-ancestor; 9 PR #33 head=429d812; 10 tree clean, known rails only). Merged --squash --match-head-commit 429d812, NO --admin/--auto.
+action: PAUSE for maintainer next-direction. Agent executor can now dispatch probe_service/probe_web (single in-scope target, hermetic) in addition to validate. §6 live LLM/network run still requires explicit grant (SEQ 140 pause 2+3).
+brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; merged base 98636e5 -> origin/main 4ff38f4.
+pending_action: await maintainer next-direction (new hermetic backlog brief, or §6 live-run grant, or stop). Remaining hermetic candidates: DNS-resolution ingester (resolves_to, G1; unspecified source format), IDENTITY/TECHNOLOGY ingester (G1; prose-silence PAUSE).
+outcome: SUCCESS (rung complete)
