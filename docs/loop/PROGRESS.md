@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 174
+seq: 175
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF28 (DNS hygiene) MERGED main (PR #36, squash 55b4b7f); dispatching researcher decision memo (IDENTITY/TECHNOLOGY vs reconcile-side resolves_to), no impl; S8 §6 live-run still paused (SEQ 140)
+stage: decision memo complete; Opus recommends IDENTITY producer (smallest hermetic slice); PAUSE for maintainer bounded grant (data-source prose-silent); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7637,4 +7637,14 @@ prev_outcome: SEQ 173 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn
 action: per context.md 2026-10-31, dispatch kronos-researcher (claude-sonnet-5) for a READ-ONLY decision memo comparing next substantive candidates — (a) IDENTITY/TECHNOLOGY producer, (b) reconcile-side use of resolves_to — on G1/G2/G3 value, dependencies, FP/scope-expansion risk, smallest viable hermetic increment, required authorization. Opus to report ONE recommendation + the exact bounded grant needed. NO implementation of either; maintainer decision gates any build.
 brief: n/a (research only). base origin/main 55b4b7f.
 pending_action: dispatch researcher decision memo; on return, Opus synthesizes ONE recommendation + exact bounded grant and reports to maintainer. Do not author or build either candidate without maintainer approval (prose-silence / scope PAUSE-DECISION).
-outcome: pending
+outcome: COMPLETE — researcher (claude-sonnet-5) returned A-vs-B comparison; Opus synthesized recommendation.
+
+## SEQ 175 — decision memo synthesized: recommend IDENTITY producer (smallest hermetic slice); PAUSE for maintainer bounded grant
+
+seq: 175
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: researcher memo (read-only). A (IDENTITY/TECHNOLOGY producer): types declared schema.py:231,233; ZERO producer (scope_guard.py:213-220 rule-5, DECISIONS.md:2417); SPEC.md:131 IDENTITY "FULLY build" v1 / :133 TECHNOLOGY "STUB"; data-source format prose-silent. B (reconcile-side resolves_to): edge produced (brief26) + read consumer query.resolve_host (brief27) exist; reconcile layer has zero use; MERGE-flavor FORECLOSED by ratified guardrail "No cross-shape merging" (reconcile/README.md:100-105, canonical.py:103-109) — overturn = high FP (shared-IP collapse) + PAUSE-DECISION; non-merge flavor fully prose-silent, no articulated value. CE.md (kronos/loop-state) is pipeline-init only, orders neither rung.
+action: Opus recommendation = Candidate A, IDENTITY first (SPEC "FULLY build"; only affirmative spec backing; B blocked-or-undefined). Smallest hermetic slice: fixture-driven producer emitting IDENTITY NodeUpserts (schema already has source field), no live network/§6. This materially extends scope + data source prose-silent → PAUSE-DECISION (§4). No brief authored, nothing built.
+brief: n/a. base origin/main 55b4b7f.
+pending_action: AWAIT maintainer bounded grant before authoring/building — (1) confirm IDENTITY first; (2) name the static input artifact/format to parse (prose-silent; hermetic fixture, no live net/§6); (3) nodes-only first vs nodes+edges (schema declares IDENTITY→API_ENDPOINT/CLOUD_RESOURCE authenticates_to, IDENTITY→CLOUD_RESOURCE grants, DECISIONS.md:87-88); (4) confirm create-time only, no status/confidence lifecycle this slice (SPEC.md:95-108 covers only SECRET/FINDING). Open follow-ups: delete merged branches claude/resolves-consumer-brief27, claude/dns-hygiene-brief28 (optional).
+outcome: pending (maintainer decision)
