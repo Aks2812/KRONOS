@@ -68,6 +68,14 @@ D4 eligibility gate, and phase 0 is prepended.
 4. `tests/test_agent_dispatcher.py` (append §8 tests **after `test_O`**; do **NOT** touch `test_L` /
    `test_M` or their constants — they stay frozen and green)
 5. `tests/test_agent_contracts.py` (append §8 negative contract tests for the new fields)
+6. **`tests/test_agent_live_driver.py` (seal-only edit, amendment):**
+   brief23's `test_F2_scope_audit_whole_window` uses the unsealed window `f"{BRIEF_BASE}..HEAD"`
+   (`BRIEF_BASE="056f441"`, `test_agent_live_driver.py:38-41`), which trips on every later branch that
+   edits `contracts.py`/`dispatcher.py`. Add `BRIEF_MERGE = "73cbe8b"` (brief23's PR #31 squash merge,
+   SEQ 140) and change the window to `f"{BRIEF_BASE}..{BRIEF_MERGE}"`, pinning the audit to brief23's
+   own footprint — exactly as brief23 §3 item 5 sealed brief22's F2 and as `test_L`/`test_M` seal.
+   **No other change to this file.** Mechanically required for suite-green (§8 G2); test_L/test_M
+   precedent. (Amendment recorded 2026-10-31; self-approved GATE-1, no scope expansion.)
 
 Base = `origin/main` @ `73cbe8b`. Never `git add -A`; stage explicit paths only. **Add no new
 dependency.** Do **NOT** edit `planner.py`, `drivers.py`, `executor.py`, `live_executor.py`,
@@ -117,6 +125,9 @@ K. **No network** — a `test_K`-style socket assertion proves the loop opens no
    above.
 L2. **Scope audit (whole window)** — `git diff --name-only 73cbe8b..HEAD` ⊆ the §3 set, using the
    distinct `B24_BASE` constant per §3's naming note.
+F3. **brief23 F2 sealed** — `test_agent_live_driver.py::test_F2_scope_audit_whole_window` uses window
+   `f"{BRIEF_BASE}..{BRIEF_MERGE}"` with `BRIEF_MERGE = "73cbe8b"`, **not** `..HEAD`, so it is pinned
+   to brief23's footprint and passes on this and later branches (§3 item 6 amendment).
 G2. **Suite green** — full `pytest` reports `0 failed` on the final commit (totals refreshed as the
    last edit); `test_L`/`test_M` and the brief22/23 seals untouched and green.
 
