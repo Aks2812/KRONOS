@@ -132,7 +132,11 @@ def test_F_per_record_declines(g):
         "malformed_fqdn",
         "malformed_fqdn",
     ]
-    assert all(getattr(u, "id", None) in (None, "host.example.com", "1.2.3.4") for u in plan.upserts)
+    edge_ups = [u for u in plan.upserts if isinstance(u, EdgeUpsert)]
+    assert len(edge_ups) == 1
+    assert edge_ups[0].label == "resolves_to"
+    assert edge_ups[0].from_id == "host.example.com"
+    assert edge_ups[0].to_id == "1.2.3.4"
 
 
 def test_G_provenance(g):
@@ -162,3 +166,60 @@ def test_J_scope_audit():
         ["git", "diff", "--name-only", f"{B26_BASE}..{B26_MERGE}"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3, set(out) - SECTION_3
+
+
+# ---- SPEC_BRIEF28 D3: FQDN label/total length limits (hermetic) ----
+
+
+def _len_plan(g, name):
+    return ingest_dns_records_plan(_raw({"name": name, "type": "A", "value": "1.2.3.4"}), g)
+
+
+def _name_of_len(n):
+    labels = []
+    total = 0
+    while total < n:
+        rem = n - total - (1 if labels else 0)
+        take = min(63, rem)
+        labels.append("a" * take)
+        total += take + (1 if len(labels) > 1 else 0)
+    name = ".".join(labels)
+    assert len(name) == n and all(0 < len(x) <= 63 for x in name.split("."))
+    return name
+
+
+def test_B28_C_label_limit(g):
+    ok = _len_plan(g, "a" * 63 + ".example.com")
+    assert len(ok.upserts) == 3 and not ok.report.declined
+    bad = _len_plan(g, "a" * 64 + ".example.com")
+    assert bad.upserts == ()
+    assert [d.reason for d in bad.report.declined] == ["malformed_fqdn"]
+
+
+def test_B28_D_total_limit(g):
+    ok = _len_plan(g, _name_of_len(253))
+    assert len(ok.upserts) == 3 and not ok.report.declined
+    bad = _len_plan(g, _name_of_len(254))
+    assert bad.upserts == ()
+    assert [d.reason for d in bad.report.declined] == ["malformed_fqdn"]
+
+
+def test_B28_D_cname_value_limit(g):
+    rec = {"name": "host.example.com", "type": "CNAME", "value": "a" * 64 + ".example.com"}
+    plan = ingest_dns_records_plan(_raw(rec), g)
+    assert plan.upserts == ()
+    assert [d.reason for d in plan.report.declined] == ["malformed_fqdn"]
+
+
+def test_B28_E_short_name_still_edge(g):
+    plan = _len_plan(g, "host.example.com")
+    edges = [u for u in plan.upserts if isinstance(u, EdgeUpsert)]
+    assert len(edges) == 1 and edges[0].from_id == "host.example.com"
+
+
+def test_B28_no_network(g, monkeypatch):
+    def boom(*a, **k):
+        raise AssertionError("socket used")
+
+    monkeypatch.setattr(socket, "socket", boom)
+    assert _len_plan(g, "a" * 64 + ".example.com").upserts == ()

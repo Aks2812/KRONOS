@@ -30,6 +30,8 @@ def _norm_fqdn(value: str) -> str | None:
         candidate = candidate[:-1]
     if not candidate or not _FQDN_RE.match(candidate):
         return None
+    if len(candidate) > 253 or any(not 1 <= len(label) <= 63 for label in candidate.split(".")):
+        return None
     try:
         ipaddress.ip_address(candidate)
     except ValueError:
