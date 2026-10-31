@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 152
+seq: 153
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF25 — reviewer FAIL §8 J (SECTION_3_B25 stale post-amendment); return to builder (write-ahead SEQ 152); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF25 — §8 J fix built (429d812), suite green; re-dispatching reviewer attempt 2 (write-ahead SEQ 153); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7415,4 +7415,14 @@ prev_outcome: SEQ 151 reviewer FAIL. Only miss: tests/test_agent_live_executor.p
 action: evidence .claude/pipeline/04-review/review-evidence.json; Opus concurs.
 brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; base 98636e5; head 082e7dd.
 pending_action: dispatch kronos-builder — add "tests/test_agent_dispatcher.py" to SECTION_3_B25 in tests/test_agent_live_executor.py (§3 item 3 only); refresh totals as last edit; then re-review (reviewer attempt 2).
+outcome: pending
+
+## SEQ 153 — SPEC_BRIEF25 §8 J fix COMPLETE (SECTION_3_B25 += item 4); re-dispatching kronos-reviewer attempt 2 (write-ahead)
+
+seq: 153
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 152 builder fix COMPLETE. tests/test_agent_live_executor.py:226 SECTION_3_B25 += "tests/test_agent_dispatcher.py"; commit 429d812. Full suite 3711 passed,1 skipped,0 failed (.venv). Whole-window 98636e5..429d812 = 4 files ⊆ §3.
+action: Opus build-assess PASS; scope verified.
+brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; base 98636e5; head 429d812.
+pending_action: dispatch kronos-reviewer (claude-haiku-5-5) independent re-review at head 429d812 (attempt 2/3).
 outcome: pending
