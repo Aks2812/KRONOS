@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 153
+seq: 154
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF25 — §8 J fix built (429d812), suite green; re-dispatching reviewer attempt 2 (write-ahead SEQ 153); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF25 — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 154); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7425,4 +7425,14 @@ prev_outcome: SEQ 152 builder fix COMPLETE. tests/test_agent_live_executor.py:22
 action: Opus build-assess PASS; scope verified.
 brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; base 98636e5; head 429d812.
 pending_action: dispatch kronos-reviewer (claude-haiku-5-5) independent re-review at head 429d812 (attempt 2/3).
+outcome: pending
+
+## SEQ 154 — SPEC_BRIEF25 reviewer PASS + Opus step-5 PASS; SELF-AUTHORIZING GATE-2 MERGE; push+PR+re-measure 10 in-turn (write-ahead)
+
+seq: 154
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 153 reviewer re-review PASS·MERGE (attempt 2). Suite 3711 passed,1 skipped,0 failed head 429d812; scope 4 ⊆ §3; validate/ 0-diff; test_L/test_M/brief22-24 seals green; only LOW note. Opus step-5 PASS: live_executor.py D1 probe injection, D2/D3 single-target fail-closed (missing node/None probe/out-of-scope no probe) two-armed via pure validators, record_*_finding only on live else abstained, D4 validate path + unhandled fallback byte-for-byte unchanged.
+action: SELF-AUTHORIZE GATE-2 — open PR branch claude/s8-executor-probe-brief25 (head 429d812) to main; re-measure all 10 MERGE-GATE prereqs SAME turn; merge --squash --match-head-commit, NO --admin/--auto, only if 10/10 green. Session posture note: ask-tier inert under bypassPermissions (kronos-railcheck) — merge authorized by authority model SEQ 55, gated by the 10-prereq re-measure, not by a prompt.
+brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d; head 429d812; base origin/main 98636e5.
+constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green, never on a red prereq.
 outcome: pending
