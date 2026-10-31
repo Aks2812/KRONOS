@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 149
+seq: 150
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF25 (S8 executor probe_service/probe_web) GATE-1 self-approved; dispatching builder (write-ahead SEQ 149); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF25 — impl A-J PASS; GATE-1 amendment (§3 item 4 seal brief24 L2); re-dispatching builder for seal (write-ahead SEQ 150); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7385,4 +7385,14 @@ prev_outcome: SEQ 148 SUCCESS (brief24 merged PR #32 98636e5). Researcher backlo
 selection_evidence: src/kronos/agent/live_executor.py:44-46 (only kind==validate); infra_validator.py:28,43 + web_validator.py:29,44 zero agent callers; mirrors SPEC_BRIEF22 single-target shape.
 brief: SPEC_BRIEF25.md sha256 535f030cdde090f229d7bcb34f4376c6fca492b2be343d4af8047afcd9b6ce89; §3={SPEC_BRIEF25.md, src/kronos/agent/live_executor.py, tests/test_agent_live_executor.py}; base origin/main 98636e5.
 pending_action: commit SPEC_BRIEF25.md on branch claude/s8-executor-probe-brief25 (off 98636e5); dispatch kronos-builder (claude-sonnet-5-5) to implement §3 only (RED tests §8 A-K first, then impl); hermetic.
+outcome: pending
+
+## SEQ 150 — SPEC_BRIEF25 GATE-1 amendment (§3 item 4: seal brief24 L2 audit); re-dispatching builder (write-ahead)
+
+seq: 150
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 149 builder impl COMPLETE §8 A-J PASS (commit 55265ce; live_executor probe_service/probe_web; 30 in-file). Full suite 1 failed = tests/test_agent_dispatcher.py::test_P_L2_scope_audit_b24 — brief24 own audit unsealed f"B24_BASE..HEAD" trips on later branch; out of brief25 §3 as written = brief defect.
+decision: GATE-1 amendment self-approved (routine mechanical seal, exact brief24->brief23 precedent, no new capability/scope). §3 += tests/test_agent_dispatcher.py seal-only: add B24_MERGE="98636e5", window f"B24_BASE..B24_MERGE"; §8 += L3.
+brief: SPEC_BRIEF25.md sha256 24578f159c36545f0e8edfa9e15d250ebe84007abbb840ccedf27f6b2d941f2d (amended); §3={SPEC_BRIEF25.md, src/kronos/agent/live_executor.py, tests/test_agent_live_executor.py, tests/test_agent_dispatcher.py}; base 98636e5.
+pending_action: commit brief amendment on branch; dispatch kronos-builder to apply seal to test_P_L2_scope_audit_b24 (seal-only; test_L/test_M frozen); refresh totals as last edit.
 outcome: pending
