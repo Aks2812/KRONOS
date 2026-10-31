@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 157
+seq: 158
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: DNS-resolution producer rung — format chosen (tool-neutral JSON records), SPEC_BRIEF26 GATE-1 self-approved; dispatching builder (write-ahead SEQ 157); S8 §6 live-run still paused (SEQ 140)
+stage: DNS-resolution producer rung — impl A-J PASS; GATE-1 amendment (§3 item 6 seal brief25 audit); re-dispatching builder (write-ahead SEQ 158); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7464,4 +7464,14 @@ prev_outcome: SEQ 156 researcher COMPLETE. resolves_to (schema.py:129) zero prod
 decision: format = tool-neutral JSON resolution-record list [{name,type(A|AAAA|CNAME),value}] (context.md preference + only candidate meeting stdlib/fail-closed/deterministic bar). Confident -> proceed (not stop-with-alternatives). Opus defined bounded contract+invariants per context.md authorization.
 brief: SPEC_BRIEF26.md sha256 f2229771366a13f25b273391ef432bb44a46fd8290e9463ff87bf9ee949e4dcb; §3={SPEC_BRIEF26.md, src/kronos/ingest/dns/__init__.py, src/kronos/ingest/dns/parser.py, src/kronos/ingest/__init__.py (dispatch branch only), tests/test_dns_ingest.py}; base origin/main 4ff38f4.
 pending_action: commit SPEC_BRIEF26.md on branch claude/dns-resolves-brief26 (off 4ff38f4); dispatch kronos-builder (claude-sonnet-5-5) RED tests §8 A-K first then impl; hermetic; mirror infra/parser.py; NO schema/scope_guard edit, NO events, NO new dep.
+outcome: pending
+
+## SEQ 158 — SPEC_BRIEF26 GATE-1 amendment (§3 item 6: seal brief25 whole-window audit); re-dispatching builder (write-ahead)
+
+seq: 158
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 157 builder impl COMPLETE §8 A-J PASS (commit 6ae05e9; ingest/dns/parser.py + dispatch branch; 13 tests). Full suite 1 failed = tests/test_agent_live_executor.py::test_B25_J_scope_audit_whole_window — brief25 own audit unsealed f"B25_BASE..HEAD" trips; out of brief26 §3 = brief defect (recurring seal tax; Opus omitted pre-include).
+decision: GATE-1 amendment self-approved (routine mechanical seal; brief25->brief24 precedent; no new capability/scope). §3 += tests/test_agent_live_executor.py seal-only: B25_MERGE="4ff38f4", window f"B25_BASE..B25_MERGE"; §8 += L. Builder must ALSO add tests/test_agent_live_executor.py to brief26 own §8 J scope set in test_dns_ingest.py (6 paths) to avoid self-trip.
+brief: SPEC_BRIEF26.md sha256 fb7b4ad17df1fa4c934e37f5ff5144848187664fef29234d2ee22315d5e1e782 (amended); §3 now 6 files; base 4ff38f4.
+pending_action: commit brief amendment on branch; dispatch kronos-builder to (a) seal test_B25_J in test_agent_live_executor.py, (b) extend brief26 §8 J set in test_dns_ingest.py to 6 paths; refresh totals as last edit.
 outcome: pending
