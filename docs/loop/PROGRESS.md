@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 156
+seq: 157
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: DNS-resolution producer rung — maintainer-authorized (context.md 2026-10-31); dispatching researcher for canonical source format (write-ahead SEQ 156); S8 §6 live-run still paused (SEQ 140)
+stage: DNS-resolution producer rung — format chosen (tool-neutral JSON records), SPEC_BRIEF26 GATE-1 self-approved; dispatching builder (write-ahead SEQ 157); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7454,4 +7454,14 @@ derived_at: 2026-10-31T00:00:00Z
 authorization: maintainer context.md /home/void/context.md 2026-10-31 — authorize DNS-resolution producer as next bounded hermetic increment; LIFT source-format PAUSE-DECISION THIS RUNG ONLY; researcher-first; Opus selects format from evidence + defines bounded contract/invariants. Required: fail-closed parsing, deterministic normalization, provenance retention, scope enforcement, malformed/negative tests, abstention. FORBIDDEN: §6/live network/external target/LLM/budget/IDENTITY-TECHNOLOGY. Preserve untracked rails. If format not confidently selectable from repo evidence -> STOP with alternatives + recommended decision, do not implement an assumption.
 prev_outcome: SEQ 155 SUCCESS (brief25 merged PR #33 4ff38f4). origin/main 4ff38f4.
 pending_action: dispatch kronos-researcher (claude-sonnet-5) read-only — inspect resolves_to consumer/schema/evidence-contract/adapters + prior ingestion briefs (infra nmap, web OpenAPI); compare viable DNS source representations; recommend a deterministic canonical internal format + adapter boundary (avoid coupling KRONOS contracts to a tool-specific format unless evidence requires). Then Opus decision+brief.
+outcome: pending
+
+## SEQ 157 — SPEC_BRIEF26 (DNS-resolution producer) format chosen + GATE-1 self-approved; dispatching builder (write-ahead)
+
+seq: 157
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 156 researcher COMPLETE. resolves_to (schema.py:129) zero producer/consumer; ingest contract NodeUpsert/EdgeUpsert/IngestPlan via apply_plan, provenance=node source col (no EVIDENCE path for this edge), both edge endpoints must pre-exist; shipped parsers parse raw tool fmt direct into upserts; NO coupling requirement evidenced.
+decision: format = tool-neutral JSON resolution-record list [{name,type(A|AAAA|CNAME),value}] (context.md preference + only candidate meeting stdlib/fail-closed/deterministic bar). Confident -> proceed (not stop-with-alternatives). Opus defined bounded contract+invariants per context.md authorization.
+brief: SPEC_BRIEF26.md sha256 f2229771366a13f25b273391ef432bb44a46fd8290e9463ff87bf9ee949e4dcb; §3={SPEC_BRIEF26.md, src/kronos/ingest/dns/__init__.py, src/kronos/ingest/dns/parser.py, src/kronos/ingest/__init__.py (dispatch branch only), tests/test_dns_ingest.py}; base origin/main 4ff38f4.
+pending_action: commit SPEC_BRIEF26.md on branch claude/dns-resolves-brief26 (off 4ff38f4); dispatch kronos-builder (claude-sonnet-5-5) RED tests §8 A-K first then impl; hermetic; mirror infra/parser.py; NO schema/scope_guard edit, NO events, NO new dep.
 outcome: pending
