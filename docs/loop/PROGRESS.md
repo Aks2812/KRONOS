@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 173
+seq: 174
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF28 (DNS hygiene) reviewer PASS + step-5 PASS; self-authorizing GATE-2 merge; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF28 (DNS hygiene) MERGED main (PR #36, squash 55b4b7f); dispatching researcher decision memo (IDENTITY/TECHNOLOGY vs reconcile-side resolves_to), no impl; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7627,4 +7627,14 @@ action: self-authorize GATE-2 (authority model SEQ 55). Open PR main←claude/dn
 brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base origin/main a5373b4; head 1f43b02.
 constraints: CyberGym only; hermetic; no new dep; merge only on 10/10 green; no scope change.
 pending_action: open PR; re-measure 10 prereqs in-turn; merge at 1f43b02 if 10/10 green; then record SUCCESS + dispatch researcher decision memo (IDENTITY/TECHNOLOGY vs reconcile-side resolves_to, read-only, no impl).
+outcome: SUCCESS — 10/10 re-measured PASS in-turn (scope 5⊆§3; suite 3746/1/0 head 1f43b02; MERGEABLE CLEAN; statusCheckRollup []; NOT-ancestor; PR #36 head=1f43b02; tree clean). Merged --squash --match-head-commit 1f43b02; PR #36 MERGED 55b4b7f.
+
+## SEQ 174 — SPEC_BRIEF28 (DNS hygiene, 3 LOW items) MERGED main (PR #36, squash 55b4b7f); dispatching researcher decision memo
+
+seq: 174
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 173 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn; merged --squash --match-head-commit 1f43b02, NO --admin/--auto. Hygiene rung resolved all 3 recorded LOW items (docstring F-L1, brief26 vacuous assertion, FQDN 63/253 limits).
+action: per context.md 2026-10-31, dispatch kronos-researcher (claude-sonnet-5) for a READ-ONLY decision memo comparing next substantive candidates — (a) IDENTITY/TECHNOLOGY producer, (b) reconcile-side use of resolves_to — on G1/G2/G3 value, dependencies, FP/scope-expansion risk, smallest viable hermetic increment, required authorization. Opus to report ONE recommendation + the exact bounded grant needed. NO implementation of either; maintainer decision gates any build.
+brief: n/a (research only). base origin/main 55b4b7f.
+pending_action: dispatch researcher decision memo; on return, Opus synthesizes ONE recommendation + exact bounded grant and reports to maintainer. Do not author or build either candidate without maintainer approval (prose-silence / scope PAUSE-DECISION).
 outcome: pending
