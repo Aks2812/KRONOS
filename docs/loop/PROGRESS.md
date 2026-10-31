@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 144
+seq: 145
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung — builder COMPLETE, F-1 fixed, suite green; re-dispatching reviewer (write-ahead SEQ 144); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF24 dependency-DAG rung — reviewer FAIL §8 K (socket guard gap); return to builder (write-ahead SEQ 145); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7327,10 +7327,20 @@ carried_forward_rails: "SEQ 55 + 86/87 + 109 + 141/142 rails edits untracked; un
 
 ## SEQ 144 — SPEC_BRIEF24 builder COMPLETE + reviewer FAIL(F-1) fixed; suite green; re-dispatching kronos-reviewer (write-ahead)
 
-seq: 144
+seq: 145
 derived_at: 2026-10-31T00:00:00Z
 prev_outcome: SEQ 143 COMPLETE (builder ran; prior review FAIL F-1 §8 L2 at head 0ff65f6).
 action: F-1 fix committed e214058 (§3 item 6: tests/test_agent_live_driver.py in SECTION_3_B24). Suite 3697 passed, 1 skipped (raw .venv pytest, exit 0). Scope clean: 6 files ⊆ §3.
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head e214058.
 pending_action: dispatch kronos-reviewer (claude-haiku-5-5) for independent re-review at head e214058; prior F-2 LOW carried for assessment.
+outcome: pending
+
+## SEQ 145 — SPEC_BRIEF24 reviewer FAIL (§8 K socket-guard gap, non-blocking but FAIL under prose); return to builder (write-ahead)
+
+seq: 145
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 144 reviewer re-review FAIL. Only miss: §8 K nonet guard on test_P_A only, not test_P_B..test_P_I (tests/test_agent_dispatcher.py:250-313). Code opens no socket; evidence gap. A-J,F3,G2,L2 PASS; scope clean; suite 3697 passed,1 skipped.
+action: evidence .claude/pipeline/04-review/review-evidence.json; Opus concurs K FAIL per prose.
+brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; base 73cbe8b; head e214058.
+pending_action: dispatch kronos-builder (claude-sonnet-5-5) — add nonet socket guard to run_once-invoking §8 tests test_P_B..test_P_I in tests/test_agent_dispatcher.py (§3 item 4 only; do not touch test_L/test_M); refresh totals as last edit; then re-review (reviewer attempt 3/3).
 outcome: pending
