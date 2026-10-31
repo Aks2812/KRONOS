@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 147
+seq: 148
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF24 dependency-DAG rung — reviewer PASS + Opus step-5 PASS; self-authorizing GATE-2 merge (write-ahead SEQ 147); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF24 dependency-DAG rung MERGED to main (PR #32, squash 98636e5); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7364,3 +7364,13 @@ action: SELF-AUTHORIZE GATE-2 — open PR branch claude/s8-agent-depdag-brief24 
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; head 8182e3e; base origin/main 73cbe8b.
 constraints: CyberGym only; no new dep; no scope expansion; merge only on 10/10 green, never on a red prereq.
 outcome: pending
+
+## SEQ 148 — SPEC_BRIEF24 (S8 dependency-DAG any_of/blocked_by) MERGED main (PR #32, squash 98636e5); next-direction PAUSE
+
+seq: 148
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 147 SUCCESS — 10 MERGE-GATE prereqs re-measured PASS in-turn (1 scope 6 ⊆ §3; 2 ruleset active deletion/non_fast_forward/pull_request; 3 draft=false; 4 OPEN; 5 reviewer PASS + step-5 PASS; 6 statusCheckRollup [] CLEAN; 7 3697 passed/1 skipped/0 failed head 8182e3e; 8 MERGEABLE CLEAN + head NOT-ancestor origin/main; 9 PR #32 head=8182e3e; 10 tree clean, known rails only). Merged --squash --match-head-commit 8182e3e, NO --admin/--auto.
+action: PAUSE for maintainer next-direction. Dispatcher any_of/blocked_by dependency-DAG now on main (hermetic). §6 live LLM-driven run still requires explicit grant (SEQ 140 pause 2+3).
+brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; merged base 73cbe8b -> origin/main 98636e5.
+pending_action: await maintainer next-direction (new hermetic backlog brief, or §6 live-run grant, or stop).
+outcome: SUCCESS (rung complete)
