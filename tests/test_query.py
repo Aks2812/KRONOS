@@ -278,3 +278,15 @@ def test_B27_J_scope_audit():
         ["git", "diff", "--name-only", f"{B27_BASE}..HEAD"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B27_SECTION_3, set(out) - B27_SECTION_3
+
+
+def test_B27_J3_multipath_cycle(rg):
+    # brief §8 J3 / D4: cycle closes only on a later branch (a->b, a->c, c->b, b->c)
+    _seed(
+        rg,
+        ("a.example.com", "b.example.com"),
+        ("a.example.com", "c.example.com"),
+        ("c.example.com", "b.example.com"),
+        ("b.example.com", "c.example.com"),
+    )
+    assert resolve_host(rg, "a.example.com")["status"] == "cycle_detected"

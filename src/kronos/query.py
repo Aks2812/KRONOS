@@ -178,14 +178,14 @@ def resolve_host(graph: "EngagementGraph", name: str, only_in_scope: bool = True
     visited: set[str] = set()
     terminals: set[str] = set()
     excluded = False
-    cycle = False
-    queue: list[tuple[str, frozenset[str]]] = [(norm, frozenset())]
+    adj: dict[str, list[str]] = {}
+    queue: list[str] = [norm]
     while queue:
-        current, ancestors = queue.pop(0)
+        current = queue.pop(0)
         if current in visited:
-            continue
+            continue  # dedups expansion only; cycle detection is the DFS below
         visited.add(current)
-        path = ancestors | {current}
+        adj[current] = []
         rows = graph.execute(
             "MATCH (a:HOST {id:$id})-[:resolves_to]->(b:HOST) RETURN b.id AS id, b.in_scope AS in_scope",
             {"id": current},
@@ -197,10 +197,28 @@ def resolve_host(graph: "EngagementGraph", name: str, only_in_scope: bool = True
                 continue
             if _is_ip(bid):
                 terminals.add(bid)
-            elif bid in path:
-                cycle = True  # back-edge to an FQDN on the current path
             else:
-                queue.append((bid, path))
+                adj[current].append(bid)
+                queue.append(bid)
+
+    # Cycle = back-edge to an FQDN on the current DFS path (ancestor), checked on
+    # every edge; a diamond (shared node not on the path) is not a cycle.
+    cycle = False
+    done: set[str] = set()
+    on_path: set[str] = {norm}
+    stack = [(norm, iter(adj[norm]))]
+    while stack and not cycle:
+        node, it = stack[-1]
+        nxt = next(it, None)
+        if nxt is None:
+            stack.pop()
+            on_path.discard(node)
+            done.add(node)
+        elif nxt in on_path:
+            cycle = True
+        elif nxt not in done:
+            on_path.add(nxt)
+            stack.append((nxt, iter(adj[nxt])))
 
     if cycle:
         return result("cycle_detected", list(terminals), excluded)
