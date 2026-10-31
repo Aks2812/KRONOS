@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 161
+seq: 162
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: DNS-resolution producer MERGED main (PR #34, squash 31ca3b5); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
+stage: resolves_to consumer AUTHORIZED (context.md 2026-10-31, this rung only); researcher dispatched; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7374,6 +7374,16 @@ action: PAUSE for maintainer next-direction. Dispatcher any_of/blocked_by depend
 brief: SPEC_BRIEF24.md sha256 21e329d0958649643bb8b367790c34efdaea04758d746f75583d55a3b2fe0f75; merged base 73cbe8b -> origin/main 98636e5.
 pending_action: await maintainer next-direction (new hermetic backlog brief, or §6 live-run grant, or stop).
 outcome: SUCCESS (rung complete)
+
+## SEQ 162 — resolves_to consumer AUTHORIZED (context.md 2026-10-31); dispatching kronos-researcher (write-ahead)
+
+seq: 162
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: SEQ 161 SUCCESS — brief26 (DNS producer) MERGED main 31ca3b5.
+action: maintainer context.md 2026-10-31 authorizes resolves_to CONSUMER as next bounded hermetic increment; design/scope PAUSE lifted THIS RUNG ONLY. Dispatch Sonnet researcher (read-only) on producer, graph/query ifaces, edge consumers, reconciliation, prior contracts; recommend smallest useful consumer (query / reconcile / narrow combo) advancing G1 not weakening G3.
+constraints: stored-graph + hermetic/mock only; NO live DNS/network; edge=evidence NOT authorization (never expand signed scope, auto-approve host/IP, or independently produce a finding); preserve direction/provenance/determinism; handle missing/stale/duplicate/conflicting/many-to-many/out-of-scope explicitly; abstain on insufficient evidence; NO unrelated parser/test cleanup unless research proves required; preserve untracked rails; NO §6/external target/LLM budget/unrelated capability.
+pending_action: dispatch kronos-researcher; on return Opus selects design + authors SPEC_BRIEF27, self-approves routine GATE-1.
+outcome: pending
 
 ## SEQ 149 — SPEC_BRIEF25 (S8 executor probe_service/probe_web, hermetic/mock) GATE-1 self-approved; dispatching builder (write-ahead)
 
