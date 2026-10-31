@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 170
+seq: 171
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF27 (read-only resolves_to consumer query.resolve_host) MERGED main (PR #35, squash a5373b4); next-direction PAUSE; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF28 (DNS hygiene: docstring + meaningful assert + FQDN 63/253 limits) GATE-1 self-approved; dispatching builder; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7596,3 +7596,14 @@ action: PAUSE for maintainer next-direction. resolves_to now has a producer (bri
 brief: SPEC_BRIEF27.md sha256 aa727d4de6a2567105b803fb4e4aec7c10ff35e0b2c9eeccc6b681ebef32d51b; merged base 31ca3b5 -> origin/main a5373b4.
 pending_action: await maintainer next-direction. Open LOW follow-ups (optional, in-scope): F-L1 query.resolve_host docstring query.py:150 "cycle-safe via a visited set" stale (cycle now DFS back-edge); brief26 reviewer LOWs (vacuous id assert test_dns_ingest.py:134; FQDN regex no 63/253 cap parser.py:24; narrow nonet). S8 §6 live-run paused since SEQ 140 (needs §6 target/action/window authorization — not present).
 outcome: SUCCESS (rung complete)
+
+## SEQ 171 — SPEC_BRIEF28 (DNS hygiene) authored + researcher PASS + GATE-1 self-approved; dispatching builder (write-ahead)
+
+seq: 171
+derived_at: 2026-10-31T00:00:00Z
+prev_outcome: maintainer next-direction (context.md 2026-10-31): one hermetic hygiene rung over the 3 recorded LOW items (correctness/test-hardening only), then a read-only researcher decision memo (no impl). Researcher (claude-sonnet-5) returned cited facts → .claude/pipeline/02-research/findings.md: docstring query.py:149-155 (visited dedups expansion only; cycle = DFS back-edge :204-209); vacuous id assert test_dns_ingest.py:135 in test_F_per_record_declines (EdgeUpsert has no id, ingest/__init__.py:31-35); _norm_fqdn parser.py:27-37 no 63/253 limit, only call sites :72/:78, no existing valid test >63/253 → enforcement compatible; seal test_B27_J_scope_audit test_query.py:276-280 (31ca3b5..HEAD) → pin 31ca3b5..a5373b4.
+action: authored SPEC_BRIEF28 (§3 = 5 files: SPEC_BRIEF28.md, query.py docstring-only, ingest/dns/parser.py _norm_fqdn length-only, test_dns_ingest.py, test_query.py seal+add). Self-approved routine GATE-1 (brief+evidence validated; correctness/hardening only, no new capability/schema/live/§6). Dispatch kronos-builder (claude-sonnet-5-5) within §3.
+brief: SPEC_BRIEF28.md sha256 1a8e73b326133f695891f6e1addf69f9e2977e397145e4d2dd5c0d60e3b5e947; base origin/main a5373b4; branch claude/dns-hygiene-brief28.
+constraints: CyberGym only; hermetic (no live net/§6); no new dep; correctness/test-hardening only, no refactor/schema/capability; scope ⊆ §3; seal brief27 audit to a5373b4.
+pending_action: dispatch builder for D1-D3 + §8 A-K tests within §3; on build return → independent review → GATE-2; then dispatch researcher decision memo (IDENTITY/TECHNOLOGY producer vs reconcile-side resolves_to), no impl.
+outcome: pending
