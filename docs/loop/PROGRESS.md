@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 142
+seq: 143
 derived_at: 2026-10-26T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: Wave-2 rails change COMPLETE (R4/R5/R7/R8/R9); S8 next-direction + §6 live-run pause (SEQ 140) resumes (SEQ 142)
+stage: SPEC_BRIEF24 dependency-DAG rung build (write-ahead SEQ 143); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7301,7 +7301,7 @@ carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 + SEQ 141 Wave-2 rai
 
 ## SEQ 142 — Wave-2 thin-Opus rails change COMPLETE (R4/R5/R7/R8/R9); maintainer-authorized; no guardrail regression; S8 §6 live-run pause preserved
 
-seq: 142
+seq: 143
 derived_at: 2026-10-26T00:00:00Z
 stage: Wave-2 rails change complete; loop returns to SEQ 140 next-direction + §6 live-run pause
 prev_outcome: SEQ 141 SUCCESS — Wave-2 R4/R5/R7/R8/R9 implemented as project-local rails edits; no material guardrail regression found pre-implementation; BRIEF23 §9 LLM-driven live run NOT authorized (SEQ 140 §6 pause preserved, context.md line 38 — no target/action/budget/credential/window granted).
@@ -7312,3 +7312,15 @@ next_measurement_unit: the next clean equivalent-workload single-slice increment
 preserved: five-step workflow, 5 pause conditions, GATE-1/GATE-2 discipline, scope+authorization boundaries, model pins, permissions, reviewer independence, source/test authority; S8 live run still §6-paused.
 outcome: COMPLETE
 carried_forward_rails: "SEQ 55 + SEQ 86/87 + SEQ 109 Wave-1 + SEQ 141/142 Wave-2 rails edits all untracked working-tree files; unchanged in git."
+
+## SEQ 143 — SPEC_BRIEF24 (S8 dependency-DAG any_of/blocked_by) GATE-1 self-approved; dispatching builder (write-ahead)
+
+seq: 143
+derived_at: 2026-10-31T00:00:00Z
+stage: S8 dependency-DAG rung (pause #2 lifted this rung only; hermetic/mock); build
+authorization: maintainer next-direction 2026-10-31 — dispatcher any_of/blocked_by, hermetic/mock verification only; NO §6/live network/LLM/budget/SECRET-WEB commit-execute. Not a goal/scope/architecture change beyond this rung.
+prev_outcome: SEQ 142 COMPLETE (Wave-2 rails). Backlog scan → eligible hermetic rung = dependency-DAG.
+brief: SPEC_BRIEF24.md sha256 e78308110776a223e4080a068d61fee58749877125b2f08ca0f7624eb06a9f82; §3={SPEC_BRIEF24.md, src/kronos/agent/contracts.py, dispatcher.py, tests/test_agent_dispatcher.py, tests/test_agent_contracts.py}; base origin/main 73cbe8b.
+pending_action: dispatch kronos-builder on new branch claude/s8-agent-depdag-brief24 off 73cbe8b; implement §3 only; §8 A–K.
+outcome: pending
+carried_forward_rails: "SEQ 55 + 86/87 + 109 + 141/142 rails edits untracked; unchanged."
