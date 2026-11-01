@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 181
+seq: 182
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7688,3 +7688,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 180 finalized canonical brief per O1/O2/O3; verified brief carries O1/O2/O3 + D1-D7/P0/P1, introduces no new unresolved architecture, allowlist unchanged -> GATE-1 self-approved (authority model SEQ 55; operator architecture approval context.md 2026-10-31).
 - action: SPEC_BRIEF29.md committed 02e2122 on branch claude/autonomy-brief29 (base origin/main@55b4b7f); brief sha256 848cc274889742f93e78f3d56eae19b3826c431e0e847d874f0910364bc0b83b. Dispatching kronos-builder (claude-sonnet-5-5) to implement §3 allowlist only: src/kronos/autonomy.py (new), src/kronos/manifest.py (operator-authorized narrow), tests/test_autonomy.py (new), tests/test_manifest.py, tests/conftest.py, SPEC_BRIEF28 seal->55b4b7f. No wiring, no live/§6, no watchdog/stop runtime.
 - outcome: pending. pending_action: builder implements brief29 §3; on return -> scope-audit + hermetic tests, then dispatch Haiku 5.5 reviewer; Opus step-five verify.
+
+## SEQ 182 — /kronos-continue resume: builder interrupted; re-dispatching to complete §10 tests
+- prev: SEQ 181 builder dispatched write-ahead; resume found build INCOMPLETE/uncommitted on claude/autonomy-brief29@02e2122 — impl present (src/kronos/autonomy.py 427L: effective_envelope/authorize/verify_amendment/AutonomyError+types; manifest.py submodels+VerifiedManifest; conftest manifest_factory additive; test_query.py B28 seal->55b4b7f) but §10 items 4-5 absent (tests/test_autonomy.py, tests/test_manifest.py); build-report stale (brief18).
+- action: re-dispatch kronos-builder (claude-sonnet-5-5) to complete §10 ONLY — write tests/test_autonomy.py + tests/test_manifest.py (§12/§13 tests-as-rules), verify impl vs §12 (fix only within §10), run hermetic suite, commit explicit §10 paths. Brief sha256 848cc274889742f93e78f3d56eae19b3826c431e0e847d874f0910364bc0b83b. No wiring/live/§6/watchdog-runtime.
+- outcome: pending. pending_action: builder completes §10 tests+commit; on return Opus scope-audit (55b4b7f..HEAD ⊆ §10) + hermetic run (SUMMARY line, not $?), then dispatch Haiku 5.5 reviewer.
