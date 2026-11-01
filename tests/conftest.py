@@ -24,7 +24,7 @@ def _deep_merge(base: dict, overrides: dict) -> dict:
 def manifest_factory(signing_keypair):
     priv, _ = signing_keypair
 
-    def _make(**overrides) -> str:
+    def _make(autonomy: dict | None = None, amends: dict | None = None, **overrides) -> str:
         from kronos.manifest import sign_manifest
 
         now = datetime.now(timezone.utc)
@@ -40,6 +40,11 @@ def manifest_factory(signing_keypair):
             "scope": {"in_scope": ["*.acme.example.com"], "excluded": []},
         }
         data = _deep_merge(data, overrides)
+        # SPEC_BRIEF29: optional top-level signed blocks; absent => output unchanged.
+        if autonomy is not None:
+            data["autonomy"] = autonomy
+        if amends is not None:
+            data["amends"] = amends
         return sign_manifest(data, priv)
 
     return _make
