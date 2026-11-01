@@ -39,9 +39,10 @@ __all__ = [
     "AuthorizationResult",
     "EffectiveEnvelope",
     "RuntimeRestrictions",
-    "active_envelope",
     "authorize",
     "effective_envelope",
+    "in_force_effective_envelope",
+    "in_force_manifest",
     "to_budget_limits",
     "verify_amendment",
 ]
@@ -74,9 +75,10 @@ class EffectiveEnvelope:
     exfil_byte_budget: int
     # Non-None => the signed input was unusable; authorize() denies.
     fail_closed_reason: str | None = None
-    # Provenance (§7/§8): set only when a valid amendment INCREASES a permission
-    # and is not yet effective. authorize() denies while now < this instant.
-    pending_increase_until: datetime | None = None
+    # Provenance (§8.1(1)): the manifest_id of the VerifiedManifest this envelope
+    # was derived from. in_force_effective_envelope() is the only function that
+    # sets it; authorize() grants only when it equals verified.manifest_id.
+    provenance: str | None = None
 
 
 @dataclass(frozen=True)
@@ -106,6 +108,8 @@ class AuthorizationResult:
 class AmendmentDecision:
     valid: bool
     reason: str
+    # "none" | "tightening" | "increase" | "mixed" (§7); None when not classified.
+    direction: str | None = None
 
 
 _MODE_RANK = {"calm": 0, "beast": 1}
@@ -170,7 +174,9 @@ def effective_envelope(
     """Intersection of signed authority and runtime restriction (§8).
 
     Runtime may only restrict; any widening raises `AutonomyError`
-    (never clamped up). Absent/unusable signed data -> fail-closed Calm."""
+    (never clamped up). Absent/unusable signed data -> fail-closed Calm.
+    NON-authorizing (§8.1(1)): the result carries no provenance, so
+    `authorize` denies it; only `in_force_effective_envelope` authorizes."""
     if signed is None:
         return _fail_closed_envelope(None)  # absent block: Calm, zero authority (§6)
     if not isinstance(signed, AutonomyEnvelope):
@@ -254,8 +260,77 @@ def _is_aware(value: object) -> bool:
     return isinstance(value, datetime) and value.tzinfo is not None and value.tzinfo.utcoffset(value) is not None
 
 
+def _axes(m: VerifiedManifest) -> dict | None:
+    """Authority axes of a manifest (§7). Absent autonomy = fail-closed zero
+    authority. None if the signed envelope is unusable."""
+    env = m.autonomy
+    if env is None:
+        view = {
+            "mode": 0,
+            "duration": 0,
+            "budget": {d: 0 for d in BUDGET_DIMENSIONS},
+            "exfil": (False, 0),
+            "watchdog": None,
+            "auths": (),
+        }
+    else:
+        if not isinstance(env, AutonomyEnvelope) or env.mode_max not in _MODE_RANK:
+            return None
+        budget = _budget_dict(env.max_unattended_budget)
+        if budget is None or not _num_ok(env.max_unattended_duration_seconds):
+            return None
+        x = env.exfil_simulation
+        view = {
+            "mode": _MODE_RANK[env.mode_max],
+            "duration": env.max_unattended_duration_seconds,
+            "budget": budget,
+            "exfil": (bool(x.allowed), x.byte_budget if x.allowed else 0) if x is not None else (False, 0),
+            "watchdog": env.watchdog,
+            "auths": tuple(env.unattended_authorizations),
+        }
+    view["destructive"] = m.destructive_allowed is True
+    view["in_scope"] = set(m.in_scope)
+    view["excluded"] = set(m.excluded)
+    return view
+
+
+def _classify(new: VerifiedManifest, old: VerifiedManifest) -> str | None:
+    """Direction of `new` vs `old` over EVERY authority axis (§7): mode_max,
+    duration, each budget dim, watchdog, exfil, the authorization set, and
+    manifest-level destructive_allowed + in_scope/excluded. None = unusable."""
+    try:
+        nv, ov = _axes(new), _axes(old)
+        if nv is None or ov is None:
+            return None
+        pairs = [
+            (nv["mode"], ov["mode"]),
+            (nv["duration"], ov["duration"]),
+            *((nv["budget"][d], ov["budget"][d]) for d in BUDGET_DIMENSIONS),
+            (nv["exfil"], ov["exfil"]),
+            (nv["destructive"], ov["destructive"]),
+        ]
+        inc = any(n > o for n, o in pairs)
+        tight = any(n < o for n, o in pairs)
+        if nv["watchdog"] != ov["watchdog"]:
+            inc = True  # §7 lists watchdog among permission-increasing changes: any change
+        if any(not any(_covers(o, n) for o in ov["auths"]) for n in nv["auths"]):
+            inc = True
+        if any(not any(_covers(n, o) for n in nv["auths"]) for o in ov["auths"]):
+            tight = True
+        if nv["in_scope"] - ov["in_scope"] or ov["excluded"] - nv["excluded"]:
+            inc = True
+        if ov["in_scope"] - nv["in_scope"] or nv["excluded"] - ov["excluded"]:
+            tight = True
+    except TypeError:
+        return None
+    if inc and tight:
+        return "mixed"
+    return "increase" if inc else "tightening" if tight else "none"
+
+
 def verify_amendment(new: VerifiedManifest, predecessor: VerifiedManifest) -> AmendmentDecision:
-    """Valid only for root -> one amendment. Everything else fails closed."""
+    """Valid only for root -> one amendment. Everything else fails closed,
+    including a MIXED amendment (≥1 increased AND ≥1 tightened axis, §7)."""
     if not isinstance(predecessor, VerifiedManifest) or not isinstance(new, VerifiedManifest):
         return AmendmentDecision(False, "both manifests must be VerifiedManifest")
     if predecessor.amends is not None:
@@ -269,73 +344,39 @@ def verify_amendment(new: VerifiedManifest, predecessor: VerifiedManifest) -> Am
         return AmendmentDecision(False, "amendment effective_at missing/naive")
     if ref.manifest_id != compute_manifest_id(predecessor):
         return AmendmentDecision(False, "amendment manifest_id does not match predecessor")
-    return AmendmentDecision(True, "ok")
+    direction = _classify(new, predecessor)
+    if direction is None:
+        return AmendmentDecision(False, "amendment authority unusable")
+    if direction == "mixed":
+        return AmendmentDecision(False, "mixed amendment (increase and tightening) is invalid", "mixed")
+    return AmendmentDecision(True, "ok", direction)
 
 
-def _more_permissive(new: AutonomyEnvelope | None, old: AutonomyEnvelope | None) -> bool:
-    """True if `new` grants anything `old` does not."""
-    if new is None:
-        return False
-    if old is None:
-        # old = fail-closed Calm with zero authority: any grant is an increase.
-        return True
-    if _MODE_RANK.get(new.mode_max, 99) > _MODE_RANK.get(old.mode_max, 99):
-        return True
-    if new.max_unattended_duration_seconds > old.max_unattended_duration_seconds:
-        return True
-    for dim in BUDGET_DIMENSIONS:
-        if getattr(new.max_unattended_budget, dim) > getattr(old.max_unattended_budget, dim):
-            return True
-    if new.watchdog != old.watchdog:
-        # §7: watchdog changes count as increases (conservative: any change).
-        return True
-    old_x, new_x = old.exfil_simulation, new.exfil_simulation
-    if new_x is not None and new_x.allowed:
-        if old_x is None or not old_x.allowed or new_x.byte_budget > old_x.byte_budget:
-            return True
-    return any(
-        not any(_covers(o, n) for o in old.unattended_authorizations) for n in new.unattended_authorizations
-    )
-
-
-def active_envelope(
-    root: VerifiedManifest, amendment: VerifiedManifest | None, now: datetime
-) -> AutonomyEnvelope | None:
-    """The signed envelope in force at `now`.
-
-    No/invalid amendment -> the root's (invalid amendments never downgrade
-    or upgrade). A valid amendment that only tightens applies at once;
-    one that increases any permission applies only from `effective_at`."""
+def in_force_manifest(
+    predecessor: VerifiedManifest, amendment: VerifiedManifest | None, now: datetime | None
+) -> VerifiedManifest:
+    """The governing manifest at `now` (§8.1(2)): the amendment iff it is valid
+    AND (tightening-only/no-op, immediate) OR (increase-only AND now >=
+    effective_at); otherwise the predecessor (pending, invalid, mixed,
+    single-hop-violating)."""
     if amendment is None:
-        return root.autonomy
-    if not verify_amendment(amendment, root).valid:
-        return root.autonomy
-    if not _more_permissive(amendment.autonomy, root.autonomy):
-        return amendment.autonomy
-    if _is_aware(now) and now >= amendment.amends.effective_at:
-        return amendment.autonomy
-    return root.autonomy
+        return predecessor
+    decision = verify_amendment(amendment, predecessor)
+    if not decision.valid:
+        return predecessor
+    if decision.direction == "increase" and not (_is_aware(now) and now >= amendment.amends.effective_at):
+        return predecessor
+    return amendment
 
 
 def in_force_effective_envelope(
-    root: VerifiedManifest,
-    amendment: VerifiedManifest | None,
-    now: datetime,
-    runtime: RuntimeRestrictions | None = None,
+    verified: VerifiedManifest, runtime: RuntimeRestrictions | None = None
 ) -> EffectiveEnvelope:
-    """Envelope selection + provenance (§7/§8). Tightening or no/invalid
-    amendment: `pending_increase_until` None. A valid INCREASING amendment not
-    yet effective: predecessor (root) envelope, gated until `effective_at`."""
-    eff = effective_envelope(active_envelope(root, amendment, now), runtime)
-    pending = None
-    if (
-        amendment is not None
-        and verify_amendment(amendment, root).valid
-        and _more_permissive(amendment.autonomy, root.autonomy)
-        and not (_is_aware(now) and now >= amendment.amends.effective_at)
-    ):
-        pending = amendment.amends.effective_at
-    return replace(eff, pending_increase_until=pending)
+    """The ONLY producer of a provenance-bearing (authorizing) envelope
+    (§8.1(1)). `verified` must be `in_force_manifest(...)`."""
+    if not isinstance(verified, VerifiedManifest):
+        return _fail_closed_envelope("manifest is not a VerifiedManifest")
+    return replace(effective_envelope(verified.autonomy, runtime), provenance=verified.manifest_id)
 
 
 # ---- authorize (§8) ----
@@ -382,6 +423,9 @@ def authorize(
         return deny("malformed evaluation input")
     if not isinstance(verified, VerifiedManifest):
         return deny("manifest is not a VerifiedManifest")
+    # §8.1(1): a bare/non-provenanced or mismatched envelope authorizes nothing.
+    if effective.provenance is None or effective.provenance != verified.manifest_id:
+        return deny("effective envelope lacks provenance equal to verified.manifest_id")
     if effective.fail_closed_reason is not None:
         return deny(f"fail-closed: {effective.fail_closed_reason}")
     if request.action_class not in ("A", "B", "C"):
@@ -412,13 +456,6 @@ def authorize(
 
     if not _is_aware(now) and now is not None:
         return deny("now is not timezone-aware")
-    # §7/§8: an increasing amendment grants nothing before its effective_at.
-    # Self-contained: reads only the in-force envelope's provenance.
-    if effective.pending_increase_until is not None:
-        if not _is_aware(effective.pending_increase_until):
-            return deny("pending increase effective_at naive")
-        if now is not None and now < effective.pending_increase_until:
-            return deny("amendment increase not yet effective")
     unavailable: list[str] = []
     if now is None:
         unavailable.append("now")

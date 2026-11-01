@@ -161,6 +161,17 @@ def test_B29_B_schema_round_trip(manifest_factory, signing_keypair):
     assert m.autonomy.unattended_authorizations[0].destructive is False  # §4 default
 
 
+def test_B29_B_top_level_autonomy_and_amends_parsed_not_dropped(manifest_factory, signing_keypair):
+    # §14 / F-I: `autonomy` and `amends` are TOP-LEVEL ScopeManifest fields; _flatten must map them.
+    _, pub = signing_keypair
+    am = {"manifest_id": "sha256:abc", "reason": "r", "effective_at": T1.isoformat()}
+    y = manifest_factory(autonomy=_auto(), amends=am)
+    raw = yaml.safe_load(y)
+    assert "autonomy" in raw and "amends" in raw and "autonomy" not in raw["engagement"]
+    m = load_and_verify(y, pub)
+    assert m.autonomy is not None and m.amends is not None
+
+
 def test_B29_B_defaults_mode_max_calm_exfil_watchdog_none(manifest_factory, signing_keypair):
     _, pub = signing_keypair
     a = _auto()
@@ -325,7 +336,9 @@ def test_B29_E_boundary(manifest_factory, signing_keypair):
     m2 = load_and_verify(sign_manifest(raw, priv), pub)
     assert m2.destructive_allowed is False  # defaulted in the model ...
     assert b"destructive_allowed" not in m2.canonical_content  # ... not in the identity bytes
-    assert m2.manifest_id == hashlib.sha256(canonicalize(raw)).hexdigest()
+    # §5:191 literal: "sha256:" + sha256(canonicalize(content)).hexdigest()
+    assert m2.manifest_id == "sha256:" + hashlib.sha256(canonicalize(raw)).hexdigest()
+    assert m2.manifest_id.startswith("sha256:") and len(m2.manifest_id) == len("sha256:") + 64
     assert m2.manifest_id != m.manifest_id
 
 
@@ -335,7 +348,7 @@ def test_B29_E_forged_verified_manifest_rejected(manifest_factory, signing_keypa
     m = load_and_verify(manifest_factory(), pub)
     fields = dict(m)
     assert isinstance(m, VerifiedManifest)  # positive control: genuine load_and_verify output
-    # direct construction is rejected even when fully self-consistent (unforgeable gate)
+    # direct construction is rejected even when fully self-consistent (construction guard)
     with pytest.raises(ValidationError):
         VerifiedManifest(**fields)
     # attribute mutation rejected (frozen)
@@ -356,11 +369,14 @@ def test_B29_E_forged_verified_manifest_rejected(manifest_factory, signing_keypa
         VerifiedManifest(**{**fields, "canonical_content": forged_content})
     # forged id
     with pytest.raises(ValidationError):
-        VerifiedManifest(**{**fields, "manifest_id": "0" * 64})
+        VerifiedManifest(**{**fields, "manifest_id": "sha256:" + "0" * 64})
+    # forged id missing the §5 "sha256:" prefix (bare hex of the right content)
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**{**fields, "manifest_id": hashlib.sha256(m.canonical_content).hexdigest()})
     # internally consistent content+id but fields disagree with the content
     with pytest.raises(ValidationError):
         VerifiedManifest(
-            **{**fields, "canonical_content": forged_content, "manifest_id": hashlib.sha256(forged_content).hexdigest()}
+            **{**fields, "canonical_content": forged_content, "manifest_id": "sha256:" + hashlib.sha256(forged_content).hexdigest()}
         )
     # field smuggled alongside genuine content/id
     with pytest.raises(ValidationError):

@@ -23,20 +23,17 @@ from kronos.autonomy import (
     AuthorizationRequest,
     AutonomyError,
     RuntimeRestrictions,
-    active_envelope,
-    in_force_effective_envelope,
     authorize,
     effective_envelope,
+    in_force_effective_envelope,
+    in_force_manifest,
     to_budget_limits,
     verify_amendment,
 )
 from kronos.budget.limits import BUDGET_DIMENSIONS, BudgetLimits
 from kronos.manifest import (
     AmendmentRef,
-    AutonomyEnvelope,
     UnattendedAuthorization,
-    UnattendedBudget,
-    VerifiedManifest,
     compute_manifest_id,
     load_and_verify,
 )
@@ -110,7 +107,7 @@ def req(mode="beast", cls="A", target=TARGET, destructive=False, draw=WITHIN, el
 
 
 def run(verified, request, runtime=None, now=NOW):
-    eff = effective_envelope(verified.autonomy, runtime)
+    eff = in_force_effective_envelope(verified, runtime)  # §8.1: sole authorizing producer
     return authorize(eff, request, verified, now)
 
 
@@ -171,7 +168,7 @@ def test_B29_G_row15_none_budget_dim_denies_not_unlimited(load):
     v = load(autonomy=auto())
     broken = v.autonomy.max_unattended_budget.model_construct(**{**BUDGET, "llm_tokens": None})
     env = v.autonomy.model_copy(update={"max_unattended_budget": broken})
-    eff = effective_envelope(env, None)
+    eff = replace(effective_envelope(env, None), provenance=v.manifest_id)  # provenance ok: isolates the None-dim deny
     assert authorize(eff, req(draw={**WITHIN, "llm_tokens": 10**12}), v, NOW).verdict == "DENY"
     assert authorize(eff, req(), v, NOW).verdict == "DENY"
     with pytest.raises(AutonomyError):
@@ -182,7 +179,7 @@ def test_B29_G_row15_none_budget_dim_denies_not_unlimited(load):
 def test_B29_G_row19_absent_autonomy_fail_closed_calm(load):
     v = load()
     assert v.autonomy is None
-    eff = effective_envelope(None, None)
+    eff = in_force_effective_envelope(v, None)
     assert eff.mode_max == "calm" and eff.authorizations == ()
     for mode, cls in itertools.product(("calm", "beast"), "ABC"):
         assert authorize(eff, req(mode=mode, cls=cls), v, NOW).verdict == "DENY"
@@ -192,7 +189,7 @@ def test_B29_G_row19_absent_autonomy_fail_closed_calm(load):
 def test_B29_G_row20_malformed_autonomy_fail_closed(load):
     v = load()
     for bad in ({"mode_max": "beast"}, "beast", 5, object()):
-        eff = effective_envelope(bad, None)
+        eff = replace(effective_envelope(bad, None), provenance=v.manifest_id)
         assert authorize(eff, req(), v, NOW).verdict == "DENY"
 
 
@@ -210,7 +207,7 @@ def test_B29_G_row21_invalid_signature_is_manifest_error(manifest_factory, signi
 def test_B29_G_row22_runtime_below_signed_allowed_effective_min(load):
     v = load(autonomy=auto())
     rt = RuntimeRestrictions(budget={"llm_tokens": 500}, max_unattended_duration_seconds=100)
-    eff = effective_envelope(v.autonomy, rt)
+    eff = in_force_effective_envelope(v, rt)
     assert eff.budget["llm_tokens"] == 500 and eff.budget["tool_invocations"] == 10
     assert eff.max_unattended_duration_seconds == 100
     assert authorize(eff, req(draw={**WITHIN, "llm_tokens": 400}), v, NOW).verdict == "ALLOW"
@@ -254,17 +251,17 @@ def test_B29_F_widening_all_axes_raise(load):
 def test_B29_F_narrowing_ok_and_never_clamps_up(load):
     v = load(autonomy=auto(auths=[auth("A"), auth("B")]))
     narrowed = (UnattendedAuthorization(**auth("A", vf=PAST + timedelta(hours=1))),)
-    eff = effective_envelope(v.autonomy, RuntimeRestrictions(mode_max="calm", authorizations=narrowed))
+    eff = in_force_effective_envelope(v, RuntimeRestrictions(mode_max="calm", authorizations=narrowed))
     assert eff.mode_max == "calm" and eff.authorizations == narrowed
     assert effective_envelope(v.autonomy, RuntimeRestrictions(authorizations=())).authorizations == ()
     # equal is not widening
-    eff = effective_envelope(v.autonomy, RuntimeRestrictions(budget=dict(BUDGET), max_unattended_duration_seconds=600))
+    eff = in_force_effective_envelope(v, RuntimeRestrictions(budget=dict(BUDGET), max_unattended_duration_seconds=600))
     assert eff.budget == BUDGET
 
 
 def test_B29_F_runtime_destructive_disable_strips_grant(load):
     v = load(autonomy=auto(auths=[auth("C", destructive=True)]), engagement=D_OK)
-    eff = effective_envelope(v.autonomy, RuntimeRestrictions(allow_destructive=False))
+    eff = in_force_effective_envelope(v, RuntimeRestrictions(allow_destructive=False))
     assert authorize(eff, req(cls="C", destructive=True), v, NOW).verdict == "DENY"
 
 
@@ -280,7 +277,7 @@ def test_B29_budget_conversion(load):
 # ---------------------------------------------------------------- tz / window / elapsed
 def test_B29_window_inclusive_and_naive_now_denied(load):
     v = load(autonomy=auto(auths=[auth("A", vf=NOW - timedelta(hours=1), vu=NOW + timedelta(hours=1))]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(), v, NOW - timedelta(hours=1)).verdict == "ALLOW"  # §8 <= inclusive
     assert authorize(eff, req(), v, NOW + timedelta(hours=1)).verdict == "ALLOW"
     assert authorize(eff, req(), v, NOW + timedelta(hours=1, seconds=1)).verdict == "DENY"
@@ -290,7 +287,7 @@ def test_B29_window_inclusive_and_naive_now_denied(load):
 
 def test_B29_duration_elapsed(load):
     v = load(autonomy=auto())
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(elapsed=600), v, NOW).verdict == "ALLOW"  # <=
     assert authorize(eff, req(elapsed=600.5), v, NOW).verdict == "DENY"
     assert authorize(eff, req(elapsed=None), v, NOW).verdict == "INCONCLUSIVE"
@@ -298,7 +295,7 @@ def test_B29_duration_elapsed(load):
 
 def test_B29_inconclusive_when_now_or_partial_draw_missing(load):
     v = load(autonomy=auto())
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(), v, None).verdict == "INCONCLUSIVE"
     partial = {k: v_ for k, v_ in WITHIN.items() if k != "llm_cost_usd"}
     assert authorize(eff, req(draw=partial), v, NOW).verdict == "INCONCLUSIVE"
@@ -306,21 +303,21 @@ def test_B29_inconclusive_when_now_or_partial_draw_missing(load):
 
 def test_B29_deny_beats_inconclusive(load):
     v = load(autonomy=auto())
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(draw=OVER, elapsed=None), v, NOW).verdict == "DENY"
 
 
 # ---------------------------------------------------------------- mode as grant (#1)
 def test_B29_request_mode_above_mode_max_denied(load):
     v = load(autonomy=auto(mode="calm", auths=[auth("A")]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(mode="beast"), v, NOW).verdict == "DENY"
     assert authorize(eff, req(mode="calm"), v, NOW).verdict == "ALLOW"
 
 
 def test_B29_unknown_class_mode_denied(load):
     v = load(autonomy=auto())
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(cls="LOCAL"), v, NOW).verdict == "DENY"
     assert authorize(eff, req(cls="D"), v, NOW).verdict == "DENY"
     assert authorize(eff, req(mode="god"), v, NOW).verdict == "DENY"
@@ -341,7 +338,7 @@ def test_B29_L_no_local_and_no_operator_field():
 # ---------------------------------------------------------------- engagement scope necessary, not sufficient
 def test_B29_scope_necessary(load):
     v = load(autonomy=auto(auths=[auth("A", "evil.example.org")]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(target="evil.example.org"), v, NOW).verdict == "DENY"  # auth, but out of scope
     v2 = load(autonomy=auto(auths=[auth("A", TARGET)]), scope={"excluded": [TARGET]})
     assert run(v2, req()).verdict == "DENY"  # excluded-first
@@ -349,7 +346,7 @@ def test_B29_scope_necessary(load):
 
 def test_B29_node_type_must_match_and_family(load):
     v = load(autonomy=auto(auths=[auth("A", node="HOST")]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(node="SERVICE"), v, NOW).verdict == "DENY"  # auth for HOST only
     assert authorize(eff, req(node="NOPE"), v, NOW).verdict == "DENY"
 
@@ -369,14 +366,14 @@ def test_B29_node_type_must_match_and_family(load):
 )
 def test_B29_nonconcrete_auth_target_never_authorizes(load, t):
     v = load(autonomy=auto(auths=[auth("A", t)]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(), v, NOW).verdict == "DENY"
 
 
 @pytest.mark.parametrize("t", ["HOST.acme.example.com.evil.org", "host.acme.example.com:8443", "https://host.acme.example.com/x", "10.0.0.5"])
 def test_B29_literal_auth_does_not_cross_identifier_boundary(load, t):
     v = load(autonomy=auto(auths=[auth("A", TARGET)]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
     assert authorize(eff, req(target=t), v, NOW).verdict == "DENY"
 
 
@@ -400,9 +397,9 @@ def test_B29_matches_pin():
     assert m("10.0.0.5", "10.0.0.6") is False
 
 
-# ---------------------------------------------------------------- amendments (§7)
+# ---------------------------------------------------------------- amendments (§7, §8.1)
 def _forge(m, **update):
-    """Test-only: bypass the §5 gate via the module-private token to build malformed amendments."""
+    """Test-only: bypass the §5 construction guard via the module-private token to build malformed amendments."""
     from kronos import manifest as _mf
 
     tok = _mf._CONSTRUCTING.set(True)
@@ -412,15 +409,22 @@ def _forge(m, **update):
         _mf._CONSTRUCTING.reset(tok)
 
 
-def _chain(load, root_auto, amend_auto, **am):
-    root = load(autonomy=root_auto)
+def _chain(load, root_auto, amend_auto, root_ov=None, amd_ov=None, **am):
+    root = load(autonomy=root_auto, **(root_ov or {}))
     ref = {"manifest_id": root.manifest_id, "reason": "r", "effective_at": NOW.isoformat(), **am}
-    return root, load(autonomy=amend_auto, amends=ref)
+    return root, load(autonomy=amend_auto, amends=ref, **(amd_ov or {}))
+
+
+def run_in_force(root, amd, request, now, runtime=None):
+    """The §8.1 pipeline: in_force_manifest -> in_force_effective_envelope -> authorize, ONE manifest for all inputs."""
+    iv = in_force_manifest(root, amd, now)
+    return authorize(in_force_effective_envelope(iv, runtime), request, iv, now)
 
 
 def test_B29_M_verify_amendment_ok_and_failures(load):
     root, amd = _chain(load, auto(), auto())
-    assert verify_amendment(amd, root).valid
+    d = verify_amendment(amd, root)
+    assert d.valid and d.direction == "none"  # §7: no-op amendment is valid
     # mismatched id
     bad = load(autonomy=auto(), amends={"manifest_id": "deadbeef", "reason": "r", "effective_at": NOW.isoformat()})
     assert not verify_amendment(bad, root).valid
@@ -444,153 +448,424 @@ def test_B29_M_naive_or_missing_effective_at_fail_closed(load):
     )
     n = _forge(amd, amends=naive_ref)
     assert not verify_amendment(n, root).valid
-    n2 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None)})
+    n2 = _forge(amd, amends=AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None))
     assert not verify_amendment(n2, root).valid
-    n3 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id="", reason="r", effective_at=NOW)})
+    n3 = _forge(amd, amends=AmendmentRef.model_construct(manifest_id="", reason="r", effective_at=NOW))
     assert not verify_amendment(n3, root).valid
-    n4 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="", effective_at=NOW)})
+    n4 = _forge(amd, amends=AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="", effective_at=NOW))
     assert not verify_amendment(n4, root).valid
-    # naive effective_at: increase never applies (row 28)
+    # row 28: naive effective_at => an increase never applies, even long after
     inc = _forge(n, autonomy=load(autonomy=auto(auths=[auth("A"), auth("B")])).autonomy)
-    assert active_envelope(root, inc, NOW + timedelta(days=99)) == root.autonomy
+    assert in_force_manifest(root, inc, NOW + timedelta(days=99)) is root
+    assert run_in_force(root, inc, req(cls="B"), NOW + timedelta(days=1)).verdict == "DENY"
 
 
-def test_B29_M_row24_25_increase_gated_by_effective_at(load):
-    root_a = auto(auths=[auth("A")])
-    amd_a = auto(auths=[auth("A"), auth("B")])  # increase: adds B
+def test_B29_M_rows_24_25_30_increase_only_pending_window(load):
     eff_at = NOW + timedelta(hours=1)
-    root, amd = _chain(load, root_a, amd_a, effective_at=eff_at.isoformat())
-    env_before = active_envelope(root, amd, eff_at - timedelta(seconds=1))
-    env_after = active_envelope(root, amd, eff_at)
-    assert env_before == root.autonomy  # row 25: inert before effective_at
-    assert env_after == amd.autonomy  # row 24: applies at/after
-    b = req(cls="B")
-    assert authorize(effective_envelope(env_before, None), b, root, NOW).verdict == "DENY"
-    assert authorize(effective_envelope(env_after, None), b, root, NOW).verdict == "ALLOW"
+    before = eff_at - timedelta(seconds=1)
+    root, amd = _chain(
+        load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat()
+    )
+    assert verify_amendment(amd, root).direction == "increase"  # §7: only an added grant
+    assert in_force_manifest(root, amd, before) is root  # §8.1(2): predecessor before effective_at
+    assert in_force_manifest(root, amd, eff_at) is amd  # §8.1(2): now >= effective_at
+    # row 25: increase only via the amendment, now < effective_at => DENY (increase not yet effective)
+    assert run_in_force(root, amd, req(cls="B"), before).verdict == "DENY"
+    # row 30: a request the PREDECESSOR already grants is ALLOWed during the pending window (no blanket deny)
+    assert run_in_force(root, amd, req(cls="A"), before).verdict == "ALLOW"
+    assert run_in_force(root, amd, req(cls="A"), NOW).verdict == "ALLOW"
+    # row 24: at/after effective_at the increase is in force
+    assert run_in_force(root, amd, req(cls="B"), eff_at).verdict == "ALLOW"
+    assert run_in_force(root, amd, req(cls="A"), eff_at).verdict == "ALLOW"
+    # fail-closed on an unusable clock for a pending increase: predecessor stays in force
+    assert in_force_manifest(root, amd, None) is root
+    assert in_force_manifest(root, amd, datetime(2099, 1, 1)) is root  # naive now
 
 
-def test_B29_M_tightening_applies_immediately(load):
-    root, amd = _chain(load, auto(auths=[auth("A"), auth("B")]), auto(auths=[auth("A")]), effective_at=(NOW + timedelta(days=5)).isoformat())
-    assert active_envelope(root, amd, NOW) == amd.autonomy  # §7 tightening not delayed
-
-
-@pytest.mark.parametrize(
-    "amd_kw",
-    [
-        dict(duration=601),
-        dict(budget={**BUDGET, "tool_invocations": 11}),
-        dict(budget={**BUDGET, "llm_cost_usd": 1.6}),
-        dict(mode="beast", exfil_simulation={"allowed": True, "byte_budget": 5}),
-        # §7: watchdog changes count as permission increases (not before effective_at)
-        dict(mode="beast", watchdog={"may_auto_stop": True, "confirm_window_seconds": 30}),
-    ],
-)
-def test_B29_M_other_increases_gated(load, amd_kw):
-    root, amd = _chain(load, auto(mode="beast"), auto(**amd_kw), effective_at=(NOW + timedelta(days=5)).isoformat())
-    assert active_envelope(root, amd, NOW) == root.autonomy
-
-
-def test_B29_M_watchdog_only_amendment_gated_then_applies(load):
-    far = (NOW + timedelta(days=30)).isoformat()
-    wd = {"watchdog": {"may_auto_stop": True, "confirm_window_seconds": 30}}
-    root, amd = _chain(load, auto(), auto(**wd), effective_at=far)
-    assert active_envelope(root, amd, NOW) == root.autonomy  # inert before effective_at
-    assert active_envelope(root, amd, NOW + timedelta(days=31)) == amd.autonomy  # positive control
-
-
-def test_B29_M_authorize_enforces_pending_increase_until(load):
-    # F1d: gate reads only the in-force envelope's provenance (§8), never `verified`.
-    eff_at = NOW + timedelta(hours=1)
-    root, amd = _chain(load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat())
-    b = req(cls="B")
-    # amendment-derived effective paired with the ROOT verified (the F1d bypass pairing)
-    env = replace(effective_envelope(amd.autonomy, None), pending_increase_until=eff_at)
-    assert authorize(env, b, root, NOW).verdict == "DENY"
-    assert authorize(env, b, amd, NOW).verdict == "DENY"
-    assert authorize(env, b, root, eff_at - timedelta(seconds=1)).verdict == "DENY"
-    assert authorize(env, b, root, eff_at).verdict == "ALLOW"  # positive control
-    assert authorize(env, b, root, eff_at + timedelta(seconds=1)).verdict == "ALLOW"
-    # naive pending bound fails closed
-    naive = replace(env, pending_increase_until=datetime(2030, 1, 1))
-    assert authorize(naive, b, root, NOW).verdict == "DENY"
-
-
-def test_B29_M_in_force_envelope_sets_provenance_only_for_pending_increase(load):
-    eff_at = NOW + timedelta(hours=1)
-    # increase, not yet effective => gated (§7 increase waits for effective_at)
-    root, amd = _chain(load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat())
-    assert in_force_effective_envelope(root, amd, NOW).pending_increase_until == eff_at
-    # increase, at/after effective => applied, no gate; B now allowed
-    after = in_force_effective_envelope(root, amd, eff_at)
-    assert after.pending_increase_until is None
-    assert authorize(after, req(cls="B"), amd, eff_at).verdict == "ALLOW"
-    # tightening => applies immediately, never gated (§7), even with a far-future effective_at
-    far = (NOW + timedelta(days=5)).isoformat()
-    root, amd = _chain(load, auto(auths=[auth("A"), auth("B")]), auto(auths=[auth("A")]), effective_at=far)
-    tight = in_force_effective_envelope(root, amd, NOW)
-    assert tight.pending_increase_until is None
-    assert authorize(tight, req(cls="A"), amd, NOW).verdict == "ALLOW"
-    assert authorize(tight, req(cls="B"), amd, NOW).verdict == "DENY"  # tightened away, not gate-denied
-    # no amendment / invalid amendment => no gate
-    assert in_force_effective_envelope(root, None, NOW).pending_increase_until is None
-    bad = load(autonomy=auto(auths=[auth("A"), auth("C")]), amends={"manifest_id": "wrong", "reason": "r", "effective_at": far})
-    assert in_force_effective_envelope(root, bad, NOW).pending_increase_until is None
-
-
-def test_B29_M_mode_increase_gated(load):
-    root, amd = _chain(load, auto(mode="calm"), auto(mode="beast"), effective_at=(NOW + timedelta(days=5)).isoformat())
-    assert active_envelope(root, amd, NOW) == root.autonomy
-
-
-def test_B29_M_invalid_amendment_preserves_predecessor(load):
+def test_B29_M_row26_27_broken_and_chained_amendment_keep_predecessor(load):
     root = load(autonomy=auto(auths=[auth("A")]))
-    bad = load(
+    # row 26: id mismatch -> neither an upgrade nor a downgrade-by-invalidation
+    bad_inc = load(
         autonomy=auto(auths=[auth("A"), auth("B")]),
         amends={"manifest_id": "wrong", "reason": "r", "effective_at": PAST.isoformat()},
     )
-    assert active_envelope(root, bad, NOW) == root.autonomy  # row 26: no upgrade
-    tight = load(autonomy=auto(auths=[]), amends={"manifest_id": "wrong", "reason": "r", "effective_at": PAST.isoformat()})
-    assert active_envelope(root, tight, NOW) == root.autonomy  # no downgrade-by-invalidation either
-    # row 27
+    bad_tight = load(autonomy=auto(auths=[]), amends={"manifest_id": "wrong", "reason": "r", "effective_at": PAST.isoformat()})
+    for bad in (bad_inc, bad_tight):
+        assert in_force_manifest(root, bad, NOW) is root
+    assert run_in_force(root, bad_inc, req(cls="B"), NOW).verdict == "DENY"
+    assert run_in_force(root, bad_tight, req(cls="A"), NOW).verdict == "ALLOW"  # predecessor's grant intact
+    # row 27: predecessor is itself an amendment -> fails closed, amd1 stays in force
     amd1 = load(autonomy=auto(), amends={"manifest_id": root.manifest_id, "reason": "r", "effective_at": PAST.isoformat()})
-    amd2 = load(autonomy=auto(auths=[auth("A"), auth("C")]), amends={"manifest_id": amd1.manifest_id, "reason": "r", "effective_at": PAST.isoformat()})
-    assert active_envelope(amd1, amd2, NOW) == amd1.autonomy
-    assert active_envelope(root, None, NOW) == root.autonomy
+    amd2 = load(
+        autonomy=auto(auths=[auth("A"), auth("C")]),
+        amends={"manifest_id": amd1.manifest_id, "reason": "r", "effective_at": PAST.isoformat()},
+    )
+    assert in_force_manifest(amd1, amd2, NOW) is amd1
+    assert in_force_manifest(root, None, NOW) is root
+
+
+def test_B29_M_tightening_only_applies_immediately(load):
+    far = (NOW + timedelta(days=5)).isoformat()
+    root, amd = _chain(
+        load, auto(auths=[auth("A"), auth("B")]), auto(auths=[auth("A")]), effective_at=far
+    )
+    assert verify_amendment(amd, root).direction == "tightening"
+    assert in_force_manifest(root, amd, NOW) is amd  # §7: immediate, no effective_at gate
+    assert run_in_force(root, amd, req(cls="B"), NOW).verdict == "DENY"  # tightened away
+    assert run_in_force(root, amd, req(cls="A"), NOW).verdict == "ALLOW"
+
+
+def test_B29_M_row31_mixed_amendment_invalid_predecessor_stays(load):
+    # increases the authorization set (adds B) AND tightens duration (600 -> 300): mixed (§7)
+    for eff_at in (NOW - timedelta(hours=1), NOW + timedelta(hours=1)):
+        root, amd = _chain(
+            load,
+            auto(auths=[auth("A")], duration=600),
+            auto(auths=[auth("A"), auth("B")], duration=300),
+            effective_at=eff_at.isoformat(),
+        )
+        d = verify_amendment(amd, root)
+        assert not d.valid and d.direction == "mixed"
+        for now in (NOW, NOW + timedelta(hours=5)):
+            assert in_force_manifest(root, amd, now) is root  # §8.1(3): predecessor in force
+            assert run_in_force(root, amd, req(cls="B"), now).verdict == "DENY"  # increase never applies
+            # tightening did not apply either: predecessor's 600s duration governs (elapsed 500 > 300)
+            assert run_in_force(root, amd, req(cls="A", elapsed=500), now).verdict == "ALLOW"
+
+
+def test_B29_M_row31_mixed_manifest_level_axes(load):
+    # destructive_allowed F->T (increase) + budget tightening (mixed); in_scope expansion + auth removal (mixed)
+    root, amd = _chain(
+        load,
+        auto(auths=[auth("C", destructive=True)]),
+        auto(auths=[auth("C", destructive=True)], budget={**BUDGET, "llm_tokens": 999}),
+        amd_ov={"engagement": {"destructive_allowed": True}},
+        effective_at=(NOW - timedelta(hours=1)).isoformat(),
+    )
+    d = verify_amendment(amd, root)
+    assert not d.valid and d.direction == "mixed"
+    assert run_in_force(root, amd, req(cls="C", destructive=True), NOW).verdict == "DENY"
+    root, amd = _chain(
+        load,
+        auto(auths=[auth("A"), auth("B")]),
+        auto(auths=[auth("A")]),
+        amd_ov={"scope": {"in_scope": ["*.acme.example.com", "*.other.example.org"]}},
+        effective_at=(NOW - timedelta(hours=1)).isoformat(),
+    )
+    assert verify_amendment(amd, root).direction == "mixed"
+    assert in_force_manifest(root, amd, NOW) is root
+
+
+def test_B29_M_row32_provenance_binding(load):
+    # §8.1(1) / invariant 9: a request is ALLOWed only when effective.provenance == verified.manifest_id.
+    v = load(autonomy=auto())
+    good = in_force_effective_envelope(v, None)
+    assert good.provenance == v.manifest_id
+    assert authorize(good, req(), v, NOW).verdict == "ALLOW"  # positive control
+    # a bare AutonomyEnvelope never authorizes: effective_envelope composes a NON-authorizing envelope
+    bare = effective_envelope(v.autonomy, None)
+    assert bare.provenance is None
+    assert authorize(bare, req(), v, NOW).verdict == "DENY"
+    assert authorize(bare, req(), v.autonomy, NOW).verdict == "DENY"  # bare envelope as 'verified'
+    assert authorize(effective_envelope(None, None), req(), v, NOW).verdict == "DENY"
+    # provenance absent / mismatched / pointing at another manifest
+    assert authorize(replace(good, provenance=None), req(), v, NOW).verdict == "DENY"
+    assert authorize(replace(good, provenance="sha256:" + "0" * 64), req(), v, NOW).verdict == "DENY"
+    other = load(autonomy=auto(), engagement={"client": "Other"})
+    assert other.manifest_id != v.manifest_id
+    assert authorize(good, req(), other, NOW).verdict == "DENY"
+    assert authorize(in_force_effective_envelope(other, None), req(), v, NOW).verdict == "DENY"
+    # a non-VerifiedManifest never yields a provenance-bearing envelope
+    assert in_force_effective_envelope(v.autonomy, None).provenance is None
+    assert authorize(in_force_effective_envelope(v.autonomy, None), req(), v, NOW).verdict == "DENY"
+
+
+def test_B29_M_rows_33_34_destructive_allowed_increase_pending_then_effective(load):
+    eff_at = NOW + timedelta(hours=1)
+    c = auth("C", destructive=True)
+    root, amd = _chain(
+        load,
+        auto(auths=[c]),
+        auto(auths=[c]),
+        amd_ov={"engagement": {"destructive_allowed": True}},  # root keeps the factory default False
+        effective_at=eff_at.isoformat(),
+    )
+    assert root.destructive_allowed is False and amd.destructive_allowed is True
+    assert verify_amendment(amd, root).direction == "increase"
+    r = req(cls="C", destructive=True)
+    # row 33: pending => PREDECESSOR destructive_allowed=False governs (envelope + destructive_allowed same manifest)
+    assert run_in_force(root, amd, r, eff_at - timedelta(seconds=1)).verdict == "DENY"
+    # row 30 companion: a non-destructive request the predecessor grants still ALLOWs while pending
+    assert run_in_force(root, amd, req(cls="C"), eff_at - timedelta(seconds=1)).verdict == "ALLOW"
+    # row 34: now >= effective_at, auth.destructive=True => ALLOW
+    assert run_in_force(root, amd, r, eff_at).verdict == "ALLOW"
+
+
+def test_B29_M_in_scope_expansion_pending_then_effective(load):
+    # §8.1(2): engagement scope also evaluated against the in-force manifest (F-C)
+    eff_at = NOW + timedelta(hours=1)
+    a_new = auth("A", OTHER_SCOPE_TARGET)
+    root, amd = _chain(
+        load,
+        auto(auths=[auth("A"), a_new]),
+        auto(auths=[auth("A"), a_new]),
+        amd_ov={"scope": {"in_scope": ["*.acme.example.com", "*.other.example.org"]}},
+        effective_at=eff_at.isoformat(),
+    )
+    assert verify_amendment(amd, root).direction == "increase"
+    before = eff_at - timedelta(seconds=1)
+    assert run_in_force(root, amd, req(target=OTHER_SCOPE_TARGET), before).verdict == "DENY"  # not yet in scope
+    assert run_in_force(root, amd, req(), before).verdict == "ALLOW"  # predecessor scope still grants
+    assert run_in_force(root, amd, req(target=OTHER_SCOPE_TARGET), eff_at).verdict == "ALLOW"
+
+
+def test_B29_M_manifest_level_tightening_immediate(load):
+    far = (NOW + timedelta(days=5)).isoformat()
+    c = auth("C", destructive=True)
+    root, amd = _chain(
+        load,
+        auto(auths=[c]),
+        auto(auths=[c]),
+        root_ov={"engagement": {"destructive_allowed": True}},
+        effective_at=far,
+    )  # amendment keeps factory default destructive_allowed=False => tightening
+    assert verify_amendment(amd, root).direction == "tightening"
+    assert in_force_manifest(root, amd, NOW) is amd
+    assert run_in_force(root, amd, req(cls="C", destructive=True), NOW).verdict == "DENY"
+    assert run_in_force(root, amd, req(cls="C"), NOW).verdict == "ALLOW"
+
+
+def test_B29_M_noop_amendment_valid_and_immediate(load):
+    root, amd = _chain(load, auto(), auto(), effective_at=(NOW + timedelta(days=5)).isoformat())
+    assert verify_amendment(amd, root).direction == "none"
+    assert in_force_manifest(root, amd, NOW) is amd  # §7: effective immediately
+    assert run_in_force(root, amd, req(), NOW).verdict == "ALLOW"
+
+
+# ---------------------------------------------------------------- amendment axis model (§7 full axis set)
+OTHER_SCOPE_TARGET = "x.other.example.org"
+EXCL_TARGET = "y.acme.example.com"
+
+
+def _bdg(d, v):
+    return {"a": {"budget": {d: v}}}
+
+
+# axis -> (restrictive patch, permissive patch). Patch keys: a=autonomy kwargs, e=engagement, s=scope overrides.
+AXES = {
+    "mode": ({"a": {"mode": "calm"}}, {"a": {"mode": "beast"}}),
+    "duration": ({"a": {"duration": 300}}, {"a": {"duration": 600}}),
+    **{f"budget.{d}": (_bdg(d, BUDGET[d] - 1), _bdg(d, BUDGET[d])) for d in BUDGET_DIMENSIONS},
+    "exfil": ({"a": {}}, {"a": {"exfil_simulation": {"allowed": True, "byte_budget": 5}}}),
+    "auths": ({"a": {}}, {"a": {"extra": (auth("B"),)}}),
+    "destructive_allowed": ({"e": {"destructive_allowed": False}}, {"e": {"destructive_allowed": True}}),
+    "in_scope": (
+        {"s": {"in_scope": ["*.acme.example.com"]}},
+        {"s": {"in_scope": ["*.acme.example.com", "*.other.example.org"]}},
+    ),
+    "excluded": ({"s": {"excluded": [EXCL_TARGET]}}, {"s": {"excluded": []}}),
+    # §7 O3: any watchdog change counts as a permission increase (never a tightening)
+    "watchdog": ({"a": {}}, {"a": {"watchdog": {"may_auto_stop": True, "confirm_window_seconds": 30}}}),
+}
+TIGHTABLE = [n for n in AXES if n != "watchdog"]
+
+
+def _mk(load, levels, amends=None):
+    """Manifest whose every axis is 'hi' (permissive) unless levels[axis]=='lo'."""
+    a, e, s, budget, extra = {}, {}, {}, dict(BUDGET), ()
+    for name, (lo, hi) in AXES.items():
+        p = lo if levels.get(name, "hi") == "lo" else hi
+        pa = dict(p.get("a", {}))
+        budget.update(pa.pop("budget", {}))
+        extra += tuple(pa.pop("extra", ()))
+        a.update(pa)
+        e.update(p.get("e", {}))
+        s.update(p.get("s", {}))
+    ov = {}
+    if e:
+        ov["engagement"] = e
+    if s:
+        ov["scope"] = s
+    auths = [auth("A", TARGET, destructive=True), auth("A", EXCL_TARGET), auth("A", OTHER_SCOPE_TARGET), *extra]
+    return load(autonomy=auto(auths=auths, budget=budget, **a), amends=amends, **ov)
+
+
+def _pair(load, root_lv, amd_lv, eff_at):
+    root = _mk(load, root_lv)
+    ref = {"manifest_id": root.manifest_id, "reason": "r", "effective_at": eff_at.isoformat()}
+    return root, _mk(load, amd_lv, amends=ref)
+
+
+_Z = {d: 0 for d in BUDGET_DIMENSIONS}
+# (probe, request, predicate(levels) -> expected ALLOW). Each derives from the §8 clause named.
+PROBES = [
+    ("baseline", req(mode="calm", draw=_Z), lambda lv: True),  # §8 class A, calm, within limits
+    ("mode", req(mode="beast", draw=_Z), lambda lv: lv.get("mode", "hi") == "hi"),  # §8 mode clause
+    ("duration", req(mode="calm", draw=_Z, elapsed=500), lambda lv: lv.get("duration", "hi") == "hi"),  # §8 duration
+    *[
+        (f"budget.{d}", req(mode="calm", draw={**_Z, d: BUDGET[d]}), (lambda lv, d=d: lv.get(f"budget.{d}", "hi") == "hi"))
+        for d in BUDGET_DIMENSIONS
+    ],  # §8 budget clause
+    (
+        "auths",
+        req(mode="beast", cls="B", draw=_Z),
+        lambda lv: lv.get("auths", "hi") == "hi" and lv.get("mode", "hi") == "hi",
+    ),  # §8 class rule B: beast + matching auth
+    (
+        "destructive",
+        req(mode="calm", destructive=True, draw=_Z),
+        lambda lv: lv.get("destructive_allowed", "hi") == "hi",
+    ),  # §8 destructive clause (auth.destructive true in every state)
+    ("in_scope", req(mode="calm", target=OTHER_SCOPE_TARGET, draw=_Z), lambda lv: lv.get("in_scope", "hi") == "hi"),
+    ("excluded", req(mode="calm", target=EXCL_TARGET, draw=_Z), lambda lv: lv.get("excluded", "hi") == "hi"),
+]
+
+
+def _states():
+    """(label, root_levels, amendment_levels, direction) with direction fixed BY CONSTRUCTION (§7 prose)."""
+    yield "none", {}, {}, "none"
+    for x in AXES:
+        yield f"increase:{x}", {x: "lo"}, {}, "increase"
+    for y in TIGHTABLE:
+        yield f"tightening:{y}", {}, {y: "lo"}, "tightening"
+    for x in AXES:
+        for y in TIGHTABLE:
+            if x != y:
+                yield f"mixed:{x}+{y}", {x: "lo"}, {y: "lo"}, "mixed"
+
+
+def _governs_amendment(direction, now, eff_at):
+    """Does the amendment govern at `now`? (§7/§8.1(2) prose): no-op/tightening immediately; increase-only at/after
+    effective_at; mixed never."""
+    if direction in ("none", "tightening"):
+        return True
+    return direction == "increase" and now >= eff_at
+
+
+def _invalid_states(load):
+    """(label, predecessor, amendment, predecessor_levels): invalid amendments of both polarities (§7, row 26-28)."""
+    eff_at = NOW - timedelta(hours=1)
+    for pol, root_lv, amd_lv in (("increase", {"auths": "lo"}, {}), ("tightening", {}, {"auths": "lo"})):
+        root, amd = _pair(load, root_lv, amd_lv, eff_at)
+        wrong = _mk(load, amd_lv, amends={"manifest_id": "sha256:wrong", "reason": "r", "effective_at": eff_at.isoformat()})
+        yield f"bad_id:{pol}", root, wrong, root_lv
+        naive = _forge(amd, amends=AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=datetime(2030, 1, 1)))
+        yield f"naive_effective_at:{pol}", root, naive, root_lv
+        missing = _forge(amd, amends=AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None))
+        yield f"missing_effective_at:{pol}", root, missing, root_lv
+        # single-hop violation: predecessor (amd) is itself an amendment of root
+        ref2 = {"manifest_id": amd.manifest_id, "reason": "r", "effective_at": eff_at.isoformat()}
+        amd2 = _mk(load, {"mode": "lo"}, amends=ref2)
+        yield f"chained:{pol}", amd, amd2, None
+        yield f"unrelated_root:{pol}", root, _mk(load, amd_lv), root_lv  # not an amendment at all
+
+
+def test_B29_M_axis_direction_classification(load):
+    # §7 per-axis: each single-axis change classifies as increased (or tightened); watchdog is increase-only.
+    eff_at = NOW + timedelta(hours=1)
+    for x in AXES:
+        root, amd = _pair(load, {x: "lo"}, {}, eff_at)
+        assert verify_amendment(amd, root).direction == "increase", x
+    for y in TIGHTABLE:
+        root, amd = _pair(load, {}, {y: "lo"}, eff_at)
+        assert verify_amendment(amd, root).direction == "tightening", y
+
+
+def test_B29_prop_7_amendment_direction_preserves_or_applies_authority(load):
+    # §13 invariant 7 over amendment-direction state x {before, at, after effective_at} x window/budget/destructive probes
+    eff_at = NOW + timedelta(hours=1)
+    times = (eff_at - timedelta(seconds=1), eff_at, eff_at + timedelta(days=1))
+    allows = {"before": 0, "after": 0}
+    for label, root_lv, amd_lv, direction in _states():
+        root, amd = _pair(load, root_lv, amd_lv, eff_at)
+        assert verify_amendment(amd, root).direction == direction, label
+        for now in times:
+            expect_amd = _governs_amendment(direction, now, eff_at)
+            gov_lv = amd_lv if expect_amd else root_lv
+            iv = in_force_manifest(root, amd, now)
+            assert iv is (amd if expect_amd else root), (label, now)
+            env = in_force_effective_envelope(iv, None)
+            for name, request, pred in PROBES:
+                verdict = authorize(env, request, iv, now).verdict
+                assert verdict == ("ALLOW" if pred(gov_lv) else "DENY"), (label, now, name)
+                if verdict == "ALLOW":
+                    allows["before" if now < eff_at else "after"] += 1
+    assert allows["before"] > 0 and allows["after"] > 0  # not vacuous: ALLOW positive controls on both sides
+    # invalid amendments (bad id, naive/missing effective_at, chained, non-amendment): predecessor, never the increase
+    for label, pred_m, amd_m, pred_lv in _invalid_states(load):
+        for now in times:
+            assert in_force_manifest(pred_m, amd_m, now) is pred_m, (label, now)
+            assert not verify_amendment(amd_m, pred_m).valid, label
+            env = in_force_effective_envelope(pred_m, None)
+            assert authorize(env, req(mode="calm", draw=_Z), pred_m, now).verdict == "ALLOW", label  # baseline kept
+            if pred_lv is not None:  # predecessor's own B grant is neither upgraded nor downgraded-by-invalidation
+                want = "ALLOW" if pred_lv.get("auths", "hi") == "hi" else "DENY"
+                assert authorize(env, req(mode="beast", cls="B", draw=_Z), pred_m, now).verdict == want, label
+
+
+def test_B29_prop_9_no_authorization_without_verified_provenance(load):
+    # §13 invariant 9 over the same generated space: ALLOW only with provenance == in-force verified.manifest_id
+    eff_at = NOW + timedelta(hours=1)
+    times = (eff_at - timedelta(seconds=1), eff_at + timedelta(days=1))
+    base = PROBES[0][1]
+    allowed = denied_variants = 0
+    for label, root_lv, amd_lv, _direction in _states():
+        root, amd = _pair(load, root_lv, amd_lv, eff_at)
+        for now in times:
+            iv = in_force_manifest(root, amd, now)
+            other = amd if iv is root else root
+            env = in_force_effective_envelope(iv, None)
+            assert env.provenance == iv.manifest_id
+            assert authorize(env, base, iv, now).verdict == "ALLOW", (label, now)  # positive control (§8 class A)
+            allowed += 1
+            variants = (
+                effective_envelope(iv.autonomy, None),  # bare, provenance-absent
+                replace(env, provenance=None),
+                replace(env, provenance="sha256:" + "0" * 64),
+                replace(env, provenance=iv.manifest_id[len("sha256:"):]),  # missing the prefix
+                in_force_effective_envelope(other, None),  # derived from the OTHER manifest
+            )
+            for var in variants:
+                assert var.provenance != iv.manifest_id
+                assert authorize(var, base, iv, now).verdict != "ALLOW", (label, now)
+                denied_variants += 1
+            # a bare AutonomyEnvelope / unverified object in the 'verified' slot never authorizes
+            assert authorize(effective_envelope(iv.autonomy, None), base, iv.autonomy, now).verdict == "DENY"
+    assert allowed > 0 and denied_variants > 0
+
 
 
 # ---------------------------------------------------------------- property invariants (§13), deterministic space
 def _space():
-    modes = ("calm", "beast")
-    classes = "ABC"
-    for rm, rc, am, ac, tgt in itertools.product(modes, classes, modes, classes, (TARGET, OTHER)):
-        yield rm, rc, am, ac, tgt
+    """(request mode, request class, target) -- exhaustive, no randomness."""
+    return itertools.product(("calm", "beast"), "ABC", (TARGET, OTHER))
 
 
 def test_B29_prop_2_3_4_beast_nothing_target_class_isolation(load):
-    v_empty = load(autonomy=auto(auths=[]))
-    e_empty = effective_envelope(v_empty.autonomy, None)
-    v = load(autonomy=auto(auths=[auth("A")]))
+    # invariant 2: empty authorizations => no external ALLOW regardless of mode
+    for mode_max in ("calm", "beast"):
+        v_empty = load(autonomy=auto(mode=mode_max, auths=[]))
+        e_empty = in_force_effective_envelope(v_empty, None)
+        for rm, rc, tgt in _space():
+            assert authorize(e_empty, req(mode=rm, cls=rc, target=tgt), v_empty, NOW).verdict == "DENY"
+    # invariants 3, 4: an authorization for (B, TARGET) authorizes nothing else
     allowed = []
-    for rm, rc, am, ac, tgt in _space():
-        assert authorize(e_empty, req(mode=rm, cls=rc, target=tgt), v_empty, NOW).verdict == "DENY"  # P2
     for mode_max in ("calm", "beast"):
         vm = load(autonomy=auto(mode=mode_max, auths=[auth("B", TARGET)]))
-        em = effective_envelope(vm.autonomy, None)
-        for rm, rc, tgt in itertools.product(("calm", "beast"), "ABC", (TARGET, OTHER)):
-            r = authorize(em, req(mode=rm, cls=rc, target=tgt), vm, NOW)
-            if r.verdict == "ALLOW":  # only B + TARGET + beast + beast ceiling can allow
+        em = in_force_effective_envelope(vm, None)
+        for rm, rc, tgt in _space():
+            if authorize(em, req(mode=rm, cls=rc, target=tgt), vm, NOW).verdict == "ALLOW":
                 allowed.append((rc, tgt, rm, mode_max))
-    # exact allowed set (positive control: the property is not vacuous)
-    assert allowed == [("B", TARGET, "beast", "beast")]  # P3, P4, §8 calm-B deny
-
-
+    # exact allowed set (positive control: not vacuous): only B + TARGET + beast request + beast ceiling (§8 calm-B deny)
+    assert allowed == [("B", TARGET, "beast", "beast")]
 
 
 def test_B29_prop_5_expiry_monotonic_generated(load):
     rnd = random.Random(29)
     vf, vu = NOW - timedelta(hours=3), NOW + timedelta(hours=3)
     v = load(autonomy=auto(auths=[auth("A", vf=vf, vu=vu)]))
-    eff = effective_envelope(v.autonomy, None)
+    eff = in_force_effective_envelope(v, None)
+    inside = 0
     for _ in range(200):
         t = NOW + timedelta(seconds=rnd.randint(-40000, 40000))
         verdict = authorize(eff, req(), v, t).verdict
@@ -598,22 +873,26 @@ def test_B29_prop_5_expiry_monotonic_generated(load):
             assert verdict != "ALLOW"
         else:
             assert verdict == "ALLOW"
+            inside += 1
+    assert inside > 0  # positive control
 
 
 def test_B29_prop_1_runtime_never_expands(load):
     rnd = random.Random(1129)
     v = load(autonomy=auto())
-    S = v.autonomy
+    base = in_force_effective_envelope(v, None)
+    allowed = 0
     for _ in range(200):
         dim = rnd.choice(BUDGET_DIMENSIONS)
         r = BUDGET[dim] * rnd.choice([0, 0.5, 1, 1.01, 2])
         if r > BUDGET[dim]:
             with pytest.raises(AutonomyError):
-                effective_envelope(S, RuntimeRestrictions(budget={dim: r}))
+                effective_envelope(v.autonomy, RuntimeRestrictions(budget={dim: r}))
+            with pytest.raises(AutonomyError):
+                in_force_effective_envelope(v, RuntimeRestrictions(budget={dim: r}))
         else:
-            eff = effective_envelope(S, RuntimeRestrictions(budget={dim: r}))
+            eff = in_force_effective_envelope(v, RuntimeRestrictions(budget={dim: r}))
             assert eff.budget[dim] <= BUDGET[dim]
-            base = effective_envelope(S, None)
             # nothing allowed under effective that signed disallows
             d = {**WITHIN, dim: BUDGET[dim] + 1}
             assert authorize(base, req(draw=d), v, NOW).verdict == "DENY"
@@ -621,6 +900,8 @@ def test_B29_prop_1_runtime_never_expands(load):
             # positive control: a draw within the effective (restricted) limit is ALLOWed
             ok = {**WITHIN, dim: min(WITHIN[dim], r)}
             assert authorize(eff, req(draw=ok), v, NOW).verdict == "ALLOW"
+            allowed += 1
+    assert allowed > 0  # the ALLOW control actually ran
 
 
 def test_B29_prop_6_destructive_needs_both(load):
@@ -663,11 +944,20 @@ def test_B29_O_pure_no_network_no_mutation(load, nonet):
     v = load(autonomy=auto(auths=[auth("A")]))
     snap = (v.model_dump(), v.canonical_content)
     s_env = copy.deepcopy(v.autonomy)
-    eff = effective_envelope(v.autonomy, RuntimeRestrictions(budget={"llm_tokens": 1}))
+    eff = in_force_effective_envelope(v, RuntimeRestrictions(budget={"llm_tokens": 1}))
     authorize(eff, req(), v, NOW)
-    active_envelope(v, None, NOW)
+    in_force_manifest(v, None, NOW)
+    root, amd = _chain(load, auto(), auto(auths=[auth("A"), auth("B")]), effective_at=(NOW + timedelta(hours=1)).isoformat())
+    in_force_manifest(root, amd, NOW)
     assert (v.model_dump(), v.canonical_content) == snap and v.autonomy == s_env
     assert compute_manifest_id(v) == v.manifest_id
+
+
+def test_B29_H_public_producers_exported():
+    # F-H: the provenance-bearing producers are part of the public surface (§8, §8.1)
+    for name in ("in_force_effective_envelope", "in_force_manifest", "effective_envelope", "authorize", "verify_amendment"):
+        assert name in A.__all__ and callable(getattr(A, name)), name
+    assert not hasattr(A, "active_envelope")  # superseded by in_force_manifest (§8.1(2))
 
 
 def test_B29_O_not_wired():

@@ -155,7 +155,7 @@ class VerifiedManifest(ScopeManifest):
     """A `ScopeManifest` that `load_and_verify` produced after signature
     verification (SPEC_BRIEF29 §5). `canonical_content` is the verified,
     signature-stripped, pre-`_flatten` canonical bytes; `manifest_id` is
-    its sha256, so it carries no `_flatten` defaults. A bare parsed
+    its prefixed sha256, so it carries no `_flatten` defaults. A bare parsed
     `ScopeManifest` is not a `VerifiedManifest`."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -175,13 +175,15 @@ class VerifiedManifest(ScopeManifest):
 
     @model_validator(mode="after")
     def _bound_to_canonical_content(self) -> "VerifiedManifest":
-        # Unforgeable gate (§5): only load_and_verify sets the token.
+        # Construction guard (§5), NOT cryptographic: a module-private ContextVar
+        # that only load_and_verify sets, so ordinary construction is rejected.
+        # In-process code that sets the private token could still bypass it.
         if not _CONSTRUCTING.get():
             raise ValueError("VerifiedManifest is produced only by load_and_verify")
-        # Construction guard (§5): manifest_id must be sha256(canonical_content)
+        # Consistency guard (§5): manifest_id must be "sha256:" + sha256(canonical_content)
         # and the fields must be exactly what that content parses to, so a
         # hand-built instance with forged content/id/fields is rejected.
-        if self.manifest_id != hashlib.sha256(self.canonical_content).hexdigest():
+        if self.manifest_id != "sha256:" + hashlib.sha256(self.canonical_content).hexdigest():
             raise ValueError("manifest_id does not match sha256(canonical_content)")
         try:
             loaded = yaml.safe_load(self.canonical_content)
@@ -195,10 +197,10 @@ class VerifiedManifest(ScopeManifest):
 
 
 def compute_manifest_id(verified: "VerifiedManifest") -> str:
-    """sha256 hex over the verified canonical content (SPEC_BRIEF29 §5)."""
+    """`"sha256:" + sha256(canonical content).hexdigest()` (SPEC_BRIEF29 §5)."""
     if not isinstance(verified, VerifiedManifest):
         raise TypeError("compute_manifest_id requires a VerifiedManifest")
-    return hashlib.sha256(verified.canonical_content).hexdigest()
+    return "sha256:" + hashlib.sha256(verified.canonical_content).hexdigest()
 
 
 def canonicalize(data: dict[str, Any]) -> bytes:
@@ -272,7 +274,7 @@ def load_and_verify(yaml_text: str, public_key: Ed25519PublicKey) -> VerifiedMan
             manifest = VerifiedManifest(
                 **dict(parsed),
                 canonical_content=canon,
-                manifest_id=hashlib.sha256(canon).hexdigest(),
+                manifest_id="sha256:" + hashlib.sha256(canon).hexdigest(),
             )
         finally:
             _CONSTRUCTING.reset(token)
