@@ -251,7 +251,7 @@ def _is_aware(value: object) -> bool:
     return isinstance(value, datetime) and value.tzinfo is not None and value.tzinfo.utcoffset(value) is not None
 
 
-def verify_amendment(predecessor: VerifiedManifest, new: VerifiedManifest) -> AmendmentDecision:
+def verify_amendment(new: VerifiedManifest, predecessor: VerifiedManifest) -> AmendmentDecision:
     """Valid only for root -> one amendment. Everything else fails closed."""
     if not isinstance(predecessor, VerifiedManifest) or not isinstance(new, VerifiedManifest):
         return AmendmentDecision(False, "both manifests must be VerifiedManifest")
@@ -283,6 +283,9 @@ def _more_permissive(new: AutonomyEnvelope | None, old: AutonomyEnvelope | None)
     for dim in BUDGET_DIMENSIONS:
         if getattr(new.max_unattended_budget, dim) > getattr(old.max_unattended_budget, dim):
             return True
+    if new.watchdog != old.watchdog:
+        # §7: watchdog changes count as increases (conservative: any change).
+        return True
     old_x, new_x = old.exfil_simulation, new.exfil_simulation
     if new_x is not None and new_x.allowed:
         if old_x is None or not old_x.allowed or new_x.byte_budget > old_x.byte_budget:
@@ -302,7 +305,7 @@ def active_envelope(
     one that increases any permission applies only from `effective_at`."""
     if amendment is None:
         return root.autonomy
-    if not verify_amendment(root, amendment).valid:
+    if not verify_amendment(amendment, root).valid:
         return root.autonomy
     if not _more_permissive(amendment.autonomy, root.autonomy):
         return amendment.autonomy
@@ -385,6 +388,13 @@ def authorize(
 
     if not _is_aware(now) and now is not None:
         return deny("now is not timezone-aware")
+    # §7/§8 amendment gate at the authorize boundary: an amendment manifest
+    # grants nothing before its own authenticated effective_at (fail closed).
+    if verified.amends is not None:
+        if not _is_aware(verified.amends.effective_at):
+            return deny("amendment effective_at missing/naive")
+        if now is not None and now < verified.amends.effective_at:
+            return deny("amendment not yet effective")
     unavailable: list[str] = []
     if now is None:
         unavailable.append("now")

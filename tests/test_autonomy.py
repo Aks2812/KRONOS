@@ -120,23 +120,42 @@ D_OK = {"destructive_allowed": True}
 @pytest.mark.parametrize(
     "row,a_kw,r_kw,ov,expected",
     [
+        # Each row: expected verdict derives from the cited §8 clause / decision-table row (brief prose).
+        # row1: §8 class rule A ("allowed in calm or beast within limits") + mode clause (calm req <= calm ceiling)
         (1, dict(mode="calm", auths=[auth("A")]), dict(mode="calm", cls="A"), {}, "ALLOW"),
+        # row2: §8 class rule A in beast; mode clause (beast req needs mode_max==beast)
         (2, dict(), dict(mode="beast", cls="A"), {}, "ALLOW"),
-        (3, dict(auths=[auth("A", OTHER)]), dict(cls="A"), {}, "DENY"),  # scope != authz
-        (4, dict(auths=[auth("B")]), dict(mode="calm", cls="B"), {}, "DENY"),  # Calm B fails closed
+        # row3: §8 class rule A "ALWAYS requires a matching signed authorization"; scope != authz
+        (3, dict(auths=[auth("A", OTHER)]), dict(cls="A"), {}, "DENY"),
+        # row4: §8 class rule B "calm => DENY (fail closed, P0)"
+        (4, dict(auths=[auth("B")]), dict(mode="calm", cls="B"), {}, "DENY"),
+        # row5: §8 class rule B "beast => allow iff a matching signed authorization exists"
         (5, dict(auths=[auth("B")]), dict(cls="B"), {}, "ALLOW"),
+        # row6: §8 class rule B needs a matching auth of class B (only A present)
         (6, dict(auths=[auth("A")]), dict(cls="B"), {}, "DENY"),
+        # row7: §8 class rule C "calm => DENY (per-action operator authorization deferred)"
         (7, dict(auths=[auth("C")]), dict(mode="calm", cls="C"), {}, "DENY"),
+        # row8: §8 class rule C "beast => allow iff manifest EXPLICITLY enumerates (C, target, active window)"
         (8, dict(auths=[auth("C")]), dict(cls="C"), {}, "ALLOW"),
+        # row9: §8 class rule C: no explicit C entry => DENY
         (9, dict(auths=[auth("A"), auth("B")]), dict(cls="C"), {}, "DENY"),
-        (10, dict(auths=[auth("A", OTHER)]), dict(cls="A", target=TARGET), {}, "DENY"),  # §4.2 binding
-        (11, dict(auths=[auth("A", "*.acme.example.com")]), dict(cls="A"), {}, "DENY"),  # wildcard rejected
+        # row10: §8 binding clause + §4.2 per-auth _matches: auth for OTHER never authorizes TARGET
+        (10, dict(auths=[auth("A", OTHER)]), dict(cls="A", target=TARGET), {}, "DENY"),
+        # row11: §8 binding / §4.2 "wildcard rejected this increment"
+        (11, dict(auths=[auth("A", "*.acme.example.com")]), dict(cls="A"), {}, "DENY"),
+        # row12: §8 window clause "Future ... => deny" (valid_from > now)
         (12, dict(auths=[auth("A", vf=FUTURE, vu=FUTURE + timedelta(days=1))]), dict(), {}, "DENY"),
+        # row13: §8 window clause "expired => deny" (valid_until < now)
         (13, dict(auths=[auth("A", vf=PAST - timedelta(days=1), vu=PAST)]), dict(), {}, "DENY"),
+        # row14: §8 budget clause "request draw <= effective budget per dimension"
         (14, dict(), dict(draw=OVER), {}, "DENY"),
+        # row16: §8 destructive clause: destructive_allowed AND auth.destructive both true
         (16, dict(auths=[auth("C", destructive=True)]), dict(cls="C", destructive=True), D_OK, "ALLOW"),
+        # row17: §8 destructive clause: verified.destructive_allowed false => DENY
         (17, dict(auths=[auth("C", destructive=True)]), dict(cls="C", destructive=True), {}, "DENY"),
+        # row18: §8 destructive clause: auth.destructive false => DENY (not inherited)
         (18, dict(auths=[auth("C", destructive=False)]), dict(cls="C", destructive=True), D_OK, "DENY"),
+        # row29: §8 inconclusive clause: required input (budget_draw) unavailable => INCONCLUSIVE
         (29, dict(), dict(draw=None), {}, "INCONCLUSIVE"),
     ],
 )
@@ -382,20 +401,21 @@ def _chain(load, root_auto, amend_auto, **am):
 
 def test_B29_M_verify_amendment_ok_and_failures(load):
     root, amd = _chain(load, auto(), auto())
-    assert verify_amendment(root, amd).valid
+    assert verify_amendment(amd, root).valid
     # mismatched id
     bad = load(autonomy=auto(), amends={"manifest_id": "deadbeef", "reason": "r", "effective_at": NOW.isoformat()})
-    assert not verify_amendment(root, bad).valid
+    assert not verify_amendment(bad, root).valid
     # not an amendment
     assert not verify_amendment(root, root).valid
     # predecessor itself an amendment (D1 single hop)
-    assert not verify_amendment(amd, load(autonomy=auto(), amends={"manifest_id": amd.manifest_id, "reason": "r", "effective_at": NOW.isoformat()})).valid
+    amd2 = load(autonomy=auto(), amends={"manifest_id": amd.manifest_id, "reason": "r", "effective_at": NOW.isoformat()})
+    assert not verify_amendment(amd2, amd).valid
     # bare parsed object not accepted
     from kronos.manifest import ScopeManifest
 
     bare = ScopeManifest(**dict(root))
-    assert not verify_amendment(bare, amd).valid
-    assert not verify_amendment(root, bare).valid
+    assert not verify_amendment(amd, bare).valid
+    assert not verify_amendment(bare, root).valid
 
 
 def test_B29_M_naive_or_missing_effective_at_fail_closed(load):
@@ -404,13 +424,13 @@ def test_B29_M_naive_or_missing_effective_at_fail_closed(load):
         manifest_id=root.manifest_id, reason="r", effective_at=datetime(2030, 1, 1)
     )
     n = amd.model_copy(update={"amends": naive_ref})
-    assert not verify_amendment(root, n).valid
+    assert not verify_amendment(n, root).valid
     n2 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None)})
-    assert not verify_amendment(root, n2).valid
+    assert not verify_amendment(n2, root).valid
     n3 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id="", reason="r", effective_at=NOW)})
-    assert not verify_amendment(root, n3).valid
+    assert not verify_amendment(n3, root).valid
     n4 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="", effective_at=NOW)})
-    assert not verify_amendment(root, n4).valid
+    assert not verify_amendment(n4, root).valid
     # naive effective_at: increase never applies (row 28)
     inc = n.model_copy(update={"autonomy": load(autonomy=auto(auths=[auth("A"), auth("B")])).autonomy})
     assert active_envelope(root, inc, NOW + timedelta(days=99)) == root.autonomy
@@ -442,11 +462,33 @@ def test_B29_M_tightening_applies_immediately(load):
         dict(budget={**BUDGET, "tool_invocations": 11}),
         dict(budget={**BUDGET, "llm_cost_usd": 1.6}),
         dict(mode="beast", exfil_simulation={"allowed": True, "byte_budget": 5}),
+        # §7: watchdog changes count as permission increases (not before effective_at)
+        dict(mode="beast", watchdog={"may_auto_stop": True, "confirm_window_seconds": 30}),
     ],
 )
 def test_B29_M_other_increases_gated(load, amd_kw):
     root, amd = _chain(load, auto(mode="beast"), auto(**amd_kw), effective_at=(NOW + timedelta(days=5)).isoformat())
     assert active_envelope(root, amd, NOW) == root.autonomy
+
+
+def test_B29_M_watchdog_only_amendment_gated_then_applies(load):
+    far = (NOW + timedelta(days=30)).isoformat()
+    wd = {"watchdog": {"may_auto_stop": True, "confirm_window_seconds": 30}}
+    root, amd = _chain(load, auto(), auto(**wd), effective_at=far)
+    assert active_envelope(root, amd, NOW) == root.autonomy  # inert before effective_at
+    assert active_envelope(root, amd, NOW + timedelta(days=31)) == amd.autonomy  # positive control
+
+
+def test_B29_M_authorize_enforces_effective_at(load):
+    # §8 amendment gate holds at authorize(), not only in active_envelope.
+    eff_at = NOW + timedelta(hours=1)
+    root, amd = _chain(load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat())
+    env = effective_envelope(amd.autonomy, None)
+    b = req(cls="B")
+    assert authorize(env, b, amd, NOW).verdict == "DENY"  # now < effective_at: increase inert
+    assert authorize(env, b, amd, eff_at - timedelta(seconds=1)).verdict == "DENY"
+    assert authorize(env, b, amd, eff_at).verdict == "ALLOW"  # positive control: at effective_at
+    assert authorize(env, b, amd, eff_at + timedelta(seconds=1)).verdict == "ALLOW"
 
 
 def test_B29_M_mode_increase_gated(load):
@@ -482,6 +524,7 @@ def test_B29_prop_2_3_4_beast_nothing_target_class_isolation(load):
     v_empty = load(autonomy=auto(auths=[]))
     e_empty = effective_envelope(v_empty.autonomy, None)
     v = load(autonomy=auto(auths=[auth("A")]))
+    allowed = []
     for rm, rc, am, ac, tgt in _space():
         assert authorize(e_empty, req(mode=rm, cls=rc, target=tgt), v_empty, NOW).verdict == "DENY"  # P2
     for mode_max in ("calm", "beast"):
@@ -490,7 +533,9 @@ def test_B29_prop_2_3_4_beast_nothing_target_class_isolation(load):
         for rm, rc, tgt in itertools.product(("calm", "beast"), "ABC", (TARGET, OTHER)):
             r = authorize(em, req(mode=rm, cls=rc, target=tgt), vm, NOW)
             if r.verdict == "ALLOW":  # only B + TARGET + beast + beast ceiling can allow
-                assert (rc, tgt, rm, mode_max) == ("B", TARGET, "beast", "beast")  # P3, P4, §8 calm-B deny
+                allowed.append((rc, tgt, rm, mode_max))
+    # exact allowed set (positive control: the property is not vacuous)
+    assert allowed == [("B", TARGET, "beast", "beast")]  # P3, P4, §8 calm-B deny
 
 
 
@@ -530,21 +575,38 @@ def test_B29_prop_1_runtime_never_expands(load):
 
 
 def test_B29_prop_6_destructive_needs_both(load):
+    allowed = []
     for da, ad, cls, mode in itertools.product((True, False), (True, False), "ABC", ("calm", "beast")):
         v = load(autonomy=auto(auths=[auth(cls, destructive=ad)]), engagement={"destructive_allowed": da})
         r = run(v, req(mode=mode, cls=cls, destructive=True))
         if r.verdict == "ALLOW":
             assert da and ad  # never from mode or class C alone
+            allowed.append((da, ad, cls, mode))
+    # positive control (§8 class rules): with both flags, A allowed in calm/beast, B and C only in beast
+    assert allowed == [(True, True, c, m) for c, m in (("A", "calm"), ("A", "beast"), ("B", "beast"), ("C", "beast"))]
 
 
-def test_B29_prop_8_canonical_stable(load):
-    a = load(autonomy=auto())
-    b = load(autonomy={k: auto()[k] for k in reversed(list(auto()))})
-    # different time-of-factory window differs; compare canonical autonomy section only
+def test_B29_prop_8_canonical_stable(manifest_factory, signing_keypair):
+    # §13 invariant 8: logically-equal manifests => equal canonical bytes => equal manifest_id.
     import yaml
 
-    ca, cb = yaml.safe_load(a.canonical_content)["autonomy"], yaml.safe_load(b.canonical_content)["autonomy"]
-    assert ca == cb
+    from kronos.manifest import sign_manifest
+
+    priv, pub = signing_keypair
+    raw = yaml.safe_load(manifest_factory(autonomy=auto()))
+    raw.pop("signature")
+    reordered = {k: raw[k] for k in reversed(list(raw))}
+    reordered["autonomy"] = {k: raw["autonomy"][k] for k in reversed(list(raw["autonomy"]))}
+    reordered["engagement"] = {k: raw["engagement"][k] for k in reversed(list(raw["engagement"]))}
+    a = load_and_verify(sign_manifest(raw, priv), pub)
+    b = load_and_verify(sign_manifest(reordered, priv), pub)
+    assert a.canonical_content == b.canonical_content
+    assert a.manifest_id == b.manifest_id == compute_manifest_id(a)
+    # positive control: a logically different manifest has a different id
+    changed = copy.deepcopy(raw)
+    changed["autonomy"]["max_unattended_duration_seconds"] += 1
+    c = load_and_verify(sign_manifest(changed, priv), pub)
+    assert c.manifest_id != a.manifest_id
 
 
 # ---------------------------------------------------------------- O: purity / no side effects

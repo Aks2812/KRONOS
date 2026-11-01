@@ -156,6 +156,23 @@ class VerifiedManifest(ScopeManifest):
     canonical_content: bytes
     manifest_id: str
 
+    @model_validator(mode="after")
+    def _bound_to_canonical_content(self) -> "VerifiedManifest":
+        # Construction guard (§5): manifest_id must be sha256(canonical_content)
+        # and the fields must be exactly what that content parses to, so a
+        # hand-built instance with forged content/id/fields is rejected.
+        if self.manifest_id != hashlib.sha256(self.canonical_content).hexdigest():
+            raise ValueError("manifest_id does not match sha256(canonical_content)")
+        try:
+            loaded = yaml.safe_load(self.canonical_content)
+            expected = ScopeManifest(**_flatten(loaded))
+        except Exception as exc:
+            raise ValueError("canonical_content does not parse to a manifest") from exc
+        for name in ScopeManifest.model_fields:
+            if getattr(self, name) != getattr(expected, name):
+                raise ValueError(f"field {name!r} does not match canonical_content")
+        return self
+
 
 def compute_manifest_id(verified: "VerifiedManifest") -> str:
     """sha256 hex over the verified canonical content (SPEC_BRIEF29 §5)."""

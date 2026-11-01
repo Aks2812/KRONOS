@@ -70,6 +70,7 @@ def test_naive_window_timestamp_rejected_as_manifest_error_not_typeerror(manifes
 # ---- SPEC_BRIEF29 (hermetic): signed autonomy schema, identity, boundary ----
 
 import copy  # noqa: E402
+import hashlib  # noqa: E402
 import socket  # noqa: E402
 
 import yaml  # noqa: E402
@@ -86,6 +87,7 @@ from kronos.manifest import (  # noqa: E402
     WatchdogPolicy,
     canonicalize,
     compute_manifest_id,
+    sign_manifest,
 )
 
 
@@ -312,12 +314,40 @@ def test_B29_E_boundary(manifest_factory, signing_keypair):
     content = yaml.safe_load(m.canonical_content)
     assert "destructive_allowed" in content["engagement"]  # factory supplies it explicitly
     assert "signature" not in content
-    y2 = manifest_factory(engagement={})
-    raw = yaml.safe_load(y2)
-    raw["engagement"].pop("destructive_allowed")  # absent => _flatten would inject False
+    # absent => _flatten would inject False, but the id/bytes must NOT carry it
+    raw = yaml.safe_load(manifest_factory())
     raw.pop("signature")
-    # id of a manifest lacking the key must not equal one with the defaulted key
-    assert "destructive_allowed" not in yaml.safe_load(canonicalize(raw))["engagement"]
+    raw["engagement"].pop("destructive_allowed")
+    priv, _ = signing_keypair
+    m2 = load_and_verify(sign_manifest(raw, priv), pub)
+    assert m2.destructive_allowed is False  # defaulted in the model ...
+    assert b"destructive_allowed" not in m2.canonical_content  # ... not in the identity bytes
+    assert m2.manifest_id == hashlib.sha256(canonicalize(raw)).hexdigest()
+    assert m2.manifest_id != m.manifest_id
+
+
+def test_B29_E_forged_verified_manifest_rejected(manifest_factory, signing_keypair):
+    # §5: VerifiedManifest is produced only by load_and_verify; hand-built forgeries fail.
+    _, pub = signing_keypair
+    m = load_and_verify(manifest_factory(), pub)
+    fields = dict(m)
+    VerifiedManifest(**fields)  # positive control: genuine content + id constructs
+    forged_content = m.canonical_content.replace(b"Acme", b"Evil")
+    assert forged_content != m.canonical_content
+    # forged content, stale id
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**{**fields, "canonical_content": forged_content})
+    # forged id
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**{**fields, "manifest_id": "0" * 64})
+    # internally consistent content+id but fields disagree with the content
+    with pytest.raises(ValidationError):
+        VerifiedManifest(
+            **{**fields, "canonical_content": forged_content, "manifest_id": hashlib.sha256(forged_content).hexdigest()}
+        )
+    # field smuggled alongside genuine content/id
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**{**fields, "destructive_allowed": not m.destructive_allowed})
 
 
 def test_B29_E_signature_tamper_of_autonomy_rejected(manifest_factory, signing_keypair):
