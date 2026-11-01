@@ -79,13 +79,14 @@ def test_B30_C7_alert_only(verified, tmp_path, nonet, policy):  # §12 C7
     assert is_stopped(tmp_path) is None
 
 
-def test_B30_C7_no_autonomy_block(manifest_factory, signing_keypair, tmp_path):
+def test_B30_C7_no_autonomy_block(manifest_factory, signing_keypair, tmp_path, nonet):
     _, pub = signing_keypair
     v = load_and_verify(manifest_factory(), pub)
     clock = Clock()
     assert Watchdog(v, tmp_path, _cond, clock).poll() == "alert"
     clock.t = 10_000
     assert is_stopped(tmp_path) is None
+    assert not nonet
 
 
 @pytest.mark.parametrize(
@@ -143,11 +144,12 @@ def test_B30_C6_read_only(verified, tmp_path, nonet):  # §12 C6
     assert not nonet
 
 
-def test_B30_condition_sees_events(verified, tmp_path):
+def test_B30_condition_sees_events(verified, tmp_path, nonet):
     (tmp_path / "events.jsonl").write_text('{"kind": "ingest_declined"}\n')
     seen = []
     Watchdog(verified(None), tmp_path, lambda ev: seen.append(ev) or False, Clock()).poll()
     assert seen == [[{"kind": "ingest_declined"}]]
+    assert not nonet
 
 
 def test_B30_F6_events_torn_trailing_line(verified, tmp_path, nonet):  # §4.1 tolerate growing file

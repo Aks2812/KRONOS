@@ -56,7 +56,7 @@ def request_stop(
 
 
 def is_stopped(engagement_dir) -> StopState | None:
-    """The first line's (source, reason) if the record is present and non-empty, else None."""
+    """The first line's (source, reason) if present and non-empty (unparsable => unknown), else None."""
     try:
         with open(_path(engagement_dir), "r", encoding="utf-8") as f:
             first = f.readline()
@@ -67,7 +67,10 @@ def is_stopped(engagement_dir) -> StopState | None:
     try:
         rec = json.loads(first)
     except json.JSONDecodeError:
-        return None  # torn first line from a concurrent writer: not yet a complete record
+        # non-empty but unparsable first line: fail CLOSED (a torn first write must not lose the stop)
+        return StopState(source="unknown", reason="unparsable stop record")
+    if not isinstance(rec, dict) or "source" not in rec or "reason" not in rec:
+        return StopState(source="unknown", reason="unparsable stop record")
     return StopState(source=rec["source"], reason=rec["reason"])
 
 

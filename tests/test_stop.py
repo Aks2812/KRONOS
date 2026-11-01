@@ -58,6 +58,16 @@ def test_B30_F6_torn_trailing_line_tolerated(tmp_path, nonet):  # §4.1 concurre
     assert not nonet
 
 
+def test_B30_N1_torn_first_line_fails_closed(tmp_path, nonet):  # §4.1 non-empty unparsable first line => stopped
+    (tmp_path / "stop.jsonl").write_text('{"source": "oper')
+    assert is_stopped(tmp_path) == StopState("unknown", "unparsable stop record")
+    request_stop(tmp_path, "watchdog", "later")  # concatenates onto the fragment
+    assert is_stopped(tmp_path) == StopState("unknown", "unparsable stop record")
+    with pytest.raises(Stopped):
+        raise_if_stopped(tmp_path)
+    assert not nonet
+
+
 def test_B30_C2_first_wins_and_audit(tmp_path, nonet):  # §12 C2
     request_stop(tmp_path, "operator", "first")
     request_stop(tmp_path, "watchdog", "second")
@@ -87,30 +97,34 @@ def test_B30_C2b_cross_process(tmp_path, nonet):  # §12 C2b: no shared memory, 
     assert out == ["budget", "wall_clock_seconds"]
 
 
-def test_B30_source_enum(tmp_path):  # §4.1 StopSource in {operator, watchdog, budget, deadline}
+def test_B30_source_enum(tmp_path, nonet):  # §4.1 StopSource in {operator, watchdog, budget, deadline}
     for s in ("operator", "watchdog", "budget", "deadline"):
         request_stop(tmp_path, s, "r")
     with pytest.raises(ValueError):
         request_stop(tmp_path, "other", "r")
+    assert not nonet
 
 
-def test_B30_no_concurrency_primitives():  # §4.1 no os.replace/tempfile/flock/threads
+def test_B30_no_concurrency_primitives(nonet):  # §4.1 no os.replace/tempfile/flock/threads
     src = (ROOT / "src/kronos/stop.py").read_text()
     for banned in ("os.replace", "tempfile", "flock", "fcntl", "threading", "asyncio"):
         assert banned not in src
+    assert not nonet
 
 
-def test_B30_C1_single_stop_entry():  # §12 C1 / A5
+def test_B30_C1_single_stop_entry(nonet):  # §12 C1 / A5
     diff = subprocess.run(
         ["git", "diff", "-U0", f"{B30_BASE}..HEAD", "--", "src/kronos"],
         cwd=ROOT, capture_output=True, text=True, check=True,
     ).stdout
     added = re.findall(r"^\+\s*def (stop|cancel|kill|abort|halt|shutdown)\b", diff, re.M)
     assert added == []
+    assert not nonet
 
 
-def test_B30_Q_scope_audit():  # brief-30 whole window
+def test_B30_Q_scope_audit(nonet):  # brief-30 whole window
     out = subprocess.run(
         ["git", "diff", "--name-only", f"{B30_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B30_SECTION_10, set(out) - B30_SECTION_10
+    assert not nonet
