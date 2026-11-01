@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 180
+seq: 181
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — operator approved architecture (O1/O2/O3 + D1-D7/P0/P1; context.md 2026-10-31); finalizing canonical brief on branch off main, then self-approve GATE-1 + dispatch builder; manifest.py edit operator-authorized (narrow signed-autonomy schema only); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — GATE-1 SELF-APPROVED (operator architecture approval context.md 2026-10-31); brief committed on claude/autonomy-brief29; dispatching Sonnet 5.5 builder; manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7683,3 +7683,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 179 brief29 rev2 READY FOR OPERATOR GATE-1; operator returned GATE-1 architecture approval (context.md 2026-10-31, effort MEDIUM): O1 WATCHDOG_CONFIRM_WINDOW_MAX=300 (1..300 if may_auto_stop), O2 REMOVE LOCAL (A|B|C only; local-vs-target classification = non-goal, deferred to wiring brief), O3 approve signed tz-aware AmendmentRef.effective_at (naive/missing/malformed fail closed; covered by signed canonical content). Protected-file authorization: manifest.py edit permitted DESIGN+IMPL, narrow signed-autonomy schema/canonical-identity/VerifiedManifest only (§4 hard-boundary exception, explicit written maintainer instruction).
 - action: new branch off origin/main@55b4b7f; revise KRONOS_PC drafts (drop LOCAL, pin O1/O3) then write canonical SPEC_BRIEF29.md into repo root; verify brief contains decisions + no new architecture + allowlist unchanged; then self-approve GATE-1 (write-ahead SEQ 181) + dispatch Sonnet 5.5 builder. Allowlist: SPEC_BRIEF29.md, src/kronos/manifest.py, src/kronos/autonomy.py (new), tests/test_autonomy.py (new), tests/test_manifest.py, tests/conftest.py + brief28 seal (55b4b7f). Reuse-only (not edited): budget/*, scope_guard.py (_matches dep documented + regression-pinned, semantics unchanged).
 - outcome: pending. pending_action: finalize SPEC_BRIEF29.md + self-approve GATE-1 + dispatch builder (next write-ahead SEQ 181 pins final brief sha256).
+
+## SEQ 181 — GATE-1 self-approved; SPEC_BRIEF29 committed; dispatching Sonnet 5.5 builder
+- prev: SEQ 180 finalized canonical brief per O1/O2/O3; verified brief carries O1/O2/O3 + D1-D7/P0/P1, introduces no new unresolved architecture, allowlist unchanged -> GATE-1 self-approved (authority model SEQ 55; operator architecture approval context.md 2026-10-31).
+- action: SPEC_BRIEF29.md committed 02e2122 on branch claude/autonomy-brief29 (base origin/main@55b4b7f); brief sha256 848cc274889742f93e78f3d56eae19b3826c431e0e847d874f0910364bc0b83b. Dispatching kronos-builder (claude-sonnet-5-5) to implement §3 allowlist only: src/kronos/autonomy.py (new), src/kronos/manifest.py (operator-authorized narrow), tests/test_autonomy.py (new), tests/test_manifest.py, tests/conftest.py, SPEC_BRIEF28 seal->55b4b7f. No wiring, no live/§6, no watchdog/stop runtime.
+- outcome: pending. pending_action: builder implements brief29 §3; on return -> scope-audit + hermetic tests, then dispatch Haiku 5.5 reviewer; Opus step-five verify.
