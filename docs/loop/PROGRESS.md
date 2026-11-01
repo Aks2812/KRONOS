@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 177
-derived_at: 2026-10-31T00:00:00Z
+seq: 178
+derived_at: 2026-11-01T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: readiness audit COMPLETE — defensible level 2 (hermetic/lab-ready); IDENTITY not on pilot critical path; PAUSE for maintainer direction on next increment; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) PROPOSED — planning-only, GATE-1 withheld (material authz-architecture); PAUSE for operator + external architectural review; S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7668,3 +7668,8 @@ action: Opus synthesis — defensible maturity = LEVEL 2 (hermetic/lab-ready); s
 brief: n/a (audit only). base origin/main 55b4b7f.
 pending_action: AWAIT maintainer direction. Options: (A) authorize hermetic G2 safety rung + resolve the manifest.py §4 boundary conflict + confirm autonomy field names (research record §9 q3); (B) proceed IDENTITY breadth rung as fallback (off critical path) with the SEQ 175 bounded grant; (C) complete cloud/API src-side producers. NO implementation until maintainer picks; §6 live run still needs explicit target/action/window authorization (pause).
 outcome: pending (maintainer decision)
+
+## SEQ 178 — SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) drafted PLANNING-ONLY; PAUSE for operator + external review
+- prev: SEQ 177 readiness audit accepted as baseline; handoff accepted; operator ordered planning+spec only for "Signed Autonomy Envelope — Hermetic G2 Foundation" (context.md 2026-10-31); manifest.py edit authorized DESIGN-ONLY; no builder, no branch/PR, no GATE-1 self-approval.
+- action: researcher (claude-sonnet-5) gathered cited baseline → 02-research/findings.md; Opus authored proposed brief /home/void/SPEC_BRIEF29_PROPOSED.md + /home/void/KRONOS_BRIEF29_REVIEW_PACKET.md (16 §, decision table, 8 property invariants). Pure evaluator src/kronos/autonomy.py (new) + optional autonomy/amends on manifest.py; reuse scope_guard+BudgetLimits; no dispatcher wiring. Status BLOCKED ON OPERATOR DECISION (D1–D7).
+- outcome: COMPLETE (artifacts produced; no repo code/tests changed). pending_action: await operator + external architectural review of SPEC_BRIEF29; resolve open decisions D1 (amendment-chain split) & D5 (property-test dep) before GATE-1.
