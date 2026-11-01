@@ -1,4 +1,10 @@
-# SPEC_BRIEF30 (APPROVED rev4 — GATE-1 self-approved; rev4 softens 4 LOW over-claims per review attempt 1) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
+# SPEC_BRIEF30 (APPROVED rev5 — GATE-1 self-approved; rev5 clarifies fail-closed torn-first-line per review attempt 2) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
+
+> **rev5 (checkpoint SEQ 207; review attempt 2 FAIL — N1 MEDIUM).** §4.1 clarified: `is_stopped` must
+> **fail CLOSED** on a non-empty but unparsable FIRST line (a stop is never lost to a torn write); lines
+> are newline-terminated. This corrects the rev4 F6 wording, which the builder over-applied to the first
+> line (fail-open). Also N2 (LOW): `nonet` required on every new test (brief §12 C10). Both are builder
+> fixes; no scope/goal change.
 
 > **rev4 (checkpoint SEQ 205; review attempt 1 FAIL).** Softens four LOW brief over-claims to match a
 > testable/implemented reality — no scope/goal change: (F4) §12 C3 is **counts-based** (no byte-identical
@@ -152,9 +158,13 @@ stop entry point for every caller, with no second kill path.
   than a second cancellation concept. **(F7)** This adaptation is at the dispatcher's **executor
   boundary** (`executor.execute`), the only in-scope site that charges budget; budget raised deeper
   (driver/reviewer) is out of this brief's dispatcher boundary.
-- **No concurrency primitives.** Each process does single short appends; readers (`is_stopped`) read
-  the first **complete** JSON line and tolerate a concurrently-growing file, ignoring a torn/partial
-  trailing line (F6). The repo is strictly sequential within a
+- **No concurrency primitives.** Each process does single short appends, each **newline-terminated**;
+  readers (`is_stopped`) read the first line and tolerate a concurrently-growing file, ignoring a
+  torn/partial **trailing** line (F6). **Fail-closed on a torn FIRST line (N1):** if the file is
+  non-empty but its first line is not yet a complete, parseable record, `is_stopped` returns
+  **stopped** (per §4.1 "present/non-empty ⇒ stopped"), with `source="unknown"`,
+  `reason="unparsable stop record"` — it must **never** return not-stopped for a non-empty file. A
+  stop is a safety signal; ambiguity resolves to stopped, never lost. The repo is strictly sequential within a
   process (researcher: no threading/asyncio); cross-process coordination is the append-only file only.
 
 ### §4.2 Stop-check insertion points — proposed edits to `src/kronos/agent/dispatcher.py`
