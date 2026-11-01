@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import ipaddress
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Literal, Mapping
 
@@ -74,6 +74,9 @@ class EffectiveEnvelope:
     exfil_byte_budget: int
     # Non-None => the signed input was unusable; authorize() denies.
     fail_closed_reason: str | None = None
+    # Provenance (§7/§8): set only when a valid amendment INCREASES a permission
+    # and is not yet effective. authorize() denies while now < this instant.
+    pending_increase_until: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -314,6 +317,27 @@ def active_envelope(
     return root.autonomy
 
 
+def in_force_effective_envelope(
+    root: VerifiedManifest,
+    amendment: VerifiedManifest | None,
+    now: datetime,
+    runtime: RuntimeRestrictions | None = None,
+) -> EffectiveEnvelope:
+    """Envelope selection + provenance (§7/§8). Tightening or no/invalid
+    amendment: `pending_increase_until` None. A valid INCREASING amendment not
+    yet effective: predecessor (root) envelope, gated until `effective_at`."""
+    eff = effective_envelope(active_envelope(root, amendment, now), runtime)
+    pending = None
+    if (
+        amendment is not None
+        and verify_amendment(amendment, root).valid
+        and _more_permissive(amendment.autonomy, root.autonomy)
+        and not (_is_aware(now) and now >= amendment.amends.effective_at)
+    ):
+        pending = amendment.amends.effective_at
+    return replace(eff, pending_increase_until=pending)
+
+
 # ---- authorize (§8) ----
 
 
@@ -388,13 +412,13 @@ def authorize(
 
     if not _is_aware(now) and now is not None:
         return deny("now is not timezone-aware")
-    # §7/§8 amendment gate at the authorize boundary: an amendment manifest
-    # grants nothing before its own authenticated effective_at (fail closed).
-    if verified.amends is not None:
-        if not _is_aware(verified.amends.effective_at):
-            return deny("amendment effective_at missing/naive")
-        if now is not None and now < verified.amends.effective_at:
-            return deny("amendment not yet effective")
+    # §7/§8: an increasing amendment grants nothing before its effective_at.
+    # Self-contained: reads only the in-force envelope's provenance.
+    if effective.pending_increase_until is not None:
+        if not _is_aware(effective.pending_increase_until):
+            return deny("pending increase effective_at naive")
+        if now is not None and now < effective.pending_increase_until:
+            return deny("amendment increase not yet effective")
     unavailable: list[str] = []
     if now is None:
         unavailable.append("now")

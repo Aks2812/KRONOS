@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+from dataclasses import replace
 import inspect
 import itertools
 import random
@@ -23,6 +24,7 @@ from kronos.autonomy import (
     AutonomyError,
     RuntimeRestrictions,
     active_envelope,
+    in_force_effective_envelope,
     authorize,
     effective_envelope,
     to_budget_limits,
@@ -164,6 +166,7 @@ def test_B29_G_decision_table(load, row, a_kw, r_kw, ov, expected):
     assert run(v, req(**r_kw)).verdict == expected, f"row {row}"
 
 
+# row15: §8 budget clause + 4.1 boundary: a None/missing dimension is never unlimited => DENY; conversion raises AutonomyError
 def test_B29_G_row15_none_budget_dim_denies_not_unlimited(load):
     v = load(autonomy=auto())
     broken = v.autonomy.max_unattended_budget.model_construct(**{**BUDGET, "llm_tokens": None})
@@ -175,6 +178,7 @@ def test_B29_G_row15_none_budget_dim_denies_not_unlimited(load):
         to_budget_limits(broken)
 
 
+# row19: §6/§8 absent autonomy block => fail-closed Calm with zero authority => DENY for every mode x class
 def test_B29_G_row19_absent_autonomy_fail_closed_calm(load):
     v = load()
     assert v.autonomy is None
@@ -184,6 +188,7 @@ def test_B29_G_row19_absent_autonomy_fail_closed_calm(load):
         assert authorize(eff, req(mode=mode, cls=cls), v, NOW).verdict == "DENY"
 
 
+# row20: §8 unusable signed input (non-AutonomyEnvelope) => fail-closed => DENY
 def test_B29_G_row20_malformed_autonomy_fail_closed(load):
     v = load()
     for bad in ({"mode_max": "beast"}, "beast", 5, object()):
@@ -191,6 +196,7 @@ def test_B29_G_row20_malformed_autonomy_fail_closed(load):
         assert authorize(eff, req(), v, NOW).verdict == "DENY"
 
 
+# row21: §5 signature verification precedes any evaluation: tampered content => ManifestError
 def test_B29_G_row21_invalid_signature_is_manifest_error(manifest_factory, signing_keypair):
     from kronos.manifest import ManifestError
 
@@ -200,6 +206,7 @@ def test_B29_G_row21_invalid_signature_is_manifest_error(manifest_factory, signi
         load_and_verify(y.replace("llm_tokens: 1000", "llm_tokens: 9999"), pub)
 
 
+# row22: §8 effective = min(signed, runtime): runtime below signed is allowed, nothing beyond the min
 def test_B29_G_row22_runtime_below_signed_allowed_effective_min(load):
     v = load(autonomy=auto())
     rt = RuntimeRestrictions(budget={"llm_tokens": 500}, max_unattended_duration_seconds=100)
@@ -210,6 +217,7 @@ def test_B29_G_row22_runtime_below_signed_allowed_effective_min(load):
     assert authorize(eff, req(draw={**WITHIN, "llm_tokens": 501}), v, NOW).verdict == "DENY"  # nothing beyond S/R min
 
 
+# row23: §8 runtime may only restrict: runtime above signed raises AutonomyError (never clamped up)
 def test_B29_G_row23_runtime_above_signed_raises(load):
     v = load(autonomy=auto())
     with pytest.raises(AutonomyError, match="exceeds signed authority"):
@@ -393,6 +401,17 @@ def test_B29_matches_pin():
 
 
 # ---------------------------------------------------------------- amendments (§7)
+def _forge(m, **update):
+    """Test-only: bypass the §5 gate via the module-private token to build malformed amendments."""
+    from kronos import manifest as _mf
+
+    tok = _mf._CONSTRUCTING.set(True)
+    try:
+        return m.model_copy(update=update)
+    finally:
+        _mf._CONSTRUCTING.reset(tok)
+
+
 def _chain(load, root_auto, amend_auto, **am):
     root = load(autonomy=root_auto)
     ref = {"manifest_id": root.manifest_id, "reason": "r", "effective_at": NOW.isoformat(), **am}
@@ -423,16 +442,16 @@ def test_B29_M_naive_or_missing_effective_at_fail_closed(load):
     naive_ref = AmendmentRef.model_construct(
         manifest_id=root.manifest_id, reason="r", effective_at=datetime(2030, 1, 1)
     )
-    n = amd.model_copy(update={"amends": naive_ref})
+    n = _forge(amd, amends=naive_ref)
     assert not verify_amendment(n, root).valid
-    n2 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None)})
+    n2 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="r", effective_at=None)})
     assert not verify_amendment(n2, root).valid
-    n3 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id="", reason="r", effective_at=NOW)})
+    n3 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id="", reason="r", effective_at=NOW)})
     assert not verify_amendment(n3, root).valid
-    n4 = amd.model_copy(update={"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="", effective_at=NOW)})
+    n4 = _forge(amd, **{"amends": AmendmentRef.model_construct(manifest_id=root.manifest_id, reason="", effective_at=NOW)})
     assert not verify_amendment(n4, root).valid
     # naive effective_at: increase never applies (row 28)
-    inc = n.model_copy(update={"autonomy": load(autonomy=auto(auths=[auth("A"), auth("B")])).autonomy})
+    inc = _forge(n, autonomy=load(autonomy=auto(auths=[auth("A"), auth("B")])).autonomy)
     assert active_envelope(root, inc, NOW + timedelta(days=99)) == root.autonomy
 
 
@@ -479,16 +498,43 @@ def test_B29_M_watchdog_only_amendment_gated_then_applies(load):
     assert active_envelope(root, amd, NOW + timedelta(days=31)) == amd.autonomy  # positive control
 
 
-def test_B29_M_authorize_enforces_effective_at(load):
-    # §8 amendment gate holds at authorize(), not only in active_envelope.
+def test_B29_M_authorize_enforces_pending_increase_until(load):
+    # F1d: gate reads only the in-force envelope's provenance (§8), never `verified`.
     eff_at = NOW + timedelta(hours=1)
     root, amd = _chain(load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat())
-    env = effective_envelope(amd.autonomy, None)
     b = req(cls="B")
-    assert authorize(env, b, amd, NOW).verdict == "DENY"  # now < effective_at: increase inert
-    assert authorize(env, b, amd, eff_at - timedelta(seconds=1)).verdict == "DENY"
-    assert authorize(env, b, amd, eff_at).verdict == "ALLOW"  # positive control: at effective_at
-    assert authorize(env, b, amd, eff_at + timedelta(seconds=1)).verdict == "ALLOW"
+    # amendment-derived effective paired with the ROOT verified (the F1d bypass pairing)
+    env = replace(effective_envelope(amd.autonomy, None), pending_increase_until=eff_at)
+    assert authorize(env, b, root, NOW).verdict == "DENY"
+    assert authorize(env, b, amd, NOW).verdict == "DENY"
+    assert authorize(env, b, root, eff_at - timedelta(seconds=1)).verdict == "DENY"
+    assert authorize(env, b, root, eff_at).verdict == "ALLOW"  # positive control
+    assert authorize(env, b, root, eff_at + timedelta(seconds=1)).verdict == "ALLOW"
+    # naive pending bound fails closed
+    naive = replace(env, pending_increase_until=datetime(2030, 1, 1))
+    assert authorize(naive, b, root, NOW).verdict == "DENY"
+
+
+def test_B29_M_in_force_envelope_sets_provenance_only_for_pending_increase(load):
+    eff_at = NOW + timedelta(hours=1)
+    # increase, not yet effective => gated (§7 increase waits for effective_at)
+    root, amd = _chain(load, auto(auths=[auth("A")]), auto(auths=[auth("A"), auth("B")]), effective_at=eff_at.isoformat())
+    assert in_force_effective_envelope(root, amd, NOW).pending_increase_until == eff_at
+    # increase, at/after effective => applied, no gate; B now allowed
+    after = in_force_effective_envelope(root, amd, eff_at)
+    assert after.pending_increase_until is None
+    assert authorize(after, req(cls="B"), amd, eff_at).verdict == "ALLOW"
+    # tightening => applies immediately, never gated (§7), even with a far-future effective_at
+    far = (NOW + timedelta(days=5)).isoformat()
+    root, amd = _chain(load, auto(auths=[auth("A"), auth("B")]), auto(auths=[auth("A")]), effective_at=far)
+    tight = in_force_effective_envelope(root, amd, NOW)
+    assert tight.pending_increase_until is None
+    assert authorize(tight, req(cls="A"), amd, NOW).verdict == "ALLOW"
+    assert authorize(tight, req(cls="B"), amd, NOW).verdict == "DENY"  # tightened away, not gate-denied
+    # no amendment / invalid amendment => no gate
+    assert in_force_effective_envelope(root, None, NOW).pending_increase_until is None
+    bad = load(autonomy=auto(auths=[auth("A"), auth("C")]), amends={"manifest_id": "wrong", "reason": "r", "effective_at": far})
+    assert in_force_effective_envelope(root, bad, NOW).pending_increase_until is None
 
 
 def test_B29_M_mode_increase_gated(load):
@@ -572,6 +618,9 @@ def test_B29_prop_1_runtime_never_expands(load):
             d = {**WITHIN, dim: BUDGET[dim] + 1}
             assert authorize(base, req(draw=d), v, NOW).verdict == "DENY"
             assert authorize(eff, req(draw=d), v, NOW).verdict == "DENY"
+            # positive control: a draw within the effective (restricted) limit is ALLOWed
+            ok = {**WITHIN, dim: min(WITHIN[dim], r)}
+            assert authorize(eff, req(draw=ok), v, NOW).verdict == "ALLOW"
 
 
 def test_B29_prop_6_destructive_needs_both(load):

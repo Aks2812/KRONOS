@@ -10,6 +10,7 @@ constructs a `ScopeManifest` by any other path in production use.
 from __future__ import annotations
 
 import base64
+import contextvars
 import hashlib
 from datetime import datetime, timezone
 from typing import Annotated, Any, Literal
@@ -146,6 +147,10 @@ class ScopeManifest(BaseModel):
         return value
 
 
+# Module-private construction token: set only inside load_and_verify (§5).
+_CONSTRUCTING = contextvars.ContextVar("_kronos_verified_construction", default=False)
+
+
 class VerifiedManifest(ScopeManifest):
     """A `ScopeManifest` that `load_and_verify` produced after signature
     verification (SPEC_BRIEF29 §5). `canonical_content` is the verified,
@@ -153,11 +158,26 @@ class VerifiedManifest(ScopeManifest):
     its sha256, so it carries no `_flatten` defaults. A bare parsed
     `ScopeManifest` is not a `VerifiedManifest`."""
 
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
     canonical_content: bytes
     manifest_id: str
 
+    def model_copy(self, *, update=None, deep=False):
+        # A patched copy skips validation, so it would bypass the gate (§5).
+        if update and not _CONSTRUCTING.get():
+            raise ValueError("VerifiedManifest is produced only by load_and_verify")
+        return super().model_copy(update=update, deep=deep)
+
+    @classmethod
+    def model_construct(cls, *args, **kwargs):
+        raise ValueError("VerifiedManifest is produced only by load_and_verify")
+
     @model_validator(mode="after")
     def _bound_to_canonical_content(self) -> "VerifiedManifest":
+        # Unforgeable gate (§5): only load_and_verify sets the token.
+        if not _CONSTRUCTING.get():
+            raise ValueError("VerifiedManifest is produced only by load_and_verify")
         # Construction guard (§5): manifest_id must be sha256(canonical_content)
         # and the fields must be exactly what that content parses to, so a
         # hand-built instance with forged content/id/fields is rejected.
@@ -247,11 +267,15 @@ def load_and_verify(yaml_text: str, public_key: Ed25519PublicKey) -> VerifiedMan
 
     try:
         parsed = ScopeManifest(**_flatten(content))
-        manifest = VerifiedManifest(
-            **dict(parsed),
-            canonical_content=canon,
-            manifest_id=hashlib.sha256(canon).hexdigest(),
-        )
+        token = _CONSTRUCTING.set(True)
+        try:
+            manifest = VerifiedManifest(
+                **dict(parsed),
+                canonical_content=canon,
+                manifest_id=hashlib.sha256(canon).hexdigest(),
+            )
+        finally:
+            _CONSTRUCTING.reset(token)
     except ValidationError as exc:
         raise ManifestError(f"invalid manifest schema: {exc}") from exc
 

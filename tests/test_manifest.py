@@ -268,7 +268,10 @@ def test_B29_C_manifest_id_stable_and_order_independent(manifest_factory, signin
     raw = yaml.safe_load(y)
     sig = raw.pop("signature")
     reordered = {k: raw[k] for k in reversed(list(raw))}
-    assert canonicalize(reordered) == canonicalize(raw)
+    assert list(reordered) != list(raw)  # the reordering is real
+    priv, _ = signing_keypair
+    m3 = load_and_verify(sign_manifest(reordered, priv), pub)  # signed over reordered input, end to end
+    assert m3.manifest_id == m1.manifest_id and m3.canonical_content == m1.canonical_content
     assert canonicalize(raw) == m1.canonical_content
     assert sig  # signature itself is not part of identity
 
@@ -331,7 +334,21 @@ def test_B29_E_forged_verified_manifest_rejected(manifest_factory, signing_keypa
     _, pub = signing_keypair
     m = load_and_verify(manifest_factory(), pub)
     fields = dict(m)
-    VerifiedManifest(**fields)  # positive control: genuine content + id constructs
+    assert isinstance(m, VerifiedManifest)  # positive control: genuine load_and_verify output
+    # direct construction is rejected even when fully self-consistent (unforgeable gate)
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**fields)
+    # attribute mutation rejected (frozen)
+    with pytest.raises(ValidationError):
+        m.in_scope = ["evil.example.com"]
+    # model_copy(update=...) outside load_and_verify rejected
+    with pytest.raises(ValueError):
+        m.model_copy(update={"in_scope": ["evil.example.com"]})
+    with pytest.raises(ValueError):
+        VerifiedManifest.model_construct(**fields)
+    # smuggled unknown field rejected, not silently dropped
+    with pytest.raises(ValidationError):
+        VerifiedManifest(**{**fields, "smuggled": 1})
     forged_content = m.canonical_content.replace(b"Acme", b"Evil")
     assert forged_content != m.canonical_content
     # forged content, stale id
