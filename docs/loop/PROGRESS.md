@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 179
-derived_at: 2026-11-01T00:00:00Z
+seq: 180
+derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 rev2 (Signed Autonomy Envelope) revised per external review — READY FOR OPERATOR GATE-1 DECISION (D1-D7 + P0/P1 incorporated; O1-O3 non-blocking); planning-only, GATE-1 not self-approved; S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — operator approved architecture (O1/O2/O3 + D1-D7/P0/P1; context.md 2026-10-31); finalizing canonical brief on branch off main, then self-approve GATE-1 + dispatch builder; manifest.py edit operator-authorized (narrow signed-autonomy schema only); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7678,3 +7678,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 178 brief29 drafted planning-only; operator returned partial external architectural review (D1-D7 dispositions + P0/P1 findings), ordered verify-each-point + revise, no impl/GATE-1/builder/branch/PR; artifacts relocated to /home/void/Void-Projects/KRONOS_PC.
 - action: researcher round2 (claude-sonnet-5) verified 5 disputed facts -> 02-research/findings.md (round2): _matches pure module-level per-pattern (scope_guard.py:866-933); BudgetLimits None=unlimited (ledger.py:144) unsafe; verify@manifest.py:112 before parse@:117; no operator-approval artifact (grep NONE). Revised brief+packet in KRONOS_PC: per-auth binding (scope AND _matches), concrete targets/wildcards rejected, UnattendedBudget all-dims-required (None fail-closed), VerifiedManifest type, amends effective_at + single-hop root->one, Calm B/C fail closed (no operator_triggered), LOCAL category, watchdog validation. 29-row decision table + 8 generator invariants.
 - outcome: COMPLETE (artifacts revised; no repo code/tests changed, no SPEC_BRIEF29.md in repo). SPEC_BRIEF29_PROPOSED.md sha256 cd518981b18837f6f153f31ab7cbd26da54325961801547a81627fb137cfc9da. pending_action: await operator GATE-1 decision + O1 (watchdog bound) / O2 (LOCAL confirm) / O3 (effective_at auth model); on GATE-1 approval, write SPEC_BRIEF29.md into repo + dispatch builder.
+
+## SEQ 180 — operator approved SPEC_BRIEF29 architecture (O1/O2/O3 + D1-D7/P0/P1); finalizing canonical brief
+- prev: SEQ 179 brief29 rev2 READY FOR OPERATOR GATE-1; operator returned GATE-1 architecture approval (context.md 2026-10-31, effort MEDIUM): O1 WATCHDOG_CONFIRM_WINDOW_MAX=300 (1..300 if may_auto_stop), O2 REMOVE LOCAL (A|B|C only; local-vs-target classification = non-goal, deferred to wiring brief), O3 approve signed tz-aware AmendmentRef.effective_at (naive/missing/malformed fail closed; covered by signed canonical content). Protected-file authorization: manifest.py edit permitted DESIGN+IMPL, narrow signed-autonomy schema/canonical-identity/VerifiedManifest only (§4 hard-boundary exception, explicit written maintainer instruction).
+- action: new branch off origin/main@55b4b7f; revise KRONOS_PC drafts (drop LOCAL, pin O1/O3) then write canonical SPEC_BRIEF29.md into repo root; verify brief contains decisions + no new architecture + allowlist unchanged; then self-approve GATE-1 (write-ahead SEQ 181) + dispatch Sonnet 5.5 builder. Allowlist: SPEC_BRIEF29.md, src/kronos/manifest.py, src/kronos/autonomy.py (new), tests/test_autonomy.py (new), tests/test_manifest.py, tests/conftest.py + brief28 seal (55b4b7f). Reuse-only (not edited): budget/*, scope_guard.py (_matches dep documented + regression-pinned, semantics unchanged).
+- outcome: pending. pending_action: finalize SPEC_BRIEF29.md + self-approve GATE-1 + dispatch builder (next write-ahead SEQ 181 pins final brief sha256).
