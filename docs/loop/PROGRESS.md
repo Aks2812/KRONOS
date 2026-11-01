@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 183
+seq: 184
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7698,3 +7698,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 182 builder completed §10 (commit 9a6181a; whole-window 55b4b7f..HEAD = 7 paths ⊆ §10; suite 3862 passed/1 skipped). Haiku reviewer FAIL/DO-NOT-MERGE. F4 governance RESOLVED: /home/void/context.md (operator 2026-10-31) explicitly authorizes narrow manifest.py edit (signed-autonomy schema + canonical identity + verified-manifest boundary only); recorded SEQ 180; NOT a pause.
 - action: review FAIL -> return to builder (kronos-builder claude-sonnet-5-5), attempt 1/3, §10 ONLY. Fix: F1 authorize() must enforce amendment effective_at gate (autonomy.py:345-427,:309-311); F2 _more_permissive must include watchdog (autonomy.py:272-292); F3 VerifiedManifest construction guard binding manifest_id==sha256(canonical_content), producible only via load_and_verify (manifest.py:149-160); F5 verify_amendment signature ->(new,predecessor) per §7 (autonomy.py:254); test integrity F9 (positive controls; prop_8 asserts manifest_id per §13 inv8) + F10 (per-cell determining-clause §12G). Matching tests each; re-run hermetic (SUMMARY line not $?).
 - outcome: pending. pending_action: builder commits fixes on claude/autonomy-brief29; on return Opus scope-audit (55b4b7f..HEAD ⊆ §10) + hermetic, then re-dispatch Haiku 5.5 reviewer. Circuit breaker 1/3.
+
+## SEQ 184 — re-review FAIL (F1/F3 unfixed, new MED over-gate); Opus-specced final fix, builder attempt 2/3
+- prev: SEQ 183 builder fix (commit e3981c0; 7 paths ⊆ §10; suite 3866 passed/1 skipped). Haiku re-review FAIL/DO-NOT-MERGE: F2/F5 fixed; F1 NOT fixed (probe F1d: authorize(amendment-envelope, ROOT-verified, now<effective_at)=ALLOW — gate keyed on verified.amends, not the in-force envelope); F3 NOT fixed (F3b self-consistent hand-built accepted; probe2 post-construct mutation ok; F3g model_copy bypass; F3d smuggled field dropped not rejected); new MED: authorize gate over-gates tightening (contradicts §8 "increased permission only" / §7 tighten-immediate). F9/F10 minor gaps.
+- action: Opus high-impact design decision (in §8 one-pure-fn, signature fixed; §10 only; no goal/arch change): single source of truth for the amendment gate = EffectiveEnvelope provenance. Remove authorize's verified.amends gate; have the active-envelope producer stamp a `pending_increase_until` on EffectiveEnvelope (set ONLY for amendment INCREASE with now<effective_at; None for tighten/root); authorize denies iff now<pending_increase_until — self-contained, independent of verified (fixes F1d) and gates only increases (fixes MED). F3: VerifiedManifest frozen + extra=forbid + unforgeable construction gate (private token set only inside load_and_verify; reject direct/model_copy construction) keeping canonical-content binding. Tests: F1d mismatched pair denied; tighten-immediate allowed; forged/mutated/model_copy/smuggled VerifiedManifest rejected + load_and_verify positive control; F9 prop_1 ALLOW control; F10 rows 15,19-23 per-cell clause.
+- outcome: pending. pending_action: builder commits on claude/autonomy-brief29; on return Opus scope-audit + hermetic, then re-dispatch Haiku reviewer. Circuit breaker 2/3 — next FAIL = HALT+escalate.
