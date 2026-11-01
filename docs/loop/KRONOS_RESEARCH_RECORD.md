@@ -1691,3 +1691,4 @@ CyberGym range only · **4+** loop-breaker, conclude-on-timeout, observability.
    byte-identical to the previous one, so nothing new was examined. Needs a commit reference, a
    `git bundle`, or a diff against the reviewed commit. Explicitly an omission, not a rejection, and
    it leaves S6.5's dependency assessment provisional.
+| #29 | **Signed Autonomy Envelope — Hermetic G2 Foundation** (F1 unforgeable `EffectiveEnvelope` construction guard §8.1(1a); F2 in-force caller-MUST ruling §8.1(2a)) | **MERGED** `93fb05e` (PR #37, merge commit, 2026-11-01T11:24:31Z). Maintainer-authorized exceptional attempt 4; independent Haiku reviewer PASS, suite 3871 passed/1 skipped/0 failed. Hermetic/unwired; no live/§6. N1/N2 LOW parked for a separate brief |
