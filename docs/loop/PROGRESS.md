@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 190
-derived_at: 2026-11-01T00:00:00Z
+seq: 191
+derived_at: 2026-11-01T00:00:01Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — PERMANENT HALT: attempt 3/3 Haiku review FAIL on claude/autonomy-brief29@b6c8f09 (F1 HIGH crit-E: forgeable EffectiveEnvelope.provenance string; root cause = rev3 §8.1(1) design). Circuit breaker 3/3 exhausted; no 4th attempt without maintainer authorization. ESCALATED. unmerged, no PR; manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7733,3 +7733,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 189 builder committed b6c8f09e0de8b17c5322dd919562fa02aa382306 (suite 3870 passed/1 skipped/0 failed). Opus whole-window scope-audit PASS: 55b4b7f..b6c8f09 = 7 paths ⊆ §10. Haiku reviewer FAIL/DO-NOT-MERGE (evidence .claude/pipeline/04-review/review-evidence.json; probe scratchpad/probe_b29.py). Attempt 3/3 failed.
 - action: PERMANENT HALT per maintainer context.md 2026-10-31 ("if the final attempt fails, HALT again — no fourth attempt") + circuit breaker. NO 4th attempt without written maintainer authorization. Blocking F1 (HIGH, crit E FAIL): EffectiveEnvelope.provenance is a public writable str (autonomy.py:68-81); authorize trusts string equality only (:426-428), so a constructor-forged EffectiveEnvelope(provenance=<real manifest_id>) authorizes arbitrary authority incl. a zero-authorization manifest (probe P2 ALLOW). ROOT CAUSE = rev3 §8.1(1) spec: provenance as copyable token, no unforgeable construction guard. F2 (MED latent): raw authorize() grants pending increase pre-effective_at when caller passes amendment as verified (P3b); in-force selection is caller-MUST the signature can't enforce; pipeline rows 25/30/33-34 pass. F3-F6 LOW (stale comment, to_budget_limits unused, generator lacks window/class/target cross, narrowing-swap over-gate). Judgment calls (a watchdog-as-increase, b in_scope pattern-set) ruled NOT-FAIL (conservative/fail-closed). 16/18 §12 criteria PASS; E FAIL; M pass-with-F2.
 - outcome: HALT — escalated to maintainer. branch claude/autonomy-brief29@b6c8f09 unmerged, no PR. pending_action: maintainer decides — (1) authorize a maintainer-scoped attempt (not a loop retry) to add an unforgeable EffectiveEnvelope construction guard (private token set only in in_force_effective_envelope; constructor-forgery DENY test) for F1, + a decision on whether raw authorize() must enforce in-force selection (F2); or (2) abandon/re-scope SPEC_BRIEF29. No loop action until maintainer authorizes. Circuit breaker 3/3 EXHAUSTED.
+
+## SEQ 191 — maintainer authorizes exceptional attempt 4 (F1+F2 only); un-HALT; dispatching Sonnet 5 researcher (write-ahead)
+- prev: SEQ 190 PERMANENT HALT (circuit breaker 3/3). Maintainer /home/void/context.md (2026-11-01) authorizes exceptional attempt 4 scoped only to F1+F2; breaker NOT reset, no attempt 5; any failure or required out-of-scope file = permanent HALT.
+- action: un-HALT for attempt 4. Attempt-4 §3 allowlist (context.md): SPEC_BRIEF29.md, src/kronos/autonomy.py, src/kronos/manifest.py (VerifiedManifest construction guard only), tests/test_autonomy.py, tests/test_manifest.py, tests/test_query.py (scope-audit seal only). manifest.py narrow edit = recorded operator exception (SEQ 180/182). Dispatching kronos-researcher (claude-sonnet-5) read-only to verify F1/F2 vs SPEC_BRIEF29 rev3 (sha256 to confirm), diff 55b4b7f..b6c8f09, and review-evidence.json; returns cited findings only. Opus may resolve F2 only if brief unambiguous (context.md line 8) else stay HALTED on F2.
+- outcome: pending. branch claude/autonomy-brief29@b6c8f09 unmerged, no PR. pending_action: researcher returns F1/F2 verification → Opus assesses, amends SPEC_BRIEF29 §3 to attempt-4 allowlist + F1/F2 corrective spec, self-approves GATE-1, dispatches builder at Opus-LOW.
