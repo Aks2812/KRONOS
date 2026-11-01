@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 187
+seq: 188
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — maintainer resolved 3 prose conflicts (context.md 2026-10-31); FINAL attempt 3 authorized (no 4th); researcher dispatched to validate §8 semantics vs F-A..F-J; then Opus amends brief + GATE-1; builder fixes ALL findings; hermetic/unwired, no merge unless all pass; manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — researcher validated F-A..F-J; Opus amending brief (§8.1 verified-provenance + in-force-manifest + mixed-amendment fail-closed) per context.md 2026-10-31; then self-approve GATE-1 + builder final attempt 3 (no 4th); hermetic/unwired, no merge unless all pass; manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7718,3 +7718,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 186 HALT accepted by maintainer (context.md 2026-10-31, effort MEDIUM→LOW after reapproval). Decisions settle §8 semantics (no goal/scope change; §10 unchanged, hermetic/unwired): (1) public authorization REQUIRES VerifiedManifest / internal verified-envelope carrying provenance — bare AutonomyEnvelope never authorizes (F-B); (2) before effective_at verified predecessor authoritative, at/after verified amendment, invalid amendment never replaces predecessor (F-D); (3) mixed amendments rejected fail-closed — separate amendments only (tighten-only immediate-after-verify; increase-only predecessor until effective_at). Builder must fix ALL reviewer findings F-A..F-J, not only F-A/B/C. No 4th attempt — next FAIL = permanent HALT.
 - action: dispatch kronos-researcher (claude-sonnet-5) read-only to validate the 3 semantics against reviewer findings F-A..F-J on claude/autonomy-brief29@e8941955, citing current autonomy.py/manifest.py file:line and what each fix must assert; findings → .claude/pipeline/02-research/findings.md. Then Opus amends SPEC_BRIEF29.md (§10.1) + re-approves GATE-1.
 - outcome: pending. pending_action: on researcher return Opus amends brief + self-approves GATE-1, then dispatches builder final attempt 3 (§10 only, all findings). Circuit breaker 3/3 — next FAIL = permanent HALT, no 4th attempt.
+
+## SEQ 188 — researcher validated F-A..F-J vs 3 decisions; Opus authoring SPEC_BRIEF29.md amendment (write-ahead)
+- prev: SEQ 187 kronos-researcher (claude-sonnet-5) returned; all F-A..F-J reproducible at cited file:line (findings .claude/pipeline/02-research/findings.md); confirmed every fix ⊆ §10, no new dep (D5 ok); isolated 3 open questions needing brief prose — F-B §8-signature shape, mixed-amendment per-axis classification (brief silent), F-D pending-scoping.
+- action: Opus (high-impact, maintainer-delegated context.md 2026-10-31) amends SPEC_BRIEF29.md only: new §8.1 verified-provenance binding (authorize grants iff EffectiveEnvelope provenance == verified.manifest_id; bare AutonomyEnvelope = non-authorizing) + in-force-manifest selection (predecessor governs all inputs pre-effective_at; amendment at/after or tighten-immediate) + mixed-amendment per-axis classification fail-closed; new §8 signatures in_force_manifest/in_force_effective_envelope; decision-table rows + invariant 9; §12 E/M; §14 top-level autonomy/amends fix (F-I). No goal/scope change; §10 file list unchanged; hermetic/unwired.
+- outcome: pending. pending_action: commit amended brief on claude/autonomy-brief29, recompute sha256, self-approve GATE-1, then SEQ 189 dispatch builder attempt 3 (§10 only, ALL F-A..F-J incl F-E "sha256:" prefix + F-G soften "unforgeable" comment). Circuit breaker 3/3 — next FAIL = permanent HALT.
