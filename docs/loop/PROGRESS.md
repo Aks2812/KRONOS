@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 182
+seq: 183
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7693,3 +7693,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 181 builder dispatched write-ahead; resume found build INCOMPLETE/uncommitted on claude/autonomy-brief29@02e2122 — impl present (src/kronos/autonomy.py 427L: effective_envelope/authorize/verify_amendment/AutonomyError+types; manifest.py submodels+VerifiedManifest; conftest manifest_factory additive; test_query.py B28 seal->55b4b7f) but §10 items 4-5 absent (tests/test_autonomy.py, tests/test_manifest.py); build-report stale (brief18).
 - action: re-dispatch kronos-builder (claude-sonnet-5-5) to complete §10 ONLY — write tests/test_autonomy.py + tests/test_manifest.py (§12/§13 tests-as-rules), verify impl vs §12 (fix only within §10), run hermetic suite, commit explicit §10 paths. Brief sha256 848cc274889742f93e78f3d56eae19b3826c431e0e847d874f0910364bc0b83b. No wiring/live/§6/watchdog-runtime.
 - outcome: pending. pending_action: builder completes §10 tests+commit; on return Opus scope-audit (55b4b7f..HEAD ⊆ §10) + hermetic run (SUMMARY line, not $?), then dispatch Haiku 5.5 reviewer.
+
+## SEQ 183 — Haiku review FAIL (F1/F2 HIGH, F3 MED); F4 resolved authorized; builder fix attempt 1/3
+- prev: SEQ 182 builder completed §10 (commit 9a6181a; whole-window 55b4b7f..HEAD = 7 paths ⊆ §10; suite 3862 passed/1 skipped). Haiku reviewer FAIL/DO-NOT-MERGE. F4 governance RESOLVED: /home/void/context.md (operator 2026-10-31) explicitly authorizes narrow manifest.py edit (signed-autonomy schema + canonical identity + verified-manifest boundary only); recorded SEQ 180; NOT a pause.
+- action: review FAIL -> return to builder (kronos-builder claude-sonnet-5-5), attempt 1/3, §10 ONLY. Fix: F1 authorize() must enforce amendment effective_at gate (autonomy.py:345-427,:309-311); F2 _more_permissive must include watchdog (autonomy.py:272-292); F3 VerifiedManifest construction guard binding manifest_id==sha256(canonical_content), producible only via load_and_verify (manifest.py:149-160); F5 verify_amendment signature ->(new,predecessor) per §7 (autonomy.py:254); test integrity F9 (positive controls; prop_8 asserts manifest_id per §13 inv8) + F10 (per-cell determining-clause §12G). Matching tests each; re-run hermetic (SUMMARY line not $?).
+- outcome: pending. pending_action: builder commits fixes on claude/autonomy-brief29; on return Opus scope-audit (55b4b7f..HEAD ⊆ §10) + hermetic, then re-dispatch Haiku 5.5 reviewer. Circuit breaker 1/3.
