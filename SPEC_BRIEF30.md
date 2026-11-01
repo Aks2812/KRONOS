@@ -1,4 +1,12 @@
-# SPEC_BRIEF30 (APPROVED rev3 — GATE-1 self-approved; rev3 corrects two brief factual errors, operator go-ahead 2026-11-01) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
+# SPEC_BRIEF30 (APPROVED rev4 — GATE-1 self-approved; rev4 softens 4 LOW over-claims per review attempt 1) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
+
+> **rev4 (checkpoint SEQ 205; review attempt 1 FAIL).** Softens four LOW brief over-claims to match a
+> testable/implemented reality — no scope/goal change: (F4) §12 C3 is **counts-based** (no byte-identical
+> Kùzu-DB claim); (F5) the stop-record field is **`timestamp`** and later appended lines **are** the
+> audit trail (no separate named `also_requested` list); (F7) D1 budget→stop adaptation is the
+> **dispatcher's executor boundary** (the only in-scope budget site); (F8) a persisted stop is **durable
+> by design** (safety) and not auto-cleared. The HIGH finding **F1** (run()-loop stop read, already
+> required by §4.2) and MED **F2/F3** + LOW **F6** are **builder fixes**, not brief changes.
 
 > **rev3 corrections (checkpoint SEQ 203; verified against `autonomy.py`/`test_autonomy.py` on
 > `main@93fb05e`).** (1) `EffectiveEnvelope` has **no** `watchdog` field (`autonomy.py:70-82`); the
@@ -129,10 +137,10 @@ stop entry point for every caller, with no second kill path.
   (`events.py:73-74` `open(path, "a")`); **no atomic-rename/tempfile/flock machinery** is introduced —
   none exists in the repo to reuse, and append-only first-line-wins needs none.
 - `request_stop(engagement_dir, source, reason, *, now)` — appends one JSON line
-  `{ts, source, reason}`. `StopSource` ∈ {`operator`, `watchdog`, `budget`, `deadline`}. **Idempotent
-  & first-wins:** the *first* line is authoritative for `(source, reason)`; later lines are recorded
-  as an audit trail (`also_requested`) and never override the first. **This is the only function that
-  sets a stop.** The file itself is the audit log (auditable by construction).
+  `{timestamp, source, reason}`. `StopSource` ∈ {`operator`, `watchdog`, `budget`, `deadline`}.
+  **Idempotent & first-wins:** the *first* line is authoritative for `(source, reason)`; every later
+  appended line **is** the audit trail and never overrides the first (no separate named list). **This
+  is the only function that sets a stop.** The file itself is the audit log (auditable by construction).
 - `is_stopped(engagement_dir)` → `StopState | None` — reads the record: present/non-empty ⇒ stopped,
   returning the first line's `(source, reason)`. `raise_if_stopped(engagement_dir)` raises a new
   `Stopped(Exception)` (own module-scoped subclass — the repo has no shared `KronosError` base;
@@ -141,9 +149,12 @@ stop entry point for every caller, with no second kill path.
   one file. `BudgetExceeded` is adapted at the dispatcher boundary into
   `request_stop(..., source="budget")` **preserving the original reason/event** (D1): the ledger keeps
   its own raise/`_stopped_reason` contract; the dispatcher translates it into the shared record rather
-  than a second cancellation concept.
-- **No concurrency primitives.** Each process does single short appends; readers tolerate a
-  concurrently-growing file (they only need the first line). The repo is strictly sequential within a
+  than a second cancellation concept. **(F7)** This adaptation is at the dispatcher's **executor
+  boundary** (`executor.execute`), the only in-scope site that charges budget; budget raised deeper
+  (driver/reviewer) is out of this brief's dispatcher boundary.
+- **No concurrency primitives.** Each process does single short appends; readers (`is_stopped`) read
+  the first **complete** JSON line and tolerate a concurrently-growing file, ignoring a torn/partial
+  trailing line (F6). The repo is strictly sequential within a
   process (researcher: no threading/asyncio); cross-process coordination is the append-only file only.
 
 ### §4.2 Stop-check insertion points — proposed edits to `src/kronos/agent/dispatcher.py`
@@ -153,10 +164,16 @@ stop entry point for every caller, with no second kill path.
 - **Before Phase 3 action-start** (`dispatcher.py:145`, before `executor.execute`):
   `if is_stopped(engagement_dir): break` — a stopped step executes nothing and writes **no
   evidence/promotion** state (A2, narrowed guarantee; this is the check the narrowed claim depends on).
-- `run()` reads `is_stopped(engagement_dir)` each step beside the existing `deadline` check (`:183`);
-  deadline expiry calls `request_stop(source="deadline")` so the existing deadline folds into the one
-  primitive. The dispatcher already receives `engagement_dir` (researcher: executor callers pass it),
-  so **no new parameter plumbing** is needed for the stop path.
+- **`run()` MUST read `is_stopped(engagement_dir)` at the top of each step** (beside the existing
+  `deadline` check, `:183`) and break **before** calling `_step`/`run_once` for that step — a pre-set
+  stop must cause the planner/driver to be invoked **zero** times (not merely blocked inside the step).
+  This is a THIRD stop-read, additional to the two phase-gate reads above; a mandatory acceptance test
+  asserts zero driver calls after a pre-set stop. Deadline expiry calls `request_stop(source="deadline")`
+  so the existing deadline folds into the one primitive. The dispatcher already receives
+  `engagement_dir`, so **no new parameter plumbing** is needed.
+- **(F8)** A persisted stop (`stop.jsonl`) is **durable by design** — once set it is not auto-cleared;
+  a fresh engagement uses a fresh `engagement_dir`. `run_once` returning on a stop without raising
+  `Stopped` is intentional (the stop is cooperative, not an exception-driven abort).
 - **No new execution is wired** — only cancellation reads are added around the *existing* calls.
 
 ### §4.3 Cleanup-always (D4 — one dispatcher `try/finally`, runs exactly once)
@@ -244,7 +261,8 @@ operator decision to extend `ALLOWED_KINDS`.)
   over the same `engagement_dir` (two independent in-test instances, no shared memory) observe the same
   stop — proving the primitive is filesystem-backed, not in-memory. (P0-1)
 - **C3 — stop before commit ⇒ no state.** With `stop.jsonl` present before Phase 2, `run_once` performs
-  **zero** `upsert_node`/`upsert_edge`; the graph is byte-identical to pre-call. (A2 strong)
+  **zero** `upsert_node`/`upsert_edge` (asserted by node/edge **counts** unchanged pre/post — not a
+  byte-identical Kùzu-DB claim). (A2 strong)
 - **C4 — stop before action ⇒ no evidence/promotion.** With the stop present before Phase 3,
   `executor.execute` is not called, no `EVIDENCE` node/`evidences` edge written, no finding status
   advanced. (A1/A2 narrowed)
