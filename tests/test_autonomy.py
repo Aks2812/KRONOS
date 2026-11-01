@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import copy
 import dataclasses
-from dataclasses import replace
+import dataclasses
+from dataclasses import replace as _plain_replace
 import inspect
 import itertools
 import random
@@ -21,6 +22,7 @@ import pytest
 from kronos import autonomy as A
 from kronos.autonomy import (
     AuthorizationRequest,
+    EffectiveEnvelope,
     AutonomyError,
     RuntimeRestrictions,
     authorize,
@@ -161,6 +163,20 @@ D_OK = {"destructive_allowed": True}
 def test_B29_G_decision_table(load, row, a_kw, r_kw, ov, expected):
     v = load(autonomy=auto(**a_kw), engagement=ov)
     assert run(v, req(**r_kw)).verdict == expected, f"row {row}"
+
+
+def replace(env, **changes):
+    """Test-only: sets the module-private construction token (§8.1(1a)) so tests can
+    build mismatched-provenance variants. This DOCUMENTS the non-cryptographic
+    limitation (in-process code setting the token bypasses the guard); it does not
+    defeat it. Direct/unsetted dataclasses.replace is asserted to raise below."""
+    import kronos.autonomy as _a
+
+    tok = _a._PRODUCING.set(True)
+    try:
+        return _plain_replace(env, **changes)
+    finally:
+        _a._PRODUCING.reset(tok)
 
 
 # row15: §8 budget clause + 4.1 boundary: a None/missing dimension is never unlimited => DENY; conversion raises AutonomyError
@@ -988,3 +1004,33 @@ def test_B29_Q_scope_audit():
         ["git", "diff", "--name-only", f"{B29_BASE}..HEAD"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B29_SECTION_10, set(out) - B29_SECTION_10
+
+
+# §12 E2 / §13 adversarial / §8.1(1a): EffectiveEnvelope is unforgeable by construction
+def test_B29_E2_envelope_construction_guard_rejects_forgery(load):
+    v = load(autonomy=auto())
+    good = in_force_effective_envelope(v, None)
+    # direct public construction with a recomputed real manifest_id and elevated authority
+    with pytest.raises(AutonomyError):
+        EffectiveEnvelope(
+            mode_max="beast",
+            authorizations=good.authorizations,
+            max_unattended_duration_seconds=10**9,
+            budget={d: 10**12 for d in BUDGET_DIMENSIONS},
+            exfil_allowed=True,
+            exfil_byte_budget=10**12,
+            provenance=v.manifest_id,
+        )
+    # dataclasses.replace on a legitimately produced envelope re-invokes the guard
+    for legit in (good, effective_envelope(v.autonomy, None), effective_envelope(None, None)):
+        with pytest.raises(AutonomyError):
+            dataclasses.replace(legit, provenance=v.manifest_id)
+        with pytest.raises(AutonomyError):
+            dataclasses.replace(legit, mode_max="beast")
+    # only in_force_effective_envelope authorizes; the others are provenance-absent
+    assert effective_envelope(v.autonomy, None).provenance is None
+    assert effective_envelope(None, None).provenance is None
+    assert authorize(effective_envelope(v.autonomy, None), req(), v, NOW).verdict == "DENY"
+    # positive control: legitimate producer path still ALLOWs a matching request
+    assert good.provenance == v.manifest_id
+    assert authorize(good, req(), v, NOW).verdict == "ALLOW"

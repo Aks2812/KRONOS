@@ -8,6 +8,7 @@ absent/malformed/None data denies, and None is never "unlimited".
 
 from __future__ import annotations
 
+import contextvars
 import ipaddress
 import math
 from dataclasses import dataclass, replace
@@ -80,6 +81,19 @@ class EffectiveEnvelope:
     # sets it; authorize() grants only when it equals verified.manifest_id.
     provenance: str | None = None
 
+    def __post_init__(self) -> None:
+        # Construction guard (§8.1(1a)), NOT cryptographic: a module-private
+        # ContextVar that only the legitimate producers set, so direct
+        # construction and dataclasses.replace() are rejected. In-process code
+        # that sets the private token could still bypass it (same documented
+        # limitation as VerifiedManifest).
+        if not _PRODUCING.get():
+            raise AutonomyError("EffectiveEnvelope is produced only by the autonomy producers")
+
+
+# Module-private construction token (§8.1(1a)): set only inside the producers.
+_PRODUCING = contextvars.ContextVar("_kronos_envelope_producing", default=False)
+
 
 @dataclass(frozen=True)
 class AuthorizationRequest:
@@ -115,8 +129,16 @@ class AmendmentDecision:
 _MODE_RANK = {"calm": 0, "beast": 1}
 
 
+def _make_envelope(**fields) -> EffectiveEnvelope:
+    token = _PRODUCING.set(True)
+    try:
+        return EffectiveEnvelope(**fields)
+    finally:
+        _PRODUCING.reset(token)
+
+
 def _fail_closed_envelope(reason: str | None) -> EffectiveEnvelope:
-    return EffectiveEnvelope(
+    return _make_envelope(
         mode_max="calm",
         authorizations=(),
         max_unattended_duration_seconds=0,
@@ -243,7 +265,7 @@ def effective_envelope(
                 raise AutonomyError("runtime exfil_byte_budget exceeds signed authority")
             exfil_bytes = r
 
-    return EffectiveEnvelope(
+    return _make_envelope(
         mode_max=mode_max,
         authorizations=auths,
         max_unattended_duration_seconds=duration,
@@ -376,7 +398,12 @@ def in_force_effective_envelope(
     (§8.1(1)). `verified` must be `in_force_manifest(...)`."""
     if not isinstance(verified, VerifiedManifest):
         return _fail_closed_envelope("manifest is not a VerifiedManifest")
-    return replace(effective_envelope(verified.autonomy, runtime), provenance=verified.manifest_id)
+    base = effective_envelope(verified.autonomy, runtime)
+    token = _PRODUCING.set(True)
+    try:
+        return replace(base, provenance=verified.manifest_id)
+    finally:
+        _PRODUCING.reset(token)
 
 
 # ---- authorize (§8) ----
@@ -416,6 +443,11 @@ def authorize(
     verified: VerifiedManifest,
     now: datetime | None,
 ) -> AuthorizationResult:
+    # Caller-MUST (§8.1(2a)): `verified` must be the in-force manifest, i.e. the
+    # result of in_force_manifest(...); selecting it is the caller's duty. The
+    # (1a) construction guard makes this safe: the only authorizing envelope is
+    # one in_force_effective_envelope stamped with that manifest's id, and
+    # the provenance check below is the backstop.
     def deny(reason: str) -> AuthorizationResult:
         return AuthorizationResult("DENY", reason)
 
