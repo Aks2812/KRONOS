@@ -220,6 +220,8 @@ def run(
     done: list[bool] = []
     try:
         for _ in range(max_steps):
+            if _stop_requested(engagement_dir):  # SPEC_BRIEF30 §4.2: top-of-step read, before _step
+                break
             if deadline is not None and clock() - start >= deadline:
                 if engagement_dir is not None:
                     request_stop(engagement_dir, "deadline", "deadline expired")

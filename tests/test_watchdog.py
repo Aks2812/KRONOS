@@ -148,3 +148,11 @@ def test_B30_condition_sees_events(verified, tmp_path):
     seen = []
     Watchdog(verified(None), tmp_path, lambda ev: seen.append(ev) or False, Clock()).poll()
     assert seen == [[{"kind": "ingest_declined"}]]
+
+
+def test_B30_F6_events_torn_trailing_line(verified, tmp_path, nonet):  # §4.1 tolerate growing file
+    (tmp_path / "events.jsonl").write_text('{"kind": "a"}\n{"kind": "b')
+    seen = []
+    Watchdog(verified(None), tmp_path, lambda ev: seen.append(ev) or False, Clock()).poll()
+    assert seen == [[{"kind": "a"}]]
+    assert not nonet

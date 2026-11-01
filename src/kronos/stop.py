@@ -64,7 +64,10 @@ def is_stopped(engagement_dir) -> StopState | None:
         return None
     if not first.strip():
         return None
-    rec = json.loads(first)
+    try:
+        rec = json.loads(first)
+    except json.JSONDecodeError:
+        return None  # torn first line from a concurrent writer: not yet a complete record
     return StopState(source=rec["source"], reason=rec["reason"])
 
 

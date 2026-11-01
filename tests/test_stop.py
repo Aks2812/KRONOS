@@ -50,6 +50,14 @@ def test_B30_not_stopped_without_record(tmp_path, nonet):  # §4.1 present/non-e
     assert not nonet
 
 
+def test_B30_F6_torn_trailing_line_tolerated(tmp_path, nonet):  # §4.1 concurrently-growing file
+    request_stop(tmp_path, "operator", "first")
+    with open(tmp_path / "stop.jsonl", "a", encoding="utf-8") as f:
+        f.write('{"source": "watch')  # torn partial trailing line
+    assert is_stopped(tmp_path) == StopState("operator", "first")
+    assert not nonet
+
+
 def test_B30_C2_first_wins_and_audit(tmp_path, nonet):  # §12 C2
     request_stop(tmp_path, "operator", "first")
     request_stop(tmp_path, "watchdog", "second")

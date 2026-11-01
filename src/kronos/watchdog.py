@@ -44,9 +44,16 @@ class Watchdog:
     def _events(self) -> list[dict]:
         try:
             with open(self._dir / _EVENTS_FILENAME, "r", encoding="utf-8") as f:
-                return [json.loads(line) for line in f if line.strip()]
+                lines = [line for line in f if line.strip()]
         except FileNotFoundError:
             return []
+        events: list[dict] = []
+        for line in lines:
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue  # torn trailing line from a concurrently growing file
+        return events
 
     def poll(self) -> str:
         """One observation. Returns idle | alert | grace | stood_down | stopped."""
