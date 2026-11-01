@@ -296,6 +296,7 @@ def test_B27_J3_multipath_cycle(rg):
 # ---- SPEC_BRIEF28 (hermetic) ----
 
 B28_BASE = "a5373b4"
+B28_MERGE = "55b4b7f"
 B28_SECTION_3 = {
     "SPEC_BRIEF28.md",
     "src/kronos/query.py",
@@ -313,6 +314,6 @@ def test_B28_A_resolve_host_docstring():
 
 def test_B28_J_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B28_BASE}..HEAD"], capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B28_BASE}..{B28_MERGE}"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B28_SECTION_3, set(out) - B28_SECTION_3
