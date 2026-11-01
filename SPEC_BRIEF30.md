@@ -1,5 +1,13 @@
-# SPEC_BRIEF30 (APPROVED rev2 — GATE-1 self-approved, operator go-ahead 2026-11-01) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
+# SPEC_BRIEF30 (APPROVED rev3 — GATE-1 self-approved; rev3 corrects two brief factual errors, operator go-ahead 2026-11-01) — Shared Stop Primitive + Independent Watchdog: Hermetic G2
 
+> **rev3 corrections (checkpoint SEQ 203; verified against `autonomy.py`/`test_autonomy.py` on
+> `main@93fb05e`).** (1) `EffectiveEnvelope` has **no** `watchdog` field (`autonomy.py:70-82`); the
+> signed policy lives only on `AutonomyEnvelope.watchdog` (`manifest.py:92-109`), reached via a
+> `VerifiedManifest`. The watchdog therefore consumes the **verified in-force `VerifiedManifest`** and
+> reads `.autonomy.watchdog` — `autonomy.py` is **not** edited (§4.4/§9). (2) The prior-brief
+> whole-window scope-audit seal is `tests/test_autonomy.py::test_B29_Q_scope_audit`
+> (`B29_BASE=55b4b7f..HEAD`), **not** `tests/test_query.py`; §10 seals it there (seal only).
+>
 > Fully hermetic: no live targets, no §6 run, no providers, no network execution, and
 > **no wiring of autonomous action execution**. Builds on SPEC_BRIEF29 (merged `main` @ 93fb05e,
 > PR #37): the signed `WatchdogPolicy` (`may_auto_stop`, `confirm_window_seconds`) now exists but has
@@ -37,9 +45,11 @@ hermetic tests. Autonomous *action execution* remains unwired (a later brief).
   `may_auto_stop: bool = False`, `confirm_window_seconds: _NonNegInt = 0`; validator requires
   `1 <= confirm_window_seconds <= WATCHDOG_CONFIRM_WINDOW_MAX` when `may_auto_stop` is true.
   `WATCHDOG_CONFIRM_WINDOW_MAX = 300` (`manifest.py:38-39`). Carried on
-  `AutonomyEnvelope.watchdog: WatchdogPolicy | None` (`manifest.py:103-109`) and on
-  `EffectiveEnvelope` (`autonomy.py:295,310,336-337`). **No runtime consumer of
-  `effective.watchdog` exists** (researcher: not read by any caller).
+  `AutonomyEnvelope.watchdog: WatchdogPolicy | None` (`manifest.py:103-109`). **`EffectiveEnvelope`
+  has no `watchdog` field** (`autonomy.py:70-82`); `autonomy.py:295/310/336` read
+  `AutonomyEnvelope.watchdog` in `_axes`/`_classify`, not an envelope field. **No runtime consumer of
+  the signed watchdog policy exists** — this brief adds it, reading from the verified in-force
+  `VerifiedManifest`.
 - **No stop/cancel/kill/abort/halt/shutdown function exists** anywhere under `src/kronos` (grep).
   The only interruption today is `BudgetExceeded` (`src/kronos/budget/ledger.py:45`, raised at
   `:124`/`:146`, sets `_stopped_reason` at `:145`) — raised at a charge boundary, caught nowhere in
@@ -96,7 +106,7 @@ hermetic tests. Autonomous *action execution* remains unwired (a later brief).
 - **A4 — Rogue/forged auto-stop authority.** Watchdog auto-stops without signed permission, or ignores
   the confirm window. Mitigation: watchdog honours only signed `may_auto_stop`; auto-stop is gated on
   `confirm_window_seconds` elapsed; policy reaches the watchdog only via the SPEC_BRIEF29 verified
-  envelope (unforgeable `EffectiveEnvelope`).
+  in-force `VerifiedManifest` (unforgeable — brief29 construction guard), from `.autonomy.watchdog`.
 - **A5 — Second kill path.** A divergent stop/kill mechanism bypasses the shared primitive's checks.
   Mitigation: a single `request_stop` entry point; a structural test asserts no other stop/kill
   function is introduced.
@@ -161,8 +171,11 @@ existing `CleanupRegistry.teardown_all()` once; no new teardown logic is introdu
 ### §4.4 Independent watchdog — `src/kronos/watchdog.py` (new)
 
 - A **read-only** consumer: given a path to an engagement's append-only `events.jsonl` and a verified
-  `EffectiveEnvelope` (carrying `watchdog: WatchdogPolicy | None`), it reads events and decides whether
-  to request a stop. It **never** writes graph, evidence, or events; its only effect is
+  verified **in-force `VerifiedManifest`** (from which it reads `.autonomy.watchdog`, a
+  `WatchdogPolicy | None`; the caller selects it via `in_force_manifest(...)` per brief29 §8.1), it
+  reads events and decides whether to request a stop. It does **not** take or need an
+  `EffectiveEnvelope`, and `autonomy.py` is not touched. The policy is genuinely signed because
+  `VerifiedManifest` is unforgeable (brief29 construction guard, `manifest.py` `load_and_verify`). It **never** writes graph, evidence, or events; its only effect is
   `request_stop(token, source="watchdog", reason=...)` on the shared token.
 - **Signed-policy enforcement (D5 — persistent-condition grace):** if `watchdog is None` or
   `may_auto_stop is False`, the watchdog **never** auto-stops — it emits an **alert only**. If
@@ -178,8 +191,9 @@ existing `CleanupRegistry.teardown_all()` once; no new teardown logic is introdu
 
 ## §9 — Integration boundaries
 
-- `stop.py` depends on nothing but `errors`/typing. `watchdog.py` depends on `stop`, `autonomy`
-  (`EffectiveEnvelope`/`WatchdogPolicy` types), and read-only file I/O over `events.jsonl`.
+- `stop.py` depends on nothing but `errors`/typing. `watchdog.py` depends on `stop`, `manifest`
+  (`VerifiedManifest`/`WatchdogPolicy` types), and read-only file I/O over `events.jsonl`. It does
+  **not** depend on `autonomy.EffectiveEnvelope`; `autonomy.py` is not modified.
 - `dispatcher.py` gains an optional `token` parameter and the two checks; default behaviour
   (no token passed → fresh token, never stopped) is **unchanged** for all existing callers/tests.
 - No change to `manifest.py`, `autonomy.py`, `events.py` emit contract, `budget/*`, scope rails,
@@ -197,12 +211,16 @@ New:
 - `tests/test_watchdog.py` — watchdog read-only + signed-policy + confirm-window tests.
 
 Modified (surgical):
-- `src/kronos/agent/dispatcher.py` — optional `token` param + the two stop-checks + (D4) cleanup
-  wrapping. No other behaviour change.
+- `src/kronos/agent/dispatcher.py` — two `is_stopped(engagement_dir)` reads (before Phase-2 commit,
+  before Phase-3 action-start) + D1 `BudgetExceeded`→`request_stop(source="budget")` adaptation + D4
+  one `try/finally` run-once cleanup boundary. Default (no `stop.jsonl`) behaviour unchanged.
 - `tests/test_agent_dispatcher.py` — add stop-check coverage for the dispatcher.
-- `src/kronos/__init__.py` **only if** `stop`/`watchdog` are exported (confirm need at build time).
-- Whole-window scope seal: `tests/test_query.py` seal of the prior brief's `..HEAD` audit to the new
-  base (per the whole-window seal convention) — seal only.
+- `src/kronos/__init__.py` — permitted only if `stop`/`watchdog` need exporting (confirm at build time).
+- **Whole-window scope seal — `tests/test_autonomy.py` (seal only):** re-pin
+  `test_B29_Q_scope_audit` upper bound from `..HEAD` to the brief29 merge (`..93fb05e`) so it stops at
+  brief29's own window (`B29_BASE=55b4b7f`). This is the only edit to `test_autonomy.py`. The brief-30
+  **own** whole-window audit (`B30_BASE=93fb05e..HEAD` ⊆ this §10 list) is a NEW test placed in
+  `tests/test_stop.py`.
 
 Explicitly **NOT** in scope: `src/kronos/manifest.py`, `src/kronos/autonomy.py`, `src/kronos/events.py`,
 `.claude/`, `.github/`, `cybergym/`. (§16 D3 could add `events.py` to this list **only** on an explicit
