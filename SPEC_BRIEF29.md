@@ -1,4 +1,4 @@
-# SPEC_BRIEF29 — Signed Autonomy Envelope: Hermetic G2 Foundation (APPROVED rev3)
+# SPEC_BRIEF29 — Signed Autonomy Envelope: Hermetic G2 Foundation (APPROVED rev4 — exceptional attempt 4; F1/F2)
 
 > **Status: GATE-1 APPROVED (operator architecture approval, `/home/void/context.md` 2026-10-31;
 > Opus self-approved GATE-1 after verifying this brief carries those decisions, introduces no new
@@ -18,6 +18,18 @@ Hermetic, side-effect-free. **`src/kronos/manifest.py` is edited under explicit 
 (`context.md` 2026-10-31) **limited to** the signed-autonomy schema, canonical parsing/identity
 integration, and the verified-manifest boundary below — no unrelated refactor, signing change, scope
 expansion, dispatcher wiring, or live behavior.
+
+> **Attempt-4 amendment (rev4; maintainer `context.md` 2026-11-01; checkpoint SEQ 191–192).** Exceptional
+> attempt 4 is authorized **scoped only to reviewer findings F1 and F2** (circuit breaker NOT reset; no
+> attempt 5). It adds no goal, scope, or §10-ceiling change. **F1 (root-cause fix, §8.1(1)):** the
+> provenance-bearing `EffectiveEnvelope` must be **unforgeable by construction** — a code-enforced
+> construction guard, not a prose "sole producer" convention. **F2 (ruling, §8.1(2)):** in-force selection
+> is a by-design **caller-MUST** (§8 "`authorize`'s `verified` … MUST be `in_force_manifest(...)`"); no
+> `authorize()` signature change (passing `(predecessor, amendment)` would be an architectural change and
+> is out of scope). **Attempt-4 NEW-edit sub-scope** (⊆ §10 whole-window ceiling): `SPEC_BRIEF29.md`,
+> `src/kronos/autonomy.py`, `src/kronos/manifest.py` (**VerifiedManifest construction guard only** — no
+> other manifest change), `tests/test_autonomy.py`, `tests/test_manifest.py`, `tests/test_query.py` (seal
+> only). **No new `tests/conftest.py` edit.** Any failure or any required out-of-scope file ⇒ permanent HALT.
 
 ---
 
@@ -316,6 +328,22 @@ or §10 change, still one pure module.
    provenance-bearing (authorizing) envelope. `effective_envelope(signed: AutonomyEnvelope | None, …)`
    composes a provenance-absent, **non-authorizing** envelope (intersection/composition and tests only).
    A bare `AutonomyEnvelope` thus can never authorize.
+   **(1a) Unforgeable by construction (rev4 F1 fix — root cause).** The string-equality provenance check
+   above is a **backstop, not the boundary**: a provenance-bearing `EffectiveEnvelope` MUST be
+   **impossible to construct outside** the module's legitimate producers, so a caller cannot forge one by
+   calling the public constructor or `dataclasses.replace` with a copied `manifest_id`. Enforce this in
+   code, mirroring `VerifiedManifest`'s guard (`manifest.py`): a **module-private construction token** set
+   **only** while `effective_envelope`, `_fail_closed_envelope`, and `in_force_effective_envelope` build
+   an instance; `EffectiveEnvelope`'s `__post_init__` **raises `AutonomyError`** when constructed without
+   that token (covering direct construction AND `replace`-based forgery, since `replace` re-invokes
+   `__init__`). Only `in_force_effective_envelope` stamps a non-`None` `provenance`; `effective_envelope`
+   and `_fail_closed_envelope` yield provenance-absent (non-authorizing) instances. The guard is a
+   construction boundary, **not cryptographic**: in-process code that sets the private token can still
+   bypass it (same documented limitation as `VerifiedManifest`); defending against arbitrary in-process
+   code is out of scope for this hermetic increment. This makes `EffectiveEnvelope` the "internally
+   derived verified-envelope type carrying manifest provenance" that public authorization requires
+   (operator decision 1, `context.md` 2026-10-31) — a bare, externally built instance is unconstructible,
+   not merely unverified.
 2. **In-force manifest selection (D2-pending).** `in_force_manifest(predecessor, amendment, now)` returns
    the **amendment** iff it is valid (§7 single-hop) AND is either *tightening-only* (effective
    immediately on verification) or *increase-only* with `now >= effective_at`; otherwise the
@@ -327,6 +355,17 @@ or §10 change, still one pure module.
    Because the pre-`effective_at` in-force manifest is the predecessor, a request the predecessor already
    grants is ALLOWed during the pending window (invariant 7); the not-yet-effective increase is absent,
    so it denies without any blanket gate.
+   **(2a) In-force selection is a caller-MUST; `authorize` does not re-derive it (rev4 F2 ruling).** By
+   design (§8 "`authorize`'s `verified` argument MUST be `in_force_manifest(...)` and its `effective` MUST
+   be `in_force_effective_envelope(verified, …)`") `authorize` evaluates the *already-selected* in-force
+   manifest and envelope it is handed; it does **not** receive `(predecessor, amendment, now)` and so
+   **cannot and need not** re-run selection internally. Passing `(predecessor, amendment)` into
+   `authorize` would be an architectural signature change and is **out of scope** (attempt-4 ruling). The
+   (1a) construction guard is what makes this contract safe rather than merely advisory: an authorizing
+   (provenance-bearing) `EffectiveEnvelope` can only be produced by `in_force_effective_envelope`, which
+   derives from the caller's selected in-force `VerifiedManifest` — a caller cannot smuggle a
+   not-yet-effective increase into `authorize` by hand-building an envelope, because hand-building raises.
+   This resolves F2 at the documented caller boundary without weakening the pure three-function split.
 3. **Mixed amendments rejected fail-closed (D3).** Classification and the tighten-immediate /
    increase-deferred / mixed-invalid rule are defined in §7; a mixed amendment is invalid and leaves the
    predecessor in force. This supersedes any reading that gated the whole request via a single
@@ -384,6 +423,15 @@ E. **Verified-manifest boundary + provenance binding** — `compute_manifest_id`
    the in-force `verified.manifest_id`; an envelope from `effective_envelope` over a bare
    `AutonomyEnvelope` (no provenance) or one whose provenance mismatches `verified` is DENIED
    fail-closed (§8.1(1); rows 32-34; invariant 9).
+   **E2. Unforgeable construction (rev4 F1; §8.1(1a)).** Constructing an `EffectiveEnvelope` directly via
+   its public constructor **raises `AutonomyError`** — including `EffectiveEnvelope(provenance=<a real,
+   recomputed `verified.manifest_id`>, …)` with elevated authority; `dataclasses.replace(<a legitimately
+   produced envelope>, provenance=…)` (or any field) **also raises**. A provenance-bearing authorizing
+   envelope is obtainable **only** from `in_force_effective_envelope(verified, …)`; `effective_envelope(…)`
+   and the fail-closed path yield provenance-absent, non-authorizing instances. Positive control: the
+   legitimate producer path still yields an envelope that `authorize` grants on a matching request. (The
+   guard is a construction boundary, not cryptographic — a test that sets the private token documents, and
+   does not defeat, that limitation.)
 F. **Intersection / no silent widening** — `min` for restricting runtime; named `AutonomyError` on any
    widening (limit/mode/authorization/destructive/exfil); never clamp up.
 G. **Decision table (§13) holds** cell-for-cell from prose.
@@ -434,6 +482,10 @@ R. **Suite green** — `0 failed` on final commit; brief22–28 seals untouched/
   nine invariants as explicit properties over the whole generated space — not just the hand-selected
   rows.
 - **Adversarial (threat model §3, incl. #12/#13):** one test per abuse case asserting denial/fail-closed.
+  **Includes construction-forgery (rev4 F1):** assert `EffectiveEnvelope(provenance=<recomputed real
+  manifest_id>, …)` raises `AutonomyError`; assert `dataclasses.replace(<legit envelope>, provenance=…)`
+  raises; assert the only authorizing envelope comes from `in_force_effective_envelope`; positive control
+  that the legit path still authorizes a matching request.
 - **Regression:** canonical-bytes identity (D); back-compat Calm (A); full suite + brief22–28 seals.
 
 ### Decision table (every expected verdict derived from §8 prose; A|B|C only)
