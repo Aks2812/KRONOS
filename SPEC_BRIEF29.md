@@ -1,4 +1,4 @@
-# SPEC_BRIEF29 — Signed Autonomy Envelope: Hermetic G2 Foundation (APPROVED)
+# SPEC_BRIEF29 — Signed Autonomy Envelope: Hermetic G2 Foundation (APPROVED rev3)
 
 > **Status: GATE-1 APPROVED (operator architecture approval, `/home/void/context.md` 2026-10-31;
 > Opus self-approved GATE-1 after verifying this brief carries those decisions, introduces no new
@@ -233,16 +233,36 @@ brief makes **no** claim of watchdog enforcement.
   increment). The brief claims no immediate runtime tightening.
 - **Non-retroactivity:** a permission increase authorizes actions only from `effective_at` onward;
   it never legitimizes an earlier action.
+- **Amendment direction classification (D3 mixed-reject; maintainer decision, context.md 2026-10-31).**
+  Classify a structurally-valid amendment by comparing it to its verified predecessor across **every
+  authority axis**: `mode_max`, `max_unattended_duration_seconds`, each `BUDGET_DIMENSIONS` dimension,
+  `watchdog`, `exfil_simulation`, the `unattended_authorizations` set, and the manifest-level
+  `destructive_allowed` and engagement `in_scope`/`excluded`. An axis is *increased* if the amendment is
+  more permissive on it, *tightened* if less permissive, *unchanged* if equal. Then:
+  - *tightening-only* (≥1 tightened axis, **no** increased axis) ⇒ effective **immediately** on
+    verification (no `effective_at` gate);
+  - *increase-only* (≥1 increased axis, **no** tightened axis) ⇒ the predecessor remains in force until
+    `effective_at`, the amendment at/after it (§8.1);
+  - *mixed* (**both** an increased and a tightened axis) ⇒ **invalid, fail-closed**; the predecessor
+    stays in force exactly as for any invalid amendment. Mixed intent MUST be expressed as separate
+    single-purpose amendments. A no-op amendment (no changed axis) is valid and effective immediately.
 
 ## §8 — Effective-authorization algorithm (one pure function; no distribution)
 All authorization logic lives in **one module** (`src/kronos/autonomy.py`) — not spread across
 dispatcher/executor/driver/tools. Pure, side-effect-free.
 
 ```text
-effective_envelope(signed: AutonomyEnvelope, runtime: RuntimeRestrictions | None) -> EffectiveEnvelope
+in_force_manifest(predecessor: VerifiedManifest, amendment: VerifiedManifest | None,
+                  now: datetime) -> VerifiedManifest          # selects the governing manifest (§8.1)
+in_force_effective_envelope(verified: VerifiedManifest,
+                  runtime: RuntimeRestrictions | None) -> EffectiveEnvelope  # provenance-bearing (§8.1)
+effective_envelope(signed: AutonomyEnvelope | None,
+                  runtime: RuntimeRestrictions | None) -> EffectiveEnvelope  # NON-authorizing: no provenance
 authorize(effective: EffectiveEnvelope, request: AuthorizationRequest, verified: VerifiedManifest,
           now: datetime) -> AuthorizationResult
 ```
+`authorize`'s `verified` argument MUST be `in_force_manifest(...)` and its `effective` MUST be
+`in_force_effective_envelope(verified, ...)`; see §8.1.
 
 **`effective_envelope` (intersection, fail-closed):**
 - scalar limits (budget dims, duration): `runtime_limit <= signed_limit` ⇒ effective = runtime (= min,
@@ -268,8 +288,14 @@ class rule:
 binding: engagement scope (scope_guard) AND per-authorization _matches(auth.target, request.target)
      with matching shape (§4.2). Non-match ⇒ deny.
 window: auth.valid_from <= now <= auth.valid_until (tz-aware). Future/expired ⇒ deny.
-amendment gate: if the active envelope comes from an amendment, now >= amends.effective_at for any
-     increased permission to apply (§7). Else use predecessor envelope.
+amendment gate: the governing manifest is `in_force_manifest` (§8.1) — the predecessor before an
+     increase-only amendment's `effective_at` (and for any invalid/mixed amendment), the amendment at/
+     after it or immediately for a tightening-only amendment. There is NO blanket deny: a request the
+     in-force (predecessor) manifest already grants is ALLOWed during the pending window; a not-yet-
+     effective increase is simply absent from the in-force envelope, so it denies on its own terms.
+provenance: `authorize` grants ONLY when `effective` carries manifest provenance equal to
+     `verified.manifest_id` (§8.1); a non-provenanced envelope (e.g. one from `effective_envelope` over a
+     bare `AutonomyEnvelope`) authorizes nothing (fail-closed DENY).
 budget: request draw <= effective budget per dimension (reuse BUDGET_DIMENSIONS).
 duration: session elapsed <= effective.max_unattended_duration_seconds.
 destructive: if request.destructive ⇒ require verified.destructive_allowed AND auth.destructive.
@@ -277,6 +303,34 @@ inconclusive: a required evaluation input that is unavailable ⇒ INCONCLUSIVE r
      precedent controls.py:29-36), surfaced later in the pipeline — never silent allow/skip.
 ```
 No graph/network/model/tool side effects (pure over dataclasses).
+
+### §8.1 — Verified-provenance binding + in-force manifest (maintainer decisions, context.md 2026-10-31)
+Three settled rulings govern `authorize`. They change evaluator semantics only; no goal, scope, wiring,
+or §10 change, still one pure module.
+
+1. **Verified authority boundary (D1-authority) — a bare envelope never authorizes.** An
+   `EffectiveEnvelope` carries manifest **provenance** = the `manifest_id` of the `VerifiedManifest` it
+   was derived from. `authorize` grants a request ONLY when `effective`'s provenance is present AND
+   equals the `verified: VerifiedManifest` argument's `manifest_id`; otherwise it DENIES fail-closed and
+   authorizes nothing. `in_force_effective_envelope(verified, runtime)` is the **sole** producer of a
+   provenance-bearing (authorizing) envelope. `effective_envelope(signed: AutonomyEnvelope | None, …)`
+   composes a provenance-absent, **non-authorizing** envelope (intersection/composition and tests only).
+   A bare `AutonomyEnvelope` thus can never authorize.
+2. **In-force manifest selection (D2-pending).** `in_force_manifest(predecessor, amendment, now)` returns
+   the **amendment** iff it is valid (§7 single-hop) AND is either *tightening-only* (effective
+   immediately on verification) or *increase-only* with `now >= effective_at`; otherwise the
+   **predecessor** — i.e. before `effective_at` for an increase-only amendment, and for every invalid,
+   mixed, or single-hop-violating amendment. `authorize` evaluates **every** input against this one
+   in-force manifest **consistently** — the envelope (mode/authorizations/budgets/duration), the
+   manifest-level `destructive_allowed`, and engagement scope (`scope_guard`/`in_scope`). Evaluating the
+   envelope against one manifest and `destructive_allowed`/`in_scope` against another is a defect (F-C).
+   Because the pre-`effective_at` in-force manifest is the predecessor, a request the predecessor already
+   grants is ALLOWed during the pending window (invariant 7); the not-yet-effective increase is absent,
+   so it denies without any blanket gate.
+3. **Mixed amendments rejected fail-closed (D3).** Classification and the tighten-immediate /
+   increase-deferred / mixed-invalid rule are defined in §7; a mixed amendment is invalid and leaves the
+   predecessor in force. This supersedes any reading that gated the whole request via a single
+   `pending_increase_until` field.
 
 ## §9 — Integration boundaries
 - **In scope:** schema (§4) on `ScopeManifest`; `VerifiedManifest`; `compute_manifest_id`;
@@ -324,8 +378,12 @@ A. **Back-compat.** Old manifest (no block) loads; `autonomy is None`/`amends is
 B. **Signed schema round-trips** into typed submodels with §4 names/types.
 C. **`manifest_id` stability** over verified content; order-independent; any content change changes it.
 D. **Canonical-bytes regression** — pre-autonomy manifest verifies byte-identically before/after.
-E. **Verified-manifest boundary** — `compute_manifest_id`/`verify_amendment` consume `VerifiedManifest`;
-   a bare parsed object is not accepted as verified; `manifest_id` carries no `_flatten` defaults.
+E. **Verified-manifest boundary + provenance binding** — `compute_manifest_id`/`verify_amendment`
+   consume `VerifiedManifest`; a bare parsed object is not accepted as verified; `manifest_id` carries no
+   `_flatten` defaults. `authorize` grants ONLY when the evaluated `EffectiveEnvelope`'s provenance ==
+   the in-force `verified.manifest_id`; an envelope from `effective_envelope` over a bare
+   `AutonomyEnvelope` (no provenance) or one whose provenance mismatches `verified` is DENIED
+   fail-closed (§8.1(1); rows 32-34; invariant 9).
 F. **Intersection / no silent widening** — `min` for restricting runtime; named `AutonomyError` on any
    widening (limit/mode/authorization/destructive/exfil); never clamp up.
 G. **Decision table (§13) holds** cell-for-cell from prose.
@@ -342,9 +400,15 @@ K. **Per-authorization binding** — a request matching engagement scope but NOT
 L. **No LOCAL class (O2)** — the `action_class` schema admits only `A|B|C`; there is no `LOCAL` member,
    no local request category, and no code path authorizes a request without a matching signed
    authorization on grounds of being "local".
-M. **Amendment bounded single-hop** — valid root→one amendment accepted; amendment-of-amendment fails
-   closed; invalid/mismatched amendment leaves predecessor envelope in force; a permission increase does
-   NOT apply before `effective_at`; a missing/malformed/timezone-naive `effective_at` fails closed.
+M. **Amendment bounded single-hop + direction semantics** — valid root→one amendment accepted;
+   amendment-of-amendment fails closed; invalid/mismatched amendment leaves predecessor envelope in
+   force; a missing/malformed/timezone-naive `effective_at` fails closed. Direction (§7/§8.1): a
+   **mixed** amendment (≥1 increased AND ≥1 tightened axis, over the full axis set incl. manifest-level
+   `destructive_allowed` and `in_scope`) is invalid fail-closed; a **tightening-only** amendment applies
+   immediately on verification; an **increase-only** amendment leaves the predecessor in force until
+   `effective_at` — during that window a request the predecessor already grants is ALLOWed (row 30) and
+   only the not-yet-effective increase (incl. a `destructive_allowed`/`in_scope` increase) is withheld
+   (rows 25, 31, 33-34). No blanket deny of the whole request while an increase is pending.
 N. **Watchdog validation (O1)** — `may_auto_stop=false` default; `may_auto_stop=true` requires
    `1 <= confirm_window_seconds <= 300` (`WATCHDOG_CONFIRM_WINDOW_MAX`); no enforcement claimed.
 O. **No side effects** — evaluator touches no graph/network/model/tool (socket-raise guard; no graph
@@ -366,8 +430,9 @@ R. **Suite green** — `0 failed` on final commit; brief22–28 seals untouched/
   and `BudgetLimits` conversion exercised through the real functions.
 - **Deterministic generators (D5; NOT hypothesis):** bounded/exhaustive generators enumerating
   **combinations** of (mode × class × target-match × window-state × budget-state × destructive-state ×
-  envelope-state × amendment-state), asserting the eight invariants as explicit properties over the
-  whole generated space — not just the hand-selected rows.
+  envelope-state × amendment-state incl. tightening-only/increase-only/mixed/invalid), asserting the
+  nine invariants as explicit properties over the whole generated space — not just the hand-selected
+  rows.
 - **Adversarial (threat model §3, incl. #12/#13):** one test per abuse case asserting denial/fail-closed.
 - **Regression:** canonical-bytes identity (D); back-compat Calm (A); full suite + brief22–28 seals.
 
@@ -406,6 +471,11 @@ Legend: verdict ∈ ALLOW / DENY / ERROR / INCONCLUSIVE. "auth" = a matching sig
 | 27 | Beast | A | yes | match | active | within | no | **amendment whose predecessor is itself an amendment** | **DENY** (fail closed; single-hop only) |
 | 28 | Beast | A | yes | match | active | within | no | **amendment effective_at timezone-naive/missing** | **DENY** (fail closed, O3) |
 | 29 | any | A | yes | match | active | within | no | **required eval input unavailable** | **INCONCLUSIVE** |
+| 30 | Beast | A | yes (on predecessor) | match | active | within | no | **increase-only amendment pending, now < effective_at; request granted by predecessor envelope** | **ALLOW** (predecessor authoritative pre-effective_at, §8.1(2)) |
+| 31 | Beast | A | yes | match | active | within | no | **mixed amendment (one axis increased + one tightened)** | **DENY** (mixed invalid, fail-closed; predecessor in force, §7/§8.1(3)) |
+| 32 | Beast | A | yes | match | active | within | no | **effective envelope lacks provenance (bare AutonomyEnvelope) or provenance ≠ verified.manifest_id** | **DENY** (no verified provenance, §8.1(1)) |
+| 33 | Beast | C | yes | match | active | within | **yes**; increase-only amendment sets destructive_allowed F→T, now < effective_at | **amendment pending** | **DENY** (predecessor destructive_allowed=F governs, §8.1(2); F-C) |
+| 34 | Beast | C | yes | match | active | within | **yes**; same amendment, now ≥ effective_at, auth.destructive=T | **amendment in force** | **ALLOW** (increase now effective) |
 
 ### ⓘ Property invariants (explicit test properties over the generated space)
 1. Runtime never expands authority (R>S on any scalar ⇒ AutonomyError; nothing allowed under effective
@@ -415,17 +485,23 @@ Legend: verdict ∈ ALLOW / DENY / ERROR / INCONCLUSIVE. "auth" = a matching sig
 4. Class isolation (auth for K never authorizes J≠K).
 5. Expiry monotonic (now outside [valid_from, valid_until] ⇒ never ALLOW).
 6. Destructive never inherited (needs destructive_allowed ∧ auth.destructive).
-7. Invalid amendment preserves last valid envelope (effective authority = predecessor's, never the
-   invalid increase); amendment increase inert before `effective_at`.
+7. Invalid, mixed, or single-hop-violating amendment preserves the last valid envelope (effective
+   authority = predecessor's, never the increase); an increase-only amendment is inert before
+   `effective_at` while the predecessor's own grants remain ALLOWed (§8.1(2)); a tightening-only
+   amendment applies immediately.
 8. Canonical serialization stable (logically-equal manifests ⇒ equal canonical bytes ⇒ equal
    manifest_id).
+9. No authorization without verified provenance — a request is ALLOWed only when the evaluated
+   `EffectiveEnvelope` carries provenance equal to the in-force `verified.manifest_id`; a non-provenanced
+   or mismatched envelope authorizes nothing (§8.1(1)).
 
 ## §14 — Migration risks
 - Pydantic required-vs-optional: new top-level `autonomy`/`amends` Optional; **inside** the autonomy
   block, budget/duration are REQUIRED (D6 safety) — intentional, only when an autonomy block is present.
   Old manifests (no block) unaffected (criterion A/D).
-- `_flatten` must map nested `engagement.autonomy` + top-level `amends` or they silently drop
-  (`manifest.py:73-86`) — explicit mapping + parse test.
+- `_flatten` must map **top-level** `autonomy` + top-level `amends` (both top-level `ScopeManifest`
+  fields per §4/§5, not nested under `engagement`) or they silently drop (`manifest.py:73-86`) —
+  explicit mapping + parse test.
 - Canonicalization: additive-only keys; criterion D byte-identity regression.
 - Default-Beast leak: default `"calm"`, criteria A/G/J, invariant 2.
 - None-as-unlimited leak: criterion I; reject None budget dims at the autonomy boundary.
@@ -445,5 +521,13 @@ reads the evaluator at runtime), so rollback has no live behavioral effect. No K
 - **O3 — `AmendmentRef.effective_at`** approved as the signed, tz-aware authenticated effective
   timestamp; covered by the signed canonical content (§5); permission increases cannot apply before it;
   missing/malformed/timezone-naive fails closed. No external timestamping authority required.
+- **M1 — Verified authority boundary (rev3; context.md 2026-10-31).** Public authorization REQUIRES a
+  `VerifiedManifest`-derived, provenance-bearing `EffectiveEnvelope`; a bare `AutonomyEnvelope` never
+  authorizes (§8.1(1); criterion E; invariant 9).
+- **M2 — Pending increases (rev3).** Before `effective_at` the verified predecessor is authoritative for
+  **all** inputs; at/after, the verified amendment; an invalid amendment never replaces the predecessor
+  (§8.1(2); criterion M; rows 25, 30, 33-34).
+- **M3 — Mixed amendments (rev3).** Rejected fail-closed; tightening-only is immediate, increase-only is
+  deferred to `effective_at`; mixed intent requires separate amendments (§7; §8.1(3); criterion M; row 31).
 
 (D1–D7 and P0/P1 are dispositioned in the review packet; this schema reflects the accepted forms.)
