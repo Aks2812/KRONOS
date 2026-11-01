@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 185
+seq: 186
 derived_at: 2026-10-31T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — GATE-1 self-approved; SEQ 184 fix uncommitted on claude/autonomy-brief29@e3981c0; re-dispatching builder to verify+commit (circuit breaker 2/3); manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
+stage: SPEC_BRIEF29 (Signed Autonomy Envelope, G2 foundation) — HALT: circuit breaker 3/3, Haiku re-review FAIL on claude/autonomy-brief29@e8941955 (F-A/F-B/F-C HIGH); ESCALATED — maintainer must settle 3 brief-prose conflicts before attempt 3; unmerged, no PR; manifest.py edit operator-authorized (narrow); S8 §6 live-run still paused (SEQ 140)
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -7708,3 +7708,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 184 Opus-specced fix; resume found claude/autonomy-brief29 HEAD still e3981c0, worktree uncommitted M on autonomy.py+manifest.py+test_autonomy.py+test_manifest.py (all ⊆ §10); markers present: EffectiveEnvelope.pending_increase_until gate (autonomy.py:79,338,417) + VerifiedManifest frozen/extra=forbid/_CONSTRUCTING token gate (manifest.py:55,161,169,180,270). Not yet committed/verified.
 - action: re-dispatch kronos-builder (claude-sonnet-5-5), attempt 2/3, §10 ONLY — verify uncommitted tree implements SEQ 184 spec (F1d/tighten-immediate/F3 forge+mutate+model_copy+smuggled rejection + load_and_verify positive control; F9 prop_1; F10 rows 15,19-23), fix only within §10, run hermetic suite (PASS from SUMMARY line not $?), commit explicit §10 paths. Brief sha256 848cc274889742f93e78f3d56eae19b3826c431e0e847d874f0910364bc0b83b.
 - outcome: pending. pending_action: on builder return Opus scope-audit (55b4b7f..HEAD ⊆ §10) + hermetic, then re-dispatch Haiku reviewer. Circuit breaker 2/3 — next FAIL = HALT+escalate.
+
+## SEQ 186 — builder attempt 2/3 committed (e8941955); Opus scope-audit PASS; Haiku re-review FAIL → CIRCUIT BREAKER HALT + ESCALATE
+- prev: SEQ 185 builder committed e89419551e860954fa15ba69a8be6a70fa393641 (suite 3867 passed/1 skipped/0 failed). Opus whole-window scope-audit PASS: git diff --name-only 55b4b7f..e8941955 = 7 paths ⊆ §10 (test_query.py = §10.7 seal). Haiku reviewer FAIL/DO-NOT-MERGE (evidence .claude/pipeline/04-review/review-evidence.json; prior B28 evidence backed up to scratchpad). 3rd failed review cycle → circuit breaker HALT.
+- action: HALT per CLAUDE.md "3 attempts then HALT and escalate" + SEQ 184 next-FAIL=HALT. NO attempt-3 dispatch. Blocking HIGH: F-A autonomy.py:240-247,:417-421 (effective_envelope leaves provenance unset; class B ALLOWed pre-effective_at; §8-named fn still unfixed — new helper in_force_effective_envelope stamps but authorize path via effective_envelope does not); F-B autonomy.py:167-169,:372-377,:402 (authority not bound to VerifiedManifest; unverified parsed B grant ALLOWed → fail-open, §8 crit E+I FAIL, P3); F-C autonomy.py:275-298,:453 (engagement-level destructive/in_scope increases bypass effective_at gate, P4/P5). MED: F-D predecessor-authority semantics; F-E manifest_id missing "sha256:" prefix (§5 vs manifest.py:275,:201); F-F §13 invariant-7/combinatorial-generator gaps; F-G "unforgeable" overclaim. LOW: F-H/F-I/F-J.
+- outcome: HALT — escalated to maintainer. pending_action: maintainer settles 3 brief-prose conflicts before any attempt 3 — (1) F-B §5-vs-§8 signature (does authorize/effective_envelope bind to VerifiedManifest or accept bare AutonomyEnvelope?); (2) F-D whether a pending increase leaves predecessor authority in force (§8 "else use predecessor envelope"); (3) mixed-amendment semantics (brief silent — PAUSE-DECISION). Then amend brief + return to builder with F-A/F-B/F-C blocking. Branch claude/autonomy-brief29@e8941955 unmerged; no PR opened. Circuit breaker 3/3.
