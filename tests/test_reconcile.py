@@ -30,6 +30,7 @@ from kronos.reconcile.merge import merge_group
 from kronos.schema import EDGE_PAIRS
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 
 def _graph(tmp_path, manifest_factory, signing_keypair, **manifest_overrides):
@@ -54,6 +55,7 @@ def _secret_with_material(
         "SECRET", node_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": kind, "status": status, "source": "test"},
         scope_key=scope_key,
+        source=MutationSource.INGESTION,
     )
 
 
@@ -69,8 +71,8 @@ def test_secret_dedup_merges_same_normalized_material_different_source(tmp_path,
     # extractors finding the "same" secret would.
     _secret_with_material(g, engagement_dir, "secret:aaa", b"shared-fixture-secret")
     _secret_with_material(g, engagement_dir, "secret:bbb", b"  shared-fixture-secret  \n")
-    ev_a = attach_evidence(g, engagement_dir, b"proof-a", kind="extraction_proof", target_type="secret", target_id="secret:aaa")
-    ev_b = attach_evidence(g, engagement_dir, b"proof-b", kind="extraction_proof", target_type="secret", target_id="secret:bbb")
+    ev_a = attach_evidence(g, engagement_dir, b"proof-a", kind="extraction_proof", target_type="secret", target_id="secret:aaa", source=MutationSource.INGESTION)
+    ev_b = attach_evidence(g, engagement_dir, b"proof-b", kind="extraction_proof", target_type="secret", target_id="secret:bbb", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, engagement_dir)
 
@@ -96,8 +98,8 @@ def test_secret_dedup_merges_same_normalized_material_different_source(tmp_path,
 def test_api_endpoint_numeric_path_segments_merge(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair)
     url_a, url_b = "http://api.acme.example.com/users/123", "http://api.acme.example.com/users/456"
-    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"})
-    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"})
+    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -113,8 +115,8 @@ def test_api_endpoint_numeric_path_segments_merge(tmp_path, manifest_factory, si
 def test_api_endpoint_genuinely_different_paths_never_merge(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair)
     url_a, url_b = "http://api.acme.example.com/users/1", "http://api.acme.example.com/admin/1"
-    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"})
-    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"})
+    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -127,8 +129,8 @@ def test_api_endpoint_genuinely_different_paths_never_merge(tmp_path, manifest_f
 
 def test_fqdn_and_ipv4_host_never_merge(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair)
-    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"})
-    g.upsert_node("HOST", "10.0.5.10", {"source": "test"})
+    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("HOST", "10.0.5.10", {"source": "test"}, source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -168,7 +170,7 @@ def test_reachable_with_evidence_plus_extracted_twin_survivor_is_reachable(tmp_p
 
     _secret_with_material(g, engagement_dir, "secret:aaa", b"laundering-case-a")
     advance_secret_status(g, "secret:aaa", "validated")
-    evidence_id = attach_evidence(g, engagement_dir, b"real-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa")
+    evidence_id = attach_evidence(g, engagement_dir, b"real-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa", source=MutationSource.INGESTION)
     advance_secret_status(g, "secret:aaa", "reachable")
 
     _secret_with_material(g, engagement_dir, "secret:bbb", b"laundering-case-a")  # extracted, no evidence
@@ -238,11 +240,11 @@ def test_reconcile_in_pipeline_never_shortcuts_or_changes_reachability(tmp_path,
     engagement_dir = tmp_path
 
     # "ingest": one secret leaked by a mobile app, referencing an endpoint.
-    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app", "platform": "android", "source": "static"})
+    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     _secret_with_material(g, engagement_dir, "secret:real", b"pipeline-secret")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:real", "SECRET")
-    g.upsert_node("API_ENDPOINT", "http://api.acme.example.com", {"url": "http://api.acme.example.com", "method": "GET", "source": "static"})
-    g.upsert_edge("references", "com.acme.app", "MOBILE_APP", "http://api.acme.example.com", "API_ENDPOINT")
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:real", "SECRET", source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", "http://api.acme.example.com", {"url": "http://api.acme.example.com", "method": "GET", "source": "static"}, source=MutationSource.INGESTION)
+    g.upsert_edge("references", "com.acme.app", "MOBILE_APP", "http://api.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
 
     # reconcile pass #1 (post-ingest): nothing to collapse yet.
     first_pass = run_reconciliation_pass(g, engagement_dir, pass_name="post_ingest")
@@ -252,7 +254,7 @@ def test_reconcile_in_pipeline_never_shortcuts_or_changes_reachability(tmp_path,
     # under a different id/source (the exact scenario this brief exists
     # to fix) — created at status="extracted", same as any ingester.
     _secret_with_material(g, engagement_dir, "secret:enrichment_dup", b"pipeline-secret")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:enrichment_dup", "SECRET")
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:enrichment_dup", "SECRET", source=MutationSource.INGESTION)
 
     # the enrichment-shortcut invariant: every secret enrichment just
     # created is still exactly "extracted" right before reconcile/validate.
@@ -345,15 +347,16 @@ def test_secret_real_duplicate_moves_edges_recomputes_status_loser_is_edgeless_a
     _secret_with_material(g, engagement_dir, "secret:aaa", b"real-dup-material", scope_key="app1")
     advance_secret_status(g, "secret:aaa", "validated")
     evidence_id = attach_evidence(
-        g, engagement_dir, b"real-dup-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa"
+        g, engagement_dir, b"real-dup-proof", kind="validation_proof", target_type="secret", target_id="secret:aaa",
+        source=MutationSource.INGESTION,
     )
     advance_secret_status(g, "secret:aaa", "reachable")
-    g.upsert_node("CLOUD_RESOURCE", "cr1", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"})
-    g.upsert_edge("authenticates_to", "secret:aaa", "SECRET", "cr1", "CLOUD_RESOURCE")
+    g.upsert_node("CLOUD_RESOURCE", "cr1", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("authenticates_to", "secret:aaa", "SECRET", "cr1", "CLOUD_RESOURCE", source=MutationSource.INGESTION)
 
     _secret_with_material(g, engagement_dir, "secret:bbb", b"real-dup-material", scope_key="app1")  # extracted, no evidence
-    g.upsert_node("MOBILE_APP", "app1", {"bundle_id": "app1", "platform": "android", "source": "test"})
-    g.upsert_edge("leaks", "app1", "MOBILE_APP", "secret:bbb", "SECRET")
+    g.upsert_node("MOBILE_APP", "app1", {"bundle_id": "app1", "platform": "android", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("leaks", "app1", "MOBILE_APP", "secret:bbb", "SECRET", source=MutationSource.INGESTION)
 
     first = run_reconciliation_pass(g, engagement_dir)
     assert len(first.merges) == 1
@@ -419,10 +422,10 @@ def test_api_endpoint_real_duplicate_edges_move_and_find_paths_returns_survivor_
     url_b = "http://api.acme.example.com/users/456"
     url_c = "http://api.acme.example.com/admin/1"
     for url in (url_a, url_b, url_c):
-        g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"})
-    g.upsert_node("HOST", "h1", {"source": "test"})
+        g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("HOST", "h1", {"source": "test"}, source=MutationSource.INGESTION)
     for url in (url_a, url_b, url_c):
-        g.upsert_edge("exposes", "h1", "HOST", url, "API_ENDPOINT")
+        g.upsert_edge("exposes", "h1", "HOST", url, "API_ENDPOINT", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -459,8 +462,8 @@ def test_finding_merge_group_refuses_a_real_duplicate(tmp_path, manifest_factory
     `merge_group` directly, bypassing the None-key runner path, to prove
     the guard itself fires."""
     g = _graph(tmp_path, manifest_factory, signing_keypair)
-    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"})
-    g.upsert_node("FINDING", "f2", {"title": "t", "severity": "high", "status": "hypothesis"})
+    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
+    g.upsert_node("FINDING", "f2", {"title": "t", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
 
     with pytest.raises(NotImplementedError):
         merge_group(g, "FINDING", ["f1", "f2"], "some:canonical:key", "test_pass")
@@ -545,14 +548,16 @@ def test_web_endpoint_real_duplicate_merges_and_tombstones(tmp_path, manifest_fa
     # host identity actually is, gated on its own shape, independent
     # of WEB_ENDPOINT's (empty) id table.
     g.upsert_node(
-        "WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"}, scope_key="acme.example.com"
+        "WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"}, scope_key="acme.example.com",
+        source=MutationSource.INGESTION,
     )
     g.upsert_node(
-        "WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"}, scope_key="acme.example.com"
+        "WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"}, scope_key="acme.example.com",
+        source=MutationSource.INGESTION,
     )
-    g.upsert_node("HOST", "h1", {"source": "test"})
-    g.upsert_edge("exposes", "h1", "HOST", "web:1", "WEB_ENDPOINT")
-    g.upsert_edge("exposes", "h1", "HOST", "web:2", "WEB_ENDPOINT")
+    g.upsert_node("HOST", "h1", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("exposes", "h1", "HOST", "web:1", "WEB_ENDPOINT", source=MutationSource.INGESTION)
+    g.upsert_edge("exposes", "h1", "HOST", "web:2", "WEB_ENDPOINT", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -578,8 +583,8 @@ def test_web_endpoint_distinct_pages_never_merge(tmp_path, manifest_factory, sig
     g = _graph(tmp_path, manifest_factory, signing_keypair)
     url_a = "https://acme.example.com/blog/post-1"
     url_b = "https://acme.example.com/blog/post-2"
-    g.upsert_node("WEB_ENDPOINT", "web:a", {"url": url_a, "method": "GET", "source": "test"})
-    g.upsert_node("WEB_ENDPOINT", "web:b", {"url": url_b, "method": "GET", "source": "test"})
+    g.upsert_node("WEB_ENDPOINT", "web:a", {"url": url_a, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("WEB_ENDPOINT", "web:b", {"url": url_b, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -590,11 +595,11 @@ def test_web_endpoint_distinct_pages_never_merge(tmp_path, manifest_factory, sig
 
 def test_service_real_duplicate_merges_keyed_off_single_host(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
-    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"})
-    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "nmap"})
-    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "masscan"})
-    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:1", "SERVICE")
-    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE")
+    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "nmap"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "masscan"}, source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:1", "SERVICE", source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -614,11 +619,11 @@ def test_service_real_duplicate_merges_keyed_off_single_host(tmp_path, manifest_
 
 def test_service_different_port_never_merges(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair)
-    g.upsert_node("HOST", "h1", {"source": "test"})
-    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"})
-    g.upsert_node("SERVICE", "svc:2", {"port": 8443, "protocol": "tcp", "source": "test"})
-    g.upsert_edge("hosts", "h1", "HOST", "svc:1", "SERVICE")
-    g.upsert_edge("hosts", "h1", "HOST", "svc:2", "SERVICE")
+    g.upsert_node("HOST", "h1", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:2", {"port": 8443, "protocol": "tcp", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "h1", "HOST", "svc:1", "SERVICE", source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "h1", "HOST", "svc:2", "SERVICE", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -628,11 +633,11 @@ def test_service_different_port_never_merges(tmp_path, manifest_factory, signing
 def test_parameter_real_duplicate_merges_keyed_off_parent_endpoint(tmp_path, manifest_factory, signing_keypair):
     g = _graph(tmp_path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
     url = "https://api.acme.example.com/users"
-    g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"})
-    g.upsert_node("PARAMETER", "param:1", {"name": "id", "param_type": "query", "source": "static"})
-    g.upsert_node("PARAMETER", "param:2", {"name": "id", "param_type": "query", "source": "dynamic"})
-    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:1", "PARAMETER")
-    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:2", "PARAMETER")
+    g.upsert_node("API_ENDPOINT", url, {"url": url, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("PARAMETER", "param:1", {"name": "id", "param_type": "query", "source": "static"}, source=MutationSource.INGESTION)
+    g.upsert_node("PARAMETER", "param:2", {"name": "id", "param_type": "query", "source": "dynamic"}, source=MutationSource.INGESTION)
+    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:1", "PARAMETER", source=MutationSource.INGESTION)
+    g.upsert_edge("has_param", url, "API_ENDPOINT", "param:2", "PARAMETER", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -652,12 +657,12 @@ def test_parameter_same_name_different_endpoint_never_merges(tmp_path, manifest_
     g = _graph(tmp_path, manifest_factory, signing_keypair)
     url_a = "https://api.acme.example.com/users"
     url_b = "https://api.acme.example.com/products"
-    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"})
-    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"})
-    g.upsert_node("PARAMETER", "param:a", {"name": "id", "param_type": "query", "source": "test"})
-    g.upsert_node("PARAMETER", "param:b", {"name": "id", "param_type": "query", "source": "test"})
-    g.upsert_edge("has_param", url_a, "API_ENDPOINT", "param:a", "PARAMETER")
-    g.upsert_edge("has_param", url_b, "API_ENDPOINT", "param:b", "PARAMETER")
+    g.upsert_node("API_ENDPOINT", url_a, {"url": url_a, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", url_b, {"url": url_b, "method": "GET", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("PARAMETER", "param:a", {"name": "id", "param_type": "query", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("PARAMETER", "param:b", {"name": "id", "param_type": "query", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("has_param", url_a, "API_ENDPOINT", "param:a", "PARAMETER", source=MutationSource.INGESTION)
+    g.upsert_edge("has_param", url_b, "API_ENDPOINT", "param:b", "PARAMETER", source=MutationSource.INGESTION)
 
     report = run_reconciliation_pass(g, tmp_path)
 
@@ -686,12 +691,12 @@ def test_service_merge_requires_host_merged_first_fails_under_reverse_order(tmp_
     # Two HOST duplicates — same real host, different literal id text
     # (case), so `canonical_key_for_host` groups them, but each one's
     # raw id is textually distinct until that merge actually runs.
-    g.upsert_node("HOST", "API.ACME.EXAMPLE.COM", {"source": "test"})
-    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"})
-    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"})
-    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "test"})
-    g.upsert_edge("hosts", "API.ACME.EXAMPLE.COM", "HOST", "svc:1", "SERVICE")
-    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE")
+    g.upsert_node("HOST", "API.ACME.EXAMPLE.COM", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("HOST", "api.acme.example.com", {"source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:1", {"port": 443, "protocol": "tcp", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:2", {"port": 443, "protocol": "tcp", "source": "test"}, source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "API.ACME.EXAMPLE.COM", "HOST", "svc:1", "SERVICE", source=MutationSource.INGESTION)
+    g.upsert_edge("hosts", "api.acme.example.com", "HOST", "svc:2", "SERVICE", source=MutationSource.INGESTION)
 
     # REVERSE order: group+merge SERVICE before HOST has ever been
     # merged — reproduces the exact defect class §5 exists to prevent.
@@ -727,8 +732,8 @@ def test_reconciliation_is_deterministic_across_two_identical_runs(tmp_path, man
     def _build(path):
         g = _graph(path, manifest_factory, signing_keypair, scope={"in_scope": ["*"], "excluded": []})
         url = "https://acme.example.com/blog/post-1"
-        g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"})
-        g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"})
+        g.upsert_node("WEB_ENDPOINT", "web:1", {"url": url, "method": "GET", "source": "crawler"}, source=MutationSource.INGESTION)
+        g.upsert_node("WEB_ENDPOINT", "web:2", {"url": url, "method": "GET", "source": "sitemap"}, source=MutationSource.INGESTION)
         return g
 
     import os

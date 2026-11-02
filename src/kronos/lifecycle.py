@@ -32,8 +32,9 @@ never assigns a status value that didn't come out of
 
 from __future__ import annotations
 
-from kronos.commit import MutationSource
 from typing import TYPE_CHECKING, Literal
+
+from kronos.commit import MutationSource
 
 if TYPE_CHECKING:  # pragma: no cover - avoids a runtime import cycle with graph.py
     from kronos.graph import EngagementGraph

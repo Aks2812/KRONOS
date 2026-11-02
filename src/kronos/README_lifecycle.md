@@ -45,16 +45,11 @@ at 0 respectively — see `DECISIONS.md` for why.
 `EngagementGraph` has no generic "set any property" method exposed for
 general use, and `upsert_node` (the node-creation/update path) rejects
 `status`/`confidence`/`scope_note` from caller-supplied `props` outright
-(see `README_graph.md`). `EngagementGraph.execute()` *is* a real,
-unrestricted Cypher method — `advance_secret_status`/
-`advance_finding_status` use it themselves to write `status`/
-`confidence`/`scope_note` directly, since those are exactly the two
-functions meant to touch those columns. It's a low-level primitive for
-this package's own modules, not a public "set status" API; nothing
-outside `lifecycle.py` calls it for that purpose, and a caller who
-reaches for `graph.execute()` to bypass the lifecycle is reaching past
-the documented interface, not using a second front door that happens to
-exist by accident. With that caveat, the only two functions that
+(see `README_graph.md`). `EngagementGraph.execute()` is
+read-only: it cannot write `status`/`confidence`/`scope_note`.
+`advance_secret_status`/`advance_finding_status` write them through
+`GraphMutationAuthority` (`commit.py`) with source `LIFECYCLE`, since
+those are exactly the two functions meant to touch those columns. With that caveat, the only two functions that
 advance `status`/`confidence` as part of this module's actual contract
 — `advance_secret_status` and `advance_finding_status` — run every hard
 rule before writing anything:

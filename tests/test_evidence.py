@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from kronos.evidence import attach_evidence, get_evidence, store_evidence
+from kronos.commit import MutationSource
 
 
 def test_store_evidence_is_content_addressed(tmp_path):
@@ -30,7 +31,7 @@ def test_get_evidence_missing_raises(tmp_path):
 
 def test_attach_evidence_creates_node_and_edge(engagement_graph, tmp_path):
     g = engagement_graph
-    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"})
-    sha = attach_evidence(g, tmp_path, b"poc output", "poc", "finding", "f1")
+    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
+    sha = attach_evidence(g, tmp_path, b"poc output", "poc", "finding", "f1", source=MutationSource.INGESTION)
     r = g.execute("MATCH (e:EVIDENCE)-[:evidences]->(f:FINDING {id:'f1'}) RETURN e.sha256")
     assert r.get_next()[0] == sha

@@ -47,6 +47,7 @@ from kronos.validate.candidates import find_candidate_targets_for_secret
 from kronos.validate.controls import Classification
 from kronos.validate.invalidation import record_secret_finding
 from kronos.validate.registry import classify_validator_kind, get_validator
+from kronos.commit import MutationSource
 
 if TYPE_CHECKING:  # pragma: no cover
     from kronos.graph import EngagementGraph
@@ -226,8 +227,9 @@ def run_validation_pass(
                     kind="validation_proof",
                     target_type="secret",
                     target_id=secret_id,
+                    source=MutationSource.VALIDATION,
                 )
-                graph.upsert_edge("authenticates_to", secret_id, "SECRET", candidate.id, candidate.type)
+                graph.upsert_edge("authenticates_to", secret_id, "SECRET", candidate.id, candidate.type, source=MutationSource.VALIDATION)
                 _advance_through(graph, secret_id)
                 record_secret_finding(
                     graph, secret_id, candidate, evidence=outcome.evidence, engagement_dir=engagement_dir
@@ -240,6 +242,7 @@ def run_validation_pass(
                     kind="validation_proof",
                     target_type="secret",
                     target_id=secret_id,
+                    source=MutationSource.VALIDATION,
                 )
                 _advance_to_validated_only(graph, secret_id)
 

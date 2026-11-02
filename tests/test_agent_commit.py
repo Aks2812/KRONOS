@@ -11,6 +11,7 @@ import pytest
 from kronos.agent import MockDriver, MockReviewer, ReviewVerdict, ReviewViolation, run, run_once
 from kronos.agent import dispatcher
 from kronos.schema import ALL_NODE_TABLES
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "f4559a2"
@@ -42,8 +43,8 @@ def _payload(target, kind="probe"):
 
 @pytest.fixture
 def g(engagement_graph):
-    engagement_graph.upsert_node("HOST", HOST_IN, {"source": "t"})
-    engagement_graph.upsert_node("HOST", HOST_OUT, {"source": "t"})
+    engagement_graph.upsert_node("HOST", HOST_IN, {"source": "t"}, source=MutationSource.INGESTION)
+    engagement_graph.upsert_node("HOST", HOST_OUT, {"source": "t"}, source=MutationSource.INGESTION)
     return engagement_graph
 
 
@@ -78,7 +79,7 @@ def test_F_secret_derived_from(g):  # §8 F (SECRET branch)
     from kronos.agent import Intent
 
     sid = "secret:abc123"
-    g.upsert_node("SECRET", sid, {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "t"})
+    g.upsert_node("SECRET", sid, {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "t"}, source=MutationSource.INGESTION)
     fid = dispatcher._commit(g, Intent("probe", sid, "why"), ReviewVerdict(True, "SECRET", "hypothesis"))
     assert fid == f"finding:agent-proposal:probe:{sid}"
     n = g.execute(

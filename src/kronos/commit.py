@@ -43,6 +43,7 @@ class MutationSource(str, Enum):
     VALIDATION = "validation"
     RECONCILIATION = "reconciliation"
     LIFECYCLE = "lifecycle"
+    BOOTSTRAP = "bootstrap"
 
 
 def _literal(value: Any) -> str:

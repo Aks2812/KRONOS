@@ -11,6 +11,7 @@ import pytest
 from kronos.agent import ExecutionOutcome, Intent, LiveExecutor
 from kronos.evidence import store_evidence
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "1405ed7"
@@ -83,16 +84,18 @@ def calls(monkeypatch):
 def _seed(g, tmp_path, value: str, *, endpoint=IN_EP, bucket=None, ref=None) -> str:
     info = store_evidence(tmp_path, value.encode(), kind="mobile_secret")
     sid = "secret:s1"
-    g.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "t"})
+    g.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "t"}, source=MutationSource.INGESTION)
     g.upsert_node("SECRET", sid, {"value_ref": ref or "sha256:" + info["sha256"], "kind": "api_key",
-                                  "status": "extracted", "source": "t"}, scope_key="com.kronos.lab")
-    g.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", sid, "SECRET")
+                                  "status": "extracted", "source": "t"}, scope_key="com.kronos.lab",
+                                  source=MutationSource.INGESTION,)
+    g.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", sid, "SECRET", source=MutationSource.INGESTION)
     if endpoint:
-        g.upsert_node("API_ENDPOINT", endpoint, {"source": "t"})
-        g.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", endpoint, "API_ENDPOINT")
+        g.upsert_node("API_ENDPOINT", endpoint, {"source": "t"}, source=MutationSource.INGESTION)
+        g.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", endpoint, "API_ENDPOINT", source=MutationSource.INGESTION)
     if bucket:
         g.upsert_node("CLOUD_RESOURCE", bucket, {"resource_type": "s3_bucket", "provider": "aws", "source": "t"},
-                       scope_key=f"arn:aws:s3:::{bucket}")
+                       scope_key=f"arn:aws:s3:::{bucket}",
+                       source=MutationSource.INGESTION,)
     return sid
 
 
@@ -187,8 +190,8 @@ def test_G_mapping_exact(engagement_graph, tmp_path, calls, nonet, live, evidenc
 
 def test_G_first_live_wins(engagement_graph, tmp_path, monkeypatch, nonet):  # §2 D3
     sid = _seed(engagement_graph, tmp_path, API_VALUE)
-    engagement_graph.upsert_node("API_ENDPOINT", "https://b.acme.example.com", {"source": "t"})
-    engagement_graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", "https://b.acme.example.com", "API_ENDPOINT")
+    engagement_graph.upsert_node("API_ENDPOINT", "https://b.acme.example.com", {"source": "t"}, source=MutationSource.INGESTION)
+    engagement_graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", "https://b.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
     seen = []
 
     def api(value, target, **hint):
@@ -250,13 +253,13 @@ def _findings(g):
 
 
 def _svc(g, sid=SVC_IN, port=4566):
-    g.upsert_node("SERVICE", sid, {"port": port, "protocol": "tcp", "source": "t"})
+    g.upsert_node("SERVICE", sid, {"port": port, "protocol": "tcp", "source": "t"}, source=MutationSource.INGESTION)
 
 
 def _web(g, url=WEB_IN, method="GET"):
     from urllib.parse import urlsplit
 
-    g.upsert_node("WEB_ENDPOINT", url, {"url": url, "method": method, "source": "t"}, scope_key=urlsplit(url).hostname)
+    g.upsert_node("WEB_ENDPOINT", url, {"url": url, "method": method, "source": "t"}, scope_key=urlsplit(url).hostname, source=MutationSource.INGESTION)
 
 
 def _arm25(success):

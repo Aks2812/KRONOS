@@ -29,6 +29,27 @@ B31_SECTION_10 = {
     "tests/test_commit_authority.py",
     "tests/test_scope_guard.py",
 }
+B32_SECTION_10 = B31_SECTION_10 | {
+    "src/kronos/evidence.py",
+    "src/kronos/agent/dispatcher.py",
+    "src/kronos/validate/invalidation.py",
+    "src/kronos/validate/web_validator.py",
+    "src/kronos/validate/infra_validator.py",
+    "src/kronos/validate/runner.py",
+    "src/kronos/ingest/__init__.py",
+    "src/kronos/README_graph.md",
+    "src/kronos/README_lifecycle.md",
+    "SPEC_BRIEF32.md",
+} | {
+    f"tests/{n}.py"
+    for n in (
+        "test_commit_authority test_agent_commit test_lifecycle test_agent_live_executor "
+        "test_validate_runner test_agent_dispatcher test_schema_graph test_invalidation "
+        "test_ingest_contract test_negative_controls test_budget test_agent_executor test_ingest "
+        "test_evidence test_reconcile test_mobile_ingest test_invariants test_web_ingest "
+        "test_query test_validate_candidates"
+    ).split()
+}
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -86,7 +107,7 @@ def test_read_api_write_fails_at_driver(g, nonet):
     ],
 )
 def test_disguised_writes_via_read_api_raise(g, q, nonet):
-    g.upsert_node("HOST", "host:a.acme.example.com", {"source": "t"})
+    g.upsert_node("HOST", "host:a.acme.example.com", {"source": "t"}, source=MutationSource.INGESTION)
     with pytest.raises(Exception):
         g.execute(q)
     assert _count(g) == 1
@@ -112,14 +133,14 @@ def test_authority_has_no_raw_exec_and_conn_private(g, nonet):
 
 
 def test_authority_cypher_injection_in_value_and_names_is_inert(g, nonet):
-    g.upsert_node("HOST", "host:a.acme.example.com", {"source": "x' SET n.in_scope = false //"})
+    g.upsert_node("HOST", "host:a.acme.example.com", {"source": "x' SET n.in_scope = false //"}, source=MutationSource.INGESTION)
     assert g.get_node("HOST", "host:a.acme.example.com")["source"] == "x' SET n.in_scope = false //"
     with pytest.raises(ValueError):
-        g.upsert_node("HOST", "host:a.acme.example.com", {"source = 'x' //": "y"})
+        g.upsert_node("HOST", "host:a.acme.example.com", {"source = 'x' //": "y"}, source=MutationSource.INGESTION)
     with pytest.raises(ValueError):
-        g.upsert_node("HOST:X) DETACH DELETE (n", "id", {})
+        g.upsert_node("HOST:X) DETACH DELETE (n", "id", {}, source=MutationSource.INGESTION)
     with pytest.raises(ValueError):
-        g.upsert_edge("hosts) DELETE r //", "a", "HOST", "b", "SERVICE")
+        g.upsert_edge("hosts) DELETE r //", "a", "HOST", "b", "SERVICE", source=MutationSource.INGESTION)
     assert not nonet
 
 
@@ -225,7 +246,154 @@ def test_B31_Q_scope_audit(nonet):
             ["git", "diff", "--name-only", rng], cwd=ROOT, capture_output=True, text=True, check=True
         ).stdout.split()
 
-    assert set(names(f"{B31_BASE}..HEAD")) <= B31_SECTION_10, set(names(f"{B31_BASE}..HEAD")) - B31_SECTION_10
+    assert set(names(f"{B31_BASE}..HEAD")) <= B32_SECTION_10, set(names(f"{B31_BASE}..HEAD")) - B32_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
+
+
+# ---- SPEC_BRIEF32: required source identity on write facades ----
+def _spy(g, monkeypatch):
+    seen = []
+    for name in ("create_or_update_node", "upsert_edge"):
+        orig = getattr(g._authority, name)
+
+        def wrap(*a, _o=orig, **k):
+            seen.append(a[-1] if a and isinstance(a[-1], MutationSource) else k.get("source"))
+            return _o(*a, **k)
+
+        monkeypatch.setattr(g._authority, name, wrap)
+    return seen
+
+
+# B32 AC1: omission raises on all three signatures (section 3 item 1)
+def test_B32_source_required_keyword_only(g, tmp_path, nonet):
+    from kronos.evidence import attach_evidence
+
+    for fn in (g.upsert_node, g.upsert_edge, attach_evidence):
+        p = inspect.signature(fn).parameters["source"]
+        assert p.kind is inspect.Parameter.KEYWORD_ONLY and p.default is inspect.Parameter.empty
+    with pytest.raises(TypeError):
+        g.upsert_node("HOST", "h1", {})
+    with pytest.raises(TypeError):
+        g.upsert_edge("hosts", "a", "HOST", "b", "SERVICE")
+    with pytest.raises(TypeError):
+        attach_evidence(g, tmp_path, b"x", "k", "finding", "f")
+    assert not nonet
+
+
+# B32 AC2: BOOTSTRAP exists (section 3 item 2)
+def test_B32_bootstrap_member_value():
+    assert MutationSource.BOOTSTRAP.value == "bootstrap"
+
+
+# B32 AC2/AC3: init_engagement -> BOOTSTRAP (section 3 item 2)
+def test_B32_init_engagement_attributes_bootstrap(tmp_path, manifest_factory, signing_keypair, monkeypatch, nonet):
+    _, pub = signing_keypair
+    seen = []
+    orig = commit_mod.GraphMutationAuthority.create_or_update_node
+
+    def wrap(self, *a, **k):
+        seen.append((a[0], a[-1]))
+        return orig(self, *a, **k)
+
+    monkeypatch.setattr(commit_mod.GraphMutationAuthority, "create_or_update_node", wrap)
+    EngagementGraph.init_engagement(tmp_path / "b.kz", manifest_factory(), pub)
+    assert seen == [("ENGAGEMENT", MutationSource.BOOTSTRAP)]
+    assert not nonet
+
+
+# B32 AC3/AC4: live per-path attribution (section 3 item 3); each cell cites its path
+def test_B32_per_path_attribution_live(g, tmp_path, monkeypatch, nonet):
+    from kronos.agent.dispatcher import _commit as dispatcher_commit
+    from kronos.validate.invalidation import record_secret_finding
+    from kronos.reconcile.merge import _carry_over_edges
+
+    seen = _spy(g, monkeypatch)
+    g.upsert_node("SECRET", "s1", {}, source=MutationSource.INGESTION)
+    g.upsert_node("HOST", "h1", {}, source=MutationSource.INGESTION)
+    seen.clear()
+
+    class _I:  # dispatcher _commit reads kind/target_id/rationale (agent/dispatcher.py)
+        kind, target_id, rationale = "k", "s1", "r"
+
+    class _V:
+        target_type = "SECRET"
+
+    dispatcher_commit(g, _I, _V)
+    assert seen and set(seen) == {MutationSource.DISPATCHER}  # dispatcher -> DISPATCHER
+
+    seen.clear()
+
+    class _C:
+        id, type = "h1", "HOST"
+
+    record_secret_finding(g, "s1", _C)
+    assert seen and set(seen) == {MutationSource.VALIDATION}  # validate/invalidation -> VALIDATION
+
+    seen.clear()
+    g.upsert_node("SECRET", "s2", {}, source=MutationSource.INGESTION)
+    g.upsert_edge("authenticates_to", "s2", "SECRET", "h1", "HOST", source=MutationSource.INGESTION)
+    seen.clear()
+    _carry_over_edges(g, "SECRET", "s2", "s1")
+    assert seen and set(seen) == {MutationSource.RECONCILIATION}  # reconcile carry-over -> RECONCILIATION
+    assert not nonet
+
+
+def _src(path):
+    return (ROOT / path).read_text()
+
+
+@pytest.mark.parametrize(
+    "path,member",
+    [
+        ("src/kronos/agent/dispatcher.py", "DISPATCHER"),  # section 3 item 3 / item 4
+        ("src/kronos/validate/invalidation.py", "VALIDATION"),  # section 3 item 3 / item 4
+        ("src/kronos/validate/web_validator.py", "VALIDATION"),  # section 3 item 3
+        ("src/kronos/validate/infra_validator.py", "VALIDATION"),  # section 3 item 3
+        ("src/kronos/validate/runner.py", "VALIDATION"),  # section 3 item 3 / item 4
+        ("src/kronos/ingest/__init__.py", "INGESTION"),  # section 3 item 3
+        ("src/kronos/reconcile/merge.py", "RECONCILIATION"),  # section 3 item 3 (_carry_over_edges)
+        ("src/kronos/graph.py", "BOOTSTRAP"),  # section 3 item 3 (init_engagement)
+    ],
+)
+def test_B32_path_passes_its_enum(path, member, nonet):
+    # AC3 + AC4: DISPATCHER / VALIDATION are live (passed by production paths)
+    assert f"source=MutationSource.{member}" in _src(path)
+
+
+def test_B32_no_unattributed_call_sites(nonet):
+    # every facade / attach_evidence call in production passes source=
+    for path in (
+        "agent/dispatcher.py", "validate/invalidation.py", "validate/web_validator.py",
+        "validate/infra_validator.py", "validate/runner.py", "ingest/__init__.py",
+        "reconcile/merge.py", "evidence.py",
+    ):
+        text = _src(f"src/kronos/{path}")
+        for m in re.finditer(r"(?<!def )\b(upsert_node|upsert_edge|attach_evidence)\(\s*[^)\s]", text):
+            depth, i = 1, m.end() - 1
+            while depth:
+                depth += {"(": 1, ")": -1}.get(text[i], 0)
+                i += 1
+            assert "source=" in text[m.end():i], (path, m.group(1))
+
+
+# B32 AC5: facade bodies carry no literal INGESTION
+def test_B32_facade_bodies_no_literal_ingestion(nonet):
+    for fn in (EngagementGraph.upsert_node, EngagementGraph.upsert_edge):
+        assert "MutationSource.INGESTION" not in inspect.getsource(fn)
+
+
+# B32 AC6: F1 docs no longer claim execute() is write-capable
+def test_B32_docs_execute_read_only(nonet):
+    g_doc = " ".join(_src("src/kronos/README_graph.md").split())
+    l_doc = " ".join(_src("src/kronos/README_lifecycle.md").split())
+    assert "use internally to write" not in g_doc
+    assert "real, unrestricted Cypher" not in l_doc
+    assert "write `status`/ `confidence`/`scope_note` directly" not in l_doc
+    assert "read-only" in g_doc and "read-only" in l_doc
+
+
+# B32 F3: orphan constant removed from merge.py
+def test_B32_orphan_status_bearing_removed(nonet):
+    assert "_STATUS_BEARING_TYPES" not in _src("src/kronos/reconcile/merge.py")

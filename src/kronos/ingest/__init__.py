@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from kronos.schema import ALL_NODE_TABLES
+from kronos.commit import MutationSource
 
 if TYPE_CHECKING:  # pragma: no cover - avoids a runtime import cycle with graph.py
     from kronos.graph import EngagementGraph
@@ -116,10 +117,10 @@ def apply_upserts(engagement: "EngagementGraph", upserts: list[NodeUpsert | Edge
     input) never creates duplicate nodes or edges."""
     for item in upserts:
         if isinstance(item, NodeUpsert):
-            engagement.upsert_node(item.type, item.id, item.props, scope_key=item.scope_key)
+            engagement.upsert_node(item.type, item.id, item.props, scope_key=item.scope_key, source=MutationSource.INGESTION)
         elif isinstance(item, EdgeUpsert):
             from_type = _resolve_node_type(engagement, item.from_id)
             to_type = _resolve_node_type(engagement, item.to_id)
-            engagement.upsert_edge(item.label, item.from_id, from_type, item.to_id, to_type, item.props)
+            engagement.upsert_edge(item.label, item.from_id, from_type, item.to_id, to_type, item.props, source=MutationSource.INGESTION)
         else:
             raise TypeError(f"unknown upsert type: {item!r}")

@@ -43,12 +43,6 @@ from kronos.schema import EDGE_PAIRS
 if TYPE_CHECKING:  # pragma: no cover
     from kronos.graph import EngagementGraph
 
-# Node types whose schema (schema.py) already carries a `status` column —
-# FORK-A's tombstone sets `status="merged"` on these IN ADDITION TO
-# `merged_into`; every other mergeable type (no status column) is
-# tombstoned via `merged_into` alone.
-_STATUS_BEARING_TYPES = {"SECRET", "FINDING"}
-
 
 @dataclass(frozen=True)
 class MergeRecord:
@@ -99,7 +93,7 @@ def _carry_over_edges(graph: "EngagementGraph", node_type: str, loser_id: str, s
                 for (other_id,) in _rows(result):
                     if other_id == survivor_id:
                         continue
-                    graph.upsert_edge(label, survivor_id, frm, other_id, to)
+                    graph.upsert_edge(label, survivor_id, frm, other_id, to, source=MutationSource.RECONCILIATION)
             if to == node_type:
                 result = graph.execute(
                     f"MATCH (a:{frm})-[:{label}]->(b:{to} {{id: $id}}) RETURN a.id",
@@ -108,7 +102,7 @@ def _carry_over_edges(graph: "EngagementGraph", node_type: str, loser_id: str, s
                 for (other_id,) in _rows(result):
                     if other_id == survivor_id:
                         continue
-                    graph.upsert_edge(label, other_id, frm, survivor_id, to)
+                    graph.upsert_edge(label, other_id, frm, survivor_id, to, source=MutationSource.RECONCILIATION)
 
 
 def _delete_loser_edges(graph: "EngagementGraph", node_type: str, loser_id: str) -> None:

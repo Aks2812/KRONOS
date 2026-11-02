@@ -22,6 +22,7 @@ from kronos.agent import (
     summarize_run,
 )
 from kronos.schema import ALL_NODE_TABLES
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "81796b4"
@@ -50,9 +51,9 @@ def _counts(g):
 def g(engagement_graph):
     g = engagement_graph
     for i, st in enumerate(["reachable", "reachable", "requires_revalidation"]):
-        g.upsert_node("FINDING", f"finding:t{i}", {"source": "t", "status": st})
+        g.upsert_node("FINDING", f"finding:t{i}", {"source": "t", "status": st}, source=MutationSource.INGESTION)
     for i in range(2):
-        g.upsert_node("SECRET", f"secret:t{i}", {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "t"})
+        g.upsert_node("SECRET", f"secret:t{i}", {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "t"}, source=MutationSource.INGESTION)
     return g
 
 
@@ -220,7 +221,7 @@ def _it(host, **deps):
 @pytest.fixture
 def g24(g):
     for h in (H_X, H_Y, H_Z, H_W):
-        g.upsert_node("HOST", h, {"source": "t"})
+        g.upsert_node("HOST", h, {"source": "t"}, source=MutationSource.INGESTION)
     return g
 
 
@@ -251,7 +252,7 @@ def test_P_A_blocked_by_satisfied(g24, nonet):  # §8 A
 def test_P_B_blocked_by_unsatisfied(g24, nonet):  # §8 B (rejected, then out of scope)
     res = _run24(g24, [_it(H_X), _it(H_Y, blocked_by=[_key(H_X)])], [_NO, _OK])
     assert res.committed == () and res.withheld == (_key(H_Y),)
-    g24.upsert_node("HOST", "evil.other.example.org", {"source": "t"})
+    g24.upsert_node("HOST", "evil.other.example.org", {"source": "t"}, source=MutationSource.INGESTION)
     res = _run24(
         g24,
         [_it("evil.other.example.org"), _it(H_Y, blocked_by=[_key("evil.other.example.org")])],
@@ -348,7 +349,7 @@ def b30net(monkeypatch):
 
 @pytest.fixture
 def b30g(engagement_graph):
-    engagement_graph.upsert_node("HOST", B30_HOST, {"source": "t"})
+    engagement_graph.upsert_node("HOST", B30_HOST, {"source": "t"}, source=MutationSource.INGESTION)
     return engagement_graph
 
 
@@ -412,7 +413,7 @@ def test_B30_C4_stop_before_action_no_evidence(b30g, manifest_factory, signing_k
     from kronos.graph import EngagementGraph
 
     fresh = EngagementGraph.init_engagement(tmp_path / "fresh.kz", manifest_factory(), signing_keypair[1])
-    fresh.upsert_node("HOST", B30_HOST, {"source": "t"})
+    fresh.upsert_node("HOST", B30_HOST, {"source": "t"}, source=MutationSource.INGESTION)
     assert _b30_count(fresh, "FINDING") == 0
     ex2 = _SpyExec([ExecutionOutcome(False, None)])
     ctl = tmp_path / "ctl"

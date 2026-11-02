@@ -16,6 +16,7 @@ from kronos.cleanup.registry import CleanupRegistry
 from kronos.evidence import attach_evidence
 from kronos.lifecycle import advance_finding_status
 from kronos.stop import is_stopped, request_stop
+from kronos.commit import MutationSource
 
 
 @dataclass(frozen=True)
@@ -61,11 +62,12 @@ def _commit(engagement, intent: Intent, verdict: ReviewVerdict) -> str:
         "FINDING",
         finding_id,
         {"source": "agent_dispatcher", "title": intent.rationale, "severity": "info", "status": COMMIT_STATUS},
+        source=MutationSource.DISPATCHER,
     )
     if verdict.target_type == "SECRET":
-        engagement.upsert_edge("derived_from", finding_id, "FINDING", intent.target_id, "SECRET")
+        engagement.upsert_edge("derived_from", finding_id, "FINDING", intent.target_id, "SECRET", source=MutationSource.DISPATCHER)
     else:
-        engagement.upsert_edge("vulnerable_to", intent.target_id, verdict.target_type, finding_id, "FINDING")
+        engagement.upsert_edge("vulnerable_to", intent.target_id, verdict.target_type, finding_id, "FINDING", source=MutationSource.DISPATCHER)
     return finding_id
 
 
@@ -166,6 +168,7 @@ def _step(
                         kind=EVIDENCE_KIND,
                         target_type="finding",
                         target_id=finding_id,
+                        source=MutationSource.DISPATCHER,
                     )
                     advance_finding_status(engagement, finding_id, "reachable")
                     promoted.append(finding_id)

@@ -22,6 +22,7 @@ from kronos.validate.controls import ArmResult, derive_negative_control, run_dif
 from kronos.validate.http_validator import validate_api_token
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 # --------------------------------------------------------------------------
 # Graph fixtures (mirrors tests/test_validate_runner.py's pattern)
@@ -37,20 +38,21 @@ def _graph_with_secret(tmp_path, manifest_factory, signing_keypair, *, decoded_v
     info = store_evidence(engagement_dir, decoded_value.encode(), kind="mobile_secret")
     secret_id = f"secret:{info['sha256'][:16]}"
 
-    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     graph.upsert_node(
         "SECRET",
         secret_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET")
+    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET", source=MutationSource.INGESTION)
     return graph, engagement_dir, secret_id
 
 
 def _add_endpoint(graph, url: str) -> None:
-    graph.upsert_node("API_ENDPOINT", url, {"source": "static"})
-    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT")
+    graph.upsert_node("API_ENDPOINT", url, {"source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT", source=MutationSource.INGESTION)
 
 
 def _edge_count(graph, secret_id: str) -> int:
@@ -442,6 +444,7 @@ def test_authenticated_not_authorized_reaches_validated_only_no_edge(
         "CLOUD_RESOURCE", "kronos-cybergym-admin-secrets",
         {"resource_type": "s3_bucket", "provider": "aws", "source": "test"},
         scope_key="arn:aws:s3:::kronos-cybergym-admin-secrets",
+        source=MutationSource.INGESTION,
     )
 
     outcome = ValidationOutcome(
@@ -544,10 +547,12 @@ def test_budget_exceeded_between_candidates_never_mid_differential(
     graph.upsert_node(
         "CLOUD_RESOURCE", "bucket-a", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"},
         scope_key="arn:aws:s3:::bucket-a",
+        source=MutationSource.INGESTION,
     )
     graph.upsert_node(
         "CLOUD_RESOURCE", "bucket-b", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"},
         scope_key="arn:aws:s3:::bucket-b",
+        source=MutationSource.INGESTION,
     )
 
     live_outcome = ValidationOutcome(

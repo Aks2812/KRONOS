@@ -24,6 +24,7 @@ from kronos.agent import (
 )
 from kronos.agent import dispatcher
 from kronos.schema import ALL_NODE_TABLES
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "a9f37ec"
@@ -59,8 +60,8 @@ def _evidence_n(g):
 
 @pytest.fixture
 def g(engagement_graph):
-    engagement_graph.upsert_node("HOST", HOST_IN, {"source": "t"})
-    engagement_graph.upsert_node("HOST", HOST_OUT, {"source": "t"})
+    engagement_graph.upsert_node("HOST", HOST_IN, {"source": "t"}, source=MutationSource.INGESTION)
+    engagement_graph.upsert_node("HOST", HOST_OUT, {"source": "t"}, source=MutationSource.INGESTION)
     return engagement_graph
 
 
@@ -191,7 +192,7 @@ def test_J_chokepoints_only():  # §8 J
         assert forbidden not in body
     assert not re.search(r"\.(status|confidence)\s*=[^=]", body)
     # non-vacuity: the same tuple used for the scan flags a direct write
-    bad = 'engagement.upsert_node("FINDING", fid, {"status": "reachable", "confidence": 9})'
+    bad = 'engagement.upsert_node("FINDING", fid, {"status": "reachable", "confidence": 9}, source=MutationSource.INGESTION)'
     assert any(f in bad for f in forbidden_patterns)
 
 

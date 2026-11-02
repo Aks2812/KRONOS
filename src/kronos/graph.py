@@ -57,15 +57,22 @@ class EngagementGraph:
                 "destructive_allowed": manifest.destructive_allowed,
                 "created_at": datetime.now(timezone.utc).isoformat(),
             },
+            source=MutationSource.BOOTSTRAP,
         )
         return graph
 
     def upsert_node(
-        self, type: str, id: str, props: dict[str, Any], scope_key: str | None = None
+        self,
+        type: str,
+        id: str,
+        props: dict[str, Any],
+        scope_key: str | None = None,
+        *,
+        source: MutationSource,
     ) -> None:
         """Facade: validation and Cypher live in `GraphMutationAuthority`
-        (SPEC_BRIEF31); signature unchanged."""
-        self._authority.create_or_update_node(type, id, props, scope_key, MutationSource.INGESTION)
+        (SPEC_BRIEF31). `source` is required, keyword-only (SPEC_BRIEF32)."""
+        self._authority.create_or_update_node(type, id, props, scope_key, source)
 
     def upsert_edge(
         self,
@@ -75,8 +82,10 @@ class EngagementGraph:
         to_id: str,
         to_type: str,
         props: dict[str, Any] | None = None,
+        *,
+        source: MutationSource,
     ) -> None:
-        self._authority.upsert_edge(label, from_id, from_type, to_id, to_type, props, MutationSource.INGESTION)
+        self._authority.upsert_edge(label, from_id, from_type, to_id, to_type, props, source)
 
     def get_node(self, type: str, id: str) -> dict[str, Any] | None:
         result = self.execute(f"MATCH (n:{type} {{id: $id}}) RETURN n.*", {"id": id})

@@ -15,6 +15,7 @@ from kronos.ingest import apply_upserts, ingest_reference_mobile_secret
 from kronos.lifecycle import LifecycleError, advance_finding_status, advance_secret_status, can_anchor_finding, derive_confidence
 from kronos.manifest import ManifestError, load_and_verify
 from kronos.query import find_paths
+from kronos.commit import MutationSource
 
 
 def test_invariant_expired_or_unsigned_manifest_rejected(manifest_factory, signing_keypair):
@@ -49,7 +50,7 @@ def test_invariant_expired_or_unsigned_manifest_rejected(manifest_factory, signi
 
 def test_invariant_no_evidence_finding_cannot_be_reported(engagement_graph):
     g = engagement_graph
-    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"})
+    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
     advance_finding_status(g, "f1", "reachable")
     advance_finding_status(g, "f1", "exploited")
     with pytest.raises(LifecycleError):
@@ -58,7 +59,7 @@ def test_invariant_no_evidence_finding_cannot_be_reported(engagement_graph):
 
 def test_invariant_out_of_scope_secret_cannot_anchor_finding(engagement_graph):
     g = engagement_graph
-    g.upsert_node("API_ENDPOINT", "api.evil.com", {})
+    g.upsert_node("API_ENDPOINT", "api.evil.com", {}, source=MutationSource.INGESTION)
     # Final review Important #7: s1 previously had no scope_key, so it
     # was ALSO out of scope itself (its own id "s1" doesn't match the
     # default manifest's glob) — the test was isolating nothing in
@@ -68,9 +69,10 @@ def test_invariant_out_of_scope_secret_cannot_anchor_finding(engagement_graph):
     g.upsert_node(
         "SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"},
         scope_key="api.acme.example.com",
+        source=MutationSource.INGESTION,
     )
     advance_secret_status(g, "s1", "validated")
-    g.upsert_edge("authenticates_to", "s1", "SECRET", "api.evil.com", "API_ENDPOINT")
+    g.upsert_edge("authenticates_to", "s1", "SECRET", "api.evil.com", "API_ENDPOINT", source=MutationSource.INGESTION)
     advance_secret_status(g, "s1", "reachable")
     assert can_anchor_finding(g, "s1") is False
 
@@ -81,13 +83,14 @@ def test_invariant_out_of_scope_secret_cannot_anchor_finding(engagement_graph):
     # SPEC_BRIEF10.4 §1.4: API_ENDPOINT's evidenced id shape is a full
     # URL (`{"url"}`, §0.2), never a bare host -- correcting the id,
     # not this test's subject (can_anchor_finding's True branch).
-    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {}, source=MutationSource.INGESTION)
     g.upsert_node(
         "SECRET", "s2", {"value_ref": "y", "kind": "api_key", "status": "extracted"},
         scope_key="api.acme.example.com",
+        source=MutationSource.INGESTION,
     )
     advance_secret_status(g, "s2", "validated")
-    g.upsert_edge("authenticates_to", "s2", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
+    g.upsert_edge("authenticates_to", "s2", "SECRET", "https://api.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
     advance_secret_status(g, "s2", "reachable")
     assert can_anchor_finding(g, "s2") is True
 
@@ -106,9 +109,9 @@ def test_invariant_confidence_cannot_exceed_status_cap(engagement_graph):
     # through the real lifecycle must never exceed its status's cap.
     g = engagement_graph
     with pytest.raises(ValueError):
-        g.upsert_node("FINDING", "finj", {"title": "t", "severity": "high", "status": "hypothesis", "confidence": 10})
+        g.upsert_node("FINDING", "finj", {"title": "t", "severity": "high", "status": "hypothesis", "confidence": 10}, source=MutationSource.INGESTION)
 
-    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"})
+    g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
     assert g.get_node("FINDING", "f1")["confidence"] < 7
     advance_finding_status(g, "f1", "reachable")
     assert g.get_node("FINDING", "f1")["confidence"] < 9
@@ -124,16 +127,16 @@ def test_invariant_find_paths_returns_seeded_mobile_to_cloud_chain(manifest_fact
     manifest_yaml = manifest_factory(scope={"in_scope": ["*.acme.example.com", "com.acme.*"]})
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_yaml, pub)
 
-    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"})
-    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app")
+    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"}, source=MutationSource.INGESTION)
+    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app", source=MutationSource.INGESTION)
     # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
     # shape, a full URL (§0.2) -- the test's subject (find_paths
     # traversal) is unchanged; only the node id's shape is.
-    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
-    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET")
-    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
-    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {}, source=MutationSource.INGESTION)
+    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com", source=MutationSource.INGESTION)
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET", source=MutationSource.INGESTION)
+    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
+    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE", source=MutationSource.INGESTION)
 
     paths = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5)
     assert len(paths) >= 1

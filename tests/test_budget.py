@@ -28,6 +28,7 @@ from kronos.graph import EngagementGraph
 from kronos.reconcile import run_reconciliation_pass
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 
 def _graph_with_secret_and_endpoints(engagement_dir, manifest_factory, signing_keypair, n_endpoints: int):
@@ -37,17 +38,18 @@ def _graph_with_secret_and_endpoints(engagement_dir, manifest_factory, signing_k
 
     info = store_evidence(engagement_dir, b"plain-bearer-token", kind="mobile_secret")
     secret_id = f"secret:{info['sha256'][:16]}"
-    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     graph.upsert_node(
         "SECRET", secret_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET")
+    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET", source=MutationSource.INGESTION)
     for i in range(n_endpoints):
         url = f"http://ep-{i}"
-        graph.upsert_node("API_ENDPOINT", url, {"source": "static"})
-        graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT")
+        graph.upsert_node("API_ENDPOINT", url, {"source": "static"}, source=MutationSource.INGESTION)
+        graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT", source=MutationSource.INGESTION)
     return graph, secret_id
 
 
@@ -241,17 +243,18 @@ def test_full_pipeline_with_generous_budget_is_a_pure_passthrough(tmp_path, mani
     manifest_text = manifest_factory(scope={"in_scope": ["*"], "excluded": []})
     graph = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_text, pub)
 
-    graph.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     info = store_evidence(tmp_path, b"pipeline-secret", kind="mobile_secret")
     secret_id = f"secret:{info['sha256'][:16]}"
     graph.upsert_node(
         "SECRET", secret_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.acme.app",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", secret_id, "SECRET")
-    graph.upsert_node("API_ENDPOINT", "http://api.acme.example.com", {"source": "static"})
-    graph.upsert_edge("references", "com.acme.app", "MOBILE_APP", "http://api.acme.example.com", "API_ENDPOINT")
+    graph.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", secret_id, "SECRET", source=MutationSource.INGESTION)
+    graph.upsert_node("API_ENDPOINT", "http://api.acme.example.com", {"source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_edge("references", "com.acme.app", "MOBILE_APP", "http://api.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
 
     assert run_reconciliation_pass(graph, tmp_path, pass_name="post_ingest").is_empty()
 

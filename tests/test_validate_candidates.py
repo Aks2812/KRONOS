@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from kronos.graph import EngagementGraph
 from kronos.validate.candidates import find_candidate_targets_for_secret
+from kronos.commit import MutationSource
 
 
 def _graph(tmp_path, manifest_factory, signing_keypair):
@@ -26,20 +27,21 @@ def test_api_endpoint_candidates_come_from_shared_app_leaks_and_references(
     tmp_path, manifest_factory, signing_keypair
 ) -> None:
     graph = _graph(tmp_path, manifest_factory, signing_keypair)
-    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     graph.upsert_node(
         "SECRET",
         "secret-1",
         {"value_ref": "sha256:abc", "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", "secret-1", "SECRET")
-    graph.upsert_node("API_ENDPOINT", "http://localhost:8091", {"source": "static"})
-    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", "http://localhost:8091", "API_ENDPOINT")
+    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", "secret-1", "SECRET", source=MutationSource.INGESTION)
+    graph.upsert_node("API_ENDPOINT", "http://localhost:8091", {"source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", "http://localhost:8091", "API_ENDPOINT", source=MutationSource.INGESTION)
     # An endpoint referenced by a DIFFERENT app must not show up as a candidate.
-    graph.upsert_node("MOBILE_APP", "com.other.app", {"bundle_id": "com.other.app", "platform": "android", "source": "static"})
-    graph.upsert_node("API_ENDPOINT", "http://unrelated.example.com", {"source": "static"})
-    graph.upsert_edge("references", "com.other.app", "MOBILE_APP", "http://unrelated.example.com", "API_ENDPOINT")
+    graph.upsert_node("MOBILE_APP", "com.other.app", {"bundle_id": "com.other.app", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_node("API_ENDPOINT", "http://unrelated.example.com", {"source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_edge("references", "com.other.app", "MOBILE_APP", "http://unrelated.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
 
     candidates = find_candidate_targets_for_secret(graph, "secret-1")
 
@@ -53,21 +55,24 @@ def test_cloud_resource_candidates_are_every_cloud_resource_in_the_engagement(
     tmp_path, manifest_factory, signing_keypair
 ) -> None:
     graph = _graph(tmp_path, manifest_factory, signing_keypair)
-    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     graph.upsert_node(
         "SECRET",
         "secret-2",
         {"value_ref": "sha256:def", "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", "secret-2", "SECRET")
+    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", "secret-2", "SECRET", source=MutationSource.INGESTION)
     graph.upsert_node(
         "CLOUD_RESOURCE", "bucket-a", {"resource_type": "s3_bucket", "provider": "aws", "source": "enrichment"},
         scope_key="arn:aws:s3:::does-not-match-anything",
+        source=MutationSource.INGESTION,
     )
     graph.upsert_node(
         "CLOUD_RESOURCE", "bucket-b", {"resource_type": "s3_bucket", "provider": "aws", "source": "enrichment"},
         scope_key="arn:aws:s3:::does-not-match-anything-else",
+        source=MutationSource.INGESTION,
     )
 
     candidates = find_candidate_targets_for_secret(graph, "secret-2")
@@ -84,6 +89,7 @@ def test_secret_with_no_leaking_app_has_no_candidates(tmp_path, manifest_factory
         "secret-3",
         {"value_ref": "sha256:ghi", "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="nowhere",
+        source=MutationSource.INGESTION,
     )
 
     candidates = find_candidate_targets_for_secret(graph, "secret-3")

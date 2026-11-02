@@ -1,4 +1,5 @@
 import pytest
+from kronos.commit import MutationSource
 
 from kronos.ingest import (
     EdgeUpsert,
@@ -54,7 +55,7 @@ def test_edge_upsert_raises_on_ambiguous_shared_id(engagement_graph):
     table happens first in ALL_NODE_TABLES order, since that can wire an
     edge to the wrong endpoint type entirely."""
     g = engagement_graph
-    g.upsert_node("HOST", "shared.acme.example.com", {})
-    g.upsert_node("API_ENDPOINT", "shared.acme.example.com", {})
+    g.upsert_node("HOST", "shared.acme.example.com", {}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", "shared.acme.example.com", {}, source=MutationSource.INGESTION)
     with pytest.raises(ValueError):
         apply_upserts(g, [EdgeUpsert("resolves_to", "shared.acme.example.com", "shared.acme.example.com")])
