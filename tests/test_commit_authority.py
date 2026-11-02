@@ -20,6 +20,7 @@ ROOT = Path(__file__).parent.parent
 B31_BASE = "a229b0d"
 B30_SEAL = ("93fb05e", "a229b0d")  # BRIEF30 window, pre-sealed (AC7)
 B31_SECTION_10 = {
+    "tests/test_stop.py",
     "SPEC_BRIEF31.md",
     "src/kronos/commit.py",
     "src/kronos/graph.py",

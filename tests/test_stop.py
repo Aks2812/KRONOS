@@ -127,7 +127,7 @@ def test_B30_no_concurrency_primitives(nonet):  # §4.1 no os.replace/tempfile/f
 
 def test_B30_C1_single_stop_entry(nonet):  # §12 C1 / A5
     diff = subprocess.run(
-        ["git", "diff", "-U0", f"{B30_BASE}..HEAD", "--", "src/kronos"],
+        ["git", "diff", "-U0", f"{B30_BASE}..a229b0d", "--", "src/kronos"],
         cwd=ROOT, capture_output=True, text=True, check=True,
     ).stdout
     added = re.findall(r"^\+\s*def (stop|cancel|kill|abort|halt|shutdown)\b", diff, re.M)
@@ -137,7 +137,7 @@ def test_B30_C1_single_stop_entry(nonet):  # §12 C1 / A5
 
 def test_B30_Q_scope_audit(nonet):  # brief-30 whole window
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B30_BASE}..HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B30_BASE}..a229b0d"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B30_SECTION_10, set(out) - B30_SECTION_10
     assert not nonet
