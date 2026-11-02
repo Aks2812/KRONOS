@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 223
-derived_at: 2026-11-02T15:00:00Z
+seq: 224
+derived_at: 2026-11-02T16:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7902,4 +7902,9 @@ outcome: pending (maintainer decision)
 ## SEQ 223 — reviewer FAIL (F-1 AC3); dispatch Sonnet 5.5 builder attempt 2 (test-only, §10) (write-ahead)
 - prev: SEQ 222. Haiku FAIL; AC3 incomplete; fix is test-only (literals already correct per AC5 PASS) — add live authority-spy assertions for ingest path + ≥1 validator path.
 - action: dispatch builder attempt 2 (circuit breaker 2/3) on claude/commit-authority-brief31 @ 9bfc17e, scope tests/test_commit_authority.py ONLY: add live per-path spies proving production ingest->INGESTION and ≥1 web/infra/runner->VALIDATION; keep all prior tests; refresh SUMMARY. No production-code change.
+- outcome: COMPLETE. builder attempt 2 @ f65cd0e (pushed). live spies test_commit_authority.py:346 (ingest->INGESTION), :363 (web+infra->VALIDATION). SUMMARY 3943 passed/1 skipped/0 failed. scope HEAD~1..HEAD = tests/test_commit_authority.py only.
+
+## SEQ 224 — attempt 2 COMPLETE; Opus scope audit PASS; re-dispatch Haiku reviewer AC3 re-review (write-ahead)
+- prev: SEQ 223. f65cd0e; Opus audit: window a229b0d..f65cd0e = 35 files all ⊆ B32_SECTION_10; attempt-2 delta = tests/test_commit_authority.py only. remote==f65cd0e.
+- action: re-dispatch Haiku reviewer (claude-haiku-5-5) — independent re-review focused on F-1/AC3 (live ingest+validator attribution) against combined a229b0d..f65cd0e; rerun suite; confirm AC1-AC8 hold.
 - outcome: pending
