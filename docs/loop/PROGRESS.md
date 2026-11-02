@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 213
-derived_at: 2026-11-01T23:00:00Z
+seq: 214
+derived_at: 2026-11-01T23:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7849,3 +7849,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 212 ten/ten MERGE-GATE PASS; merge executed.
 - action: SPEC_BRIEF30 (durable cross-process stop primitive + read-only watchdog + dispatcher stop-reads/D1/D4) now on main @ a229b0d via squash of PR #38. N1/N2/N3 + F1-F8 dispositions all landed. Suite 3903/1skip/0fail at merged tree.
 - outcome: COMPLETE. main @ a229b0d. S8 §6 live-run still PAUSED (SEQ 140, pause cond; unchanged by this merge). No PR open. pending_action: AWAIT operator for next backlog brief selection (routine — Opus may self-select next in-scope increment) OR address S8 §6 live-run pause if operator authorizes target/window. No live/§6/wiring performed.
+
+## SEQ 214 — new phase: Sole-Writer / Commit-Authority Architecture (design only; Thin-Orchestrator); dispatch Sonnet 5 researcher write-path map (write-ahead)
+- prev: SEQ 213 BRIEF30 merged main @ a229b0d. operator context.md 2026-11-01 (mtime updated) authorizes next phase, effort MEDIUM, NO builder, pause after deliverable.
+- action: dispatch kronos-researcher (claude-sonnet-5, read-only) to map EVERY write path: graph, evidence, lifecycle, budget, event, checkpoint — file:line + what writes. Opus then synthesizes invariant + choice (1 dispatcher literal sole writer vs 2 one deterministic commit authority for dispatcher/ingestion/validation/reconciliation) + SPEC_BRIEF31_PROPOSED.md + review packet under /home/void/Void-Projects/KRONOS_PC (OUTSIDE repo; not repo scope). Hermetic, no live/§6/provider wiring.
+- outcome: pending. pending_action: researcher returns write-path map → Opus synthesis → write SPEC_BRIEF31_PROPOSED.md + packet → return map/invariant/allowlist/unresolved/GATE-1 rec → PAUSE for operator (no self-approve; operator said pause).
