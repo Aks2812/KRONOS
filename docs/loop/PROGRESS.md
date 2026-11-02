@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 219
-derived_at: 2026-11-02T03:00:00Z
+seq: 220
+derived_at: 2026-11-02T04:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7882,3 +7882,9 @@ outcome: pending (maintainer decision)
 - prev: builder committed 7ed2cb4 (build) + 7b036fd (seal re-pin test_stop.py:130,140 →..a229b0d + test_stop.py added to B31_SECTION_10). builder full suite 3925 passed/1 skipped/0 failed exit 0; upsert_edge stricter ValueError broke no test; no suite-total assertion in §10 files.
 - action: Opus whole-window scope-audit a229b0d..HEAD(7b036fd) = 7 paths ⊆ §10 (commit.py, graph.py, lifecycle.py, reconcile/merge.py, test_commit_authority.py, test_scope_guard.py, test_stop.py) PASS. Opus running authoritative full suite (background). Dispatching kronos-reviewer (claude-haiku-5-5) independent: obtains diff itself, verifies AC1-AC9 vs brief (sha c2311245...5947), reruns suite, NOT passed builder report.
 - outcome: pending. pending_action: Opus suite + reviewer verdict → Opus MEDIUM semantic verify → MERGE-GATE (operator already authorized BRIEF31 build+land within scope; G2 control-spine merge = reconfirm whether pause cond 2 applies or operator's finalize+dispatch covers merge).
+
+## SEQ 220 — Haiku review PASS (AC1-AC9); Opus suite 3925 PASS; semantic PASS on invariant + F2 caveat; PAUSE (merge not authorized + F2 vs operator requirement)
+- prev: SEQ 219. Haiku reviewer (claude-haiku-5-5) VERDICT PASS MERGE-ELIGIBLE (review-evidence.json; suite-raw.log). AC1-AC9 all PASS; scope 7⊆§10 PASS. Opus authoritative suite 3925 passed/1 skipped/0 failed exit 0 (390.19s; reviewer 383.61s) — agree. HEAD 7b036fd.
+- action: Opus semantic verify. Core G2 invariant PASS: execute() read-only (driver RuntimeError, AC1/AC8), raw write-Cypher private to GraphMutationAuthority (commit.py _conn :64), 6 bypasses migrated, no agent direct write (AC6), §4.4(c) fresh RO handle per read closed in finally (graph.py:90-101). Opus-verified F2 scope: lifecycle.py:124,130 pass LIFECYCLE ✓, merge.py:125,129 pass RECONCILIATION ✓; BUT facades upsert_node/upsert_edge (graph.py:68,79) HARDCODE INGESTION → dispatcher._commit agent writes + validator writes mislabeled INGESTION; enum DISPATCHER/VALIDATION defined but DEAD. Violates operator requirement "auditable source identity" for agent+validation paths. Fix needs source threaded through facades → signature change + callers (dispatcher.py, validate/*, ingest/__init__.py) = scope beyond §10.
+- findings (reviewer, non-blocking-rated): F1 MED doc drift README_graph/README_lifecycle say execute() write-capable (out §10); F2 MED source identity (above); F3-F7 LOW (orphan _STATUS_BEARING_TYPES merge.py:50; test allowlist lists SPEC_BRIEF31.md test_commit_authority.py:24; cross-module _authority access; import order lifecycle.py:35; edge-props exception type).
+- outcome: COMPLETE (verify). NO merge — BRIEF31 merge NOT operator-authorized (context.md ended at "final semantic verification", no merge instruction; G2 control-spine = pause cond 2) AND F2 bears on an explicit operator requirement. main @ a229b0d; branch claude/commit-authority-brief31@7b036fd unpushed, no PR. S8 §6 PAUSED (SEQ 140). pending_action: operator decides (1) merge now + F2/F1 follow-up briefs; (2) thread source identity first (BRIEF32, scope dispatcher/validate/ingest+graph facades) then merge; (3) expand BRIEF31 §10 to fix F2 before merge; (4) hold.
