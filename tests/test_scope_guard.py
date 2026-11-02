@@ -2142,3 +2142,16 @@ def test_b109_fb_row_uniform_check_fails_on_mixed_determinant_row():
     # flagged. The real _EXCLUSION_GRID is not mutated.
     bad = {_P5_BARE_IP: _row((_F, "10.r7"), {_TARGETS[0]: (_T, "10.r6")})}
     assert _row_uniform_violation(bad, {_P5_BARE_IP: "10.r7"}) == (_P5_BARE_IP, _TARGETS[0])
+
+
+def test_B31_seal_of_B30_window_scope_audit():
+    # SPEC_BRIEF31 AC7 pre-seal: BRIEF30's window (93fb05e..a229b0d) is audited
+    # to its own merge SHA so the whole-window ..HEAD audit does not red later.
+    import subprocess
+
+    root = _pl.Path(__file__).parent.parent
+    out = subprocess.run(
+        ["git", "diff", "--name-only", "93fb05e..a229b0d"], cwd=root, capture_output=True, text=True, check=True
+    ).stdout.split()
+    assert "src/kronos/commit.py" not in out
+    assert not any(p.startswith(("cybergym/", ".github/", ".claude/")) or p == "src/kronos/manifest.py" for p in out)

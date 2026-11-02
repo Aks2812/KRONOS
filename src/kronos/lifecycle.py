@@ -32,6 +32,7 @@ never assigns a status value that didn't come out of
 
 from __future__ import annotations
 
+from kronos.commit import MutationSource
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:  # pragma: no cover - avoids a runtime import cycle with graph.py
@@ -119,16 +120,14 @@ def can_anchor_finding(graph: "EngagementGraph", secret_id: str) -> bool:
 
 
 def _set_secret_fields(graph: "EngagementGraph", secret_id: str, status: str, confidence: int, scope_note: str | None) -> None:
-    graph.execute(
-        "MATCH (s:SECRET {id: $id}) SET s.status = $status, s.confidence = $confidence, s.scope_note = $scope_note",
-        {"id": secret_id, "status": status, "confidence": confidence, "scope_note": scope_note},
+    graph._authority.set_secret_lifecycle(
+        secret_id, status=status, confidence=confidence, scope_note=scope_note, source=MutationSource.LIFECYCLE
     )
 
 
 def _set_finding_fields(graph: "EngagementGraph", finding_id: str, status: str, confidence: int) -> None:
-    graph.execute(
-        "MATCH (f:FINDING {id: $id}) SET f.status = $status, f.confidence = $confidence",
-        {"id": finding_id, "status": status, "confidence": confidence},
+    graph._authority.set_finding_lifecycle(
+        finding_id, status=status, confidence=confidence, source=MutationSource.LIFECYCLE
     )
 
 
