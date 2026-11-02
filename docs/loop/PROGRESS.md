@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 214
-derived_at: 2026-11-01T23:30:00Z
+seq: 215
+derived_at: 2026-11-02T00:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7853,4 +7853,9 @@ outcome: pending (maintainer decision)
 ## SEQ 214 — new phase: Sole-Writer / Commit-Authority Architecture (design only; Thin-Orchestrator); dispatch Sonnet 5 researcher write-path map (write-ahead)
 - prev: SEQ 213 BRIEF30 merged main @ a229b0d. operator context.md 2026-11-01 (mtime updated) authorizes next phase, effort MEDIUM, NO builder, pause after deliverable.
 - action: dispatch kronos-researcher (claude-sonnet-5, read-only) to map EVERY write path: graph, evidence, lifecycle, budget, event, checkpoint — file:line + what writes. Opus then synthesizes invariant + choice (1 dispatcher literal sole writer vs 2 one deterministic commit authority for dispatcher/ingestion/validation/reconciliation) + SPEC_BRIEF31_PROPOSED.md + review packet under /home/void/Void-Projects/KRONOS_PC (OUTSIDE repo; not repo scope). Hermetic, no live/§6/provider wiring.
-- outcome: pending. pending_action: researcher returns write-path map → Opus synthesis → write SPEC_BRIEF31_PROPOSED.md + packet → return map/invariant/allowlist/unresolved/GATE-1 rec → PAUSE for operator (no self-approve; operator said pause).
+- outcome: COMPLETE. researcher (claude-sonnet-5) returned full write-path map (saved .claude/pipeline/02-research/findings.md). Opus resolved both unresolved items: (1) lifecycle.py:122-131 + merge.py:127-148 bypass upsert_node BY DESIGN — NODE_PROPS_FORBIDDEN (schema.py:212) locks {in_scope,confidence,scope_note,merged_into}, status create-only; 6 raw writes travel through unguarded EngagementGraph.execute (graph.py:200; 28 sites=22 read/6 write); (2) cybergym/ writers §4 hard boundary, out of scope.
+
+## SEQ 215 — BRIEF31 synthesis COMPLETE; recommend design (2) one commit authority + read-only execute; GATE-1 rec; PAUSE for operator
+- prev: SEQ 214 researcher map done; Opus synthesis done.
+- action: wrote /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF31_PROPOSED.md + KRONOS_BRIEF31_REVIEW_PACKET.md (OUTSIDE repo). Recommendation: reject (1) dispatcher-sole-writer (ingest/validate/reconcile are deterministic non-dispatcher producers); adopt (2) one named privileged graph-mutation authority for forbidden/lifecycle fields + make execute() read-only; agents write only via reviewer+scope-gated dispatcher._commit. §10 allowlist: graph.py, lifecycle.py, reconcile/merge.py, test_scope_guard.py, optional new test_commit_authority.py + BRIEF30 seal 93fb05e..a229b0d. 2 operator decisions: D-A (keyword-reject vs API split), D-B (method vs commit.py). NO builder dispatched.
+- outcome: COMPLETE (design). PAUSE cond 2-adjacent: operator GATE-1 + D-A/D-B required before any build (operator context.md said pause; Opus does not self-approve this phase). main @ a229b0d. S8 §6 live-run PAUSED (SEQ 140) unaffected. pending_action: await operator GATE-1 decision + D-A/D-B → on approve, author final SPEC_BRIEF31.md, self-GATE-1 only if operator delegates, dispatch Sonnet 5.5 builder within §10.
