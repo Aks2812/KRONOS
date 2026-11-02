@@ -11,8 +11,11 @@ from kronos.agent.drivers import Driver
 from kronos.agent.executor import EVIDENCE_KIND, Executor
 from kronos.agent.planner import plan, summarize
 from kronos.agent.reviewer import COMMIT_STATUS, Reviewer, ReviewVerdict, validate_verdict
+from kronos.budget.ledger import BudgetExceeded
+from kronos.cleanup.registry import CleanupRegistry
 from kronos.evidence import attach_evidence
 from kronos.lifecycle import advance_finding_status
+from kronos.stop import is_stopped, request_stop
 
 
 @dataclass(frozen=True)
@@ -103,12 +106,16 @@ def _topo_order(intents) -> list[int]:
     return order
 
 
-def run_once(
+def _stop_requested(engagement_dir) -> bool:
+    return engagement_dir is not None and is_stopped(engagement_dir) is not None
+
+
+def _step(
     engagement,
     driver: Driver,
-    reviewer: Reviewer | None = None,
-    executor: Executor | None = None,
-    engagement_dir=None,
+    reviewer: Reviewer | None,
+    executor: Executor | None,
+    engagement_dir,
 ) -> DispatcherResult:
     if executor is not None and engagement_dir is None:
         raise ValueError("engagement_dir is required when an executor is given")
@@ -137,12 +144,20 @@ def run_once(
             if verdict.approved and engagement.scope.is_in_scope(
                 intent.target_id, node_type=verdict.target_type, target_kind="id"
             ):
+                if _stop_requested(engagement_dir):  # SPEC_BRIEF30 §4.2: before Phase-2 commit
+                    break
                 committed.append((_commit(engagement, intent, verdict), intent))
                 satisfied.add(_key(intent))
         # Phase 3: execute only gated, committed findings; promote only on success WITH evidence.
         if executor is not None:
             for finding_id, intent in committed:
-                outcome = executor.execute(intent)
+                if _stop_requested(engagement_dir):  # SPEC_BRIEF30 §4.2: before Phase-3 action start
+                    break
+                try:
+                    outcome = executor.execute(intent)
+                except BudgetExceeded as exc:  # D1: adapt into the shared stop record, keep the reason
+                    request_stop(engagement_dir, "budget", str(exc))
+                    raise
                 if outcome.succeeded and outcome.evidence is not None:
                     attach_evidence(
                         engagement,
@@ -161,6 +176,28 @@ def run_once(
     )
 
 
+def _teardown_once(cleanup: CleanupRegistry | None, done: list[bool]) -> None:
+    # D4 run-once guard: the finally boundary fires teardown at most once.
+    if cleanup is not None and not done:
+        done.append(True)
+        cleanup.teardown_all()
+
+
+def run_once(
+    engagement,
+    driver: Driver,
+    reviewer: Reviewer | None = None,
+    executor: Executor | None = None,
+    engagement_dir=None,
+    cleanup: CleanupRegistry | None = None,
+) -> DispatcherResult:
+    done: list[bool] = []
+    try:
+        return _step(engagement, driver, reviewer, executor, engagement_dir)
+    finally:
+        _teardown_once(cleanup, done)
+
+
 def run(
     engagement,
     driver: Driver,
@@ -171,6 +208,7 @@ def run(
     engagement_dir=None,
     deadline: float | None = None,
     clock: Callable[[], float] | None = None,
+    cleanup: CleanupRegistry | None = None,
 ) -> list[DispatcherResult]:
     if max_steps < 1:
         raise ValueError("max_steps must be >= 1")
@@ -179,14 +217,22 @@ def run(
     clock = clock or time.monotonic
     start = clock()
     results: list[DispatcherResult] = []
-    for _ in range(max_steps):
-        if deadline is not None and clock() - start >= deadline:
-            results.append(
-                DispatcherResult(complete=False, proposed_intents=(), steps=0, committed=(), promoted=(), timed_out=True)
-            )
-            break
-        r = run_once(engagement, driver, reviewer, executor, engagement_dir)
-        results.append(r)
-        if r.complete:
-            break
+    done: list[bool] = []
+    try:
+        for _ in range(max_steps):
+            if _stop_requested(engagement_dir):  # SPEC_BRIEF30 §4.2: top-of-step read, before _step
+                break
+            if deadline is not None and clock() - start >= deadline:
+                if engagement_dir is not None:
+                    request_stop(engagement_dir, "deadline", "deadline expired")
+                results.append(
+                    DispatcherResult(complete=False, proposed_intents=(), steps=0, committed=(), promoted=(), timed_out=True)
+                )
+                break
+            r = _step(engagement, driver, reviewer, executor, engagement_dir)
+            results.append(r)
+            if r.complete:
+                break
+    finally:
+        _teardown_once(cleanup, done)
     return results

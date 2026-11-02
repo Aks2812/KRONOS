@@ -1001,7 +1001,7 @@ B29_SECTION_10 = {
 
 def test_B29_Q_scope_audit():
     out = subprocess.run(
-        ["git", "diff", "--name-only", f"{B29_BASE}..HEAD"], capture_output=True, text=True, check=True
+        ["git", "diff", "--name-only", f"{B29_BASE}..93fb05e"], capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= B29_SECTION_10, set(out) - B29_SECTION_10
 

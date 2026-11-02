@@ -319,3 +319,185 @@ def test_P_L2_scope_audit_b24():  # §8 L2
         ["git", "diff", "--name-only", f"{B24_BASE}..{B24_MERGE}"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3_B24
+
+
+# ---- SPEC_BRIEF30 §12 C3-C5b, C9, C10 (dispatcher stop-checks) ----
+from kronos.agent import ExecutionOutcome, MockExecutor, MockReviewer  # noqa: E402
+from kronos.budget.ledger import BudgetExceeded  # noqa: E402
+from kronos.cleanup.registry import CleanupRegistry  # noqa: E402
+from kronos.stop import is_stopped, request_stop  # noqa: E402
+
+B30_HOST = "host.acme.example.com"
+B30_OK = ReviewVerdict(approved=True, target_type="HOST", status="hypothesis")
+B30_INTENT = {"kind": "probe", "target_id": B30_HOST, "rationale": "r"}
+B30_FID = f"finding:agent-proposal:probe:{B30_HOST}"
+
+
+@pytest.fixture
+def b30net(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
+@pytest.fixture
+def b30g(engagement_graph):
+    engagement_graph.upsert_node("HOST", B30_HOST, {"source": "t"})
+    return engagement_graph
+
+
+def _b30_count(g, table):
+    return g.execute(f"MATCH (n:{table}) RETURN count(n)").get_next()[0]
+
+
+def _b30_status(g):
+    return g.execute(f"MATCH (n:FINDING) WHERE n.id = '{B30_FID}' RETURN n.status").get_next()[0]
+
+
+class _SpyExec(MockExecutor):
+    def __init__(self, scripted):
+        super().__init__(scripted)
+        self.calls = 0
+
+    def execute(self, intent):
+        self.calls += 1
+        return super().execute(intent)
+
+
+def test_B30_C3_stop_before_commit_no_state(b30g, tmp_path, b30net):  # §12 C3
+    before = _counts(b30g)
+    request_stop(tmp_path, "operator", "now")
+    ex = _SpyExec([ExecutionOutcome(True, b"x")])
+    res = run_once(b30g, MockDriver([{"intents": [B30_INTENT]}]), MockReviewer([B30_OK]), ex, tmp_path)
+    assert res.committed == () and ex.calls == 0
+    assert _counts(b30g) == before
+    assert not b30net
+
+
+def test_B30_C4_stop_before_action_no_evidence(b30g, manifest_factory, signing_keypair, tmp_path, b30net):  # §12 C4 / C4b
+    """Stop between Phase-2 commit and Phase-3 action leaves a committed-but-unexecuted FINDING.
+
+    The paired control (C4b) reaches the same end-state independently via an ordinary executor
+    failure on a FRESH graph. Named later prerequisite: atomic commit+execute or EngagementGraph
+    rollback (absent today), which would remove this committed-but-unexecuted state.
+    """
+    class _StopAfterCommit:
+        """Engagement proxy: stop arrives right after the Phase-2 commit's last write."""
+
+        def __init__(self, inner):
+            self._inner = inner
+
+        def __getattr__(self, name):
+            return getattr(self._inner, name)
+
+        def upsert_edge(self, *a, **k):
+            r = self._inner.upsert_edge(*a, **k)
+            request_stop(tmp_path, "operator", "between phases")
+            return r
+
+    ex = _SpyExec([ExecutionOutcome(True, b"proof")])
+    eg = _StopAfterCommit(b30g)
+    res = run_once(eg, MockDriver([{"intents": [B30_INTENT]}]), MockReviewer([B30_OK]), ex, tmp_path)
+    assert ex.calls == 0 and res.promoted == () and res.committed == (B30_FID,)
+    assert _b30_status(b30g) == "hypothesis"
+    assert _b30_count(b30g, "EVIDENCE") == 0
+    assert b30g.execute("MATCH ()-[r:evidences]->() RETURN count(r)").get_next()[0] == 0
+    # paired control: same end-state from an ordinary executor failure, on a FRESH graph
+    from kronos.graph import EngagementGraph
+
+    fresh = EngagementGraph.init_engagement(tmp_path / "fresh.kz", manifest_factory(), signing_keypair[1])
+    fresh.upsert_node("HOST", B30_HOST, {"source": "t"})
+    assert _b30_count(fresh, "FINDING") == 0
+    ex2 = _SpyExec([ExecutionOutcome(False, None)])
+    ctl = tmp_path / "ctl"
+    ctl.mkdir()
+    run_once(fresh, MockDriver([{"intents": [B30_INTENT]}]), MockReviewer([B30_OK]), ex2, ctl)
+    assert ex2.calls == 1
+    assert _b30_status(fresh) == "hypothesis" and _b30_count(fresh, "EVIDENCE") == 0
+
+
+@pytest.mark.parametrize("case", ["normal", "budget", "operator_stop", "watchdog_stop"])
+def test_B30_C5_cleanup_exactly_once(b30g, tmp_path, b30net, case):  # §12 C5
+    calls = []
+    reg = CleanupRegistry()
+    reg.register("t", object(), lambda: calls.append(1))
+    plan_ = MockDriver([{"intents": [B30_INTENT]}] * 3)
+    if case == "normal":
+        run(b30g, MockDriver([{"complete": True}]), max_steps=3, cleanup=reg)
+    elif case == "budget":
+        class _Boom:
+            def execute(self, intent):
+                raise BudgetExceeded("llm_tokens", 1000, 1001)
+
+        with pytest.raises(BudgetExceeded):
+            run(b30g, plan_, max_steps=3, reviewer=MockReviewer([B30_OK] * 3), executor=_Boom(),
+                engagement_dir=tmp_path, cleanup=reg)
+    else:
+        source = "operator" if case == "operator_stop" else "watchdog"
+        request_stop(tmp_path, source, "x")
+        run(b30g, plan_, max_steps=3, reviewer=MockReviewer([B30_OK] * 3), executor=_SpyExec([]),
+            engagement_dir=tmp_path, cleanup=reg)
+    assert len(calls) == 1
+    # run_once boundary
+    calls.clear()
+    reg2 = CleanupRegistry()
+    reg2.register("t", object(), lambda: calls.append(1))
+    run_once(b30g, MockDriver([{"complete": True}]), cleanup=reg2)
+    assert len(calls) == 1
+    assert not b30net
+
+
+def test_B30_F1_preset_stop_zero_planner_calls(b30g, tmp_path, b30net):  # §4.2 top-of-step read
+    class _CountDriver(MockDriver):
+        calls = 0
+
+        def reason(self, summary):
+            self.calls += 1
+            return super().reason(summary)
+
+    request_stop(tmp_path, "operator", "pre-set")
+    drv = _CountDriver([{"intents": [B30_INTENT]}] * 5)
+    ex = _SpyExec([])
+    res = run(b30g, drv, max_steps=5, reviewer=MockReviewer([B30_OK] * 5), executor=ex, engagement_dir=tmp_path)
+    assert res == [] and drv.calls == 0 and ex.calls == 0
+    assert not b30net
+
+
+def test_B30_C5b_budget_stop_preserves_reason(b30g, tmp_path, b30net):  # §12 C5b / D1
+    exc = BudgetExceeded("llm_tokens", 1000, 1001)
+
+    class _Boom:
+        def execute(self, intent):
+            raise exc
+
+    calls = []
+    reg = CleanupRegistry()
+    reg.register("t", object(), lambda: calls.append(1))
+    with pytest.raises(BudgetExceeded) as ei:
+        run(b30g, MockDriver([{"intents": [B30_INTENT]}]), max_steps=2, reviewer=MockReviewer([B30_OK]),
+            executor=_Boom(), engagement_dir=tmp_path, cleanup=reg)
+    assert ei.value is exc
+    st = is_stopped(tmp_path)
+    assert st.source == "budget" and st.reason == str(exc)
+    assert len(calls) == 1  # teardown ran even though budget was exhausted
+
+
+def test_B30_deadline_requests_stop(b30g, tmp_path, b30net):  # §4.2 deadline expiry
+    res = run(b30g, MockDriver([{"intents": [INTENT]}] * 50), max_steps=50, deadline=2.5,
+              clock=_fake_clock(), engagement_dir=tmp_path)
+    assert res[-1].timed_out
+    assert is_stopped(tmp_path).source == "deadline"
+
+
+def test_B30_C9_default_unchanged(b30g, tmp_path, b30net):  # §12 C9
+    ex = _SpyExec([ExecutionOutcome(True, b"proof")])
+    res = run_once(b30g, MockDriver([{"intents": [B30_INTENT]}]), MockReviewer([B30_OK]), ex, tmp_path)
+    assert res.committed == (B30_FID,) and res.promoted == (B30_FID,) and ex.calls == 1
+    assert not (tmp_path / "stop.jsonl").exists()
+    assert not b30net
