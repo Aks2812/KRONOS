@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 220
-derived_at: 2026-11-02T04:00:00Z
+seq: 221
+derived_at: 2026-11-02T12:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7888,3 +7888,8 @@ outcome: pending (maintainer decision)
 - action: Opus semantic verify. Core G2 invariant PASS: execute() read-only (driver RuntimeError, AC1/AC8), raw write-Cypher private to GraphMutationAuthority (commit.py _conn :64), 6 bypasses migrated, no agent direct write (AC6), §4.4(c) fresh RO handle per read closed in finally (graph.py:90-101). Opus-verified F2 scope: lifecycle.py:124,130 pass LIFECYCLE ✓, merge.py:125,129 pass RECONCILIATION ✓; BUT facades upsert_node/upsert_edge (graph.py:68,79) HARDCODE INGESTION → dispatcher._commit agent writes + validator writes mislabeled INGESTION; enum DISPATCHER/VALIDATION defined but DEAD. Violates operator requirement "auditable source identity" for agent+validation paths. Fix needs source threaded through facades → signature change + callers (dispatcher.py, validate/*, ingest/__init__.py) = scope beyond §10.
 - findings (reviewer, non-blocking-rated): F1 MED doc drift README_graph/README_lifecycle say execute() write-capable (out §10); F2 MED source identity (above); F3-F7 LOW (orphan _STATUS_BEARING_TYPES merge.py:50; test allowlist lists SPEC_BRIEF31.md test_commit_authority.py:24; cross-module _authority access; import order lifecycle.py:35; edge-props exception type).
 - outcome: COMPLETE (verify). NO merge — BRIEF31 merge NOT operator-authorized (context.md ended at "final semantic verification", no merge instruction; G2 control-spine = pause cond 2) AND F2 bears on an explicit operator requirement. main @ a229b0d; branch claude/commit-authority-brief31@7b036fd unpushed, no PR. S8 §6 PAUSED (SEQ 140). pending_action: operator decides (1) merge now + F2/F1 follow-up briefs; (2) thread source identity first (BRIEF32, scope dispatcher/validate/ingest+graph facades) then merge; (3) expand BRIEF31 §10 to fix F2 before merge; (4) hold.
+
+## SEQ 221 — operator option (2); BRIEF32 authored; GATE-1 self-approved; dispatch Sonnet 5.5 builder (write-ahead)
+- prev: SEQ 220 COMPLETE. operator context.md 2026-11-02 chose option (2) (thread source identity first, no intermediate mislabeled-audit commit on main); BOOTSTRAP enum member operator-fixed (AskUserQuestion 2026-11-02).
+- action: Opus authored SPEC_BRIEF32.md (sha256 7efcfd545303ac59778f8b0359143a89ad436d6aad68b3d00144baa860d5a5de); self-approved GATE-1. Dispatch Sonnet 5.5 builder on branch claude/commit-authority-brief31 within BRIEF32 §10 (source required kw-only on upsert_node/upsert_edge/attach_evidence; add MutationSource.BOOTSTRAP; per-caller enum; fold F1/F3/F6; extend scope-audit allowlist to union; combined window a229b0d..HEAD).
+- outcome: pending
