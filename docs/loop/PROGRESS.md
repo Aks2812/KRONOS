@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 217
-derived_at: 2026-11-02T01:30:00Z
+seq: 218
+derived_at: 2026-11-02T02:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7870,4 +7870,10 @@ outcome: pending (maintainer decision)
 - GATE-1: RECORDED (operator-approved direction + D-A/D-B + §4.4=(c)). Brief SPEC_BRIEF31.md sha256 20f81ae087f4ed6c331cc21700c988a46e8f327897e59ed0cb52753b6c4bccef. B31_BASE=a229b0d. §10: src/kronos/commit.py(new), graph.py, lifecycle.py, reconcile/merge.py, tests/test_commit_authority.py(new), tests/test_scope_guard.py + BRIEF30 seal 93fb05e..a229b0d.
 - effort: harness sets Opus effort at invocation, not per-turn — cannot self-lower mid-session; NOT claiming LOW applied. Orchestration kept minimal.
 - action: create branch claude/commit-authority-brief31 off a229b0d; dispatch kronos-builder (claude-sonnet-5-5) within §10 only.
-- outcome: pending. pending_action: builder commit → Opus scope-audit + suite → Haiku 5.5 independent review → Opus (MEDIUM) semantic verify → MERGE-GATE decision.
+- outcome: superseded by SEQ 218 (builder paused NEEDS-DECISION on seal-tax).
+
+## SEQ 218 — builder paused (seal-tax, file outside §10); Opus GATE-1 §10 amendment + resume builder (write-ahead)
+- prev: builder committed 7ed2cb4 on claude/commit-authority-brief31; 1 red: tests/test_stop.py:130,140 BRIEF30 whole-window audit `93fb05e..HEAD` reds on any BRIEF31 commit (whole-window-seal-tax). Seal file test_stop.py NOT in §10 → builder correctly stopped.
+- action: Opus self-authorized GATE-1 §10 AMENDMENT (routine, within recorded scope; mechanical non-functional seal, NOT new write-path/architecture): ADD tests/test_stop.py to §10 for seal re-pin ONLY (`{B30_BASE}..HEAD`→`..a229b0d` at :130 C1 + :140 Q_scope_audit; B30_BASE="93fb05e" :18). Precedent test_autonomy.py:1004 seals B29 to ..93fb05e. Brief SPEC_BRIEF31.md §10 updated; NEW sha256 c2311245f35db76573f6357faec1da6638aa8a3d9d3cfaea9a6d3b04c4095947 (supersedes 20f81ae). Builder must also add tests/test_stop.py to B31_SECTION_10 in test_commit_authority.py:227 audit set.
+- builder deviations accepted (not architecture/write-path): (a) delete_loser_edges(loser_id,node_type,source) — extra node_type needed for edge walk, merge.py has it; (b) upsert_edge now raises ValueError on edge props (DDL has no edge columns) + unknown label/type — stricter; MUST verify no existing caller reds via full suite. (c) perf: per-read fresh RO handle + per-mutation CHECKPOINT; ~10m suite (unclean/overlapping) vs ~88s baseline — correctness-first per operator §4.4, perf a later concern; flag.
+- outcome: pending. pending_action: resume same builder (SendMessage) → apply seal + add test_stop.py to B31_SECTION_10 → rerun FULL suite (.venv/bin/python -m pytest, real exit/SUMMARY) → refresh total as final edit → commit → return. Then Opus scope-audit (B31_BASE=a229b0d..HEAD ⊆ §10 incl test_stop.py) + Haiku 5.5 review + Opus MEDIUM verify + MERGE-GATE. Build-time locking/lifecycle arch conflict → pause.
