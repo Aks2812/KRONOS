@@ -340,6 +340,41 @@ def test_B32_per_path_attribution_live(g, tmp_path, monkeypatch, nonet):
     assert not nonet
 
 
+# B32 AC3 (reviewer F-1): LIVE capture of the source the authority really receives
+# from the REAL production ingest path (ingest/__init__.py apply_upserts) - nothing
+# test-supplied; section 3 item 3.
+def test_B32_ingest_path_live_emits_INGESTION(g, monkeypatch, nonet):
+    from kronos.ingest import EdgeUpsert, NodeUpsert, apply_upserts
+
+    seen = _spy(g, monkeypatch)
+    apply_upserts(
+        g,
+        [
+            NodeUpsert("HOST", "host:i.acme.example.com", {"source": "t"}),
+            NodeUpsert("SERVICE", "svc:i", {"source": "t"}),
+            EdgeUpsert("hosts", "host:i.acme.example.com", "svc:i"),
+        ],
+    )
+    assert len(seen) == 3 and set(seen) == {MutationSource.INGESTION}
+    assert not nonet
+
+
+# B32 AC3 (reviewer F-1): LIVE VALIDATION from the real web / infra validator record paths
+def test_B32_validator_paths_live_emit_VALIDATION(g, monkeypatch, nonet):
+    from kronos.validate.infra_validator import record_infra_finding
+    from kronos.validate.web_validator import record_web_finding
+
+    g.upsert_node("WEB_ENDPOINT", "web:v", {"source": "t"}, source=MutationSource.INGESTION)
+    g.upsert_node("SERVICE", "svc:v", {"source": "t"}, source=MutationSource.INGESTION)
+    seen = _spy(g, monkeypatch)
+    record_web_finding(g, "web:v", None)
+    assert len(seen) == 2 and set(seen) == {MutationSource.VALIDATION}  # web_validator
+    seen.clear()
+    record_infra_finding(g, "svc:v", None)
+    assert len(seen) == 2 and set(seen) == {MutationSource.VALIDATION}  # infra_validator
+    assert not nonet
+
+
 def _src(path):
     return (ROOT / path).read_text()
 
