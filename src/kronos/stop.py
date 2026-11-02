@@ -62,7 +62,7 @@ def is_stopped(engagement_dir) -> StopState | None:
             first = f.readline()
     except FileNotFoundError:
         return None
-    if not first.strip():
+    if not first:
         return None
     try:
         rec = json.loads(first)

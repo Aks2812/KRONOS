@@ -68,6 +68,19 @@ def test_B30_N1_torn_first_line_fails_closed(tmp_path, nonet):  # §4.1 non-empt
     assert not nonet
 
 
+def test_B30_N3_whitespace_first_line_fails_closed(tmp_path, nonet):  # §4.1 non-empty first line => stopped
+    (tmp_path / "stop.jsonl").write_text("   \n")
+    assert is_stopped(tmp_path) == StopState("unknown", "unparsable stop record")
+    assert not nonet
+
+
+def test_B30_N3_empty_or_missing_not_stopped(tmp_path, nonet):  # §4.1 no first line => not stopped
+    assert is_stopped(tmp_path) is None
+    (tmp_path / "stop.jsonl").write_text("")
+    assert is_stopped(tmp_path) is None
+    assert not nonet
+
+
 def test_B30_C2_first_wins_and_audit(tmp_path, nonet):  # §12 C2
     request_stop(tmp_path, "operator", "first")
     request_stop(tmp_path, "watchdog", "second")
