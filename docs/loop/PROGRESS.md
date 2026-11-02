@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 212
-derived_at: 2026-11-01T22:45:00Z
+seq: 213
+derived_at: 2026-11-01T23:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7843,4 +7843,9 @@ outcome: pending (maintainer decision)
 - merge_authorization: {pr: 38, head_sha: 7204628, base: main, granted_by: operator option-1 SEQ 210/211, turn: this}. Void if head≠7204628.
 - gate (v6 §3.1, re-measured this turn): 1 ruleset 25333712 active pull_request on default PASS; 2 draft=false PASS; 3 open/merged=false PASS; 4 head 7204628==auth PASS; 5 review-evidence.json verdict PASS (Haiku, diff+brief; §8 at SEQ 209 3/3 + N3 no-regression) PASS; 6 ci=none 0 workflows/0 check-runs, local evidence only PASS(ack); 7 suite `3903 passed, 1 skipped in 87.77s` exit0, scope-guard pins intact, 3901→3903 PASS; 8 mergeable_state=clean, not-ancestor PASS; 9 merge_authorization this turn PASS; 10 tree tracked-clean (untracked=rails/docs), 22 remote=historical per-brief none-unexpected PASS. TEN/TEN PASS.
 - action: `gh pr merge 38 --squash --match-head-commit 7204628` (no --admin/--auto). S8 §6 live-run still paused (SEQ 140) — unaffected.
-- outcome: pending. pending_action: execute merge → SEQ 213 record merged SHA + delete remote brief branch + verify main HEAD.
+- outcome: COMPLETE. merge attempt 1 rejected (abbrev --match-head-commit "7204628" GraphQL coerce error; PR unmerged, no partial state); attempt 2 full SHA 72046281a9b7f9c2152c7428378b3a6a5d8072b8 MERGED. PR #38 merged=true, state=closed, squash commit a229b0d; origin/main = a229b0dbcdea226f2679af34b19209fe82d8b347. remote claude/stop-watchdog-brief30 deleted.
+
+## SEQ 213 — SPEC_BRIEF30 MERGED to main (a229b0d); G2 control-spine stop+watchdog landed
+- prev: SEQ 212 ten/ten MERGE-GATE PASS; merge executed.
+- action: SPEC_BRIEF30 (durable cross-process stop primitive + read-only watchdog + dispatcher stop-reads/D1/D4) now on main @ a229b0d via squash of PR #38. N1/N2/N3 + F1-F8 dispositions all landed. Suite 3903/1skip/0fail at merged tree.
+- outcome: COMPLETE. main @ a229b0d. S8 §6 live-run still PAUSED (SEQ 140, pause cond; unchanged by this merge). No PR open. pending_action: AWAIT operator for next backlog brief selection (routine — Opus may self-select next in-scope increment) OR address S8 §6 live-run pause if operator authorizes target/window. No live/§6/wiring performed.
