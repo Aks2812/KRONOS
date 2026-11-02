@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 216
-derived_at: 2026-11-02T01:00:00Z
+seq: 217
+derived_at: 2026-11-02T01:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7864,3 +7864,10 @@ outcome: pending (maintainer decision)
 - prev: SEQ 215 proposed. operator context.md 2026-11-01: reject (1); adopt (2) one privileged GraphMutationAuthority; D-A real read/write split (NO keyword inspection); D-B create src/kronos/commit.py; typed ops + auditable source identity; migrate 6; keep dispatcher review/scope/lifecycle/budget/stop gates; cybergym excluded; adversarial tests; then finalize+record GATE-1, LOWER Opus to LOW, dispatch Sonnet 5.5; Haiku 5.5 review; Opus→MEDIUM verify. "Any new architecture decision or additional write path causes a pause."
 - action: wrote /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void/SPEC_BRIEF31.md (operator decisions §3; architecture §4; §10 allowlist commit.py+graph.py+lifecycle.py+reconcile/merge.py+test_commit_authority.py+test_scope_guard.py + BRIEF30 seal 93fb05e..a229b0d). Opus-verified kuzu 0.11.3 facts: Database(read_only=True) rejects writes at driver (RuntimeError "Cannot execute write operations in a read-only database!") — satisfies "no keyword inspection"; BUT persistent read-only handle does NOT see post-open writes (only a fresh handle does) → naive read-only-conn breaks validator read-after-write. §4.4 OPEN: (c recommended) fresh read-only conn per read + checkpoint-on-write; (d) typed read interface (adds query.py to §10); (e) encapsulation-only (fails §8 adversarial MATCH...SET test).
 - outcome: COMPLETE (brief draft). PAUSE cond: new architecture sub-decision (operator's own pause rule). NO builder dispatched; Opus NOT lowered to LOW yet (that follows the §4.4 answer). main @ a229b0d. S8 §6 live-run PAUSED (SEQ 140) unaffected. pending_action: operator picks §4.4 mechanism (c/d/e) → finalize §4.4+§10, sha256 brief, record GATE-1, lower to LOW, dispatch Sonnet 5.5 builder.
+
+## SEQ 217 — §4.4=(c) operator-fixed; GATE-1 RECORDED; dispatch Sonnet 5.5 builder (write-ahead)
+- prev: SEQ 216 brief draft. operator context.md §4.4=(c): writes via authority writable conn; commit/checkpoint before reads; fresh read_only=True handle per read batch, closed promptly; never cache long-lived RO handle. +3 tests (write-via-read-API fails at driver; new read batch sees latest commit; handles close on success+exception). finalize, record GATE-1, LOWER Opus to LOW, dispatch Sonnet 5.5; build-time locking/lifecycle conflict → pause.
+- GATE-1: RECORDED (operator-approved direction + D-A/D-B + §4.4=(c)). Brief SPEC_BRIEF31.md sha256 20f81ae087f4ed6c331cc21700c988a46e8f327897e59ed0cb52753b6c4bccef. B31_BASE=a229b0d. §10: src/kronos/commit.py(new), graph.py, lifecycle.py, reconcile/merge.py, tests/test_commit_authority.py(new), tests/test_scope_guard.py + BRIEF30 seal 93fb05e..a229b0d.
+- effort: harness sets Opus effort at invocation, not per-turn — cannot self-lower mid-session; NOT claiming LOW applied. Orchestration kept minimal.
+- action: create branch claude/commit-authority-brief31 off a229b0d; dispatch kronos-builder (claude-sonnet-5-5) within §10 only.
+- outcome: pending. pending_action: builder commit → Opus scope-audit + suite → Haiku 5.5 independent review → Opus (MEDIUM) semantic verify → MERGE-GATE decision.
