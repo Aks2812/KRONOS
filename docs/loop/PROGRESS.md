@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 221
-derived_at: 2026-11-02T12:00:00Z
+seq: 222
+derived_at: 2026-11-02T13:30:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7892,4 +7892,9 @@ outcome: pending (maintainer decision)
 ## SEQ 221 — operator option (2); BRIEF32 authored; GATE-1 self-approved; dispatch Sonnet 5.5 builder (write-ahead)
 - prev: SEQ 220 COMPLETE. operator context.md 2026-11-02 chose option (2) (thread source identity first, no intermediate mislabeled-audit commit on main); BOOTSTRAP enum member operator-fixed (AskUserQuestion 2026-11-02).
 - action: Opus authored SPEC_BRIEF32.md (sha256 7efcfd545303ac59778f8b0359143a89ad436d6aad68b3d00144baa860d5a5de); self-approved GATE-1. Dispatch Sonnet 5.5 builder on branch claude/commit-authority-brief31 within BRIEF32 §10 (source required kw-only on upsert_node/upsert_edge/attach_evidence; add MutationSource.BOOTSTRAP; per-caller enum; fold F1/F3/F6; extend scope-audit allowlist to union; combined window a229b0d..HEAD).
+- outcome: COMPLETE. builder done @ 9bfc17e (pushed). SUMMARY 3941 passed/1 skipped/0 failed (523.95s). build-report 03-build.
+
+## SEQ 222 — builder COMPLETE; Opus whole-window scope audit PASS; dispatch Haiku 5.5 reviewer on combined a229b0d..HEAD (write-ahead)
+- prev: SEQ 221. builder 9bfc17e; Opus independent audit `git diff --name-only a229b0d..9bfc17e` = 35 files, all ⊆ BRIEF32 §10 (B32_SECTION_10). local==remote 9bfc17e.
+- action: dispatch Haiku reviewer (claude-haiku-5-5) — independent review of SPEC_BRIEF32 vs combined a229b0d..HEAD diff + rerun approved suite; AC1-AC9. Opus AC9 note: suite total lives in PROGRESS.md (no §10 file holds it), not a build defect. Builder flag: legacy test fixtures pass INGESTION uniformly; per-path attribution is test_B32_* matrix — reviewer confirms matrix asserts production paths.
 - outcome: pending
