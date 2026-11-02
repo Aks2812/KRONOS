@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 222
-derived_at: 2026-11-02T13:30:00Z
+seq: 223
+derived_at: 2026-11-02T15:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
@@ -7897,4 +7897,9 @@ outcome: pending (maintainer decision)
 ## SEQ 222 — builder COMPLETE; Opus whole-window scope audit PASS; dispatch Haiku 5.5 reviewer on combined a229b0d..HEAD (write-ahead)
 - prev: SEQ 221. builder 9bfc17e; Opus independent audit `git diff --name-only a229b0d..9bfc17e` = 35 files, all ⊆ BRIEF32 §10 (B32_SECTION_10). local==remote 9bfc17e.
 - action: dispatch Haiku reviewer (claude-haiku-5-5) — independent review of SPEC_BRIEF32 vs combined a229b0d..HEAD diff + rerun approved suite; AC1-AC9. Opus AC9 note: suite total lives in PROGRESS.md (no §10 file holds it), not a build defect. Builder flag: legacy test fixtures pass INGESTION uniformly; per-path attribution is test_B32_* matrix — reviewer confirms matrix asserts production paths.
+- outcome: COMPLETE. reviewer VERDICT FAIL / DO NOT MERGE. F-1 (Med, blocking AC3): ingest->INGESTION + web/infra/runner->VALIDATION proven only by source-text grep (test_commit_authority.py:343-362), no live call-path assertion. AC1/2/4/5/6/7/8 PASS; SUMMARY 3941 passed/1 skipped/0 failed. evidence: .claude/pipeline/04-review/review-evidence.json.
+
+## SEQ 223 — reviewer FAIL (F-1 AC3); dispatch Sonnet 5.5 builder attempt 2 (test-only, §10) (write-ahead)
+- prev: SEQ 222. Haiku FAIL; AC3 incomplete; fix is test-only (literals already correct per AC5 PASS) — add live authority-spy assertions for ingest path + ≥1 validator path.
+- action: dispatch builder attempt 2 (circuit breaker 2/3) on claude/commit-authority-brief31 @ 9bfc17e, scope tests/test_commit_authority.py ONLY: add live per-path spies proving production ingest->INGESTION and ≥1 web/infra/runner->VALIDATION; keep all prior tests; refresh SUMMARY. No production-code change.
 - outcome: pending
