@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 237
+seq: 238
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7973,3 +7973,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 236 builder COMPLETE. Fix: invalidation.py:35-48 advance to reachable now nested under 'if evidence is not None' (verified indentation); abstain (stay hypothesis) when evidence None. H-revalidation test adjusted in-§3 (explicit advance for precondition). suite 3955 passed/1 skipped/0 failed.
 - action: Opus whole-window audit 7f5f46c..HEAD = {SPEC_BRIEF34.md, src/kronos/validate/invalidation.py, tests/test_commit_authority.py, tests/test_invalidation.py} all §3; no §4. Semantic PASS (advance gated on evidence). Dispatch kronos-reviewer (claude-haiku-5-5) independent on 7f5f46c..HEAD + approved suite. Brief sha256 54748b644f8e63838de1a5c90e674e70ff8824ed0879f71aee237fed03abbd48.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer verdict; Opus semantic verify; merge-gate.
+
+## SEQ 238 — Haiku reviewer PASS (AC1-AC5, 3955p/1s/0f, AC2 discriminates); Opus semantic PASS; self-authorize in-scope merge; open PR + 10 MERGE-GATE + squash-merge 1e12433 (write-ahead)
+- prev: SEQ 237 reviewer PASS on 1e12433. SUMMARY '3955 passed, 1 skipped in 306.15s'. AC2 verified fails vs pre-fix src (reachable!=hypothesis). H-revalidation test intact. Scope 7f5f46c..HEAD=4 §3 files, no §4. 3 Low findings non-blocking: F1 import-order (cosmetic), F2 no confidence assertion on abstain path (§5 prose coverage gap, behavior correct, NOT failed AC — recorded as optional follow-up), F3 env-fixture vs literal nonet (substance met).
+- action: Opus semantic PASS; G3 increment within established goal+scope, no pause cond -> self-authorize merge (Authority model SEQ 55). Open non-draft PR (base main 7f5f46c, head 1e12433); re-measure 10 MERGE-GATE in-turn; squash-merge iff all green AND head 1e12433.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: open PR, measure gate, merge.
