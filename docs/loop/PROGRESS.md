@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 244
+seq: 245
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -8008,3 +8008,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 243 reviewer re-review PASS on 22f4239. SUMMARY '3959 passed, 1 skipped in 442.74s'. Matcher fix verified (kw or args[4]; wrong-slot negative flagged, index-4 positive accepted). Scope tests-only 4 §3 files. 3 Low non-blocking: F1 args[4] blind to starred args (latent, no producer affected -> optional follow-up), F2 keyword-wins (matches real sig, not defect), F3 AC3 != (brief-specified).
 - action: Opus semantic PASS; tests-only G3 regression lock within scope, no pause cond -> self-authorize merge (Authority model SEQ 55). Open non-draft PR (base main a0395c5, head 22f4239); re-measure 10 MERGE-GATE in-turn; squash-merge iff all green AND head 22f4239.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: open PR, measure gate, merge.
+
+## SEQ 245 — MERGED: PR #42 squash to main (329194c); 10 MERGE-GATE PASS in-turn; G3 evidence-gate lock landed
+- prev: SEQ 244 write-ahead. Opus self-authorized in-scope merge. 10 MERGE-GATE re-measured PASS (1 ruleset25333712,2 not-draft,3 open,4 head22f4239,5 Haiku PASS,6 ci:none,7 3959p/1s/0f reviewer-run,8 MERGEABLE/CLEAN+not-ancestor,9 Opus self-auth,10 clean); 5b n/a.
+- action: gh pr merge 42 --squash. Verified lock test present on main. Research record #35 added.
+- outcome: COMPLETE. main a0395c5 -> 329194c (merge=squash=329194c). PR #42 MERGED 2026-11-03T17:24:50Z. S8 §6 live-run STILL PAUSED (SEQ 140). G3 FP-reduction: evidence-persistence (BRIEF33) + abstain-gate (BRIEF34) + regression-lock (BRIEF35) all landed + uniform across producers. pending_action: remaining ranked gap is severity-chokepoint (#1) — DEFERRED (no observed defect; operator said no severity assumption); acting on it needs an operator decision -> report + request steer.
