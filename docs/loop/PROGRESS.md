@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 230
+seq: 231
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7938,3 +7938,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 229 builder COMPLETE. Final commit 5bfd69b; suite 3951 passed/1 skipped/0 failed (builder-reported).
 - action: Opus whole-window audit cf9293b..HEAD = {SPEC_BRIEF33.md, src/kronos/agent/live_executor.py, src/kronos/validate/{infra,web}_validator.py, tests/{test_commit_authority,test_infra_validator,test_web_validator}.py} all in §3; no §4 boundary file. PASS. Dispatch kronos-reviewer (claude-haiku-5-5) independent review of brief vs cf9293b..HEAD diff + approved suite. Brief sha256 d70dab097978e5a695895e1c20cc37ff728b9418b1855d26dce8ef8034a06a93.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer returns verdict; Opus semantic verify.
+
+## SEQ 231 — Haiku reviewer PASS (AC1-AC8, suite 3951p/1s/0f) w/ Low finding; Opus requires outcome.live tightening; dispatch builder (write-ahead)
+- prev: SEQ 230 reviewer PASS. review-evidence.json NOT written (.claude/ §4 boundary, absent on brief branch) — evidence recorded here instead: AC1-AC8 PASS, scope cf9293b..HEAD<=§3, SUMMARY "3951 passed, 1 skipped in 327.85s", B32 spy 2 VALIDATION mutations intact.
+- action: Opus semantic — Low finding valid: web_validator.py:63 / infra_validator.py:62 gate on outcome.evidence truthiness, not outcome.live; brief §4 says outcome.live. G3 invariant (abstain, no evidence for non-discriminated) requires tightening. Dispatch kronos-builder (claude-sonnet-5-5) targeted: add outcome.live to both guards + negative test (non-live outcome passed directly -> no EVIDENCE node), §3 files only. Brief sha256 d70dab097978e5a695895e1c20cc37ff728b9418b1855d26dce8ef8034a06a93.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder fix; Opus re-audit; re-dispatch Haiku reviewer on fix.
