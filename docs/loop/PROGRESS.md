@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 225
+seq: 226
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7913,3 +7913,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 224. BRIEF32 Haiku PASS round 2. BRIEF31 already PASS (SEQ 220). F2 (reviewer finding driving option 2) CLOSED: agent/validation writes now carry DISPATCHER/VALIDATION live, bootstrap=BOOTSTRAP, ingest=INGESTION, reconcile=RECONCILIATION; DISPATCHER/VALIDATION no longer dead.
 - action: Opus semantic PASS on reviewer evidence (no conflict; core G2 read/write invariant unchanged from SEQ 220). Per operator context.md 2026-11-02 ("if both briefs pass, request one atomic, head-pinned PR/merge authorization"), PAUSE (pause cond 2: material G2 architecture landing on main; operator reserved merge auth). NO merge, NO PR opened yet.
 - outcome: COMPLETE (verify). main @ a229b0d; branch claude/commit-authority-brief31 @ f65cd0e pushed, no PR. S8 §6 PAUSED (SEQ 140). pending_action: operator grants atomic head-pinned PR/merge authorization for f65cd0e (BRIEF31+BRIEF32 together) OR directs otherwise; on grant Opus opens one non-draft PR + re-measures 10 MERGE-GATE in-turn + squash-merges.
+
+## SEQ 226 — operator granted atomic head-pinned merge auth (f65cd0e); open PR + re-measure 10 MERGE-GATE + squash-merge (write-ahead)
+- prev: SEQ 225 COMPLETE (both briefs PASS, paused cond 2). Operator pasted auth 2026-11-03: "open one atomic, non-draft PR for head f65cd0e and squash-merge to main; re-measure all 10 MERGE-GATE same turn; do not merge if any red or head SHA changes; no live/§6."
+- action: open one non-draft PR (base main @ a229b0d, head claude/commit-authority-brief31 @ f65cd0e); re-measure 10 MERGE-GATE in-turn; squash-merge iff all green AND head still f65cd0e.
+- outcome: pending. target head f65cd0e; §6 live-run stays PAUSED (SEQ 140).
