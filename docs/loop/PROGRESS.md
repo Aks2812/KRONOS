@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 240
+seq: 241
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7988,3 +7988,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 239 COMPLETE (PR #41 merged a0395c5). All 4 forward-to-reachable producers now evidence-gated; lock invariant via ast-based structural test; close BRIEF34 §5 confidence gap. No src change.
 - action: SPEC_BRIEF35.md authored (sha256 52979664c025c092e1da345e0238e45db65722ed2053e1762f395c615c394753), branch claude/g3-evidence-gate-regression-brief35 @ a0395c5. §3={tests/test_finding_evidence_gate.py NEW, tests/test_invalidation.py, tests/test_commit_authority.py seal-tax, SPEC_BRIEF35.md}. GATE-1 self-approved (routine, tests-only, no §4). Dispatch kronos-builder (claude-sonnet-5-5).
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder impl; Opus scope-audit; Haiku reviewer.
+
+## SEQ 241 — builder DONE (e0d4402, 3959p/1s/0f); AC3 brief-prose corrected by Opus (builder escalated real gap); scope audit PASS; dispatch Haiku reviewer (write-ahead)
+- prev: SEQ 240 builder escalated: brief AC3 as authored was false (abstained FINDING confidence=0 create-default, never lifecycle-scored to hypothesis-3). Opus corrected SPEC_BRIEF35 §8 AC3 to prose-faithful: status==hypothesis AND confidence != derive_confidence('finding','reachable',False) (=7), no hardcoded literal. Builder impl'd (e0d4402), suite 3959 passed/1 skipped/0 failed.
+- action: Opus whole-window audit a0395c5..HEAD = {SPEC_BRIEF35.md, tests/test_commit_authority.py, tests/test_finding_evidence_gate.py, tests/test_invalidation.py} all §3, no src/§4. PASS. Dispatch kronos-reviewer (claude-haiku-5-5) on a0395c5..HEAD + suite. Brief sha256 adef49d62490a5e2f9bb3301264984157cb1d8b1180124745a6a390002e85930.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer verdict; Opus verify; in-scope merge-gate.
