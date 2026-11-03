@@ -14,6 +14,7 @@ import pytest
 from kronos.evidence import store_evidence
 from kronos.graph import EngagementGraph
 from kronos.lifecycle import (
+    _evidence_count,
     FINDING_TRANSITIONS,
     LifecycleError,
     advance_finding_status,
@@ -260,7 +261,8 @@ def test_C_authenticated_not_authorized_creates_no_finding(env):
 
 def test_H_revalidation_without_evidence_restores_confidence_7(env):
     g = env.g
-    fid = record_secret_finding(g, env.sid, CAND)  # no evidence attached
+    fid = record_secret_finding(g, env.sid, CAND)  # no evidence attached; abstains at hypothesis (BRIEF34)
+    advance_finding_status(g, fid, "reachable")
     assert g.get_node("FINDING", fid)["confidence"] == 7
     advance_finding_status(g, fid, "requires_revalidation")
     assert g.get_node("FINDING", fid)["confidence"] == 3
@@ -284,3 +286,17 @@ def test_I_double_invalidation_is_idempotent_on_graph(env):
     assert before == [1, 1, 1, 1]
     assert invalidate_findings_for_dead_secret(g, env.sid) == []
     assert [_count(g, q) for q in qs] == before
+
+
+# SPEC_BRIEF34 AC1: evidence -> reachable + persisted (env fixture blocks sockets: nonet)
+def test_B34_AC1_evidence_advances_to_reachable_with_evidence_node(env):
+    fid = record_secret_finding(env.g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
+    assert env.g.get_node("FINDING", fid)["status"] == "reachable"
+    assert _evidence_count(env.g, "finding", fid) >= 1
+
+
+# SPEC_BRIEF34 AC2: no evidence -> abstain (fails against the pre-fix unconditional advance)
+def test_B34_AC2_no_evidence_abstains_at_hypothesis(env):
+    fid = record_secret_finding(env.g, env.sid, CAND, evidence=None)
+    assert env.g.get_node("FINDING", fid)["status"] == "hypothesis"
+    assert _evidence_count(env.g, "finding", fid) == 0
