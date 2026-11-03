@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 231
+seq: 232
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7943,3 +7943,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 230 reviewer PASS. review-evidence.json NOT written (.claude/ §4 boundary, absent on brief branch) — evidence recorded here instead: AC1-AC8 PASS, scope cf9293b..HEAD<=§3, SUMMARY "3951 passed, 1 skipped in 327.85s", B32 spy 2 VALIDATION mutations intact.
 - action: Opus semantic — Low finding valid: web_validator.py:63 / infra_validator.py:62 gate on outcome.evidence truthiness, not outcome.live; brief §4 says outcome.live. G3 invariant (abstain, no evidence for non-discriminated) requires tightening. Dispatch kronos-builder (claude-sonnet-5-5) targeted: add outcome.live to both guards + negative test (non-live outcome passed directly -> no EVIDENCE node), §3 files only. Brief sha256 d70dab097978e5a695895e1c20cc37ff728b9418b1855d26dce8ef8034a06a93.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder fix; Opus re-audit; re-dispatch Haiku reviewer on fix.
+
+## SEQ 232 — builder fix 8ffd386 (outcome.live guard + 2 negative tests, 3953p/1s/0f); Opus re-audit PASS; push branch + re-dispatch Haiku reviewer (write-ahead)
+- prev: SEQ 231 builder fix COMPLETE. web_validator.py:63 / infra_validator.py:62 guard = engagement_dir is not None and outcome is not None and outcome.live and outcome.evidence. 2 negative tests (non-live outcome w/ evidence -> no EVIDENCE node). suite 3953 passed/1 skipped/0 failed (builder-reported).
+- action: Opus whole-window re-audit cf9293b..HEAD = same 7 §3 files, no §4. PASS. Push branch 8ffd386 to origin (was 5bfd69b). Re-dispatch kronos-reviewer (claude-haiku-5-5) on cf9293b..HEAD + approved suite. Brief sha256 d0bedeb7391dcc5e24e8280647b90829539918463cdcae273dec0d6efef69673.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer re-verdict on 8ffd386; Opus semantic verify; then PAUSE for operator atomic merge auth (pause cond 2).
