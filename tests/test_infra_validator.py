@@ -176,6 +176,19 @@ def test_J_scope_audit():
     assert set(out) <= SECTION_3
 
 
+@pytest.fixture
+def nonet(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
 # ---- SPEC_BRIEF33: G3 evidence persistence (AC2/AC3/AC4/AC5) ----
 def _live_infra_outcome():
     return validate_service_reachable(_arm("A", True, 1), _arm("B", False, 0))

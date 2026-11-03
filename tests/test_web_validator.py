@@ -202,6 +202,19 @@ def test_L_brief13_seal():
     assert 'f"{BRIEF_BASE}..HEAD"' not in src
 
 
+@pytest.fixture
+def nonet(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
 # ---- SPEC_BRIEF33: G3 evidence persistence (AC1/AC3/AC4/AC5) ----
 def _live_web_outcome():
     return validate_web_endpoint_reachable(_arm("A", True, 200), _arm("B", False, 404))
