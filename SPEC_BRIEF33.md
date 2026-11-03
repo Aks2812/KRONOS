@@ -94,3 +94,6 @@ No file outside this list may change. `src/kronos/manifest.py`, `.github/`, `cyb
 ## 9. Exit conditions
 - All §8 AC pass; suite `0 failed`; scope audit `cf9293b..HEAD ⊆ B33_SECTION_10`; independent
   Haiku reviewer PASS. No file outside §3 changed. No live/§6 execution.
+
+## Build note
+Measured full suite (post-impl): 3951 passed, 1 skipped, 0 failed.
