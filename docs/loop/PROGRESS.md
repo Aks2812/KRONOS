@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 241
+seq: 242
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7993,3 +7993,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 240 builder escalated: brief AC3 as authored was false (abstained FINDING confidence=0 create-default, never lifecycle-scored to hypothesis-3). Opus corrected SPEC_BRIEF35 §8 AC3 to prose-faithful: status==hypothesis AND confidence != derive_confidence('finding','reachable',False) (=7), no hardcoded literal. Builder impl'd (e0d4402), suite 3959 passed/1 skipped/0 failed.
 - action: Opus whole-window audit a0395c5..HEAD = {SPEC_BRIEF35.md, tests/test_commit_authority.py, tests/test_finding_evidence_gate.py, tests/test_invalidation.py} all §3, no src/§4. PASS. Dispatch kronos-reviewer (claude-haiku-5-5) on a0395c5..HEAD + suite. Brief sha256 adef49d62490a5e2f9bb3301264984157cb1d8b1180124745a6a390002e85930.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer verdict; Opus verify; in-scope merge-gate.
+
+## SEQ 242 — Haiku reviewer PASS (AC1-AC6, 3959p/1s/0f) w/ LOW finding on lock matcher; Opus requires tightening; resume builder (write-ahead)
+- prev: SEQ 241 reviewer PASS on e0d4402. SUMMARY '3959 passed, 1 skipped in 437.95s'. Scope tests-only a0395c5..HEAD=4 §3 files. AC1-AC6 PASS. LOW F1: test_finding_evidence_gate.py _is_finding_attach accepts 'finding' in ANY positional slot -> false-negative hole (real attach_evidence target_type is positional index 4); no current producer affected (all keyword) but weakens the lock's own guarantee. F2 nonet-literal / F3 dup-runs cosmetic.
+- action: Opus semantic — F1 material to BRIEF35's purpose (robust lock). Resume kronos-builder (claude-sonnet-5-5): tighten _is_finding_attach to require target_type at keyword OR positional index 4; add positional-form negative case to AC2. test_finding_evidence_gate.py only (§3). Re-run suite; commit.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder tighten; Opus re-audit; re-dispatch Haiku reviewer on fix.
