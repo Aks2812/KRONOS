@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 235
+seq: 236
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7963,3 +7963,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 234 COMPLETE (PR #40 merged 7f5f46c). Operator 2026-11-03: continue item 1 under existing G3 scope; Sonnet 5 ranks remaining FP gaps; no severity assumption; Opus picks smallest measurable increment; hermetic evidence-backed AC, abstention preserved; §6 paused; stop only on new architecture/scope/operator decision.
 - action: dispatch read-only kronos-researcher (claude-sonnet-5) to enumerate + RANK remaining G3 false-positive gaps across validate/ + lifecycle + classification, each with cited evidence, a measurable test hook, and candidate §3 scope; explicitly assess (not assume) severity-escalation. Opus saves to 02-research/findings.md.
 - outcome: pending. base main 7f5f46c. §6 live-run STILL PAUSED (SEQ 140). pending_action: researcher returns ranked gaps; Opus selects smallest measurable increment + authors brief.
+
+## SEQ 236 — researcher ranked G3 FP gaps; Opus selected smallest increment (invalidation evidence-gate, NOT severity); GATE-1 self-approved; dispatch Sonnet 5.5 builder (write-ahead)
+- prev: SEQ 235 researcher COMPLETE. Ranked 4 gaps; #1 severity DEFERRED (absence-of-guard, not observed defect, per operator 'no severity assumption'). Opus found concrete FP: invalidation.py:46-47 record_secret_finding advances FINDING to reachable UNCONDITIONALLY, attaches evidence only if evidence is not None -> evidence=None yields reachable w/ no EVIDENCE node. Other producers (dispatcher:163, web:63, infra:62) all gate advance on evidence.
+- action: SPEC_BRIEF34.md authored (sha256 2b4c914f3c82deb24709e8a05dbe3993be761a8b8458394a09d0c503b484d5b4), branch claude/g3-invalidation-evidence-gate-brief34 @ 7f5f46c. Fix: gate the advance on evidence attached; abstain (stay hypothesis) when evidence None. GATE-1 self-approved (routine, in-scope, §3 self-contained, no §4). §3={invalidation.py, test_invalidation.py, test_commit_authority.py seal-tax, SPEC_BRIEF34.md}. Dispatch kronos-builder (claude-sonnet-5-5).
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder impl; Opus scope-audit; Haiku reviewer.
