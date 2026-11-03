@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 227
+seq: 228
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7923,3 +7923,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 226 write-ahead. Operator granted atomic head-pinned auth (2026-11-03). All 10 MERGE-GATE re-measured this turn: 1,2,3,4(head f65cd0e),5(Haiku SEQ220/224),6(ci:none),7(suite 3943 passed/1 skipped re-run in-turn),8(CLEAN),9(auth this turn),10(clean) PASS; 5b n/a.
 - action: gh pr merge 39 --squash (no --admin/--auto). Research record updated (#31+#32 row).
 - outcome: COMPLETE. main a229b0d -> cf9293b (merge commit = squash = cf9293b). PR #39 MERGED 2026-11-03T14:54:02Z. branch claude/commit-authority-brief31 @ f65cd0e. S8 §6 live-run STILL PAUSED (SEQ 140). pending_action: operator selects next phase (next recommended: G3 false-positive-reduction brief, OR S8 §6 live-run authorization — both pause-gated).
+
+## SEQ 228 — operator selected G3 as next phase; dispatch Sonnet 5 researcher to map G3 FP-reduction state + gap (write-ahead)
+- prev: SEQ 227 COMPLETE (PR #39 merged cf9293b). Operator 2026-11-03: "G3 is next."
+- action: dispatch read-only kronos-researcher (claude-sonnet-5) to map current G3 false-positive-reduction machinery (validate/controls.py lifecycle, two-armed/negative-control, abstention, SECRET/FINDING classification, evidence-gating) and identify the concrete next increment + candidate §3 file scope. Read-only; returns cited findings; Opus saves to 02-research/findings.md.
+- outcome: pending. No build, no brief yet. §6 live-run STILL PAUSED (SEQ 140). pending_action: researcher returns G3 map; Opus authors G3 brief + GATE-1.
