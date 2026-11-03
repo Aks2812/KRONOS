@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 242
+seq: 243
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7998,3 +7998,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 241 reviewer PASS on e0d4402. SUMMARY '3959 passed, 1 skipped in 437.95s'. Scope tests-only a0395c5..HEAD=4 §3 files. AC1-AC6 PASS. LOW F1: test_finding_evidence_gate.py _is_finding_attach accepts 'finding' in ANY positional slot -> false-negative hole (real attach_evidence target_type is positional index 4); no current producer affected (all keyword) but weakens the lock's own guarantee. F2 nonet-literal / F3 dup-runs cosmetic.
 - action: Opus semantic — F1 material to BRIEF35's purpose (robust lock). Resume kronos-builder (claude-sonnet-5-5): tighten _is_finding_attach to require target_type at keyword OR positional index 4; add positional-form negative case to AC2. test_finding_evidence_gate.py only (§3). Re-run suite; commit.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder tighten; Opus re-audit; re-dispatch Haiku reviewer on fix.
+
+## SEQ 243 — builder tightened lock matcher (22f4239, 3959p/1s/0f); Opus re-audit PASS; re-dispatch Haiku reviewer (write-ahead)
+- prev: SEQ 242 builder fix COMPLETE. _is_finding_attach now requires target_type at keyword OR positional index 4 (test_finding_evidence_gate.py:37-40); positional wrong-slot negative + index-4 positive cases added. suite 3959 passed/1 skipped/0 failed.
+- action: Opus whole-window re-audit a0395c5..HEAD = same 4 §3 files, tests-only, no src/§4. PASS. Re-dispatch kronos-reviewer (claude-haiku-5-5) on a0395c5..HEAD + suite. Brief sha256 a2ab47c80d6e915aeed693ced662503a55203488f05681bd9d6d2c6ecbb7b17c.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer re-verdict; Opus verify; in-scope merge-gate (10 MERGE-GATE re-measured in merge turn).
