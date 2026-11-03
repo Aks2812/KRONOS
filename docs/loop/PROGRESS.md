@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 234
+seq: 235
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7958,3 +7958,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 233 write-ahead. Opus self-authorized in-scope merge. All 10 MERGE-GATE re-measured this turn PASS (1 ruleset25333712,2 not-draft,3 open,4 head8ffd386,5 Haiku PASS AC1-8,6 ci:none,7 suite 3953p/1s/0f reviewer-run,8 MERGEABLE/CLEAN+not-ancestor,9 Opus self-auth,10 clean); 5b n/a.
 - action: gh pr merge 40 --squash (no --admin/--auto). Verified web_validator.py on main carries outcome.live guard. Research record #33 row added.
 - outcome: COMPLETE. main cf9293b -> 7f5f46c (merge=squash=7f5f46c). PR #40 MERGED 2026-11-03T15:52:35Z. branch claude/g3-evidence-persistence-brief33 @ 8ffd386. S8 §6 live-run STILL PAUSED (SEQ 140). pending_action: operator selects next phase (G3 has more FP-reduction increments available, OR §6 live-run auth — both pause-gated).
+
+## SEQ 235 — operator: continue G3 autonomously (thin-orchestrator); dispatch Sonnet 5 researcher to rank remaining FP gaps (write-ahead)
+- prev: SEQ 234 COMPLETE (PR #40 merged 7f5f46c). Operator 2026-11-03: continue item 1 under existing G3 scope; Sonnet 5 ranks remaining FP gaps; no severity assumption; Opus picks smallest measurable increment; hermetic evidence-backed AC, abstention preserved; §6 paused; stop only on new architecture/scope/operator decision.
+- action: dispatch read-only kronos-researcher (claude-sonnet-5) to enumerate + RANK remaining G3 false-positive gaps across validate/ + lifecycle + classification, each with cited evidence, a measurable test hook, and candidate §3 scope; explicitly assess (not assume) severity-escalation. Opus saves to 02-research/findings.md.
+- outcome: pending. base main 7f5f46c. §6 live-run STILL PAUSED (SEQ 140). pending_action: researcher returns ranked gaps; Opus selects smallest measurable increment + authors brief.
