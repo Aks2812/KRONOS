@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from kronos.evidence import attach_evidence
 from kronos.lifecycle import advance_finding_status
+from kronos.commit import MutationSource
 
 _INVALIDATABLE = ("reachable", "exploited", "reported")
 
@@ -27,9 +28,10 @@ def record_secret_finding(
             "severity": "info",
             "status": "hypothesis",
         },
+        source=MutationSource.VALIDATION,
     )
-    engagement.upsert_edge("derived_from", finding_id, "FINDING", secret_id, "SECRET")
-    engagement.upsert_edge("vulnerable_to", candidate.id, candidate.type, finding_id, "FINDING")
+    engagement.upsert_edge("derived_from", finding_id, "FINDING", secret_id, "SECRET", source=MutationSource.VALIDATION)
+    engagement.upsert_edge("vulnerable_to", candidate.id, candidate.type, finding_id, "FINDING", source=MutationSource.VALIDATION)
     if evidence is not None:
         attach_evidence(
             engagement,
@@ -38,6 +40,7 @@ def record_secret_finding(
             kind="validation_proof",
             target_type="finding",
             target_id=finding_id,
+            source=MutationSource.VALIDATION,
         )
     # status is create-only, so a re-run finds the FINDING already advanced.
     if engagement.get_node("FINDING", finding_id)["status"] == "hypothesis":

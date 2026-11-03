@@ -3,6 +3,7 @@ import pytest
 
 from kronos.graph import EngagementGraph
 from kronos.schema import init_db
+from kronos.commit import MutationSource
 
 ALL_NODE_TABLES = [
     "ENGAGEMENT", "HOST", "SERVICE", "WEB_ENDPOINT", "PARAMETER", "API_ENDPOINT",
@@ -28,8 +29,8 @@ def test_init_db_is_idempotent(tmp_path):
 def test_upsert_node_merges_not_duplicates(tmp_path, manifest_factory, signing_keypair):
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
-    g.upsert_node("HOST", "host:10.0.0.1", {"created_at": "2026-01-01T00:00:00Z"})
-    g.upsert_node("HOST", "host:10.0.0.1", {"created_at": "2026-01-01T00:00:00Z"})
+    g.upsert_node("HOST", "host:10.0.0.1", {"created_at": "2026-01-01T00:00:00Z"}, source=MutationSource.INGESTION)
+    g.upsert_node("HOST", "host:10.0.0.1", {"created_at": "2026-01-01T00:00:00Z"}, source=MutationSource.INGESTION)
     r = g.execute("MATCH (n:HOST) RETURN count(n)")
     assert r.get_next()[0] == 1
 
@@ -44,8 +45,8 @@ def test_upsert_node_stamps_in_scope_via_scope_guard(tmp_path, manifest_factory,
     # out-of-scope host. The earlier bare `api.evil.com` was denied by
     # the API_ENDPOINT -> {url} family filter before any pattern was
     # consulted, so it passed even with the pattern logic broken.
-    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
-    g.upsert_node("API_ENDPOINT", "https://api.evil.com", {})
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", "https://api.evil.com", {}, source=MutationSource.INGESTION)
     assert g.get_node("API_ENDPOINT", "https://api.acme.example.com")["in_scope"] is True
     assert g.get_node("API_ENDPOINT", "https://api.evil.com")["in_scope"] is False
 
@@ -56,18 +57,21 @@ def test_mobile_component_exported_flag_round_trips(tmp_path, manifest_factory, 
     props, defaulting to false when omitted."""
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
-    g.upsert_node("MOBILE_APP", "com.acme.app", {})
+    g.upsert_node("MOBILE_APP", "com.acme.app", {}, source=MutationSource.INGESTION)
     g.upsert_node(
         "MOBILE_COMPONENT", "com.acme.app/.MainActivity",
         {"component_type": "activity", "name": "MainActivity", "exported": True},
+        source=MutationSource.INGESTION,
     )
     g.upsert_node(
         "MOBILE_COMPONENT", "com.acme.app/.InternalService",
         {"component_type": "service", "name": "InternalService", "exported": False},
+        source=MutationSource.INGESTION,
     )
     g.upsert_node(
         "MOBILE_COMPONENT", "com.acme.app/.NoFlagGiven",
         {"component_type": "receiver", "name": "NoFlagGiven"},
+        source=MutationSource.INGESTION,
     )
     assert g.get_node("MOBILE_COMPONENT", "com.acme.app/.MainActivity")["exported"] is True
     assert g.get_node("MOBILE_COMPONENT", "com.acme.app/.InternalService")["exported"] is False
@@ -77,10 +81,10 @@ def test_mobile_component_exported_flag_round_trips(tmp_path, manifest_factory, 
 def test_upsert_edge_merges_not_duplicates(tmp_path, manifest_factory, signing_keypair):
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
-    g.upsert_node("MOBILE_APP", "com.acme.app", {})
-    g.upsert_node("SECRET", "secret:abc", {}, scope_key="com.acme.app")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:abc", "SECRET")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:abc", "SECRET")
+    g.upsert_node("MOBILE_APP", "com.acme.app", {}, source=MutationSource.INGESTION)
+    g.upsert_node("SECRET", "secret:abc", {}, scope_key="com.acme.app", source=MutationSource.INGESTION)
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:abc", "SECRET", source=MutationSource.INGESTION)
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "secret:abc", "SECRET", source=MutationSource.INGESTION)
     r = g.execute("MATCH ()-[e:leaks]->() RETURN count(e)")
     assert r.get_next()[0] == 1
 
@@ -96,7 +100,7 @@ def test_upsert_node_cannot_override_in_scope_via_props(tmp_path, manifest_facto
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
     with pytest.raises(ValueError):
-        g.upsert_node("API_ENDPOINT", "api.evil.com", {"in_scope": True})
+        g.upsert_node("API_ENDPOINT", "api.evil.com", {"in_scope": True}, source=MutationSource.INGESTION)
 
 
 def test_upsert_node_cannot_set_confidence_via_props(tmp_path, manifest_factory, signing_keypair):
@@ -105,7 +109,7 @@ def test_upsert_node_cannot_set_confidence_via_props(tmp_path, manifest_factory,
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
     with pytest.raises(ValueError):
-        g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis", "confidence": 10})
+        g.upsert_node("FINDING", "f1", {"title": "t", "severity": "high", "status": "hypothesis", "confidence": 10}, source=MutationSource.INGESTION)
 
 
 def test_upsert_node_rejects_unknown_prop_keys(tmp_path, manifest_factory, signing_keypair):
@@ -115,7 +119,7 @@ def test_upsert_node_rejects_unknown_prop_keys(tmp_path, manifest_factory, signi
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
     with pytest.raises(ValueError):
-        g.upsert_node("HOST", "h1", {"confidence = 99, n.in_scope": True})
+        g.upsert_node("HOST", "h1", {"confidence = 99, n.in_scope": True}, source=MutationSource.INGESTION)
 
 
 def test_upsert_node_cannot_change_status_after_creation(tmp_path, manifest_factory, signing_keypair):
@@ -128,12 +132,12 @@ def test_upsert_node_cannot_change_status_after_creation(tmp_path, manifest_fact
 
     _, pub = signing_keypair
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_factory(), pub)
-    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"})
+    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, source=MutationSource.INGESTION)
     advance_secret_status(g, "s1", "validated")
     assert g.get_node("SECRET", "s1")["status"] == "validated"
 
     # Re-ingest the exact same raw upsert (simulating a re-run of ingest()).
-    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"})
+    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, source=MutationSource.INGESTION)
     node = g.get_node("SECRET", "s1")
     assert node["status"] == "validated"
     assert node["confidence"] == 7

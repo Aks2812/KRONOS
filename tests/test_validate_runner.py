@@ -13,6 +13,7 @@ from kronos.graph import EngagementGraph
 from kronos.lifecycle import derive_confidence
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 
 def _live(evidence: bytes = b"proof", detail: str = "200") -> ValidationOutcome:
@@ -38,20 +39,21 @@ def _graph_with_secret(tmp_path, manifest_factory, signing_keypair, *, decoded_v
     info = store_evidence(engagement_dir, decoded_value.encode(), kind="mobile_secret")
     secret_id = f"secret:{info['sha256'][:16]}"
 
-    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    graph.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     graph.upsert_node(
         "SECRET",
         secret_id,
         {"value_ref": "sha256:" + info["sha256"], "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET")
+    graph.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", secret_id, "SECRET", source=MutationSource.INGESTION)
     return graph, engagement_dir, secret_id
 
 
 def _add_endpoint(graph, url: str) -> None:
-    graph.upsert_node("API_ENDPOINT", url, {"source": "static"})
-    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT")
+    graph.upsert_node("API_ENDPOINT", url, {"source": "static"}, source=MutationSource.INGESTION)
+    graph.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", url, "API_ENDPOINT", source=MutationSource.INGESTION)
 
 
 def test_live_in_scope_secret_reaches_reachable_with_evidence_and_edge(
@@ -230,6 +232,7 @@ def test_api_token_secret_never_dispatched_to_the_cloud_validator_even_with_clou
     graph.upsert_node(
         "CLOUD_RESOURCE", "some-bucket", {"resource_type": "s3_bucket", "provider": "aws", "source": "test"},
         scope_key="arn:aws:s3:::some-bucket",
+        source=MutationSource.INGESTION,
     )
 
     with patch("kronos.validate.http_validator.validate_api_token") as mock_http, \

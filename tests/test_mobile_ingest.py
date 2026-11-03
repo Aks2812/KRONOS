@@ -20,6 +20,7 @@ from kronos.ingest.mobile import light_extractors
 from kronos.ingest.mobile.manifest_parser import ManifestParseError, parse_manifest
 from kronos.ingest.mobile.mobsf_client import MobSFClient
 from kronos.ingest.mobile.parser import ingest_mobile_static
+from kronos.commit import MutationSource
 
 
 def _load_mobsf_client_from_env() -> MobSFClient | None:
@@ -226,7 +227,7 @@ def test_hostile_input_graph_injection_blocked_by_construction(engagement_graph)
     # spread into anything.
     assert found[0].decoded_value == hostile_resources["api_key"]
 
-    g.upsert_node("MOBILE_APP", "com.hostile.app", {"bundle_id": "com.hostile.app", "platform": "android", "source": "static"})
+    g.upsert_node("MOBILE_APP", "com.hostile.app", {"bundle_id": "com.hostile.app", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     secret_id = "secret:" + hashlib.sha256(found[0].decoded_value.encode()).hexdigest()[:16]
     apply_upserts(
         g,
@@ -277,6 +278,7 @@ def test_hostile_input_graph_injection_blocked_by_construction(engagement_graph)
         "secret:hostile00000002",
         {"value_ref": "sha256:deadbeef", "kind": "api_key", "status": "reported", "source": "static"},
         scope_key="com.hostile.app",
+        source=MutationSource.INGESTION,
     )
     assert g.get_node("SECRET", "secret:hostile00000002")["status"] == "reported"
     # And re-ingestion on the SAME id can never flip it back down or
@@ -286,5 +288,6 @@ def test_hostile_input_graph_injection_blocked_by_construction(engagement_graph)
         "secret:hostile00000002",
         {"value_ref": "sha256:deadbeef", "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.hostile.app",
+        source=MutationSource.INGESTION,
     )
     assert g.get_node("SECRET", "secret:hostile00000002")["status"] == "reported"

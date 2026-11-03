@@ -24,6 +24,7 @@ from kronos.schema import EDGE_PAIRS
 from kronos.validate.invalidation import invalidate_findings_for_dead_secret, record_secret_finding
 from kronos.validate.runner import run_validation_pass
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent.parent
 BRIEF_BASE = "17d38a8"
@@ -64,15 +65,16 @@ def env(tmp_path, manifest_factory, signing_keypair, monkeypatch):
     )
     info = store_evidence(tmp_path, b"plain-bearer-token", kind="mobile_secret")
     sid = f"secret:{info['sha256'][:16]}"
-    g.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"})
+    g.upsert_node("MOBILE_APP", "com.kronos.lab", {"bundle_id": "com.kronos.lab", "platform": "android", "source": "static"}, source=MutationSource.INGESTION)
     g.upsert_node(
         "SECRET", sid,
         {"value_ref": "sha256:" + info["sha256"], "kind": "api_key", "status": "extracted", "source": "static"},
         scope_key="com.kronos.lab",
+        source=MutationSource.INGESTION,
     )
-    g.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", sid, "SECRET")
-    g.upsert_node("API_ENDPOINT", URL, {"source": "static"})
-    g.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", URL, "API_ENDPOINT")
+    g.upsert_edge("leaks", "com.kronos.lab", "MOBILE_APP", sid, "SECRET", source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", URL, {"source": "static"}, source=MutationSource.INGESTION)
+    g.upsert_edge("references", "com.kronos.lab", "MOBILE_APP", URL, "API_ENDPOINT", source=MutationSource.INGESTION)
     return SimpleNamespace(g=g, dir=tmp_path, sid=sid)
 
 
@@ -184,7 +186,7 @@ def test_F_exploited_and_reported_invalidated(env):
 
 def test_G_non_secret_finding_and_other_statuses_untouched(env):
     g = env.g
-    g.upsert_node("FINDING", "finding:infra-x", {"source": "infra_validator", "title": "t", "severity": "info", "status": "hypothesis"})
+    g.upsert_node("FINDING", "finding:infra-x", {"source": "infra_validator", "title": "t", "severity": "info", "status": "hypothesis"}, source=MutationSource.INGESTION)
     advance_finding_status(g, "finding:infra-x", "reachable")
     fid = record_secret_finding(g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
     advance_finding_status(g, fid, "discarded")
@@ -198,7 +200,7 @@ def test_G_non_secret_finding_and_other_statuses_untouched(env):
 def test_H_other_secrets_finding_untouched(env):
     g = env.g
     fid = record_secret_finding(g, env.sid, CAND, evidence=b"p", engagement_dir=env.dir)
-    g.upsert_node("SECRET", "secret:other", {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "static"}, scope_key="com.kronos.lab")
+    g.upsert_node("SECRET", "secret:other", {"value_ref": "sha256:x", "kind": "api_key", "status": "extracted", "source": "static"}, scope_key="com.kronos.lab", source=MutationSource.INGESTION)
     other = record_secret_finding(g, "secret:other", CAND, evidence=b"q", engagement_dir=env.dir)
     _make_secret_reachable(env)
     advance_secret_status(g, env.sid, "dead")

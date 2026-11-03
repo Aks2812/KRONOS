@@ -14,6 +14,7 @@ from kronos.ingest import EdgeUpsert, NodeUpsert, apply_upserts, ingest
 from kronos.ingest.contract import DeclinedItem, IngestionSource, apply_plan
 from kronos.ingest.infra.parser import ingest_infra_nmap_plan
 from kronos.ingest.web.parser import ingest_web_openapi, ingest_web_openapi_plan
+from kronos.commit import MutationSource
 
 ROOT = Path(__file__).parent
 FIXTURE = ROOT / "fixtures" / "web" / "cybergym_openapi.json"
@@ -108,9 +109,9 @@ def test_E_scope_gating_inherited(g, doc):
     for t, i in (("WEB_ENDPOINT", HEALTH), ("WEB_ENDPOINT", ITEMS), ("PARAMETER", P_ITEM), ("PARAMETER", P_VERBOSE)):
         assert g.get_node(t, i)["in_scope"] is True
     props = {"source": "openapi", "url": "http://x/y", "method": "GET"}
-    g.upsert_node("WEB_ENDPOINT", "web:GET:noscope", props)
+    g.upsert_node("WEB_ENDPOINT", "web:GET:noscope", props, source=MutationSource.INGESTION)
     assert g.get_node("WEB_ENDPOINT", "web:GET:noscope")["in_scope"] is False
-    g.upsert_node("WEB_ENDPOINT", "web:GET:oos", props, scope_key="10.0.0.1")
+    g.upsert_node("WEB_ENDPOINT", "web:GET:oos", props, scope_key="10.0.0.1", source=MutationSource.INGESTION)
     assert g.get_node("WEB_ENDPOINT", "web:GET:oos")["in_scope"] is False
 
 

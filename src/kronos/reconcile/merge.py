@@ -36,17 +36,12 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
+from kronos.commit import MutationSource
 from kronos.lifecycle import set_secret_status_from_evidence
 from kronos.schema import EDGE_PAIRS
 
 if TYPE_CHECKING:  # pragma: no cover
     from kronos.graph import EngagementGraph
-
-# Node types whose schema (schema.py) already carries a `status` column —
-# FORK-A's tombstone sets `status="merged"` on these IN ADDITION TO
-# `merged_into`; every other mergeable type (no status column) is
-# tombstoned via `merged_into` alone.
-_STATUS_BEARING_TYPES = {"SECRET", "FINDING"}
 
 
 @dataclass(frozen=True)
@@ -98,7 +93,7 @@ def _carry_over_edges(graph: "EngagementGraph", node_type: str, loser_id: str, s
                 for (other_id,) in _rows(result):
                     if other_id == survivor_id:
                         continue
-                    graph.upsert_edge(label, survivor_id, frm, other_id, to)
+                    graph.upsert_edge(label, survivor_id, frm, other_id, to, source=MutationSource.RECONCILIATION)
             if to == node_type:
                 result = graph.execute(
                     f"MATCH (a:{frm})-[:{label}]->(b:{to} {{id: $id}}) RETURN a.id",
@@ -107,7 +102,7 @@ def _carry_over_edges(graph: "EngagementGraph", node_type: str, loser_id: str, s
                 for (other_id,) in _rows(result):
                     if other_id == survivor_id:
                         continue
-                    graph.upsert_edge(label, other_id, frm, survivor_id, to)
+                    graph.upsert_edge(label, other_id, frm, survivor_id, to, source=MutationSource.RECONCILIATION)
 
 
 def _delete_loser_edges(graph: "EngagementGraph", node_type: str, loser_id: str) -> None:
@@ -121,31 +116,11 @@ def _delete_loser_edges(graph: "EngagementGraph", node_type: str, loser_id: str)
     node itself (see PR discussion); same `EDGE_PAIRS` walk as the
     carry-over, both directions, so every label/pair this node type can
     participate in is covered."""
-    for label, pairs in EDGE_PAIRS.items():
-        for frm, to in pairs:
-            if frm == node_type:
-                graph.execute(
-                    f"MATCH (a:{frm} {{id: $id}})-[r:{label}]->(b:{to}) DELETE r",
-                    {"id": loser_id},
-                )
-            if to == node_type:
-                graph.execute(
-                    f"MATCH (a:{frm})-[r:{label}]->(b:{to} {{id: $id}}) DELETE r",
-                    {"id": loser_id},
-                )
+    graph._authority.delete_loser_edges(node_type, loser_id, MutationSource.RECONCILIATION)
 
 
 def _tombstone(graph: "EngagementGraph", node_type: str, loser_id: str, survivor_id: str) -> None:
-    if node_type in _STATUS_BEARING_TYPES:
-        graph.execute(
-            f"MATCH (n:{node_type} {{id: $id}}) SET n.status = 'merged', n.merged_into = $survivor",
-            {"id": loser_id, "survivor": survivor_id},
-        )
-    else:
-        graph.execute(
-            f"MATCH (n:{node_type} {{id: $id}}) SET n.merged_into = $survivor",
-            {"id": loser_id, "survivor": survivor_id},
-        )
+    graph._authority.tombstone(node_type, loser_id, survivor_id, MutationSource.RECONCILIATION)
 
 
 def merge_group(

@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:  # pragma: no cover - avoids a runtime import cycle with graph.py
+    from kronos.commit import MutationSource
     from kronos.graph import EngagementGraph
 
 
@@ -61,6 +62,8 @@ def attach_evidence(
     kind: str,
     target_type: Literal["finding", "secret"],
     target_id: str,
+    *,
+    source: MutationSource,
 ) -> str:
     """Store `blob`, create its EVIDENCE node, and link it to the target
     FINDING/SECRET via `evidences`. Returns the blob's sha256.
@@ -75,7 +78,8 @@ def attach_evidence(
             "kind": kind,
             "created_at": info["created_at"],
         },
+        source=source,
     )
     target_table = "FINDING" if target_type == "finding" else "SECRET"
-    graph.upsert_edge("evidences", info["sha256"], "EVIDENCE", target_id, target_table)
+    graph.upsert_edge("evidences", info["sha256"], "EVIDENCE", target_id, target_table, source=source)
     return info["sha256"]

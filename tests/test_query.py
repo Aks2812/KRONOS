@@ -5,20 +5,21 @@ import pytest
 
 from kronos.lifecycle import advance_finding_status
 from kronos.query import find_paths, list_findings, list_secrets, query_graph, resolve_host
+from kronos.commit import MutationSource
 
 
 def test_query_graph_filters_by_type_and_prop(engagement_graph):
     g = engagement_graph
-    g.upsert_node("HOST", "h1", {})
-    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {})
+    g.upsert_node("HOST", "h1", {}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", "api.acme.example.com", {}, source=MutationSource.INGESTION)
     rows = query_graph(g, node_type="HOST")
     assert {r["id"] for r in rows} == {"h1"}
 
 
 def test_list_findings_by_status(engagement_graph):
     g = engagement_graph
-    g.upsert_node("FINDING", "f1", {"title": "a", "severity": "low", "status": "hypothesis"})
-    g.upsert_node("FINDING", "f2", {"title": "b", "severity": "high", "status": "hypothesis"})
+    g.upsert_node("FINDING", "f1", {"title": "a", "severity": "low", "status": "hypothesis"}, source=MutationSource.INGESTION)
+    g.upsert_node("FINDING", "f2", {"title": "b", "severity": "high", "status": "hypothesis"}, source=MutationSource.INGESTION)
     advance_finding_status(g, "f2", "reachable")
     assert {r["id"] for r in list_findings(g, status="hypothesis")} == {"f1"}
     assert {r["id"] for r in list_findings(g, status="reachable")} == {"f2"}
@@ -26,7 +27,7 @@ def test_list_findings_by_status(engagement_graph):
 
 def test_list_secrets_by_status(engagement_graph):
     g = engagement_graph
-    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"})
+    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, source=MutationSource.INGESTION)
     assert {r["id"] for r in list_secrets(g, status="extracted")} == {"s1"}
 
 
@@ -40,16 +41,16 @@ def test_find_paths_returns_seeded_mobile_to_cloud_chain(manifest_factory, signi
     manifest_yaml = manifest_factory(scope={"in_scope": ["*.acme.example.com", "com.acme.*"]})
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_yaml, pub)
 
-    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"})
-    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app")
+    g.upsert_node("MOBILE_APP", "com.acme.app", {"bundle_id": "com.acme.app"}, source=MutationSource.INGESTION)
+    g.upsert_node("SECRET", "s1", {"value_ref": "x", "kind": "api_key", "status": "extracted"}, scope_key="com.acme.app", source=MutationSource.INGESTION)
     # SPEC_BRIEF10.4 §1.4: corrected to API_ENDPOINT's evidenced id
     # shape, a full URL (§0.2) -- the test's subject (find_paths
     # traversal) is unchanged; only the node id's shape is.
-    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {})
-    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com")
-    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET")
-    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT")
-    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
+    g.upsert_node("API_ENDPOINT", "https://api.acme.example.com", {}, source=MutationSource.INGESTION)
+    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com", source=MutationSource.INGESTION)
+    g.upsert_edge("leaks", "com.acme.app", "MOBILE_APP", "s1", "SECRET", source=MutationSource.INGESTION)
+    g.upsert_edge("authenticates_to", "s1", "SECRET", "https://api.acme.example.com", "API_ENDPOINT", source=MutationSource.INGESTION)
+    g.upsert_edge("chains_to", "https://api.acme.example.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE", source=MutationSource.INGESTION)
 
     paths = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5)
     assert len(paths) >= 1
@@ -72,11 +73,11 @@ def test_find_paths_only_in_scope_excludes_out_of_scope_hop(manifest_factory, si
     manifest_yaml = manifest_factory(scope={"in_scope": ["*.acme.example.com", "com.acme.*"]})
     g = EngagementGraph.init_engagement(tmp_path / "e.kz", manifest_yaml, pub)
 
-    g.upsert_node("MOBILE_APP", "com.acme.app", {})
-    g.upsert_node("API_ENDPOINT", "api.evil.com", {})  # out of scope (intermediate hop only)
-    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com")
-    g.upsert_edge("references", "com.acme.app", "MOBILE_APP", "api.evil.com", "API_ENDPOINT")
-    g.upsert_edge("chains_to", "api.evil.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE")
+    g.upsert_node("MOBILE_APP", "com.acme.app", {}, source=MutationSource.INGESTION)
+    g.upsert_node("API_ENDPOINT", "api.evil.com", {}, source=MutationSource.INGESTION)  # out of scope (intermediate hop only)
+    g.upsert_node("CLOUD_RESOURCE", "cr:acme-bucket", {}, scope_key="api.acme.example.com", source=MutationSource.INGESTION)
+    g.upsert_edge("references", "com.acme.app", "MOBILE_APP", "api.evil.com", "API_ENDPOINT", source=MutationSource.INGESTION)
+    g.upsert_edge("chains_to", "api.evil.com", "API_ENDPOINT", "cr:acme-bucket", "CLOUD_RESOURCE", source=MutationSource.INGESTION)
 
     assert find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5, only_in_scope=True) == []
     out_of_scope_ok = find_paths(g, "MOBILE_APP", "CLOUD_RESOURCE", max_hops=5, only_in_scope=False)
@@ -111,7 +112,7 @@ def test_query_graph_rejects_unknown_filter_key(engagement_graph):
     it, but SPEC.md says this is exactly the surface a future agent will
     drive. Reject unknown keys the same way upsert_node does."""
     g = engagement_graph
-    g.upsert_node("HOST", "h1", {})
+    g.upsert_node("HOST", "h1", {}, source=MutationSource.INGESTION)
     with pytest.raises(ValueError):
         query_graph(g, node_type="HOST", filters={"id = '' OR 1=1 //": "x"})
 
@@ -141,11 +142,11 @@ def rg(tmp_path, manifest_factory, signing_keypair):
 
 def _seed(g, *edges, hosts=()):
     for h in hosts:
-        g.upsert_node("HOST", h, {})
+        g.upsert_node("HOST", h, {}, source=MutationSource.INGESTION)
     for a, b in edges:
-        g.upsert_node("HOST", a, {})
-        g.upsert_node("HOST", b, {})
-        g.upsert_edge("resolves_to", a, "HOST", b, "HOST")
+        g.upsert_node("HOST", a, {}, source=MutationSource.INGESTION)
+        g.upsert_node("HOST", b, {}, source=MutationSource.INGESTION)
+        g.upsert_edge("resolves_to", a, "HOST", b, "HOST", source=MutationSource.INGESTION)
 
 
 def test_B27_A_direct(rg):

@@ -78,11 +78,10 @@ This is deliberate: SPEC.md's `scope_guard(target, manifest)` must be
 "the only scope mechanism," and confidence must be "derived from
 status, never set freely." `upsert_node` is the one function that
 creates/updates nodes, so it's the one place both guarantees are
-checked — not merely documented. (`EngagementGraph.execute()` is a
-lower-level primitive `lifecycle.py`/`evidence.py` use internally to
-write `status`/`confidence`/`scope_note` directly; it's not a
-general-purpose escape hatch for outside callers, but it is a real
-method that *could* be misused that way — see `README_lifecycle.md`.)
+checked — not merely documented. (`EngagementGraph.execute()` is
+read-only: writes go only through `GraphMutationAuthority`
+(`commit.py`), which `lifecycle.py`/`evidence.py` reach via the facades
+— see `README_lifecycle.md`.)
 
 `scope_key` lets a node's scope be judged by something other than its own
 `id` — e.g. a `SECRET` extracted from a mobile app is in-scope if the

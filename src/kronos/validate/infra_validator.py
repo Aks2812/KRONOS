@@ -16,6 +16,7 @@ from typing import Callable
 from kronos.lifecycle import advance_finding_status
 from kronos.validate.controls import ArmResult, run_differential
 from kronos.validate.types import ValidationOutcome
+from kronos.commit import MutationSource
 
 # A closed port on the SAME in-scope host, used for the negative-control arm.
 CONTROL_PORT = 9999
@@ -51,8 +52,9 @@ def record_infra_finding(engagement, service_id: str, outcome: ValidationOutcome
             "severity": "info",
             "status": "hypothesis",
         },
+        source=MutationSource.VALIDATION,
     )
-    engagement.upsert_edge("vulnerable_to", service_id, "SERVICE", finding_id, "FINDING")
+    engagement.upsert_edge("vulnerable_to", service_id, "SERVICE", finding_id, "FINDING", source=MutationSource.VALIDATION)
     # status is create-only, so a re-run finds the FINDING already advanced.
     if engagement.get_node("FINDING", finding_id)["status"] == "hypothesis":
         advance_finding_status(engagement, finding_id, "reachable")
