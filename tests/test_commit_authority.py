@@ -18,6 +18,7 @@ from kronos.graph import EngagementGraph
 
 ROOT = Path(__file__).parent.parent
 B31_BASE = "a229b0d"
+B33_BASE = "cf9293b"
 B30_SEAL = ("93fb05e", "a229b0d")  # BRIEF30 window, pre-sealed (AC7)
 B31_SECTION_10 = {
     "tests/test_stop.py",
@@ -49,6 +50,12 @@ B32_SECTION_10 = B31_SECTION_10 | {
         "test_evidence test_reconcile test_mobile_ingest test_invariants test_web_ingest "
         "test_query test_validate_candidates"
     ).split()
+}
+B33_SECTION_10 = B32_SECTION_10 | {
+    "src/kronos/agent/live_executor.py",
+    "tests/test_web_validator.py",
+    "tests/test_infra_validator.py",
+    "SPEC_BRIEF33.md",
 }
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
@@ -246,7 +253,9 @@ def test_B31_Q_scope_audit(nonet):
             ["git", "diff", "--name-only", rng], cwd=ROOT, capture_output=True, text=True, check=True
         ).stdout.split()
 
-    assert set(names(f"{B31_BASE}..HEAD")) <= B32_SECTION_10, set(names(f"{B31_BASE}..HEAD")) - B32_SECTION_10
+    # BRIEF31/32 window sealed to its merge SHA (B33 AC6), not HEAD.
+    assert set(names(f"{B31_BASE}..{B33_BASE}")) <= B32_SECTION_10, set(names(f"{B31_BASE}..{B33_BASE}")) - B32_SECTION_10
+    assert set(names(f"{B33_BASE}..HEAD")) <= B33_SECTION_10, set(names(f"{B33_BASE}..HEAD")) - B33_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
