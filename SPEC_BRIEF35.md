@@ -94,4 +94,4 @@ Using the `ast` module, parse every `.py` file under `src/kronos/`. The invarian
 - All §8 AC pass; suite `0 failed`; scope audit `a0395c5..HEAD ⊆ B35_SECTION_10`; independent Haiku
   reviewer PASS. No `src/` or out-of-§3 file changed. No live/§6 execution.
 
-Build note (builder): AC1-AC4 implemented, tests-only; full suite SUMMARY: 3959 passed, 1 skipped, 0 failed.
+Build note (builder): AC1-AC4 implemented, tests-only; full suite SUMMARY: 3959 passed, 1 skipped, 0 failed. Matcher tightened (attach target_type kw or positional index 4); re-run: 3959 passed, 1 skipped, 0 failed.

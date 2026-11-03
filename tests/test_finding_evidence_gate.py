@@ -36,7 +36,8 @@ def _is_finding_attach(call: ast.Call) -> bool:
     for k in call.keywords:
         if k.arg == "target_type":
             return isinstance(k.value, ast.Constant) and k.value.value == "finding"
-    return any(isinstance(a, ast.Constant) and a.value == "finding" for a in call.args)
+    # evidence.attach_evidence(graph, engagement_dir, blob, kind, target_type, target_id, *, source)
+    return len(call.args) > 4 and isinstance(call.args[4], ast.Constant) and call.args[4].value == "finding"
 
 
 def scan_source(source: str, label: str) -> tuple[set, set]:
@@ -97,6 +98,22 @@ def test_AC2_checker_flags_synthetic_unguarded_advance():
         "    advance_finding_status(x, y, 'exploited')\n"
     )
     assert scan_source(wrong, "s.py")[1] == {("s.py", "wrong")}
+
+    # 'finding' in the wrong positional slot (kind, index 3); target_type (index 4) is 'secret'
+    wrong_pos = (
+        "def wrong_pos(g, d, b, y):\n"
+        "    attach_evidence(g, d, b, 'finding', 'secret', y)\n"
+        "    advance_finding_status(g, y, 'reachable')\n"
+    )
+    assert scan_source(wrong_pos, "s.py")[1] == {("s.py", "wrong_pos")}
+
+    # positional target_type at index 4 is accepted
+    good_pos = (
+        "def good_pos(g, d, b, y):\n"
+        "    attach_evidence(g, d, b, 'k', 'finding', y)\n"
+        "    advance_finding_status(g, y, 'reachable')\n"
+    )
+    assert scan_source(good_pos, "s.py")[1] == set()
 
     good = (
         "def ok(x, y):\n"
