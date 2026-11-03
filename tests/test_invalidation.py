@@ -300,3 +300,11 @@ def test_B34_AC2_no_evidence_abstains_at_hypothesis(env):
     fid = record_secret_finding(env.g, env.sid, CAND, evidence=None)
     assert env.g.get_node("FINDING", fid)["status"] == "hypothesis"
     assert _evidence_count(env.g, "finding", fid) == 0
+
+
+# SPEC_BRIEF35 AC3: abstained FINDING stays hypothesis, confidence is not the unbacked-reachable value
+def test_B35_AC3_abstain_confidence_is_not_unbacked_reachable(env):
+    fid = record_secret_finding(env.g, env.sid, CAND, evidence=None)
+    node = env.g.get_node("FINDING", fid)
+    assert node["status"] == "hypothesis"
+    assert node["confidence"] != derive_confidence("finding", "reachable", False)
