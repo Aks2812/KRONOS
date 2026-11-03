@@ -42,9 +42,10 @@ def record_secret_finding(
             target_id=finding_id,
             source=MutationSource.VALIDATION,
         )
-    # status is create-only, so a re-run finds the FINDING already advanced.
-    if engagement.get_node("FINDING", finding_id)["status"] == "hypothesis":
-        advance_finding_status(engagement, finding_id, "reachable")
+        # status is create-only, so a re-run finds the FINDING already advanced.
+        # No evidence -> abstain: stay at hypothesis (BRIEF34).
+        if engagement.get_node("FINDING", finding_id)["status"] == "hypothesis":
+            advance_finding_status(engagement, finding_id, "reachable")
     return finding_id
 
 
