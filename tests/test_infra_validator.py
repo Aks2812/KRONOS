@@ -191,7 +191,7 @@ def nonet(monkeypatch):
 
 # ---- SPEC_BRIEF33: G3 evidence persistence (AC2/AC3/AC4/AC5) ----
 def _live_infra_outcome():
-    return validate_service_reachable(_arm("A", True, 1), _arm("B", False, 0))
+    return validate_service_reachable(_arm("A_canonical", True, 1), _arm("B_negative_control", False, 0))
 
 
 def _evidence_rows(g, finding_id):
@@ -239,18 +239,21 @@ def test_B33_AC2_infra_pass_threads_engagement_dir(g, tmp_path, nonet):
 
 
 def test_B33_AC5_infra_evidence_source_VALIDATION(g, tmp_path, monkeypatch, nonet):
-    from kronos.commit import GraphMutationAuthority, MutationSource
+    from kronos.commit import MutationSource
     from kronos.validate.infra_validator import record_infra_finding
 
     seen = []
-    orig = GraphMutationAuthority.upsert_node
+    for name in ("create_or_update_node", "upsert_edge"):
+        orig = getattr(g._authority, name)
 
-    def spy(self, label, id_, props, *a, **kw):
-        if label == "EVIDENCE":
-            seen.append(kw.get("source"))
-        return orig(self, label, id_, props, *a, **kw)
+        def wrap(*a, _o=orig, **k):
+            src = a[-1] if a and isinstance(a[-1], MutationSource) else k.get("source")
+            seen.append((a, src))
+            return _o(*a, **k)
 
-    monkeypatch.setattr(GraphMutationAuthority, "upsert_node", spy)
+        monkeypatch.setattr(g._authority, name, wrap)
     record_infra_finding(g, IN_SCOPE_IDS[0], _live_infra_outcome(), engagement_dir=tmp_path)
-    assert seen == [MutationSource.VALIDATION]
+    ev = [src for a, src in seen if "EVIDENCE" in a or "evidences" in a]
+    assert len(ev) == 2  # EVIDENCE node + evidences edge
+    assert set(ev) == {MutationSource.VALIDATION}
     assert not nonet
