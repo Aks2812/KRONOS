@@ -257,3 +257,15 @@ def test_B33_AC5_infra_evidence_source_VALIDATION(g, tmp_path, monkeypatch, none
     assert len(ev) == 2  # EVIDENCE node + evidences edge
     assert set(ev) == {MutationSource.VALIDATION}
     assert not nonet
+
+
+def test_B33_AC_nonlive_no_evidence_infra(g, tmp_path, nonet):
+    from kronos.lifecycle import _evidence_count
+    from kronos.validate.infra_validator import record_infra_finding
+
+    outcome = ValidationOutcome(live=False, evidence=b"non-live proof bytes", detail="abstain")
+    assert not outcome.live and outcome.evidence
+    fid = record_infra_finding(g, IN_SCOPE_IDS[0], outcome, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == []
+    assert _evidence_count(g, "finding", fid) == 0
+    assert not nonet

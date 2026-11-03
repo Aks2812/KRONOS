@@ -97,3 +97,4 @@ No file outside this list may change. `src/kronos/manifest.py`, `.github/`, `cyb
 
 ## Build note
 Measured full suite (post-impl): 3951 passed, 1 skipped, 0 failed.
+Measured full suite (post live-guard fix): 3953 passed, 1 skipped, 0 failed.

@@ -60,7 +60,7 @@ def record_web_finding(
         source=MutationSource.VALIDATION,
     )
     engagement.upsert_edge("vulnerable_to", endpoint_id, "WEB_ENDPOINT", finding_id, "FINDING", source=MutationSource.VALIDATION)
-    if engagement_dir is not None and outcome is not None and outcome.evidence:
+    if engagement_dir is not None and outcome is not None and outcome.live and outcome.evidence:
         attach_evidence(
             engagement,
             engagement_dir,
