@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 228
+seq: 229
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7928,3 +7928,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 227 COMPLETE (PR #39 merged cf9293b). Operator 2026-11-03: "G3 is next."
 - action: dispatch read-only kronos-researcher (claude-sonnet-5) to map current G3 false-positive-reduction machinery (validate/controls.py lifecycle, two-armed/negative-control, abstention, SECRET/FINDING classification, evidence-gating) and identify the concrete next increment + candidate §3 file scope. Read-only; returns cited findings; Opus saves to 02-research/findings.md.
 - outcome: pending. No build, no brief yet. §6 live-run STILL PAUSED (SEQ 140). pending_action: researcher returns G3 map; Opus authors G3 brief + GATE-1.
+
+## SEQ 229 — G3 brief SPEC_BRIEF33 authored; GATE-1 self-approved; dispatch Sonnet 5.5 builder (write-ahead)
+- prev: SEQ 228 researcher COMPLETE. Gap: web/infra validators compute outcome.evidence but never attach_evidence -> FINDING reachable w/o persisted EVIDENCE node (secret path does). Blocker (engagement_dir plumbing) resolved: keyword engagement_dir default None; live_executor has self._engagement_dir (live_executor.py:47); no cybergym caller of pass fns.
+- action: SPEC_BRIEF33.md authored (sha256 e9a4025a21742250c0faf76a80155bd3a61a8a62b5d4ec6610adf7f803b51590), branch claude/g3-evidence-persistence-brief33 @ cf9293b. GATE-1 self-approved (routine, in-scope, §3 self-contained, no §4 files). Dispatch kronos-builder (claude-sonnet-5-5) to impl §3 only.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder implements §3; returns; Opus scope-audit + dispatch Haiku reviewer.
