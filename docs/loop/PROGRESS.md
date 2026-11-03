@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 236
+seq: 237
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7968,3 +7968,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 235 researcher COMPLETE. Ranked 4 gaps; #1 severity DEFERRED (absence-of-guard, not observed defect, per operator 'no severity assumption'). Opus found concrete FP: invalidation.py:46-47 record_secret_finding advances FINDING to reachable UNCONDITIONALLY, attaches evidence only if evidence is not None -> evidence=None yields reachable w/ no EVIDENCE node. Other producers (dispatcher:163, web:63, infra:62) all gate advance on evidence.
 - action: SPEC_BRIEF34.md authored (sha256 2b4c914f3c82deb24709e8a05dbe3993be761a8b8458394a09d0c503b484d5b4), branch claude/g3-invalidation-evidence-gate-brief34 @ 7f5f46c. Fix: gate the advance on evidence attached; abstain (stay hypothesis) when evidence None. GATE-1 self-approved (routine, in-scope, §3 self-contained, no §4). §3={invalidation.py, test_invalidation.py, test_commit_authority.py seal-tax, SPEC_BRIEF34.md}. Dispatch kronos-builder (claude-sonnet-5-5).
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder impl; Opus scope-audit; Haiku reviewer.
+
+## SEQ 237 — builder DONE (1e12433, 3955p/1s/0f, RED captured); Opus scope audit + semantic PASS; dispatch Haiku 5.5 reviewer (write-ahead)
+- prev: SEQ 236 builder COMPLETE. Fix: invalidation.py:35-48 advance to reachable now nested under 'if evidence is not None' (verified indentation); abstain (stay hypothesis) when evidence None. H-revalidation test adjusted in-§3 (explicit advance for precondition). suite 3955 passed/1 skipped/0 failed.
+- action: Opus whole-window audit 7f5f46c..HEAD = {SPEC_BRIEF34.md, src/kronos/validate/invalidation.py, tests/test_commit_authority.py, tests/test_invalidation.py} all §3; no §4. Semantic PASS (advance gated on evidence). Dispatch kronos-reviewer (claude-haiku-5-5) independent on 7f5f46c..HEAD + approved suite. Brief sha256 54748b644f8e63838de1a5c90e674e70ff8824ed0879f71aee237fed03abbd48.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer verdict; Opus semantic verify; merge-gate.
