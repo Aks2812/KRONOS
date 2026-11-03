@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Callable
 
+from kronos.evidence import attach_evidence
 from kronos.lifecycle import advance_finding_status
 from kronos.validate.controls import ArmResult, run_differential
 from kronos.validate.types import ValidationOutcome
@@ -41,7 +43,9 @@ def validate_service_reachable(canonical_probe: ArmResult, control_probe: ArmRes
     )
 
 
-def record_infra_finding(engagement, service_id: str, outcome: ValidationOutcome) -> str:
+def record_infra_finding(
+    engagement, service_id: str, outcome: ValidationOutcome, *, engagement_dir: str | Path | None = None
+) -> str:
     finding_id = f"finding:infra-reachable:{service_id}"
     engagement.upsert_node(
         "FINDING",
@@ -55,6 +59,16 @@ def record_infra_finding(engagement, service_id: str, outcome: ValidationOutcome
         source=MutationSource.VALIDATION,
     )
     engagement.upsert_edge("vulnerable_to", service_id, "SERVICE", finding_id, "FINDING", source=MutationSource.VALIDATION)
+    if engagement_dir is not None and outcome is not None and outcome.live and outcome.evidence:
+        attach_evidence(
+            engagement,
+            engagement_dir,
+            outcome.evidence,
+            kind="validation_proof",
+            target_type="finding",
+            target_id=finding_id,
+            source=MutationSource.VALIDATION,
+        )
     # status is create-only, so a re-run finds the FINDING already advanced.
     if engagement.get_node("FINDING", finding_id)["status"] == "hypothesis":
         advance_finding_status(engagement, finding_id, "reachable")
@@ -68,7 +82,7 @@ class InfraValidationReport:
 
 
 def run_infra_validation_pass(
-    engagement, *, probe: Callable[[str, int], ArmResult]
+    engagement, *, probe: Callable[[str, int], ArmResult], engagement_dir: str | Path | None = None
 ) -> InfraValidationReport:
     report = InfraValidationReport()
     rows = engagement.execute(
@@ -83,7 +97,7 @@ def run_infra_validation_pass(
         control = replace(probe(host, CONTROL_PORT), label="B_negative_control")
         outcome = validate_service_reachable(canonical, control)
         if outcome.live:
-            report.findings.append(record_infra_finding(engagement, service_id, outcome))
+            report.findings.append(record_infra_finding(engagement, service_id, outcome, engagement_dir=engagement_dir))
         else:
             report.abstained.append(service_id)
     return report

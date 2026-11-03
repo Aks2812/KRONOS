@@ -64,7 +64,7 @@ class LiveExecutor:
         control = replace(self._service_probe(host, CONTROL_PORT), label="B_negative_control")
         outcome = validate_service_reachable(canonical, control)
         if outcome.live:
-            finding_id = record_infra_finding(self._graph, intent.target_id, outcome)
+            finding_id = record_infra_finding(self._graph, intent.target_id, outcome, engagement_dir=self._engagement_dir)
             return ExecutionOutcome(succeeded=True, evidence=None, detail=finding_id)
         return ExecutionOutcome(succeeded=False, evidence=None, detail="abstained")
 
@@ -83,7 +83,7 @@ class LiveExecutor:
         control = replace(self._web_probe(control_url, method), label="B_negative_control")
         outcome = validate_web_endpoint_reachable(canonical, control)
         if outcome.live:
-            finding_id = record_web_finding(self._graph, intent.target_id, outcome)
+            finding_id = record_web_finding(self._graph, intent.target_id, outcome, engagement_dir=self._engagement_dir)
             return ExecutionOutcome(succeeded=True, evidence=None, detail=finding_id)
         return ExecutionOutcome(succeeded=False, evidence=None, detail="abstained")
 

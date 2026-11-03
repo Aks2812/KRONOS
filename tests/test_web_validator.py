@@ -200,3 +200,101 @@ def test_L_brief13_seal():
     assert 'BRIEF_MERGE = "33ab362"' in src
     assert 'f"{BRIEF_BASE}..{BRIEF_MERGE}"' in src
     assert 'f"{BRIEF_BASE}..HEAD"' not in src
+
+
+@pytest.fixture
+def nonet(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
+# ---- SPEC_BRIEF33: G3 evidence persistence (AC1/AC3/AC4/AC5) ----
+def _live_web_outcome():
+    return validate_web_endpoint_reachable(_arm("A_canonical", True, 200), _arm("B_negative_control", False, 404))
+
+
+def _evidence_rows(g, finding_id):
+    r = g.execute(
+        "MATCH (e:EVIDENCE)-[:evidences]->(f:FINDING) WHERE f.id = $fid RETURN e.sha256, e.kind",
+        {"fid": finding_id},
+    )
+    rows = []
+    while r.has_next():
+        rows.append(tuple(r.get_next()))
+    return rows
+
+
+def test_B33_AC1_AC4_web_live_persists_evidence(g, tmp_path, nonet):
+    import hashlib
+
+    from kronos.lifecycle import _evidence_count
+    from kronos.validate.web_validator import record_web_finding
+
+    outcome = _live_web_outcome()
+    assert outcome.live
+    fid = record_web_finding(g, IN_SCOPE_IDS[0], outcome, engagement_dir=tmp_path)
+    rows = _evidence_rows(g, fid)
+    assert rows == [(hashlib.sha256(outcome.evidence).hexdigest(), "validation_proof")]
+    assert _evidence_count(g, "finding", fid) >= 1
+    assert g.get_node("FINDING", fid)["status"] == "reachable"
+    assert not nonet
+
+
+def test_B33_AC3_web_no_evidence_without_inputs(g, tmp_path, nonet):
+    from kronos.validate.web_validator import record_web_finding
+
+    fid = record_web_finding(g, IN_SCOPE_IDS[0], None, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == []
+    fid2 = record_web_finding(g, IN_SCOPE_IDS[1], _live_web_outcome())
+    assert _evidence_rows(g, fid2) == []
+    assert not nonet
+
+
+def test_B33_AC1_web_pass_threads_engagement_dir(g, tmp_path, nonet):
+    from kronos.validate.web_validator import run_web_validation_pass
+
+    report = run_web_validation_pass(g, probe=_probe(control_ok=False), engagement_dir=tmp_path)
+    assert report.findings
+    for fid in report.findings:
+        assert len(_evidence_rows(g, fid)) == 1
+    assert not nonet
+
+
+def test_B33_AC5_web_evidence_source_VALIDATION(g, tmp_path, monkeypatch, nonet):
+    from kronos.commit import MutationSource
+    from kronos.validate.web_validator import record_web_finding
+
+    seen = []
+    for name in ("create_or_update_node", "upsert_edge"):
+        orig = getattr(g._authority, name)
+
+        def wrap(*a, _o=orig, **k):
+            src = a[-1] if a and isinstance(a[-1], MutationSource) else k.get("source")
+            seen.append((a, src))
+            return _o(*a, **k)
+
+        monkeypatch.setattr(g._authority, name, wrap)
+    record_web_finding(g, IN_SCOPE_IDS[0], _live_web_outcome(), engagement_dir=tmp_path)
+    ev = [src for a, src in seen if "EVIDENCE" in a or "evidences" in a]
+    assert len(ev) == 2  # EVIDENCE node + evidences edge
+    assert set(ev) == {MutationSource.VALIDATION}
+    assert not nonet
+
+
+def test_B33_AC_nonlive_no_evidence_web(g, tmp_path, nonet):
+    from kronos.lifecycle import _evidence_count
+    from kronos.validate.web_validator import record_web_finding
+
+    outcome = ValidationOutcome(live=False, evidence=b"non-live proof bytes", detail="abstain")
+    assert not outcome.live and outcome.evidence
+    fid = record_web_finding(g, IN_SCOPE_IDS[0], outcome, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == []
+    assert _evidence_count(g, "finding", fid) == 0
+    assert not nonet

@@ -174,3 +174,98 @@ def test_J_scope_audit():
         ["git", "diff", "--name-only", f"{BRIEF_BASE}..{BRIEF_MERGE}"], cwd=root, capture_output=True, text=True, check=True
     ).stdout.split()
     assert set(out) <= SECTION_3
+
+
+@pytest.fixture
+def nonet(monkeypatch):
+    used = []
+
+    def _boom(*a, **k):
+        used.append(1)
+        raise AssertionError("network used")
+
+    monkeypatch.setattr(socket, "socket", _boom)
+    monkeypatch.setattr(socket, "create_connection", _boom)
+    return used
+
+
+# ---- SPEC_BRIEF33: G3 evidence persistence (AC2/AC3/AC4/AC5) ----
+def _live_infra_outcome():
+    return validate_service_reachable(_arm("A_canonical", True, 1), _arm("B_negative_control", False, 0))
+
+
+def _evidence_rows(g, finding_id):
+    r = g.execute(
+        "MATCH (e:EVIDENCE)-[:evidences]->(f:FINDING) WHERE f.id = $fid RETURN e.sha256, e.kind",
+        {"fid": finding_id},
+    )
+    rows = []
+    while r.has_next():
+        rows.append(tuple(r.get_next()))
+    return rows
+
+
+def test_B33_AC2_AC4_infra_live_persists_evidence(g, tmp_path, nonet):
+    import hashlib
+
+    from kronos.lifecycle import _evidence_count
+    from kronos.validate.infra_validator import record_infra_finding
+
+    outcome = _live_infra_outcome()
+    assert outcome.live
+    fid = record_infra_finding(g, IN_SCOPE_IDS[0], outcome, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == [(hashlib.sha256(outcome.evidence).hexdigest(), "validation_proof")]
+    assert _evidence_count(g, "finding", fid) >= 1
+    assert g.get_node("FINDING", fid)["status"] == "reachable"
+    assert not nonet
+
+
+def test_B33_AC3_infra_no_evidence_without_inputs(g, tmp_path, nonet):
+    from kronos.validate.infra_validator import record_infra_finding
+
+    fid = record_infra_finding(g, IN_SCOPE_IDS[0], None, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == []
+    fid2 = record_infra_finding(g, IN_SCOPE_IDS[1], _live_infra_outcome())
+    assert _evidence_rows(g, fid2) == []
+    assert not nonet
+
+
+def test_B33_AC2_infra_pass_threads_engagement_dir(g, tmp_path, nonet):
+    report = run_infra_validation_pass(g, probe=_open_ports_probe({4566, 4567, 8091}), engagement_dir=tmp_path)
+    assert report.findings
+    for fid in report.findings:
+        assert len(_evidence_rows(g, fid)) == 1
+    assert not nonet
+
+
+def test_B33_AC5_infra_evidence_source_VALIDATION(g, tmp_path, monkeypatch, nonet):
+    from kronos.commit import MutationSource
+    from kronos.validate.infra_validator import record_infra_finding
+
+    seen = []
+    for name in ("create_or_update_node", "upsert_edge"):
+        orig = getattr(g._authority, name)
+
+        def wrap(*a, _o=orig, **k):
+            src = a[-1] if a and isinstance(a[-1], MutationSource) else k.get("source")
+            seen.append((a, src))
+            return _o(*a, **k)
+
+        monkeypatch.setattr(g._authority, name, wrap)
+    record_infra_finding(g, IN_SCOPE_IDS[0], _live_infra_outcome(), engagement_dir=tmp_path)
+    ev = [src for a, src in seen if "EVIDENCE" in a or "evidences" in a]
+    assert len(ev) == 2  # EVIDENCE node + evidences edge
+    assert set(ev) == {MutationSource.VALIDATION}
+    assert not nonet
+
+
+def test_B33_AC_nonlive_no_evidence_infra(g, tmp_path, nonet):
+    from kronos.lifecycle import _evidence_count
+    from kronos.validate.infra_validator import record_infra_finding
+
+    outcome = ValidationOutcome(live=False, evidence=b"non-live proof bytes", detail="abstain")
+    assert not outcome.live and outcome.evidence
+    fid = record_infra_finding(g, IN_SCOPE_IDS[0], outcome, engagement_dir=tmp_path)
+    assert _evidence_rows(g, fid) == []
+    assert _evidence_count(g, "finding", fid) == 0
+    assert not nonet
