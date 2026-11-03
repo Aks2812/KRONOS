@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 239
+seq: 240
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -7983,3 +7983,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 238 write-ahead. Opus self-authorized in-scope merge. 10 MERGE-GATE re-measured PASS (1 ruleset25333712,2 not-draft,3 open,4 head1e12433,5 Haiku PASS,6 ci:none,7 3955p/1s/0f reviewer-run,8 MERGEABLE/CLEAN+not-ancestor,9 Opus self-auth,10 clean); 5b n/a.
 - action: gh pr merge 41 --squash. Verified invalidation.py:35-48 on main: advance nested under 'if evidence is not None'. Research record #34 row added.
 - outcome: COMPLETE. main 7f5f46c -> a0395c5 (merge=squash=a0395c5). PR #41 MERGED 2026-11-03T16:32:07Z. branch @ 1e12433. S8 §6 live-run STILL PAUSED (SEQ 140). pending_action: continue G3 autonomously (thin-orchestrator) — next increment = structural evidence-gate regression test (gap #2, all producers now uniform); severity (#1) still deferred (no observed defect).
+
+## SEQ 240 — G3 BRIEF35 authored (tests-only: evidence-gate regression lock + abstain-confidence); GATE-1 self-approved; dispatch Sonnet 5.5 builder (write-ahead)
+- prev: SEQ 239 COMPLETE (PR #41 merged a0395c5). All 4 forward-to-reachable producers now evidence-gated; lock invariant via ast-based structural test; close BRIEF34 §5 confidence gap. No src change.
+- action: SPEC_BRIEF35.md authored (sha256 52979664c025c092e1da345e0238e45db65722ed2053e1762f395c615c394753), branch claude/g3-evidence-gate-regression-brief35 @ a0395c5. §3={tests/test_finding_evidence_gate.py NEW, tests/test_invalidation.py, tests/test_commit_authority.py seal-tax, SPEC_BRIEF35.md}. GATE-1 self-approved (routine, tests-only, no §4). Dispatch kronos-builder (claude-sonnet-5-5).
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: builder impl; Opus scope-audit; Haiku reviewer.
