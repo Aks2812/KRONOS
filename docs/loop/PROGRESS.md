@@ -1,6 +1,6 @@
 # KRONOS loop-state checkpoint
 
-seq: 243
+seq: 244
 derived_at: 2026-11-02T18:00:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
@@ -8003,3 +8003,8 @@ outcome: pending (maintainer decision)
 - prev: SEQ 242 builder fix COMPLETE. _is_finding_attach now requires target_type at keyword OR positional index 4 (test_finding_evidence_gate.py:37-40); positional wrong-slot negative + index-4 positive cases added. suite 3959 passed/1 skipped/0 failed.
 - action: Opus whole-window re-audit a0395c5..HEAD = same 4 §3 files, tests-only, no src/§4. PASS. Re-dispatch kronos-reviewer (claude-haiku-5-5) on a0395c5..HEAD + suite. Brief sha256 a2ab47c80d6e915aeed693ced662503a55203488f05681bd9d6d2c6ecbb7b17c.
 - outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: reviewer re-verdict; Opus verify; in-scope merge-gate (10 MERGE-GATE re-measured in merge turn).
+
+## SEQ 244 — Haiku re-review PASS (AC1-AC6, 3959p/1s/0f); Opus semantic PASS; self-authorize in-scope merge; open PR + 10 MERGE-GATE + squash-merge 22f4239 (write-ahead)
+- prev: SEQ 243 reviewer re-review PASS on 22f4239. SUMMARY '3959 passed, 1 skipped in 442.74s'. Matcher fix verified (kw or args[4]; wrong-slot negative flagged, index-4 positive accepted). Scope tests-only 4 §3 files. 3 Low non-blocking: F1 args[4] blind to starred args (latent, no producer affected -> optional follow-up), F2 keyword-wins (matches real sig, not defect), F3 AC3 != (brief-specified).
+- action: Opus semantic PASS; tests-only G3 regression lock within scope, no pause cond -> self-authorize merge (Authority model SEQ 55). Open non-draft PR (base main a0395c5, head 22f4239); re-measure 10 MERGE-GATE in-turn; squash-merge iff all green AND head 22f4239.
+- outcome: pending. §6 live-run STILL PAUSED (SEQ 140). pending_action: open PR, measure gate, merge.
