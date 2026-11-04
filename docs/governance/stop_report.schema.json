@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KRONOS stop-report (5W+1H)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["what", "why", "who", "when", "where", "how", "next", "recommendation", "operator_action"],
+  "properties": {
+    "report_type": {"type": "string", "enum": ["PAUSE", "HALT", "BLOCKED", "COMPLETE"]},
+    "what": {"type": "string"},
+    "why": {"type": "string", "enum": ["usage_limit", "gate1", "gate2", "blocker", "failure", "completion"]},
+    "who": {
+      "type": "object",
+      "properties": {
+        "agents": {"type": "array"},
+        "models": {"type": "array"}
+      }
+    },
+    "when": {
+      "type": "object",
+      "properties": {
+        "checkpoint_seq": {"type": "integer"},
+        "timestamp": {"type": "string"}
+      }
+    },
+    "where": {
+      "type": "object",
+      "properties": {
+        "branch": {"type": "string"},
+        "head_sha": {"type": "string"},
+        "pr": {"type": ["string", "null"]},
+        "main": {"type": "string"}
+      }
+    },
+    "how": {
+      "type": "object",
+      "required": ["tests", "gates"],
+      "properties": {
+        "tests": {},
+        "gates": {}
+      }
+    },
+    "next": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["rank", "severity", "depends_on", "action"],
+        "properties": {
+          "rank": {"type": "integer"},
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+          "depends_on": {"type": "array", "items": {"type": "string"}},
+          "action": {"type": "string"}
+        }
+      }
+    },
+    "recommendation": {"type": "string"},
+    "operator_action": {"type": "string"}
+  }
+}
