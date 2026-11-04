@@ -1,10 +1,20 @@
 # KRONOS loop-state checkpoint
 
-seq: 246
-derived_at: 2026-11-04T04:52:02Z
+seq: 247
+derived_at: 2026-11-04T05:10:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: RECONCILED to current state (operator-authorized reconcile, 2026-11-04). G3 finding evidence-gate line COMPLETE and merged: SPEC_BRIEF33 (PR #40), SPEC_BRIEF34 (PR #41), SPEC_BRIEF35 (PR #42) all MERGED to main; main @ 329194c. All four forward-advance paths now evidence-gated and regression-locked. CORRECTION: the prior seq-245 committed body carried forward STALE re-derived facts (main dcbdba9, brief SPEC_BRIEF10.3, pr_13 draft) and a dangling BRIEF29 pending_action ("Dispatching Sonnet 5 researcher"); BRIEF29 is in fact merged (PR #37), and that pending_action is void. No action in flight. S8 §6 live-run still PAUSED (SEQ 140). NEXT: operator decision — severity chokepoint (code-guard vs test-only) or defer and stop G3.
+stage: SPEC_BRIEF36 (severity enum chokepoint, Option A — enum-only, no evidence-tie) — GATE-1 APPROVED by operator 2026-11-04. Brief committed ae10bd2 on branch claude/severity-enum-chokepoint-brief36 (base 329194c), pushed. Dispatching kronos-builder (Sonnet) over §3 files (src/kronos/commit.py + tests), then kronos-reviewer (Haiku, v7 Gate-1) on diff+brief only. S8 §6 live-run still PAUSED (SEQ 140). (seq 246 reconciled the checkpoint to current state at 041fec5.)
+
+pending_action:
+  action: "dispatch kronos-builder for SPEC_BRIEF36 (severity enum chokepoint, Option A), then kronos-reviewer"
+  brief: { path: SPEC_BRIEF36.md, sha256: 2edf1c5289a0f1e1f8415a9d509200c2829b545bd3ffb1c72ad259b221eaac02 }
+  branch: claude/severity-enum-chokepoint-brief36
+  branch_head: ae10bd2
+  base: 329194c
+  gate1: "approved (operator, 2026-11-04)"
+  permitted_files: ["src/kronos/commit.py", "tests/test_commit_severity.py", "tests/test_commit_authority.py", "SPEC_BRIEF36.md"]
+  outcome: pending
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
