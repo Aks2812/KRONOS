@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 258
-derived_at: 2026-11-04T11:30:00Z
+seq: 259
+derived_at: 2026-11-04T11:50:00Z
 stage: R&D-RAILS REPAIR — BUILT + REVIEWED, GATE-2 HOLD (operator decision required; NOT merged). Branch claude/rails-repair c878b685, draft PR #44. kronos-reviewer (Haiku) PASS R1-R8; but two findings, both confirmed by orchestrator Gate-2: F1 HIGH — brief-scope.sh:68 gh-api method filter only detects -X/--method, defaults GET, so `gh api .../pulls/* -f ...` (gh POSTs on -f/-F/--input) and glued -XPOST slip past; the generalized allow (pulls/* *, issues/* *) widened this from one PR to any PR/issue = write bypass of the ask tier (regression introduced by this repair). F2 MEDIUM — RAILS.md:79 still lists the narrowed allow as pulls/13/issues/2, contradicting the shipped wildcards. Recommend remediation before merge: (A) remove pulls/* *, pulls/*/reviews *, issues/* * from settings.json allow so they fall to the ask tier (removes fail-open; honors "no hardcoded PR/issue" better than wildcarding); (B) fix brief-scope.sh to classify -f/-F/--field/--raw-field/--input and glued -XPOST as non-GET -> deny; (C) correct RAILS.md prose. S8 §6 live-run still PAUSED (SEQ 140). Do NOT merge rails PR, do NOT reset local main, do NOT touch 3c712d4.
 seq250_merge_authorization:
   pr: 43
@@ -48,9 +48,9 @@ decision_opus: >
   the SETTINGS layer: settings.json:51-52 allow branches/main and commits/*/check-runs with a trailing
   wildcard absorbing any args, so a mutating call on those prefixes auto-approves with the leaky hook as
   the only control. Durable fix is the settings/branch-protection layer, not more hook patches.
+seq258_pending_action_outcome: "RESOLVED — operator chose Opt1 (2026-11-04): remove the gh-api auto-approve surface; hook is best-effort DiD only."
 pending_action:
-  action: "STOP-AND-ASK: PR #44 FAILs 2nd re-review (5 shell-expansion bypasses). Recommend ending hook whack-a-mole, fix the LAYER. Opt1 (recommended): remove the two trailing-wildcard gh-api allows so NO gh-api auto-approves (all fall to default prompt), making the hook pure defense-in-depth; keep the hook but downgrade its + RAILS.md claims to best-effort (not a boundary); fix the #13 literals + ask-tier wording. Opt2: keep patching the hook (diminishing returns). Opt3: drop the hook gh-api method filter, rely on settings + branch protection. Await operator choice. PR #44 draft; no merge/mirror/3c712d4."
+  action: "Opt1 minimal fix on claude/rails-repair (files already in RAILS_SECTION_10, no new seal). settings.json: remove both trailing-wildcard gh-api allows (branches/main, commits/*/check-runs) so NO gh-api auto-approves — all fall to Claude Code default permission prompt. brief-scope.sh + RAILS.md: remove all claims the hook is complete/fail-closed against every shell form; state best-effort defense-in-depth. RAILS.md: fix remaining #13 literals + ask-tier wording to match enforcement (default prompt). tests/test_brief_scope_hook.py: assert settings.json allow has NO gh-api entry (no auto-approved surface) + docs match. Sonnet 5.5 fix, Haiku 5.5 review, Opus final + full suite. PR #44 draft; no merge/mirror/3c712d4."
   pr: 44
-  branch_head: c4a819c554fce1c43495e56ba2bf69020923cd47
-  blocker: "shell-expansion hook bypasses (5) + settings trailing-wildcard allows fail-open"
+  branch_base_head: c4a819c554fce1c43495e56ba2bf69020923cd47
   outcome: pending
