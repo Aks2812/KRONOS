@@ -53,4 +53,22 @@ pending_action:
   action: "Opt1 minimal fix on claude/rails-repair (files already in RAILS_SECTION_10, no new seal). settings.json: remove both trailing-wildcard gh-api allows (branches/main, commits/*/check-runs) so NO gh-api auto-approves — all fall to Claude Code default permission prompt. brief-scope.sh + RAILS.md: remove all claims the hook is complete/fail-closed against every shell form; state best-effort defense-in-depth. RAILS.md: fix remaining #13 literals + ask-tier wording to match enforcement (default prompt). tests/test_brief_scope_hook.py: assert settings.json allow has NO gh-api entry (no auto-approved surface) + docs match. Sonnet 5.5 fix, Haiku 5.5 review, Opus final + full suite. PR #44 draft; no merge/mirror/3c712d4."
   pr: 44
   branch_base_head: c4a819c554fce1c43495e56ba2bf69020923cd47
+  outcome: >
+    RESOLVED — PR #44 MERGED (squash) as main commit 6e206e6 2026-11-04T14:34:28Z,
+    --match-head-commit f9070dd enforced. The merged head carries Opt1 (gh-api
+    auto-approve surface removed; hook is best-effort DiD) AND the operator's
+    rails-policy correction (2026-11-04): repo .claude/ is the sole canonical and
+    executable source — KRONOS commands/agents are NOT mirrored into ~/.claude;
+    scripts/check_rails_drift.sh flipped from repo->global parity to a duplicate
+    detector (fails on kronos-*.md in user scope or a second in-repo .claude/, or a
+    missing canonical); Edit(.claude/**) deny restored. Gates: 4009 passed/1
+    skipped/0 failed re-measured on f9070dd; Haiku independent review PASS on §8
+    reqs 1-3; scope-audit test_B31_Q_scope_audit green; CI none; main protected
+    (ruleset void-rule-kronos). Rails verified present on origin/main at 6e206e6.
+seq259_pending_action_outcome: >
+  WRITE-AHEAD superseded: the Opt1 fix plus the operator's canonical/no-mirror correction
+  shipped together in PR #44 and merged as 6e206e6 (see pending_action.outcome above).
+pending_action:
+  action: "none — rails-repair complete and merged to main (6e206e6). Four global v6 duplicates remain under ~/.claude by design (transitional, accepted); deletion deferred until operator authorizes post-merge. Local main NOT reset (still 3c712d4, 1 ahead/3 behind origin/main). Awaiting operator direction."
+  pr: null
   outcome: pending
