@@ -74,14 +74,22 @@ Two independent problems, not one:
    --draft` entirely without ever invoking a denied or ask-gated subcommand.
 
 Pattern rules cannot express "GET only" — there is no wildcard shape that distinguishes a
-read from a write at the same path. The allow list is now narrowed to the five named
-endpoints the loop's re-derivation steps actually call
-(`branches/main`, `pulls/13`, `pulls/13/reviews`, `commits/*/check-runs`, `issues/2`), which
-shrinks the blast radius of "what path can this hit" — but narrowing the path alone still
-does not stop `-X PATCH` or `-X POST` against any of those five specific paths. That part
-is handled by `.claude/hooks/brief-scope.sh`, which inspects every `Bash` tool call whose
-command invokes `gh api` and denies it outright if a `-X` / `--method` flag names anything
-other than `GET`, regardless of agent type, regardless of which path matched. This is
+read from a write at the same path. The allow list therefore contains only two GET-only
+reads: `branches/main` and `commits/*/check-runs`. PR- and issue-scoped calls
+(`pulls/...`, `issues/...`) are not in `allow` and fall through to the `ask` tier. On top of
+that, `.claude/hooks/brief-scope.sh` inspects every `Bash` tool call containing a `gh api`
+invocation (anywhere in the command, including inside `$(...)`, backticks, or `sh -c`
+strings), regardless of agent type and regardless of which path matched, and denies it if it
+is mutating by either route:
+
+- field/body flags: `-f`, `-F`, `--field`, `--raw-field`, `--input` (spaced, `=`, or glued,
+  e.g. `-ffoo=bar`, `--input=f.json`), since gh turns these into a POST; or
+- a method flag naming anything other than GET/HEAD, in every form: `-XPOST`, `-X POST`,
+  `--method POST`, `--method=POST` (likewise PATCH/PUT/DELETE).
+
+It fails closed: an unparseable command, an unknown flag, or a missing/unrecognized method
+token is denied. Only a plain read, or an explicit GET/HEAD with no field/input flags, passes
+through to normal permissions. This is
 **discipline, not a security boundary**: an API-created PR is still not a merge of #13, and
 merging #13 remains gated on the `ask` rule plus `main`'s branch protection either way. The
 hook closes the "quietly open a new PR/issue by a different door" gap; it does not and

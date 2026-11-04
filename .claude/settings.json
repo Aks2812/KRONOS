@@ -49,10 +49,7 @@
       "Bash(git push origin *:refs/heads/kronos/loop-state)",
       "Bash(gh pr create --draft *)",
       "Bash(gh api repos/Aks2812/KRONOS/branches/main *)",
-      "Bash(gh api repos/Aks2812/KRONOS/pulls/* *)",
-      "Bash(gh api repos/Aks2812/KRONOS/pulls/*/reviews *)",
       "Bash(gh api repos/Aks2812/KRONOS/commits/*/check-runs *)",
-      "Bash(gh api repos/Aks2812/KRONOS/issues/* *)",
       "Bash(docker compose -f cybergym/docker-compose.yml *)"
     ]
   },

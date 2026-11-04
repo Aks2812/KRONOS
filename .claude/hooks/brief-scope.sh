@@ -50,28 +50,138 @@ defer() {
 TOOL_NAME="$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 [ -n "$TOOL_NAME" ] || defer
 
-# Global, agent-type-independent check: no `gh api` call may use a method other than
-# GET. Pattern rules in settings.json cannot express "GET only" (a path match and a
-# method match are orthogonal), so this is enforced here instead, for every caller —
-# the parent orchestrator included, not just dispatched subagents.
+# Global, agent-type-independent check: no `gh api` call may mutate. Pattern rules in
+# settings.json cannot express "GET only" (a path match and a method match are
+# orthogonal), so this is enforced here instead, for every caller — the parent
+# orchestrator included, not just dispatched subagents.
+#
+# Method filter: `gh api` is detected anywhere in the command (line start, after ; & |,
+# inside $(...) or backticks, inside sh -c "..." strings). It is DENIED if it carries
+# any field/body flag (-f, -F, --field, --raw-field, --input; spaced, =, or glued forms
+# such as -ffoo=bar and --input=f.json — gh turns these into a POST), or any method
+# flag (-XPOST, -X POST, --method POST, --method=POST) naming anything but GET/HEAD.
+# It passes to normal permissions only when provably read-only: no field/input flags
+# and either no method flag or an explicit GET/HEAD. Anything unparseable, any unknown
+# flag, or any unrecognized/missing method token fails CLOSED (deny).
 if [ "$TOOL_NAME" = "Bash" ]; then
   COMMAND="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
   if [ -n "$COMMAND" ]; then
-    GH_API_METHOD="$(python3 - "$COMMAND" <<'PY'
+    GH_API_VERDICT="$(python3 - "$COMMAND" <<'PY'
 import re
+import shlex
 import sys
 
+GH_API_RE = re.compile(r'\bgh\b[^\n]*?\bapi\b')
+OPS = set(";&|()<>") | {"&&", "||", ";;", "|&", "$("}
+SHORT_VALUE = set("HqtpT")          # value-taking short flags (value is rest or next arg)
+LONG_VALUE = {"--cache", "--header", "--hostname", "--jq", "--preview", "--template"}
+LONG_NOVALUE = {"--include", "--paginate", "--silent", "--slurp", "--verbose", "--help"}
+LONG_FIELD = {"--field", "--raw-field", "--input"}
+OK_METHODS = {"GET", "HEAD"}
+
+
+def analyze_args(args):
+    """Return None if provably read-only, else a deny reason."""
+    i = 0
+    while i < len(args):
+        a = args[i]
+        i += 1
+        if a == "--":
+            continue
+        if a.startswith("--"):
+            name, eq, val = a.partition("=")
+            if name in LONG_FIELD:
+                return "field/body flag %s" % name
+            if name == "--method":
+                if not eq:
+                    if i >= len(args):
+                        return "--method without a value"
+                    val = args[i]
+                    i += 1
+                if val.upper() not in OK_METHODS:
+                    return "method %r" % val
+            elif name in LONG_VALUE:
+                if not eq:
+                    i += 1
+            elif name in LONG_NOVALUE and not eq:
+                pass
+            else:
+                return "unknown flag %s" % a
+        elif a.startswith("-") and len(a) > 1:
+            j = 1
+            while j < len(a):
+                c = a[j]
+                if c in "fF":
+                    return "field flag -%s" % c
+                if c == "X":
+                    val = a[j + 1:]
+                    if val.startswith("="):
+                        val = val[1:]
+                    if not val:
+                        if i >= len(args):
+                            return "-X without a value"
+                        val = args[i]
+                        i += 1
+                    if val.upper() not in OK_METHODS:
+                        return "method %r" % val
+                    break
+                if c in SHORT_VALUE:
+                    if j + 1 >= len(a):
+                        i += 1
+                    break
+                if c in "ih":
+                    j += 1
+                    continue
+                return "unknown flag %s" % a
+        # else: positional (endpoint)
+    return None
+
+
+def scan(text, depth=0):
+    """Return None if no mutating gh api found, else a deny reason."""
+    if depth > 5:
+        return "nesting too deep to analyze"
+    try:
+        lex = shlex.shlex(text.replace("`", " ; "), posix=True, punctuation_chars=True)
+        lex.whitespace_split = True
+        toks = list(lex)
+    except ValueError as e:
+        return "unparseable command (%s)" % e
+    n = len(toks)
+    for idx, t in enumerate(toks):
+        if t != "gh":
+            # quoted payload (sh -c "...") mentioning gh api: analyze recursively
+            if GH_API_RE.search(t) and t != text:
+                r = scan(t, depth + 1)
+                if r:
+                    return r
+            continue
+        end = idx + 1
+        while end < n and not (set(toks[end]) <= OPS):
+            end += 1
+        seg = toks[idx + 1:end]
+        if "api" not in seg:
+            continue
+        r = analyze_args(seg[seg.index("api") + 1:])
+        if r:
+            return r
+    return None
+
+
 cmd = sys.argv[1]
-if not re.search(r'(?:^|[;&|]\s*)gh\s+api\b', cmd):
+if not GH_API_RE.search(cmd):
     print("")
 else:
-    m = re.search(r'(?:-X|--method)(?:=|\s+)([A-Za-z]+)', cmd)
-    print(m.group(1).upper() if m else "GET")
+    r = scan(cmd)
+    print("DENY:" + r if r else "GET")
 PY
 )"
-    if [ -n "$GH_API_METHOD" ] && [ "$GH_API_METHOD" != "GET" ]; then
-      deny "gh api calls may only use method GET (found $GH_API_METHOD). Discipline layer per RAILS.md, not the merge boundary — merge still requires ask + branch protection."
-    fi
+    case "$GH_API_VERDICT" in
+      "" | "GET") ;;
+      *)
+        deny "gh api calls must be provably read-only (GET/HEAD, no field/input flags); blocked: ${GH_API_VERDICT#DENY:}. Discipline layer per RAILS.md, not the merge boundary — merge still requires ask + branch protection."
+        ;;
+    esac
   fi
 fi
 
