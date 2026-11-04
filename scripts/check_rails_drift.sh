@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-# check_rails_drift.sh — repo -> global SHA-256 drift check for the KRONOS rails that are
-# mirrored into ~/.claude (the agent definitions and the resume command).
+# check_rails_drift.sh — KRONOS rails duplicate detector.
 #
-# The repository is canonical. ~/.claude is a convenience mirror. This script compares each
-# repo copy against its global counterpart and FAILS (exit 1) on any drift or missing mirror,
-# so a stale global copy cannot silently shadow the repo. It only reads; it never copies.
-# To update the mirror after the repo copies pass review, copy repo -> global (never the
-# reverse) and re-run this until it reports OK.
+# Policy: the repository .claude/ directory is the SOLE canonical and executable source
+# for KRONOS commands and agents. They are NOT mirrored into ~/.claude or any other scope.
+# A copy of a KRONOS command or agent in user scope (~/.claude) or in a second, out-of-repo
+# project scope can silently shadow or compete with the repo copy, so this script FAILS
+# (exit 1) if it finds any such duplicate, or if a repo canonical copy is missing. It only
+# reads; it never copies and never deletes.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GLOBAL_DIR="${HOME}/.claude"
+REPO_CLAUDE="${REPO_ROOT}/.claude"
 
-# Only the files that are mirrored to the global dir. settings.json, hooks/ and RAILS.md are
-# repo-only (not mirrored) and are intentionally not checked here.
-MIRRORED=(
+# Canonical KRONOS rail files, relative to a .claude/ directory.
+CANONICAL=(
   "commands/kronos-continue.md"
   "agents/kronos-researcher.md"
   "agents/kronos-builder.md"
@@ -22,28 +21,33 @@ MIRRORED=(
 )
 
 rc=0
-for rel in "${MIRRORED[@]}"; do
-  repo_f="${REPO_ROOT}/.claude/${rel}"
-  glob_f="${GLOBAL_DIR}/${rel}"
-  if [[ ! -f "$repo_f" ]]; then
-    echo "DRIFT: repo copy missing: .claude/${rel}"; rc=1; continue
-  fi
-  if [[ ! -f "$glob_f" ]]; then
-    echo "DRIFT: global mirror missing: ~/.claude/${rel}"; rc=1; continue
-  fi
-  repo_h="$(sha256sum "$repo_f" | cut -d' ' -f1)"
-  glob_h="$(sha256sum "$glob_f" | cut -d' ' -f1)"
-  if [[ "$repo_h" != "$glob_h" ]]; then
-    echo "DRIFT: ${rel}"
-    echo "  repo   ${repo_h}"
-    echo "  global ${glob_h}"
-    rc=1
-  else
-    echo "OK: ${rel} (${repo_h})"
+
+# 1. Repo canonical copies must exist.
+for rel in "${CANONICAL[@]}"; do
+  if [[ ! -f "${REPO_CLAUDE}/${rel}" ]]; then
+    echo "MISSING: repo canonical copy absent: .claude/${rel}"; rc=1
   fi
 done
 
+# 2. User scope (~/.claude) must not duplicate any KRONOS command or agent.
+USER_CLAUDE="${HOME}/.claude"
+if [[ -d "$USER_CLAUDE" && "$USER_CLAUDE" != "$REPO_CLAUDE" ]]; then
+  while IFS= read -r dup; do
+    [[ -n "$dup" ]] || continue
+    echo "DUPLICATE (user scope): ${dup} shadows repo canonical"; rc=1
+  done < <(find "$USER_CLAUDE/commands" "$USER_CLAUDE/agents" -maxdepth 1 -name 'kronos-*.md' 2>/dev/null)
+fi
+
+# 3. Project scope: no second .claude/ inside the repo tree may carry KRONOS rails.
+while IFS= read -r f; do
+  [[ -n "$f" ]] || continue
+  case "$f" in
+    "${REPO_CLAUDE}"/*) : ;;  # the canonical copy itself — fine
+    *) echo "DUPLICATE (project scope): ${f} shadows repo canonical"; rc=1 ;;
+  esac
+done < <(find "$REPO_ROOT" \( -path '*/.claude/commands/kronos-*.md' -o -path '*/.claude/agents/kronos-*.md' \) 2>/dev/null)
+
 if [[ $rc -ne 0 ]]; then
-  echo "rails drift detected — reconcile repo -> global (repo is canonical), then re-run." >&2
+  echo "KRONOS rails duplicate/absence detected — repo .claude/ is canonical; remove out-of-repo copies (never copy repo -> global)." >&2
 fi
 exit $rc

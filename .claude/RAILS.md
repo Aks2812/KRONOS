@@ -98,3 +98,18 @@ command word (`$G`, `${G}`, `$(...)`, backticks) followed by `api`, or `alias x=
 merging #13 remains gated on the `ask` rule plus `main`'s branch protection either way. The
 hook closes the "quietly open a new PR/issue by a different door" gap; it does not and
 cannot stand in for the merge-authorization model in the baseline doc.
+
+## The repo `.claude/` is the sole canonical and executable source — no mirror
+
+KRONOS commands and agents live only in this repository's `.claude/` directory. That copy is
+both canonical and the one Claude Code executes; it is **not** mirrored into `~/.claude` or
+any other scope. The earlier model kept a convenience mirror in `~/.claude` and had the drift
+checker enforce repo→global parity — that is gone. A second copy in user scope (`~/.claude`)
+or in an out-of-repo project scope does not help; it can silently shadow or compete with the
+repo copy, so a duplicate is a hazard, not a convenience.
+
+`scripts/check_rails_drift.sh` is now a **duplicate detector**, not a mirror check. It FAILS
+(exit 1) if a repo canonical rail file is missing, or if it finds any `kronos-*.md` command or
+agent in user scope (`~/.claude/commands`, `~/.claude/agents`) or in a second `.claude/` inside
+the repo tree. It only reads; it never copies and never deletes. Reconcile by removing the
+out-of-repo copy — never by copying the repo into a global scope.
