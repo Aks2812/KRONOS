@@ -33,6 +33,9 @@ _NO_IN_SCOPE_COLUMN_TYPES = {"EVIDENCE"}
 # Node types whose schema includes a `confidence` column.
 _CONFIDENCE_BEARING_TYPES = {"SECRET", "FINDING"}
 
+# SPEC_BRIEF36: legal values for the `severity` column (enum-only chokepoint).
+SEVERITY_LEVELS = frozenset({"info", "low", "medium", "high", "critical"})
+
 # Types whose tombstone also flips `status` to 'merged'.
 _STATUS_BEARING_TYPES = {"SECRET", "FINDING"}
 
@@ -103,6 +106,9 @@ class GraphMutationAuthority:
         unknown = props.keys() - always - create_only
         if unknown:
             raise ValueError(f"props contains unknown column(s) {sorted(unknown)} for node type {type!r}")
+
+        if "severity" in props and props["severity"] not in SEVERITY_LEVELS:
+            raise ValueError(f"severity {props['severity']!r} not in {sorted(SEVERITY_LEVELS)}")
 
         always_clauses = [f"n.{key} = {_literal(props[key])}" for key in props if key in always]
         create_clauses = list(always_clauses)
