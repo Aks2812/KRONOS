@@ -21,6 +21,7 @@ B31_BASE = "a229b0d"
 B33_BASE = "cf9293b"
 B34_BASE = "7f5f46c"
 B35_BASE = "a0395c5"
+B36_BASE = "329194c"
 B30_SEAL = ("93fb05e", "a229b0d")  # BRIEF30 window, pre-sealed (AC7)
 B31_SECTION_10 = {
     "tests/test_stop.py",
@@ -61,6 +62,7 @@ B33_SECTION_10 = B32_SECTION_10 | {
 }
 B34_SECTION_10 = B33_SECTION_10 | {"SPEC_BRIEF34.md"}
 B35_SECTION_10 = B34_SECTION_10 | {"SPEC_BRIEF35.md", "tests/test_finding_evidence_gate.py"}
+B36_SECTION_10 = B35_SECTION_10 | {"SPEC_BRIEF36.md", "src/kronos/commit.py", "tests/test_commit_severity.py"}
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -261,7 +263,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{B31_BASE}..{B33_BASE}")) <= B32_SECTION_10, set(names(f"{B31_BASE}..{B33_BASE}")) - B32_SECTION_10
     assert set(names(f"{B33_BASE}..{B34_BASE}")) <= B33_SECTION_10, set(names(f"{B33_BASE}..{B34_BASE}")) - B33_SECTION_10
     assert set(names(f"{B34_BASE}..{B35_BASE}")) <= B34_SECTION_10, set(names(f"{B34_BASE}..{B35_BASE}")) - B34_SECTION_10
-    assert set(names(f"{B35_BASE}..HEAD")) <= B35_SECTION_10, set(names(f"{B35_BASE}..HEAD")) - B35_SECTION_10
+    assert set(names(f"{B35_BASE}..{B36_BASE}")) <= B35_SECTION_10, set(names(f"{B35_BASE}..{B36_BASE}")) - B35_SECTION_10
+    assert set(names(f"{B36_BASE}..HEAD")) <= B36_SECTION_10, set(names(f"{B36_BASE}..HEAD")) - B36_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
