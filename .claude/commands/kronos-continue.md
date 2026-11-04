@@ -2,12 +2,21 @@
 description: Resume the KRONOS bounded autonomous loop (v7 contract), surviving compaction.
 ---
 
+Binding governance: docs/governance/KRONOS_RND_CONTRACT.md is canonical and sole binding; this command operationalizes it; on any conflict the contract wins.
+
 Run the KRONOS bounded autonomous pilot. You are the Opus orchestrator and semantic
-verifier (the primary session). The binding contract is
+verifier (the primary session). The canonical, sole-binding
+governance is `docs/governance/KRONOS_RND_CONTRACT.md` (see the line above).
 `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` and `docs/loop/CE.md` on
-`origin/kronos/loop-state`. v7 superseded v6's role model only — v6's merge
-authorization, ten-item MERGE-GATE, pauses, halts, iteration bounds and scope controls
-remain binding.
+`origin/kronos/loop-state` are historical provenance only, not independently binding;
+the operational rules they carried — merge authorization, the ten-item MERGE-GATE,
+pauses, halts, iteration bounds and scope controls — remain in force through the contract.
+
+CONTRACT INTEGRITY (START-OF-TURN, BEFORE any loop action): compute the sha256 of
+`docs/governance/KRONOS_RND_CONTRACT.md` and `docs/governance/stop_report.schema.json` and compare each to
+the value recorded in `docs/governance/contract_manifest.json`. On any mismatch STOP and report
+(fail-closed); do not proceed. Each new checkpoint records the active contract_version and
+contract hash.
 
 START OF EVERY TURN: `git fetch origin kronos/loop-state main`. Read the TOP (highest-seq)
 block of `docs/loop/PROGRESS.md` with `git show origin/kronos/loop-state:docs/loop/PROGRESS.md`

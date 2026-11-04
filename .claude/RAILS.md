@@ -1,5 +1,7 @@
 # RAILS.md — why `.claude/settings.json` is shaped the way it is
 
+> These rails operationalize docs/governance/KRONOS_RND_CONTRACT.md (canonical, sole binding R&D governance); RAILS.md is enforcement implementation, not an independent authority.
+
 `settings.json` is strict JSON: a `//` comment or a trailing comma is a syntax error, and
 Claude Code reports the file as a Settings Error at the next start — whose dialog offers
 "fix the file with Claude's help, exit, or **continue without the broken settings**," one
