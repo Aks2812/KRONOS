@@ -63,14 +63,29 @@ TOOL_NAME="$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null || t
 # It passes to normal permissions only when provably read-only: no field/input flags
 # and either no method flag or an explicit GET/HEAD. Anything unparseable, any unknown
 # flag, or any unrecognized/missing method token fails CLOSED (deny).
+#
+# argv0 normalization + fail-closed-on-dynamic rule (static analysis only; input is NEVER
+# executed or shell-expanded): a token is the gh command word when os.path.basename(token)
+# == "gh" (so /usr/bin/gh and ./gh are inspected as gh). Leading NAME=value assignments and
+# the wrappers env/command/builtin/exec/nohup/time (and their option flags) are skipped to
+# find the real command word. If that command word is DYNAMIC (contains $, a backtick, a
+# $(...) substitution, or glob/brace chars; e.g. $G, ${G}, $(echo gh)) and an `api` argument
+# follows, the call is DENIED, since its value cannot be proven non-gh; likewise `alias X=gh`.
 if [ "$TOOL_NAME" = "Bash" ]; then
   COMMAND="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
   if [ -n "$COMMAND" ]; then
     GH_API_VERDICT="$(python3 - "$COMMAND" <<'PY'
+import os
 import re
 import shlex
 import sys
 
+GATE_RE = re.compile(r'gh|api')
+ASSIGN_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*\+?=')
+WRAPPERS = {"env", "command", "builtin", "exec", "nohup", "time", "{", "!", "if", "then",
+            "do", "else", "elif", "while", "until"}
+ENV_VALUE_OPTS = {"-u", "-C", "-S", "-P", "--unset", "--chdir", "--split-string"}
+MUTATING_FLAG_RE = re.compile(r'^(-[A-Za-z]*[fFX]|--(field|raw-field|input|method)\b)')
 GH_API_RE = re.compile(r'\bgh\b[^\n]*?\bapi\b')
 OPS = set(";&|()<>") | {"&&", "||", ";;", "|&", "$("}
 SHORT_VALUE = set("HqtpT")          # value-taking short flags (value is rest or next arg)
@@ -137,6 +152,86 @@ def analyze_args(args):
     return None
 
 
+def is_dynamic(w):
+    return w != "{" and any(c in w for c in "$`*?[{")
+
+
+def segments(text):
+    """Tokenize (backticks rewritten to $(...)), collapse each $(...) into one dynamic
+    token, and split into command segments at shell operators. Static; never executes."""
+    text = re.sub(r'`([^`]*)`', r'$(\1)', text)
+    lex = shlex.shlex(text, posix=True, punctuation_chars=True)
+    lex.whitespace_split = True
+    toks = list(lex)
+    out, i = [], 0
+    while i < len(toks):
+        t = toks[i]
+        if t.endswith("$") and i + 1 < len(toks) and toks[i + 1].startswith("("):
+            depth, j, rem = 0, i + 1, ""
+            while j < len(toks):
+                if set(toks[j]) <= OPS:
+                    depth += toks[j].count("(") - toks[j].count(")")
+                    if depth <= 0:
+                        rem = toks[j][toks[j].rfind(")") + 1:]
+                        break
+                j += 1
+            out.append(t + "(...)")
+            if rem:
+                out.append(rem)
+            i = j + 1
+            continue
+        out.append(t)
+        i += 1
+    segs, cur = [], []
+    for t in out:
+        if set(t) <= OPS:
+            segs.append(cur)
+            cur = []
+        else:
+            cur.append(t)
+    segs.append(cur)
+    return segs
+
+
+def head_and_tail(seg):
+    """Skip NAME=value assignments and wrappers; return (command word, remaining args)."""
+    k = 0
+    while k < len(seg):
+        w = seg[k]
+        if ASSIGN_RE.match(w):
+            k += 1
+        elif is_dynamic(w):
+            return w, seg[k + 1:]
+        elif os.path.basename(w) in WRAPPERS:
+            k += 1
+            while k < len(seg) and (seg[k].startswith("-") or ASSIGN_RE.match(seg[k])):
+                k += 2 if seg[k] in ENV_VALUE_OPTS else 1
+        else:
+            return w, seg[k + 1:]
+    return None, []
+
+
+def dynamic_gh(text):
+    """Fail closed: dynamic command word followed by api, or alias to gh."""
+    try:
+        segs = segments(text)
+    except ValueError as e:
+        return "unparseable command (%s)" % e
+    for seg in segs:
+        head, tail = head_and_tail(seg)
+        if head is None:
+            continue
+        if is_dynamic(head):
+            if "api" in tail:
+                return "dynamic command word %r followed by api" % head
+            if any(is_dynamic(a) for a in tail) and any(MUTATING_FLAG_RE.match(a) for a in tail):
+                return "dynamic command word %r with mutating flag" % head
+        elif os.path.basename(head) == "alias":
+            if any(os.path.basename(a.partition("=")[2]) == "gh" for a in tail):
+                return "alias to gh"
+    return None
+
+
 def scan(text, depth=0):
     """Return None if no mutating gh api found, else a deny reason."""
     if depth > 5:
@@ -146,10 +241,14 @@ def scan(text, depth=0):
         lex.whitespace_split = True
         toks = list(lex)
     except ValueError as e:
-        return "unparseable command (%s)" % e
+        return "unparseable command (%s)" % e if GATE_RE.search(text) else None
+    if depth == 0:
+        r = dynamic_gh(text)
+        if r:
+            return r
     n = len(toks)
     for idx, t in enumerate(toks):
-        if t != "gh":
+        if os.path.basename(t) != "gh":
             # quoted payload (sh -c "...") mentioning gh api: analyze recursively
             if GH_API_RE.search(t) and t != text:
                 r = scan(t, depth + 1)
@@ -169,11 +268,8 @@ def scan(text, depth=0):
 
 
 cmd = sys.argv[1]
-if not GH_API_RE.search(cmd):
-    print("")
-else:
-    r = scan(cmd)
-    print("DENY:" + r if r else "GET")
+r = scan(cmd)
+print("DENY:" + r if r else "GET")
 PY
 )"
     case "$GH_API_VERDICT" in

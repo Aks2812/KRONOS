@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 
-HOOK = Path(__file__).resolve().parent.parent / ".claude" / "hooks" / "brief-scope.sh"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+HOOK = REPO_ROOT / ".claude" / "hooks" / "brief-scope.sh"
 EP = "repos/Aks2812/KRONOS/pulls/5"
 
 
@@ -46,6 +47,20 @@ DENY_CASES = [
     f"gh api {EP} --method $M",
     f"gh api {EP} --bogus",
     f"gh api {EP} -X 'POST",
+    # argv0 forms
+    f"/usr/bin/gh api {EP} -f draft=false",
+    f"./gh api {EP} -f a=b",
+    f"G=gh; $G api {EP} -f a=b",
+    f"${{G}} api {EP} -f a=b",
+    f"NAME=1 gh api {EP} -f a=b",
+    f"env gh api {EP} -f a=b",
+    f"command gh api {EP} -f a=b",
+    f"env X=1 /usr/bin/gh api {EP} -XPOST",
+    f"$G api {EP}",
+    f"$(echo gh) api {EP} -f a=b",
+    f"`echo gh` api {EP} -f a=b",
+    f"env $G api {EP}",
+    f"alias g=gh; g api {EP} -f a=b",
 ]
 
 ALLOW_CASES = [
@@ -54,6 +69,10 @@ ALLOW_CASES = [
     f"gh api {EP} -X GET",
     f"gh api {EP} -H 'Accept: application/json' --jq '.title'",
     "git status",
+    # argv0 forms
+    f"/usr/bin/gh api {EP}",
+    f"gh api {EP} --method GET",
+    "env FOO=1 ls",
 ]
 
 

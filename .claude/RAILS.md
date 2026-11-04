@@ -89,7 +89,11 @@ is mutating by either route:
 
 It fails closed: an unparseable command, an unknown flag, or a missing/unrecognized method
 token is denied. Only a plain read, or an explicit GET/HEAD with no field/input flags, passes
-through to normal permissions. This is
+through to normal permissions. The command word is normalized statically (never executed or
+expanded): any token whose `basename` is `gh` (`/usr/bin/gh`, `./gh`) is inspected as gh;
+leading `NAME=value` assignments and `env`/`command` wrappers are skipped; and a dynamic
+command word (`$G`, `${G}`, `$(...)`, backticks) followed by `api`, or `alias x=gh`, is denied
+(fail closed). This is
 **discipline, not a security boundary**: an API-created PR is still not a merge of #13, and
 merging #13 remains gated on the `ask` rule plus `main`'s branch protection either way. The
 hook closes the "quietly open a new PR/issue by a different door" gap; it does not and
