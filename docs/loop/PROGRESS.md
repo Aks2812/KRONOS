@@ -1,8 +1,8 @@
 # KRONOS loop-state checkpoint
 
-seq: 251
-derived_at: 2026-11-04T08:45:00Z
-stage: R&D-RAILS REPAIR (operator-authorized, NOT a feature brief). SPEC_BRIEF36 merged at seq 250 (main @ 445dbfc). This turn: (1) corrected the re-derived main.head 329194c -> 445dbfc + brief -> SPEC_BRIEF36 (the re-derived block lagged one merge); (2) creating branch claude/rails-repair off origin/main to make the repo canonical for .claude/{commands,agents(x3),hooks,settings.json}, RAILS.md, and a repo->global sha256 drift check, with a GENERIC v7 kronos-continue command (no hardcoded PR/issue/brief/SHA/suite-total/model literals). Canonical model roles (operator, 2026-11-04): Opus orchestrator+verifier; researcher claude-sonnet-5; builder claude-sonnet-5-5; reviewer claude-haiku-5-5. Build via Sonnet 5.5, review via Haiku 5.5. Do NOT merge the rails PR, do NOT reset local main, do NOT touch 3c712d4 (report its diff). S8 §6 live-run still PAUSED (SEQ 140).
+seq: 252
+derived_at: 2026-11-04T09:05:00Z
+stage: R&D-RAILS REPAIR — BUILT + REVIEWED, GATE-2 HOLD (operator decision required; NOT merged). Branch claude/rails-repair c878b685, draft PR #44. kronos-reviewer (Haiku) PASS R1-R8; but two findings, both confirmed by orchestrator Gate-2: F1 HIGH — brief-scope.sh:68 gh-api method filter only detects -X/--method, defaults GET, so `gh api .../pulls/* -f ...` (gh POSTs on -f/-F/--input) and glued -XPOST slip past; the generalized allow (pulls/* *, issues/* *) widened this from one PR to any PR/issue = write bypass of the ask tier (regression introduced by this repair). F2 MEDIUM — RAILS.md:79 still lists the narrowed allow as pulls/13/issues/2, contradicting the shipped wildcards. Recommend remediation before merge: (A) remove pulls/* *, pulls/*/reviews *, issues/* * from settings.json allow so they fall to the ask tier (removes fail-open; honors "no hardcoded PR/issue" better than wildcarding); (B) fix brief-scope.sh to classify -f/-F/--field/--raw-field/--input and glued -XPOST as non-GET -> deny; (C) correct RAILS.md prose. S8 §6 live-run still PAUSED (SEQ 140). Do NOT merge rails PR, do NOT reset local main, do NOT touch 3c712d4.
 seq250_merge_authorization:
   pr: 43
   head: 122bca63962084846625824a1cca35db12de5d5a
@@ -12,8 +12,15 @@ seq249_pending_action_outcome: >
   RESOLVED — PR #43 MERGED as squash commit 445dbfc at 2026-11-04T08:14:07Z. Head stayed 122bca6
   through merge (--match-head-commit enforced). main advanced 329194c -> 445dbfc. Guard + brief
   confirmed on main. No gate turned red.
+seq251_pending_action_outcome: >
+  RESOLVED — builder (Sonnet 5.5) pushed c878b685 (9 files, 544 ins), draft PR #44 opened; reviewer
+  (Haiku) returned PASS R1-R8 with F1 HIGH + F2 MEDIUM; orchestrator Gate-2 confirmed both. Build and
+  review complete; merge HELD pending operator decision on remediation A/B/C.
 pending_action:
-  action: "R&D-rails repair on branch claude/rails-repair: Sonnet 5.5 builder assembles canonical .claude/ + generic v7 command + drift-check; Haiku 5.5 independent review; fresh-session load proof. Report PR/head, allowlist, review evidence, 3c712d4 diff, remaining approvals. Do NOT merge rails PR / reset local main / touch 3c712d4."
+  action: "await operator decision on rails-repair remediation (A: narrow settings.json allow; B: fix hook method filter; C: fix RAILS.md prose), then re-review and re-report. PR #44 stays draft; nothing merged."
+  pr: 44
+  branch_head: c878b685a362357914b7c305405d771fb1772355
+  outcome: pending
   outcome: pending
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
