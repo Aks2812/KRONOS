@@ -1,16 +1,18 @@
 # KRONOS loop-state checkpoint
 
-seq: 249
-derived_at: 2026-11-04T05:35:00Z
+seq: 250
+derived_at: 2026-11-04T08:20:00Z
+stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — MERGED. main @ 445dbfc. PR #43 squash-merged (merge commit 445dbfc, 2026-11-04T08:14:07Z) at operator-authorized head 122bca6; 10/10 MERGE-GATE reconfirmed green immediately pre-merge; guard verified present on main (commit.py:37 SEVERITY_LEVELS, :110-111 raise). Research record #36 added. S8 §6 live-run still PAUSED (SEQ 140). STOPPED per operator — next is the R&D-rails audit, NOT a new brief.
 merge_authorization:
   pr: 43
   head: 122bca63962084846625824a1cca35db12de5d5a
   authorized_by: "operator, 2026-11-04"
-  method: "gh pr mark-ready + gh pr merge 43 --squash --match-head-commit 122bca6 (no --admin, no --auto)"
-  gates_reconfirmed: "10/10 green immediately pre-merge (protected, open/unmerged, head unchanged=122bca6, review PASS AC1-AC6, ci none, tests 3966/1/0, seals re-pinned, Gate-2 PASS, scope ⊆ §3, mergeable)"
-pending_action_seq249:
-  action: "mark PR #43 ready and squash-merge at head 122bca6; abort if head changes or any gate turns red"
-  outcome: pending
+  method: "gh pr ready 43 + gh pr merge 43 --squash --match-head-commit 122bca6 (no --admin, no --auto)"
+seq249_pending_action_outcome: >
+  RESOLVED — PR #43 MERGED as squash commit 445dbfc at 2026-11-04T08:14:07Z. Head stayed 122bca6
+  through merge (--match-head-commit enforced). main advanced 329194c -> 445dbfc. Guard + brief
+  confirmed on main. No gate turned red.
+pending_action: null   # merge complete; STOPPED. Next action (R&D-rails audit) is an operator-initiated task.
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — BUILT + REVIEWED + GATE-2 PASS, draft PR #43 open; AWAITING OPERATOR MERGE DECISION. Builder (Sonnet) pushed 122bca6; kronos-reviewer (Haiku) independent VERDICT PASS on AC1-AC6; orchestrator Gate-2 diff inspection PASS (guard fail-closed, seal-tax correct, scope ⊆ §3). Full suite 3966 passed/1 skipped/0 failed. NOT merged. S8 §6 live-run still PAUSED (SEQ 140).
