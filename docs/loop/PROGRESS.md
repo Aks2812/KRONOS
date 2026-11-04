@@ -1,19 +1,26 @@
 # KRONOS loop-state checkpoint
 
-seq: 247
-derived_at: 2026-11-04T05:10:00Z
+seq: 248
+derived_at: 2026-11-04T05:25:00Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF36 (severity enum chokepoint, Option A — enum-only, no evidence-tie) — GATE-1 APPROVED by operator 2026-11-04. Brief committed ae10bd2 on branch claude/severity-enum-chokepoint-brief36 (base 329194c), pushed. Dispatching kronos-builder (Sonnet) over §3 files (src/kronos/commit.py + tests), then kronos-reviewer (Haiku, v7 Gate-1) on diff+brief only. S8 §6 live-run still PAUSED (SEQ 140). (seq 246 reconciled the checkpoint to current state at 041fec5.)
+stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — BUILT + REVIEWED + GATE-2 PASS, draft PR #43 open; AWAITING OPERATOR MERGE DECISION. Builder (Sonnet) pushed 122bca6; kronos-reviewer (Haiku) independent VERDICT PASS on AC1-AC6; orchestrator Gate-2 diff inspection PASS (guard fail-closed, seal-tax correct, scope ⊆ §3). Full suite 3966 passed/1 skipped/0 failed. NOT merged. S8 §6 live-run still PAUSED (SEQ 140).
+
+seq247_pending_action_outcome: >
+  RESOLVED — builder dispatched and pushed 122bca6; reviewer dispatched (diff+brief only, not the
+  builder's report) and returned VERDICT PASS. Both ran as foreground subagents, never forks.
 
 pending_action:
-  action: "dispatch kronos-builder for SPEC_BRIEF36 (severity enum chokepoint, Option A), then kronos-reviewer"
-  brief: { path: SPEC_BRIEF36.md, sha256: 2edf1c5289a0f1e1f8415a9d509200c2829b545bd3ffb1c72ad259b221eaac02 }
+  action: "await operator merge authorization for PR #43 (merge needs ten-point MERGE-GATE re-measure + operator-authorized head SHA)"
+  pr: 43
+  draft: true
   branch: claude/severity-enum-chokepoint-brief36
-  branch_head: ae10bd2
+  head_to_authorize: 122bca63962084846625824a1cca35db12de5d5a
   base: 329194c
-  gate1: "approved (operator, 2026-11-04)"
-  permitted_files: ["src/kronos/commit.py", "tests/test_commit_severity.py", "tests/test_commit_authority.py", "SPEC_BRIEF36.md"]
+  brief: { path: SPEC_BRIEF36.md, sha256: 2edf1c5289a0f1e1f8415a9d509200c2829b545bd3ffb1c72ad259b221eaac02 }
+  review: "kronos-reviewer (Haiku) VERDICT PASS, AC1-AC6; orchestrator Gate-2 PASS"
+  tests: "3966 passed, 1 skipped, 0 failed (.venv pytest)"
+  ci: "none; local evidence only"
   outcome: pending
 
 provider:
