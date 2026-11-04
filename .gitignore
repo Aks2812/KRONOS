@@ -5,3 +5,5 @@ __pycache__/
 *.egg-info/
 .superpowers/
 .env
+.claude/settings.local.json
+.claude/current-brief.json
