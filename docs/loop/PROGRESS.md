@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 257
-derived_at: 2026-11-04T10:55:00Z
+seq: 258
+derived_at: 2026-11-04T11:30:00Z
 stage: R&D-RAILS REPAIR — BUILT + REVIEWED, GATE-2 HOLD (operator decision required; NOT merged). Branch claude/rails-repair c878b685, draft PR #44. kronos-reviewer (Haiku) PASS R1-R8; but two findings, both confirmed by orchestrator Gate-2: F1 HIGH — brief-scope.sh:68 gh-api method filter only detects -X/--method, defaults GET, so `gh api .../pulls/* -f ...` (gh POSTs on -f/-F/--input) and glued -XPOST slip past; the generalized allow (pulls/* *, issues/* *) widened this from one PR to any PR/issue = write bypass of the ask tier (regression introduced by this repair). F2 MEDIUM — RAILS.md:79 still lists the narrowed allow as pulls/13/issues/2, contradicting the shipped wildcards. Recommend remediation before merge: (A) remove pulls/* *, pulls/*/reviews *, issues/* * from settings.json allow so they fall to the ask tier (removes fail-open; honors "no hardcoded PR/issue" better than wildcarding); (B) fix brief-scope.sh to classify -f/-F/--field/--raw-field/--input and glued -XPOST as non-GET -> deny; (C) correct RAILS.md prose. S8 §6 live-run still PAUSED (SEQ 140). Do NOT merge rails PR, do NOT reset local main, do NOT touch 3c712d4.
 seq250_merge_authorization:
   pr: 43
@@ -35,8 +35,22 @@ seq255_pending_action_outcome: >
   prompt anyway, but the asserted guarantee is false.) F2 LOW: RAILS.md says PR/issue calls fall to "ask tier"
   but there is no gh-api ask rule; they fall to default-mode prompting. Suite green; not an A/B/C/seal regression.
 seq256_pending_action_outcome: "RESOLVED — operator authorized one more PR #44 hardening round (argv0 normalization + fail-closed on dynamic/wrapper forms + RAILS F2), 2026-11-04."
+seq257_pending_action_outcome: >
+  Hardening pushed c4a819c (brief-scope.sh, test_brief_scope_hook.py, RAILS.md); suite 4009 passed/1
+  skipped/0 failed; focused 43 passed. argv0 forms now deny. BUT Haiku 5.5 re-review VERDICT FAIL:
+  5 NEW hook bypasses via shell expansion of the literal-token parser: (1) gh ap[var]i ... -f,
+  (2) gh [A] ... -f with A=api, (3) brace {gh,api} ... -f, (4) gh api ... [F] with F=-XPOST dynamic arg,
+  (5) F=-XPOST then gh api ... [F]. Also R6 FAIL: RAILS.md still has a #13 literal (:97-98) and the
+  "ask tier" wording (:79). Builder disclosed the prior-call alias/function gap too.
+decision_opus: >
+  The hook is SUPPLEMENTAL per RAILS.md; a static per-command parser cannot be made watertight against
+  shell expansion (brace/var/substitution/alias/function) — this is whack-a-mole. The real exposure is
+  the SETTINGS layer: settings.json:51-52 allow branches/main and commits/*/check-runs with a trailing
+  wildcard absorbing any args, so a mutating call on those prefixes auto-approves with the leaky hook as
+  the only control. Durable fix is the settings/branch-protection layer, not more hook patches.
 pending_action:
-  action: "Sonnet 5.5 hardening on claude/rails-repair (files already in RAILS_SECTION_10, no new seal): brief-scope.sh — basename-normalize static command paths (/usr/bin/gh -> gh); FAIL CLOSED on dynamic/unresolved command words ($G, ${G}, substitutions, aliases); handle/deny wrapper+assignment forms (NAME=value gh, env ... gh, command gh); NO shell execution/expansion during analysis (static parse only). tests/test_brief_scope_hook.py — adversarial tests for every argv0 form. RAILS.md — F2 wording (unmatched PR/issue calls fall to default permission prompting, not a dedicated ask rule). Then Haiku 5.5 re-review, Opus final + full suite. PR #44 draft; no merge/mirror/3c712d4."
+  action: "STOP-AND-ASK: PR #44 FAILs 2nd re-review (5 shell-expansion bypasses). Recommend ending hook whack-a-mole, fix the LAYER. Opt1 (recommended): remove the two trailing-wildcard gh-api allows so NO gh-api auto-approves (all fall to default prompt), making the hook pure defense-in-depth; keep the hook but downgrade its + RAILS.md claims to best-effort (not a boundary); fix the #13 literals + ask-tier wording. Opt2: keep patching the hook (diminishing returns). Opt3: drop the hook gh-api method filter, rely on settings + branch protection. Await operator choice. PR #44 draft; no merge/mirror/3c712d4."
   pr: 44
-  branch_head: cb10cb40193629cb58b942517b497f8d3e8ee5e6
+  branch_head: c4a819c554fce1c43495e56ba2bf69020923cd47
+  blocker: "shell-expansion hook bypasses (5) + settings trailing-wildcard allows fail-open"
   outcome: pending
