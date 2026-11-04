@@ -1,7 +1,16 @@
 # KRONOS loop-state checkpoint
 
-seq: 248
-derived_at: 2026-11-04T05:25:00Z
+seq: 249
+derived_at: 2026-11-04T05:35:00Z
+merge_authorization:
+  pr: 43
+  head: 122bca63962084846625824a1cca35db12de5d5a
+  authorized_by: "operator, 2026-11-04"
+  method: "gh pr mark-ready + gh pr merge 43 --squash --match-head-commit 122bca6 (no --admin, no --auto)"
+  gates_reconfirmed: "10/10 green immediately pre-merge (protected, open/unmerged, head unchanged=122bca6, review PASS AC1-AC6, ci none, tests 3966/1/0, seals re-pinned, Gate-2 PASS, scope ⊆ §3, mergeable)"
+pending_action_seq249:
+  action: "mark PR #43 ready and squash-merge at head 122bca6; abort if head changes or any gate turns red"
+  outcome: pending
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — BUILT + REVIEWED + GATE-2 PASS, draft PR #43 open; AWAITING OPERATOR MERGE DECISION. Builder (Sonnet) pushed 122bca6; kronos-reviewer (Haiku) independent VERDICT PASS on AC1-AC6; orchestrator Gate-2 diff inspection PASS (guard fail-closed, seal-tax correct, scope ⊆ §3). Full suite 3966 passed/1 skipped/0 failed. NOT merged. S8 §6 live-run still PAUSED (SEQ 140).
