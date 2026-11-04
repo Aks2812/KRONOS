@@ -1,7 +1,7 @@
 # KRONOS loop-state checkpoint
 
-seq: 252
-derived_at: 2026-11-04T09:05:00Z
+seq: 253
+derived_at: 2026-11-04T09:20:00Z
 stage: R&D-RAILS REPAIR — BUILT + REVIEWED, GATE-2 HOLD (operator decision required; NOT merged). Branch claude/rails-repair c878b685, draft PR #44. kronos-reviewer (Haiku) PASS R1-R8; but two findings, both confirmed by orchestrator Gate-2: F1 HIGH — brief-scope.sh:68 gh-api method filter only detects -X/--method, defaults GET, so `gh api .../pulls/* -f ...` (gh POSTs on -f/-F/--input) and glued -XPOST slip past; the generalized allow (pulls/* *, issues/* *) widened this from one PR to any PR/issue = write bypass of the ask tier (regression introduced by this repair). F2 MEDIUM — RAILS.md:79 still lists the narrowed allow as pulls/13/issues/2, contradicting the shipped wildcards. Recommend remediation before merge: (A) remove pulls/* *, pulls/*/reviews *, issues/* * from settings.json allow so they fall to the ask tier (removes fail-open; honors "no hardcoded PR/issue" better than wildcarding); (B) fix brief-scope.sh to classify -f/-F/--field/--raw-field/--input and glued -XPOST as non-GET -> deny; (C) correct RAILS.md prose. S8 §6 live-run still PAUSED (SEQ 140). Do NOT merge rails PR, do NOT reset local main, do NOT touch 3c712d4.
 seq250_merge_authorization:
   pr: 43
@@ -16,10 +16,11 @@ seq251_pending_action_outcome: >
   RESOLVED — builder (Sonnet 5.5) pushed c878b685 (9 files, 544 ins), draft PR #44 opened; reviewer
   (Haiku) returned PASS R1-R8 with F1 HIGH + F2 MEDIUM; orchestrator Gate-2 confirmed both. Build and
   review complete; merge HELD pending operator decision on remediation A/B/C.
+seq252_pending_action_outcome: "RESOLVED — operator authorized remediation A+B+C on PR #44 (2026-11-04)."
 pending_action:
-  action: "await operator decision on rails-repair remediation (A: narrow settings.json allow; B: fix hook method filter; C: fix RAILS.md prose), then re-review and re-report. PR #44 stays draft; nothing merged."
+  action: "rails-repair remediation A+B+C on claude/rails-repair via Sonnet 5.5, Haiku 5.5 re-review, Opus final semantic check. A: remove wildcard pulls/*, pulls/*/reviews, issues/* write allows (fall to ask tier). B: harden brief-scope.sh vs all mutation forms (-f/-F/--field/--raw-field/--input, -XPOST/PATCH/PUT/DELETE glued+spaced, --method POST/PATCH/PUT/DELETE + equals), fail closed on ambiguous, add adversarial tests. C: RAILS.md matches enforcement. Do NOT merge PR #44, update global mirror, or reset 3c712d4."
   pr: 44
-  branch_head: c878b685a362357914b7c305405d771fb1772355
+  branch_base_head: c878b685a362357914b7c305405d771fb1772355
   outcome: pending
   outcome: pending
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
