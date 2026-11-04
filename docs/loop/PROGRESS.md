@@ -1,10 +1,10 @@
 # KRONOS loop-state checkpoint
 
-seq: 245
-derived_at: 2026-11-02T18:00:00Z
+seq: 246
+derived_at: 2026-11-04T04:52:02Z
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
-stage: SPEC_BRIEF29 rev3 (Signed Autonomy Envelope, G2 foundation) — EXCEPTIONAL ATTEMPT 4 AUTHORIZED (maintainer context.md 2026-11-01), scoped to reviewer findings F1+F2 only; circuit breaker NOT reset, no attempt 5. Un-HALT. Dispatching Sonnet 5 researcher to verify F1/F2 vs brief+diff+review-evidence before any build. unmerged, no PR; manifest.py edit operator-authorized (narrow, VerifiedManifest construction guard only); S8 §6 live-run still paused (SEQ 140)
+stage: RECONCILED to current state (operator-authorized reconcile, 2026-11-04). G3 finding evidence-gate line COMPLETE and merged: SPEC_BRIEF33 (PR #40), SPEC_BRIEF34 (PR #41), SPEC_BRIEF35 (PR #42) all MERGED to main; main @ 329194c. All four forward-advance paths now evidence-gated and regression-locked. CORRECTION: the prior seq-245 committed body carried forward STALE re-derived facts (main dcbdba9, brief SPEC_BRIEF10.3, pr_13 draft) and a dangling BRIEF29 pending_action ("Dispatching Sonnet 5 researcher"); BRIEF29 is in fact merged (PR #37), and that pending_action is void. No action in flight. S8 §6 live-run still PAUSED (SEQ 140). NEXT: operator decision — severity chokepoint (code-guard vs test-only) or defer and stop G3.
 
 provider:
   anthropic_base_url: "http://127.0.0.1:8787"
@@ -27,21 +27,30 @@ provider:
 ## Re-derived facts (public: SHAs, PR/issue numbers, gate names, test counts, verdicts only)
 
 main:
-  head: dcbdba950a45253f2c417b0c95c6ccb6930e9221
+  head: 329194ca7498a4304c28c0e006a3f9aa54ea7129
   protected: true   # via ruleset 25333712; see branch_protection below
 
 brief:
-  path: SPEC_BRIEF10.3.md
-  sha256: 75a666d81a3bcce92915c51fba7e75a3d08ce389fc65458ff475a95bdf0d8938
+  path: SPEC_BRIEF35.md
+  sha256: a2ab47c80d6e915aeed693ced662503a55203488f05681bd9d6d2c6ecbb7b17c
+
+recent_merges:   # G3 evidence-gate line (re-derived from GitHub 2026-11-04)
+  - { pr: 40, brief: SPEC_BRIEF33, merge: 7f5f46c3b51393666ca8a930b62810653757f579, what: "web/infra findings persist EVIDENCE node" }
+  - { pr: 41, brief: SPEC_BRIEF34, merge: a0395c523728253000a12d40e79b84f6c7a28cb8, what: "secret path abstains (stays hypothesis) when no evidence" }
+  - { pr: 42, brief: SPEC_BRIEF35, merge: 329194ca7498a4304c28c0e006a3f9aa54ea7129, what: "ast lock: every reachable/exploited advance must attach_evidence; + abstain-confidence" }
 
 pr_13:
   state: open
   draft: true
   merged: false
   head: d2ad51e611927525780b9069db2bc16b0a7209b2
-  mergeable_state: clean
+  mergeable_state: unknown
   reviews: 0
   check_runs: 0
+  note: >
+    OLDER FORK-2 scope_guard work (SPEC_BRIEF10.3 era). The frontier has moved past it to
+    the G3 line (briefs 33-35). Do NOT merge without a fresh operator-authorized head SHA
+    and a full ten-point MERGE-GATE re-measure this turn.
 
 pr_14:
   state: open
@@ -61,11 +70,11 @@ issue_2:
 ci: "none; local evidence only"
 
 tests:
-  last_run: "2026-10-18 FORK-2 — base 620 passed/1 skipped; PR head 1023 passed/6 FAILED/1 skipped"
+  last_run: "2026-11-04 reconcile — full suite 3959 passed/1 skipped/0 failed (.venv/bin/python -m pytest -q; 410s)"
 
 merge_authorization: null
 
-pending_action: null   # seq 4's FORK-2 review completed; outcome below
+pending_action: null   # reconcile complete; no action in flight. Next step is an operator decision (stop-and-ask).
 stale_branches:
   - claude/cybergym-denial-fidelity-brief7
   - claude/ingestion-contract-canonical-keys-brief9
