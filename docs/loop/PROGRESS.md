@@ -1,9 +1,9 @@
 # KRONOS loop-state checkpoint
 
-seq: 250
-derived_at: 2026-11-04T08:20:00Z
-stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — MERGED. main @ 445dbfc. PR #43 squash-merged (merge commit 445dbfc, 2026-11-04T08:14:07Z) at operator-authorized head 122bca6; 10/10 MERGE-GATE reconfirmed green immediately pre-merge; guard verified present on main (commit.py:37 SEVERITY_LEVELS, :110-111 raise). Research record #36 added. S8 §6 live-run still PAUSED (SEQ 140). STOPPED per operator — next is the R&D-rails audit, NOT a new brief.
-merge_authorization:
+seq: 251
+derived_at: 2026-11-04T08:45:00Z
+stage: R&D-RAILS REPAIR (operator-authorized, NOT a feature brief). SPEC_BRIEF36 merged at seq 250 (main @ 445dbfc). This turn: (1) corrected the re-derived main.head 329194c -> 445dbfc + brief -> SPEC_BRIEF36 (the re-derived block lagged one merge); (2) creating branch claude/rails-repair off origin/main to make the repo canonical for .claude/{commands,agents(x3),hooks,settings.json}, RAILS.md, and a repo->global sha256 drift check, with a GENERIC v7 kronos-continue command (no hardcoded PR/issue/brief/SHA/suite-total/model literals). Canonical model roles (operator, 2026-11-04): Opus orchestrator+verifier; researcher claude-sonnet-5; builder claude-sonnet-5-5; reviewer claude-haiku-5-5. Build via Sonnet 5.5, review via Haiku 5.5. Do NOT merge the rails PR, do NOT reset local main, do NOT touch 3c712d4 (report its diff). S8 §6 live-run still PAUSED (SEQ 140).
+seq250_merge_authorization:
   pr: 43
   head: 122bca63962084846625824a1cca35db12de5d5a
   authorized_by: "operator, 2026-11-04"
@@ -12,7 +12,9 @@ seq249_pending_action_outcome: >
   RESOLVED — PR #43 MERGED as squash commit 445dbfc at 2026-11-04T08:14:07Z. Head stayed 122bca6
   through merge (--match-head-commit enforced). main advanced 329194c -> 445dbfc. Guard + brief
   confirmed on main. No gate turned red.
-pending_action: null   # merge complete; STOPPED. Next action (R&D-rails audit) is an operator-initiated task.
+pending_action:
+  action: "R&D-rails repair on branch claude/rails-repair: Sonnet 5.5 builder assembles canonical .claude/ + generic v7 command + drift-check; Haiku 5.5 independent review; fresh-session load proof. Report PR/head, allowlist, review evidence, 3c712d4 diff, remaining approvals. Do NOT merge rails PR / reset local main / touch 3c712d4."
+  outcome: pending
 repo_path: /home/void/Void-Projects/KRONOS-Artifacts/KRONOS-void
 baseline: docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md
 stage: SPEC_BRIEF36 (severity enum chokepoint, Option A) — BUILT + REVIEWED + GATE-2 PASS, draft PR #43 open; AWAITING OPERATOR MERGE DECISION. Builder (Sonnet) pushed 122bca6; kronos-reviewer (Haiku) independent VERDICT PASS on AC1-AC6; orchestrator Gate-2 diff inspection PASS (guard fail-closed, seal-tax correct, scope ⊆ §3). Full suite 3966 passed/1 skipped/0 failed. NOT merged. S8 §6 live-run still PAUSED (SEQ 140).
@@ -55,17 +57,18 @@ provider:
 ## Re-derived facts (public: SHAs, PR/issue numbers, gate names, test counts, verdicts only)
 
 main:
-  head: 329194ca7498a4304c28c0e006a3f9aa54ea7129
+  head: 445dbfcfd85e1069dd0ce97a7f01da53858af7af   # corrected from 329194c (SEQ 251); SPEC_BRIEF36 / PR #43 merged
   protected: true   # via ruleset 25333712; see branch_protection below
 
 brief:
-  path: SPEC_BRIEF35.md
-  sha256: a2ab47c80d6e915aeed693ced662503a55203488f05681bd9d6d2c6ecbb7b17c
+  path: SPEC_BRIEF36.md
+  sha256: 2edf1c5289a0f1e1f8415a9d509200c2829b545bd3ffb1c72ad259b221eaac02
 
 recent_merges:   # G3 evidence-gate line (re-derived from GitHub 2026-11-04)
   - { pr: 40, brief: SPEC_BRIEF33, merge: 7f5f46c3b51393666ca8a930b62810653757f579, what: "web/infra findings persist EVIDENCE node" }
   - { pr: 41, brief: SPEC_BRIEF34, merge: a0395c523728253000a12d40e79b84f6c7a28cb8, what: "secret path abstains (stays hypothesis) when no evidence" }
   - { pr: 42, brief: SPEC_BRIEF35, merge: 329194ca7498a4304c28c0e006a3f9aa54ea7129, what: "ast lock: every reachable/exploited advance must attach_evidence; + abstain-confidence" }
+  - { pr: 43, brief: SPEC_BRIEF36, merge: 445dbfcfd85e1069dd0ce97a7f01da53858af7af, what: "severity enum chokepoint guard in create_or_update_node (Option A)" }
 
 pr_13:
   state: open
