@@ -116,9 +116,9 @@ agent in user scope (`~/.claude/commands`, `~/.claude/agents`) or in a second `.
 the repo tree. It only reads; it never copies and never deletes. Reconcile by removing the
 out-of-repo copy — never by copying the repo into a global scope.
 
-## Terminal stop paths emit the nine-field stop-report; AUTO-NEXT is bounded
+## Terminal stop paths emit the canonical schema-validated stop-report; AUTO-NEXT is bounded
 
-Every terminal path emits the nine-field 5W+1H stop-report (what, why, who, when, where, how,
+Every terminal path emits the canonical schema-validated 5W+1H stop-report (what, why, who, when, where, how,
 next, recommendation, operator_action) validating against
 `docs/governance/stop_report.schema.json` (contract §9): STOP AND ASK, PAUSE, BLOCKED,
 COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review (BLOCKED),
@@ -153,7 +153,7 @@ Prohibited: bare `rtk test pytest`, bare `pytest`, or any `/usr/bin/python` / sy
 fallback. Those resolve to an interpreter without the project dependencies and surface as
 spurious `ModuleNotFoundError` collection errors — a false red, never a real suite result.
 
-Fail closed: if `.venv/bin/python` is missing or not runnable, STOP and emit the nine-field
+Fail closed: if `.venv/bin/python` is missing or not runnable, STOP and emit the canonical schema-validated
 stop-report (§9); never substitute the system interpreter, and never mask a missing dependency
 with `--continue-on-collection-errors` or by ignoring collection errors.
 
@@ -163,7 +163,7 @@ large per-test `kuzu` databases and will otherwise exhaust the volume mid-run an
 measurement. Create the directory first (`mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp"`)
 and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDIR"` (equivalently
 `df -PT "$TMPDIR"`) MUST NOT report `tmpfs`. Fail closed: if that directory cannot be created, or
-resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the nine-field stop-report (§9);
+resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the canonical schema-validated stop-report (§9);
 never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.
 
 ## Decision classes & persistent terminal presentation (contract v1.3.0 §14–§16)
