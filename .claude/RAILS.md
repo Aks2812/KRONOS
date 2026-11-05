@@ -165,3 +165,11 @@ and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDI
 `df -PT "$TMPDIR"`) MUST NOT report `tmpfs`. Fail closed: if that directory cannot be created, or
 resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the nine-field stop-report (§9);
 never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.
+
+## Decision classes & persistent terminal presentation (contract v1.3.0 §14–§16)
+
+The contract is the sole semantic authority for the five decision classes (AUTO-CONTINUE, SAFE-TO-APPROVE,
+REVIEW-REQUIRED, HOLD, NO-ACTION) and for the persistent GitHub-flavored-Markdown presentation of terminal
+reports (one summary table, one next-actions table, no box-drawing, escaped pipes with `<br>`, exactly one
+preferred recommendation, a PR + full-head-SHA authorization line for SAFE-TO-APPROVE, Opus effort defaulting
+to LOW). This file references and operationalizes §14–§16; it does not redefine any class or column.
