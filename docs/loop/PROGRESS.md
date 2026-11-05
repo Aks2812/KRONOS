@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 274
+derived_at: 2026-11-05T00:30:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq273_pending_action_outcome: >
+  DONE. Builder (kronos-builder, claude-sonnet-5-5) commit 68d79431e3c2ca4e873405b9863e205a7f2f7c1f on
+  claude/auto-brief-policy (pushed origin). Edited exactly 4 authorized paths (85 insertions, 9 deletions):
+  docs/governance/KRONOS_RND_CONTRACT.md, docs/governance/contract_manifest.json, tests/test_rnd_contract.py,
+  tests/test_commit_authority.py. Focused 55 passed; full suite 4025 passed / 1 skipped / 0 failed; manifest
+  hashes True/True (new on-branch contract sha256 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4,
+  schema hash unchanged). Independent reviewer (kronos-reviewer, claude-haiku-5-5) VERDICT PASS on all AC by measured
+  evidence; same suite totals re-measured independently; scope audit = the 4 paths only, no hard-boundary file.
+  Opus Gate-2 semantic review PASS. 2 LOW + 1 INFO findings, all NON-BLOCKING (contract-level tests use fixtures
+  because the loop behavior is operationalized in .claude/ via maintainer-patch; paths field unused in predicate;
+  .claude/ not yet updated to enforce envelope). Recorded as follow-up backlog, not blockers.
+stage: >
+  v1.2.0 AUTO-BRIEF on branch only; NOT on main. On-main integrity gate stays v1.1.0 (e218c751 / 652bf6ba). Live-run
+  (sections 6 and 8) still PAUSED (SEQ 140). Four follow-ups NOT executed inside this governance PR (per brief).
+pending_action: >
+  CONSEQUENTIAL: open DRAFT PR, base main, head claude/auto-brief-policy @ 68d79431e3c2ca4e873405b9863e205a7f2f7c1f.
+  Then PAUSE before merge (mandatory: merge authorization + governance change) and emit nine-field stop-report
+  awaiting operator GATE-2. NO ready-for-review, NO merge.
+recommendation: >
+  Authorize GATE-2 merge of the draft PR at head 68d79431e3c2ca4e873405b9863e205a7f2f7c1f after confirming the
+  eligibility reading: governance follow-ups (#3/#4) are INELIGIBLE for auto-selection, only test-file follow-ups
+  (#1/#2) eligible; SEQ-272 regression asserts selection from the eligible subset, not all four. Correct now if a
+  different reading was intended.
+# KRONOS loop-state checkpoint
 seq: 273
 derived_at: 2026-11-05T00:00:00Z
 contract_version: 1.1.0
