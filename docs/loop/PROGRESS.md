@@ -1,4 +1,26 @@
 # KRONOS loop-state checkpoint
+seq: 275
+derived_at: 2026-11-05T00:40:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq274_pending_action_outcome: >
+  DONE. DRAFT PR #47 opened (https://github.com/Aks2812/KRONOS/pull/47): base main, head
+  claude/auto-brief-policy @ 68d79431e3c2ca4e873405b9863e205a7f2f7c1f, isDraft true, state OPEN, MERGEABLE.
+  Not marked ready, not merged. (Prior checkpoints seq 273/274 were committed with a personal email as committer
+  before the privacy interruption; from seq 275 on the committer identity is kronos-loop
+  <kronos-loop@users.noreply.github.com>. Public history of 273/274 left unchanged; not rewritten.)
+stage: >
+  PAUSE before merge (mandatory: merge authorization + governance change). v1.2.0 on PR #47 only, NOT on main.
+  On-main integrity gate stays v1.1.0 (e218c751 / 652bf6ba). Live-run (sections 6 and 8) still PAUSED (SEQ 140).
+pending_action: >
+  AWAITING operator GATE-2 merge authorization for PR #47 at exact head
+  68d79431e3c2ca4e873405b9863e205a7f2f7c1f. On authorization re-measure full ten-item MERGE-GATE in-turn, then
+  gh pr ready 47 + gh pr merge 47 --squash --match-head-commit 68d7943... (never --admin, never --auto).
+recommendation: >
+  Authorize GATE-2 merge of PR #47 at head 68d79431e3c2ca4e873405b9863e205a7f2f7c1f. Confirm eligibility reading:
+  governance follow-ups ineligible for auto-selection; SEQ-272 regression selects from eligible subset only.
+# KRONOS loop-state checkpoint
 seq: 274
 derived_at: 2026-11-05T00:30:00Z
 contract_version: 1.1.0
