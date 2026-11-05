@@ -1,4 +1,29 @@
 # KRONOS loop-state checkpoint
+seq: 294
+derived_at: 2026-11-05T16:45:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq293_pending_action_outcome: >
+  DONE. PR #49 merged. gh pr ready 49 succeeded; gh pr merge 49 --squash --match-head-commit
+  76b9d3284e3c603e2e806f350c5648c5ceb93ead (no --admin, no --auto) succeeded. PR #49 state MERGED, mergeCommit
+  08b2641500acf11136e55cb7634aac7e8d82dd16. Main integrity verified: origin/main advanced
+  0d0988c -> 08b2641500acf11136e55cb7634aac7e8d82dd16; 0d0988c is ancestor of new main (YES); squash title
+  "Rails: canonical .venv/disk-TMPDIR test runner; prohibit system-Python fallback; fail closed (#49)"; new main
+  .claude/RAILS.md contains the concrete ${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp path (3 occurrences);
+  governance files unchanged by the merge (contract sha256 still 5095bf38..., schema 652bf6ba... on new main ==
+  manifest). Merge touched only .claude/RAILS.md + .claude/commands/kronos-continue.md.
+stage: >
+  Env-runner F1 rails change is MERGED to main (08b2641). GATE-2 complete. main protected. No open PR pending.
+  Two LOW findings accepted by operator as NON-BLOCKING BACKLOG (cosmetic): (B1) brief wording "re-added
+  concretized" vs fresh addition; (B2) tmpfs check + scratch clear are agent instructions, not script-enforced.
+  No AUTO-BRIEF started; §6/§8 NOT lifted.
+pending_action: NONE
+recommendation: >
+  COMPLETE. Per operator: do NOT start another AUTO-BRIEF cycle. PAUSE for the operator-directed next work —
+  implement the consolidated persistent Markdown-table and decision-class policy. Await operator brief/direction
+  before touching it (likely governance/policy scope = human-gated).
+# KRONOS loop-state checkpoint
 seq: 293
 derived_at: 2026-11-05T16:30:00Z
 contract_version: 1.2.0
