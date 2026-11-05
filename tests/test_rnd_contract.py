@@ -305,3 +305,13 @@ def test_claude_md_references_decision_policy():
     text = (ROOT / "CLAUDE.md").read_text()
     assert "§14" in text and "§15" in text
     assert "sole semantic authority" in text
+
+
+def test_operative_claude_files_reference_decision_policy():
+    # §16 single-source: the operative .claude files reference and operationalize
+    # §14/§15; they do not redefine them.
+    for p in (ROOT / ".claude" / "RAILS.md",
+              ROOT / ".claude" / "commands" / "kronos-continue.md"):
+        text = p.read_text()
+        assert "§14" in text and "§16" in text, str(p)
+        assert "operationalize" in text, str(p)
