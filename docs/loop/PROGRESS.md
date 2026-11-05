@@ -1,5 +1,16 @@
 # KRONOS loop-state checkpoint
 
+seq: 261
+derived_at: 2026-11-04T16:40:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+stage: RESUME TURN, no loop action taken. START-OF-TURN contract integrity gate PASS (both hashes equal contract_manifest.json v1.0.0). Live re-derivation all AGREE with seq 260, no mismatch. Operator fast-forwarded local main to origin/main this session; both now 5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c, working tree clean. main protected (ruleset void-rule-kronos). PR #45/#44/#43 all MERGED; no open PRs. No pending_action open at seq 260. §8/§6 live-run still PAUSED (SEQ 140, operator pause). Do NOT touch 3c712d4.
+pending_action: AWAITING OPERATOR DIRECTION. No approved next brief queued and no PR named to merge; next loop action needs authorization not yet given. STOP AND ASK per contract.
+recommendation: Operator either (a) authorize the next R&D brief (name file + scope), or (b) explicitly lift the §8/§6 live-run pause held since SEQ 140, or (c) confirm idle hold. No action taken until then.
+
+# KRONOS loop-state checkpoint
+
 seq: 260
 derived_at: 2026-11-04T16:16:00Z
 stage: R&D GOVERNANCE CONTRACT v1.0.0 LANDED. PR #45 squash-merged to main as 5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c (gh pr ready 45 + gh pr merge --squash --match-head-commit 13d2263; no --admin, no --auto). docs/governance/KRONOS_RND_CONTRACT.md is now the sole binding R&D governance (v7/CE demoted to historical provenance via root CLAUDE.md precedence). Added stop_report.schema.json (9-field 5W+1H, severity/dependency-ranked NEXT), contract_manifest.json (hashes contract + schema), source_migration_map.md (R001-R069, no still-binding rule dropped), tests/test_rnd_contract.py. kronos-continue.md gained a START-OF-TURN contract-hash integrity gate (fail-closed on mismatch) + checkpoints now record contract version/hash. Seal-tax re-sealed in tests/test_commit_authority.py (RAILS window sealed to main@6e206e6; new RND_SECTION_10 window for the 12 brief files). Gates re-measured on head 13d2263: Haiku independent review PASS (AC1-AC10 + re-review all PASS); Opus Gate-2 semantic PASS; full suite 4017 passed/1 skipped/0 failed; focused 47 passed; CI none; main protected (ruleset void-rule-kronos). Accepted non-blocking: F1 (kronos-continue.md no longer restates "v7 superseded v6's role model only"), F2 (tests/test_commit_authority.py redundant in RND_SECTION_10, harmless). §8 §6 live-run still PAUSED (SEQ 140). Local main NOT reset (still 3c712d4/6e206e6 per prior; origin/main now 5cc62f9). Do NOT touch 3c712d4.
