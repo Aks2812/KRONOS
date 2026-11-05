@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 291
+derived_at: 2026-11-05T15:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq290_pending_action_outcome: >
+  NONE at seq 290 (idle PAUSE awaiting maintainer F1 patch application + operator). This turn operator
+  directed (context.md): maintainer has applied the F1 incremental patch sha256
+  4ad011c3e147c7a5cdbe8fa97a2e337c1477c1128701dd87ce2a119844232083 on claude/env-runner-policy working
+  tree. Loop VERIFIED (not authored): current branch claude/env-runner-policy head 8f9bfe8 base main
+  0d0988c; git status = exactly .claude/RAILS.md + .claude/commands/kronos-continue.md modified (+10/-5);
+  git apply --reverse --check of the external patch exit 0 (working tree == patch byte-for-byte); patch
+  file sha256 == 4ad011c3...; zero <disk-backed-dir> remaining; concrete path
+  ${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp present in both files; fail-closed behavior present
+  (mkdir -p; findmnt -no FSTYPE / df -PT MUST NOT be tmpfs; STOP + nine-field §9 if cannot create or
+  resolves tmpfs/non-disk-backed; never fall back to tmpfs /tmp); canonical runner
+  .venv/bin/python -m pytest -q preserved; MERGE-GATE clause reworded only, every pre-existing gate and
+  the .claude/** hard deny preserved; no personal email.
+stage: >
+  Option B: loop commits maintainer-authored .claude/ working-tree changes (does NOT edit .claude/**).
+  Contract integrity re-verified start-of-turn (v1.2.0, both hashes == manifest). main 0d0988c protected;
+  branch claude/env-runner-policy remote head 8f9bfe8; PR #49 OPEN draft; GATE-2 HELD; no AUTO-BRIEF;
+  §6/§8 NOT lifted.
+pending_action: >
+  CONSEQUENTIAL (operator-directed): commit the maintainer-applied .claude/RAILS.md +
+  .claude/commands/kronos-continue.md on claude/env-runner-policy (committer kronos-loop
+  <kronos-loop@users.noreply.github.com>, Co-Authored-By Claude Opus 4.8); push (advances PR #49 head);
+  run focused + full suites via canonical runner TMPDIR=${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp
+  rtk test .venv/bin/python -m pytest -q (require 0 failed); dispatch independent Haiku reviewer (brief =
+  F1 property checklist + diff range base..NEWHEAD, no builder report); Opus Gate-2 semantic verify;
+  record exact NEW head SHA; PAUSE at GATE-2. NO merge, NO ready, NO AUTO-BRIEF, NO §6/§8 lift. If diff
+  scope != the two files or reverse-check != exit 0, ABORT + nine-field stop-report.
+recommendation: >
+  On green suites + Haiku PASS + Opus PASS, PAUSE for operator GATE-2 merge authorization naming PR #49
+  and its new exact head SHA (protected-branch merge = mandatory pause).
+
+# KRONOS loop-state checkpoint
 seq: 290
 derived_at: 2026-11-05T14:45:00Z
 contract_version: 1.2.0
