@@ -1,4 +1,49 @@
 # KRONOS loop-state checkpoint
+seq: 296
+derived_at: 2026-11-05T17:45:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 carries PROPOSED contract v1.3.0 (not yet binding; main still v1.2.0).
+  Proposed hashes (branch manifest, self-consistent): contract
+  aadd2ba9ddd28ac06f084e2285a1f35391dc4a121b220885f6bcd6d9b52f11c3, schema
+  d9aeebd2ef1f334d70e880677a3268f4085bf7739ace261e5f102dd6e950f375. loop-state records v1.3.0 ONLY after merge.
+seq295_pending_action_outcome: >
+  DONE (with a defect caught and corrected in review). Created branch claude/operator-interface-v13 at
+  origin/main 08b2641. kronos-builder (claude-sonnet-5-5) implemented v1.3.0 in the 5 loop-editable files;
+  commit 6c54a94002a662acb12ea8caaedf3236f742ac2d (author+committer kronos-loop noreply, Co-Authored-By Opus
+  4.8), 5 files +100/-10. Orchestrator (Opus) VERIFIED on disk: scope = exactly CLAUDE.md + the three
+  docs/governance files + tests/test_rnd_contract.py (test_commit_authority.py untouched); contract section 14
+  decision classes + section 15 presentation + section 16 single-source present verbatim;
+  Version/Contract-Version/as-of all 1.3.0; schema required adds decision_class + opus_effort, enums
+  [AUTO-CONTINUE,SAFE-TO-APPROVE,REVIEW-REQUIRED,HOLD,NO-ACTION] and [LOW,MEDIUM,HIGH]; manifest version 1.3.0
+  with both hashes == disk; CLAUDE.md single-source line present; test_rnd_contract.py updated (REQUIRED_KEYS,
+  _report, _validate_report, manifest 1.3.0, v1_3_0 test) + 5 new tests. Builder focused run 62 passed.
+  DEFECT (orchestrator semantic review): the builder hand-authored external patch had a DESTRUCTIVE RAILS.md
+  hunk (@@ -1,167 +1,9 @@) that DELETED all 167 lines of .claude/RAILS.md (every rail: merge/force-push denies,
+  api-read filter, canonical-source, AUTO-BRIEF, kronos-loop identity, the just-merged canonical test runner)
+  and replaced them with only the 9-line new section; git apply --check passed because it was a well-formed but
+  boundary-destroying diff. REJECTED. Orchestrator regenerated the patch deterministically (scratch-copy + diff,
+  no repo .claude edit): RAILS.md now append-only (@@ -165,3 +165,11 @@, 167 -> 175 lines, all boundary phrases
+  survive), kronos-continue.md clean insert (@@ -69,6 +69,15 @@, merge rule intact). Corrected patch
+  /home/void/Void-Projects/KRONOS_PC/OPERATOR_INTERFACE_V13.patch sha256
+  eb85855657807a27e8c202ad5ba724b57001d2c2109a4ea16087b74ed5096138; git apply --check exit 0; repo .claude
+  untouched. Branch pushed: origin/claude/operator-interface-v13 head 6c54a94.
+stage: >
+  Contract integrity re-verified start-of-turn (binding main v1.2.0, both hashes == manifest). Decision class
+  REVIEW-REQUIRED (governance + .claude/** + awaiting human application). main 08b2641 protected. Branch pushed,
+  NO PR yet. Reference-only .claude patch prepared + verified non-destructive, NOT applied (hard deny; loop will
+  not self-apply). No section 6 / section 8 lift. No feature work.
+pending_action: NONE (awaiting maintainer to hand-apply the corrected OPERATOR_INTERFACE_V13.patch)
+recommendation: >
+  Maintainer hand-applies /home/void/Void-Projects/KRONOS_PC/OPERATOR_INTERFACE_V13.patch (sha256 eb858556...)
+  onto claude/operator-interface-v13 over head 6c54a94. Next turn the loop commits the two maintainer-applied
+  .claude files (kronos-loop noreply), pushes, opens ONE draft PR (all 7 files), runs focused + canonical full
+  suites, obtains Haiku 5.5 independent review + Opus semantic verify, and PAUSES before merge (GATE-2). Do not
+  merge, open the PR before application, or lift section 6 / section 8.
+
+# KRONOS loop-state checkpoint
 seq: 295
 derived_at: 2026-11-05T17:10:00Z
 contract_version: 1.2.0
