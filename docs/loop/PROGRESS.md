@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 284
+derived_at: 2026-11-05T11:05:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq283_pending_action_outcome: >
+DONE. brief48 repair complete. Removed misplaced docs/loop/SPEC_BRIEF48.md from PR branch (commit on
+claude/eligibility-paths-brief48; committer kronos-loop noreply, Co-Authored-By Claude Opus 4.8); homed the brief
+artifact on kronos/loop-state (loop-state commit e83f21d). NEW PR #48 head 82a792814e782519505c70e0381530e2361ca08d,
+pushed, draft OPEN base main. Net diff 2fc2381..HEAD = tests/test_rnd_contract.py ONLY. Seal-tax window
+AB_BASE(3f6dbc3)..HEAD now subset of AB_SECTION_10 (tests/test_rnd_contract.py already in set);
+tests/test_commit_authority.py UNTOUCHED, no scope expansion. FULL suites via project .venv/bin/python -m pytest
+(kuzu 0.11.3 present, 0 collection errors): PR#48 head 82a7928 => 4026 passed, 1 skipped, 0 failed (387.92s);
+baseline main 2fc2381 => 4025 passed, 1 skipped, 0 failed (360.61s); delta = +1 (new
+test_eligibility_derives_governance_from_paths). Focused tests/test_rnd_contract.py 17 passed; seal-tax
+test_B31_Q_scope_audit PASS at new head. ZERO failures on both, as operator required.
+stage: >
+Operator directive (context.md) satisfied: env diagnosed (not a missing dep; .venv already had kuzu==0.11.3, prior
+reds were runner-on-/usr/bin/python); no global install, no manifest/source/test modification, no bypassed
+collection failures; full suite 0-failed on BOTH main 2fc2381 and PR#48 head 82a7928. GATE-2 remains HELD; §6/§8
+NOT lifted. PAUSED for operator merge authorization of PR #48 at head 82a7928.
+pending_action: NONE (awaiting operator GATE-2)
+recommendation: >
+Authorize GATE-2 merge of PR #48 at head 82a792814e782519505c70e0381530e2361ca08d. On authorization, orchestrator
+re-measures ten-item MERGE-GATE in-turn and runs: gh pr ready 48; gh pr merge 48 --squash --match-head-commit
+82a792814e782519505c70e0381530e2361ca08d (never --admin, never --auto). NOTE for operator: the reusable env
+pitfall (test runner must use project .venv/bin/python, not /usr/bin/python) is worth a durable fix (e.g. rtk/test
+wrapper pinned to .venv, or fixing the .venv stale-path shebangs) — out of this brief's scope, maintainer item.
+# KRONOS loop-state checkpoint
 seq: 283
 derived_at: 2026-11-05T10:30:00Z
 contract_version: 1.2.0
