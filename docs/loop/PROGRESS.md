@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 280
+derived_at: 2026-11-05T08:25:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq279_pending_action_outcome: >
+  MERGED. Ten-item MERGE-GATE re-measured green in-turn: (1) main protected void-rule-kronos active; (2) PR marked
+  ready via gh pr ready 47 (operator-authorized); (3) OPEN+unmerged at decision; (4) head
+  f12eb0dafa2a128391534c28292c70b05f55a2f6 == operator-authorized SHA, enforced by --match-head-commit; (5) Haiku
+  reviewer VERDICT PASS all AC; (6) statusCheckRollup [] -> ci none; (7) suite re-measured focused 55 passed / full
+  4025 passed / 1 skipped / 0 failed; (8) seal-tax scope audit green (AN sealed@3f6dbc3, AB window<=AB_SECTION_10);
+  (9) Opus Gate-2 semantic PASS; (10) scope = 6 authorized paths, no hard-boundary file. mergeStateStatus CLEAN.
+  gh pr merge 47 --squash --match-head-commit f12eb0d (no --admin, no --auto). PR #47 MERGED squash SHA
+  2fc2381e7a94cf217b175b0a32577e741506c90e (2026-11-05T08:22:15Z).
+stage: >
+  CONTRACT v1.2.0 LANDED on main 2fc2381e7a94cf217b175b0a32577e741506c90e, ATOMIC with its .claude/
+  operationalization (RAILS.md + kronos-continue.md). Start-of-turn integrity now expects v1.2.0 on main: contract
+  sha256 5095bf38 == manifest, schema 652bf6ba == manifest (verified post-merge). Standing AUTO-BRIEF envelope
+  (§13.1) now binding: on pending_action NONE the loop auto-selects the highest-priority ELIGIBLE backlog item and
+  runs to draft PR; governance / .claude/ / security / protected-branch remain ineligible + human-gated. Live-run
+  (sections 6 and 8) still PAUSED (SEQ 140).
+LOW_followup_backlog: >
+  (1) contract AUTO-BRIEF tests (test_rnd_contract.py) exercise a reference eligibility predicate + fixtures, not
+  live loop code. (2) predicate paths field set but unused; governance classification is a hand-set flag.
+  (3-4) prior AN-brief LOW items (TERMINAL_PATHS doc-normative; §12 repeat nine-field text) still open.
+pending_action: NONE
+recommendation: >
+  v1.2.0 AUTO-BRIEF COMPLETE and landed. Await operator direction: (a) name next brief; (b) let the now-binding
+  AUTO-BRIEF envelope auto-select the smallest eligible LOW follow-up on next /kronos-continue; (c) explicitly lift
+  live-run pause (sections 6 and 8, held since SEQ 140); or (d) confirm idle hold. Remote branch claude/auto-brief-policy
+  not deleted (left for operator). No merge, no live-run lift without fresh GATE.
+# KRONOS loop-state checkpoint
 seq: 279
 derived_at: 2026-11-05T02:40:00Z
 contract_version: 1.1.0
