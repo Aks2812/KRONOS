@@ -60,7 +60,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.1.0"
+    assert manifest["contract_version"] == "1.2.0"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -162,10 +162,11 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_1_0_with_auto_next():
+def test_contract_is_v1_2_0_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.1.0" in text
+    assert "Version: 1.2.0" in text
     assert "AUTO-NEXT" in text
+    assert "AUTO-BRIEF" in text
 
 
 def test_operative_rails_carry_nine_field_and_hash_mismatch():
@@ -173,3 +174,62 @@ def test_operative_rails_carry_nine_field_and_hash_mismatch():
         text = p.read_text()
         assert "nine-field" in text, str(p)
         assert "contract-integrity hash-mismatch" in text, str(p)
+
+
+# SPEC AUTO-BRIEF: reference eligibility predicate mirrors §13.1 of the contract.
+def _eligible(item):
+    positives = ("recorded", "unblocked", "reversible", "branch_local", "scoped")
+    negatives = ("live", "destructive", "protected_branch",
+                 "touches_secrets", "touches_permissions", "touches_security",
+                 "touches_governance", "touches_claude")
+    return all(item[k] for k in positives) and not any(item[k] for k in negatives)
+
+
+def _select(backlog):
+    eligible = [i for i in backlog if _eligible(i)]
+    if not eligible:
+        return None
+    return min(eligible, key=lambda i: i["priority"])  # lower priority number = higher priority
+
+
+def _mk(item_id, priority, paths, **over):
+    base = dict(id=item_id, priority=priority, paths=paths, recorded=True, unblocked=True,
+                reversible=True, branch_local=True, scoped=True, live=False, destructive=False,
+                protected_branch=False, touches_secrets=False, touches_permissions=False,
+                touches_security=False, touches_governance=False, touches_claude=False)
+    base.update(over)
+    return base
+
+
+# SEQ 272 backlog: four recorded LOW follow-ups.
+SEQ272_BACKLOG = [
+    _mk("low1", 1, ["tests/test_rnd_contract.py"]),
+    _mk("low2", 2, ["tests/test_rnd_contract.py"]),
+    _mk("low3", 3, ["docs/governance/KRONOS_RND_CONTRACT.md"], touches_governance=True),
+    _mk("low4", 4, ["docs/governance/KRONOS_RND_CONTRACT.md"], touches_governance=True),
+]
+
+
+def test_seq272_auto_brief_selects_not_awaiting():
+    sel = _select(SEQ272_BACKLOG)
+    assert sel is not None, "AWAITING OPERATOR DIRECTION regression: eligible backlog must auto-select"
+    assert sel["id"] == "low1"
+
+
+def test_seq272_governance_followups_are_ineligible():
+    by_id = {i["id"]: i for i in SEQ272_BACKLOG}
+    assert not _eligible(by_id["low3"])
+    assert not _eligible(by_id["low4"])
+    assert _eligible(by_id["low1"]) and _eligible(by_id["low2"])
+
+
+def test_empty_or_all_ineligible_backlog_yields_idle():
+    assert _select([]) is None
+    assert _select([i for i in SEQ272_BACKLOG if i["touches_governance"]]) is None
+
+
+def test_contract_envelope_lists_eligibility_criteria():
+    text = CONTRACT.read_text()
+    for phrase in ("recorded", "unblocked", "reversible", "branch-local", "precisely scoped",
+                   "non-live", "non-destructive", "MUST NOT cause a pause", "no-pending-action"):
+        assert phrase in text, phrase
