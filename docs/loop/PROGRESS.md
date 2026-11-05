@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 292
+derived_at: 2026-11-05T15:55:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq291_pending_action_outcome: >
+  DONE. Committed the maintainer-applied F1 change on claude/env-runner-policy (author+committer kronos-loop
+  <kronos-loop@users.noreply.github.com>, Co-Authored-By Claude Opus 4.8) -> new head
+  76b9d3284e3c603e2e806f350c5648c5ceb93ead; pushed (PR #49 head advanced 8f9bfe8 -> 76b9d328). Pre-commit
+  verification: working tree == external patch (git apply --reverse --check exit 0; patch sha256
+  4ad011c3e147c7a5cdbe8fa97a2e337c1477c1128701dd87ce2a119844232083); scope exactly .claude/RAILS.md +
+  .claude/commands/kronos-continue.md (F1 commit +10/-5; branch cumulative origin/main..HEAD +29/-2); zero
+  <disk-backed-dir>; concrete ${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp present; fail-closed present.
+  Runner setup: TMPDIR=${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp (= /home/void/.cache/kronos/pytest-tmp),
+  mkdir -p, findmnt FSTYPE=ext4 (not tmpfs). Orchestrator suites: focused tests/test_rnd_contract.py +
+  tests/test_commit_authority.py = 56 passed; full canonical runner = 4026 passed/1 skipped/0 failed (595.06s).
+  Independent reviewer (kronos-reviewer, brief = F1 AC checklist + diff range origin/main..76b9d328, no builder
+  report): VERDICT PASS all 8 AC; its own runs full 4026 passed/1 skipped/0 failed (598.71s) + focused 56 passed.
+  Reviewer two LOW findings, both cosmetic/non-defect (brief wording "re-added concretized" vs fresh addition;
+  tmpfs-check/clear are agent instructions not script-enforced) — no merge impact. Opus Gate-2 semantic PASS.
+stage: >
+  Env-runner F1 rails change committed, reviewed, verified; PR #49 OPEN draft, head
+  76b9d3284e3c603e2e806f350c5648c5ceb93ead, base main 0d0988c, mergeStateStatus CLEAN, mergeable MERGEABLE,
+  statusCheckRollup [] (ci none). Contract integrity re-verified start-of-turn (v1.2.0, both hashes == manifest).
+  main protected. PAUSED at GATE-2 for operator merge authorization (protected-branch merge = mandatory pause;
+  loop cannot self-authorize). No merge, no gh pr ready. No AUTO-BRIEF; §6/§8 NOT lifted.
+pending_action: NONE (awaiting operator GATE-2 for PR #49 at head 76b9d328)
+recommendation: >
+  Authorize GATE-2 merge of PR #49 at exact head 76b9d3284e3c603e2e806f350c5648c5ceb93ead. On authorization the
+  loop re-measures the ten-item MERGE-GATE in-turn and runs gh pr ready 49, then
+  gh pr merge 49 --squash --match-head-commit 76b9d3284e3c603e2e806f350c5648c5ceb93ead (never --admin, never
+  --auto). Do not start another AUTO-BRIEF or lift §6/§8 until directed.
+
+# KRONOS loop-state checkpoint
 seq: 291
 derived_at: 2026-11-05T15:30:00Z
 contract_version: 1.2.0
