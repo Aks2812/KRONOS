@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 268
+derived_at: 2026-11-04T18:45:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq267_pending_action_outcome: >
+  RESOLVED — operator hand-applied patch sha256 b8c264925d82785bc2da70a00652d18a95458f8f65aa611bc987c6640f902739
+  (context.md, 2026-11-04). Verified live: branch claude/auto-next-policy, HEAD == main 5cc62f9 (patch applied to working
+  tree, uncommitted); git status shows ONLY .claude/RAILS.md + .claude/commands/kronos-continue.md modified (+32/-4 vs
+  5cc62f9); no other file. Contract + schema on-disk sha256 still equal contract_manifest.json (integrity gate PASS; patch
+  did not touch governance docs). Resuming Option B build.
+stage: OPTION B BUILD. Branch claude/auto-next-policy from 5cc62f9. Plan: (1) commit the maintainer-applied .claude/ patch
+  (loop commits, never Edits .claude/); (2) kronos-builder (sonnet-5-5) edits the remaining files: KRONOS_RND_CONTRACT.md ->
+  v1.1.0 (Version line + strengthen §4/§9 every-terminal-path nine-field report + add bounded AUTO-NEXT section), 
+  contract_manifest.json (contract_version 1.1.0 + recompute contract sha256; schema hash unchanged), 
+  tests/test_rnd_contract.py (bump version assertion 1.0.0->1.1.0 at line 63 + add terminal-path report validators,
+  stdlib-only + AUTO-NEXT presence), tests/test_commit_authority.py (add AN_BASE=5cc62f9, AN_SECTION_10 = RND_SECTION_10,
+  seal RND window 6e206e6..5cc62f9, open 5cc62f9..HEAD). stop_report.schema.json + CLAUDE.md UNTOUCHED (surgical); (3)
+  orchestrator commits 6-file set with explicit paths; (4) full suite via rtk test (decide from SUMMARY line, never $?);
+  (5) kronos-reviewer (haiku-5-5) independent review on diff 5cc62f9..HEAD (brief + range only, not builder report);
+  (6) Opus Gate-2 semantic; (7) push + gh pr create --draft if green; (8) PAUSE before merge w/ nine-field report.
+  §6/§8 live-run still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: Execute the build pipeline (commit maintainer patch; dispatch builder for the 4 edits; commit; full suite;
+  independent Haiku review; Opus Gate-2; push draft PR if green) then PAUSE before merge with the nine-field report for
+  GATE-2 merge authorization. No merge, no gh pr ready, no --admin/--auto, no deny lift, no §6/§8 lift, no feature work.
+recommendation: Proceed with build under approved scope; pause at draft PR for operator GATE-2 merge authorization.
+# KRONOS loop-state checkpoint
 seq: 267
 derived_at: 2026-11-04T18:25:00Z
 contract_version: 1.0.0
