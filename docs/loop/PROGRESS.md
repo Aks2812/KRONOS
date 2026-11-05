@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 273
+derived_at: 2026-11-05T00:00:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq272_pending_action_outcome: >
+  NONE at seq 272 (COMPLETE/idle). Operator GATE-1 issued via /home/void/context.md:
+  implement contract v1.2.0 bounded standing AUTO-BRIEF envelope. Brief now APPROVED and open.
+stage: >
+  Start-of-turn integrity GREEN on main (contract e218c751, schema 652bf6ba == manifest v1.1.0).
+  Live re-derive matched seq 272: origin/main 3f6dbc39 (protected void-rule-kronos), PR #46 MERGED at 3f6dbc39
+  head c9024ce, open PRs only #13/#14 drafts. No mismatch. Branch of this brief = claude/auto-brief-policy
+  from main@3f6dbc39 (AB_BASE). v1.1.0 AN window 5cc62f9..3f6dbc39 to be sealed; new AB window 3f6dbc39..HEAD opened.
+pending_action: >
+  CONSEQUENTIAL: create branch claude/auto-brief-policy @ 3f6dbc39; dispatch kronos-builder to implement
+  contract v1.2.0 (extend §13 with standing AUTO-BRIEF envelope: on pending_action NONE inspect authoritative
+  backlog+roadmap, select single highest-priority ELIGIBLE action, create scoped brief, run
+  research->build->review->repair->draft-PR without routine authorization; eligibility = recorded, unblocked,
+  reversible, branch-local, precisely scoped, non-live, non-destructive, outside secrets/permissions/security-
+  boundaries/governance/protected-branch; mandatory pauses preserved: merge, §6/§8 live, destructive, governance,
+  .claude/** , security-boundary, unresolved ambiguity, circuit-breaker exhaustion; missing pre-approved brief MUST
+  NOT pause when an eligible recorded backlog item exists, else emit nine-field idle no-pending-action report).
+  Permitted paths (branch): docs/governance/KRONOS_RND_CONTRACT.md, docs/governance/contract_manifest.json,
+  tests/test_rnd_contract.py, tests/test_commit_authority.py. Version bump 1.1.0->1.2.0 + manifest contract sha256
+  recomputed. Regression tests: SEQ-272 scenario -> eligible subset selection (NOT AWAITING); governance follow-ups
+  classified ineligible. Seal-tax: seal AN window to 3f6dbc39, open AB window. .claude/** operationalization deferred
+  to maintainer-patch (Option B); NOT in branch scope. NO merge, NO ready: PAUSE before merge awaiting operator GATE-2.
+  Models: researcher sonnet-5, builder sonnet-5-5, reviewer haiku-5-5, orchestrator Opus semantic verify.
+recommendation: >
+  Proceed with build on claude/auto-brief-policy; open draft PR when focused+full suites green; PAUSE before merge.
+  At GATE-2 confirm the eligibility reading: LOW follow-ups #3/#4 (contract edits) are governance => ineligible for
+  auto-selection; only #1/#2 (test-file edits) are eligible. SEQ-272 regression asserts selection from {#1,#2}, not
+  all four. Correct now if a different reading was intended.
+# KRONOS loop-state checkpoint
 seq: 272
 derived_at: 2026-11-05T02:20:00Z
 contract_version: 1.1.0
