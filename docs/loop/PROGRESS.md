@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 265
+derived_at: 2026-11-04T17:55:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq264_pending_action_outcome: >
+  DONE — kronos-builder (sonnet-5-5) authored the external patch; orchestrator Gate-2 verified independently.
+  Patch: /home/void/Void-Projects/KRONOS_PC/AUTO_NEXT_CLAUDE_FILES.patch
+  sha256: 7582f4f6df3d7c227b5107d6b01b30aad3e1a90b6d6d30132281bd92c1033aec
+  Scope: EXACTLY 2 files — .claude/RAILS.md (+18/-0), .claude/commands/kronos-continue.md (+14/-2); no other file.
+  git apply --check against repo = exit 0 (clean apply, read-only); repo working tree clean (no repo file modified);
+  no contract-version string added; based on main@5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c. Content: RAILS +2 sections
+  (every-terminal-path nine-field stop-report naming all 8 paths + schema ref; bounded AUTO-NEXT w/ full mandatory-pause
+  list, Thin-Orchestrator + gates preserved); command FAIL-CLOSED -> emit nine-field stop-report (§9), new AUTO-NEXT
+  paragraph, STOP AND ASK now requires schema-valid nine-field report + names all 8 paths. Gate-2 semantic PASS.
+  NOTE (optional follow-up, not applied): CONTRACT INTEGRITY start-of-turn hash-mismatch "STOP and report (fail-closed)"
+  sentence left unchanged (operator scoped the FAIL CLOSED instruction + 2 concerns only).
+stage: PAUSE — external .claude/ patch prepared + verified appliable; awaiting operator hand-apply (Option B preserves
+  the .claude/** hard deny; loop never Edited .claude/ and made no repo change). No branch commits (claude/auto-next-policy
+  == main 5cc62f9). §6/§8 live-run still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: AWAITING operator hand-apply of AUTO_NEXT_CLAUDE_FILES.patch to a branch based on main@5cc62f9
+  (git -C <repo> apply <patch>). After the operator applies it (or directs otherwise), the loop builds the remaining
+  SIX authorized files (docs/governance/{KRONOS_RND_CONTRACT.md to v1.1.0, stop_report.schema.json [likely untouched],
+  contract_manifest.json hash+version refresh}, CLAUDE.md [likely untouched], tests/{test_rnd_contract.py,
+  test_commit_authority.py seal-tax}), runs focused+full suites, opens a DRAFT PR, then PAUSES before merge with the
+  nine-field report. No merge, no ready-for-review, no deny lift, no §6/§8 lift, no feature work without GATE.
+recommendation: Verify the patch with `git apply --check`, hand-apply it, then reply to resume the loop for the six files.
+# KRONOS loop-state checkpoint
 seq: 264
 derived_at: 2026-11-04T17:40:00Z
 contract_version: 1.0.0
