@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 271
+derived_at: 2026-11-04T20:05:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq270_pending_action_outcome: >
+  Operator GATE-2 authorized merge of PR #46 at exact head c9024cefa89d6f878c7c6c5386f50341d84ec17c (context.md,
+  2026-11-04), with gh pr ready 46 authorized. 4 LOW reviewer findings accepted NON-BLOCKING -> follow-up backlog
+  (PR not to be modified). MERGE-GATE re-measured LIVE this turn: (1) main protected (void-rule-kronos active);
+  (2) PR currently DRAFT -> gh pr ready 46 per operator authorization; (3) OPEN and unmerged; (4) head c9024ce ==
+  operator-authorized SHA, UNCHANGED; (5) independent Haiku reviewer VERDICT PASS AC1-AC6; (6) statusCheckRollup
+  empty -> ci: none; (7,8) full suite re-measuring in-turn (background, .venv pytest) + seal-tax scope audit; (9) Opus
+  Gate-2 semantic PASS; (10) scope = 6 authorized paths, no hard-boundary/out-of-scope file. mergeStateStatus CLEAN;
+  contract on-disk e218c751... == manifest.
+stage: MERGE turn for PR #46. On full-suite re-measure green (0 failed by summary line, never dollar-question), mark PR
+  ready then squash-merge at exact head. Live-run (sections 6 and 8) stays PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: On full-suite re-measure 0 failed, run gh pr ready 46 (operator-authorized) then
+  gh pr merge 46 --squash --match-head-commit c9024cefa89d6f878c7c6c5386f50341d84ec17c (never --admin, never --auto).
+  Then verify local+remote main advanced to the squash merge SHA and record a SEPARATE post-merge checkpoint (seq 272)
+  with contract v1.1.0, verified on-main hashes, the merge SHA, and the 4 LOW follow-ups backlog. If the suite shows any
+  failure or the head changed, ABORT the merge and STOP with the nine-field report. No feature work, no sections 6/8 lift.
+recommendation: Merge once the suite re-measure is green and head is unchanged; then reconcile main and checkpoint.
+LOW_followup_backlog:
+  - test_rnd_contract.py _validate_report docstring should state it is a partial (not full JSON Schema) check.
+  - test_rnd_contract.py add a bad-enum / bad report_type negative case alongside the missing-field one.
+  - TERMINAL_PATHS report_type/why mapping lives only in the test fixture; not doc-normative in the contract.
+  - KRONOS_RND_CONTRACT.md section 12 hash-mismatch clause relies on section 9 rather than repeating the nine-field text.
+# KRONOS loop-state checkpoint
 seq: 270
 derived_at: 2026-11-04T19:45:00Z
 contract_version: 1.1.0
