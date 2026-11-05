@@ -1,4 +1,15 @@
 # KRONOS loop-state checkpoint
+seq: 263
+derived_at: 2026-11-04T17:25:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq262_pending_action_outcome: >
+  BLOCKED before builder dispatch. No edits made, no commits on claude/auto-next-policy (branch == main 5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c). Hard-boundary conflict: 2 of the 8 operator-authorized files (.claude/RAILS.md, .claude/commands/kronos-continue.md) are denied by .claude/settings.json:8 `Edit(.claude/**)` and by contract §5/§10.2 ("NEVER edit .claude/; no approval overrides it"). brief-scope.sh:5-6 confirms settings.json deny is the real boundary; its hook "allow" cannot override a settings deny; for the main orchestrator (no agent_type) it defers (:289). The observed regression lives in the denied command file. Using Write to dodge the Edit deny would be boundary-evasion — refused. Other 6 files editable (no deny): docs/governance/{KRONOS_RND_CONTRACT.md,stop_report.schema.json,contract_manifest.json}, CLAUDE.md, tests/{test_rnd_contract.py,test_commit_authority.py}. Seal-tax pre-verified: all 8 files already in RND_SECTION_10; seal window 6e206e6..5cc62f9 = 12 files all in-scope. jsonschema NOT a declared dependency -> terminal-path report tests must be stdlib-only.
+stage: STOP AND ASK (BLOCKED). Operator context.md authorization to edit .claude/RAILS.md + .claude/commands/kronos-continue.md collides with the .claude/ hard boundary (settings.json deny + contract §5/§10.2, which states no approval overrides it). Loop cannot self-resolve. §6/§8 live-run still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: AWAITING OPERATOR DECISION on how to apply the two .claude/ edits. Options: (B, recommended) operator hand-applies the two .claude/ patches I supply, loop builds the other 6 files, all 8 committed on claude/auto-next-policy, reviewed, draft PR, PAUSE before merge; (A) operator lifts/narrows settings.json Edit(.claude/**) deny AND aligns contract §5/§10.2 to permit loop .claude/ edits (deliberate security-rail change); (C) loop lands the 6-file portion now, .claude/ operational edits deferred to a separate maintainer action (interim contract/command incoherence). No merge, no ready-for-review, no §6/§8 lift without further GATE.
+recommendation: Option B — preserve the .claude/ hard boundary; operator authors the two .claude/ changes from supplied patches, loop delivers the six editable files, whole change lands as one reviewed draft PR.
+# KRONOS loop-state checkpoint
 seq: 262
 derived_at: 2026-11-04T17:10:00Z
 contract_version: 1.0.0
