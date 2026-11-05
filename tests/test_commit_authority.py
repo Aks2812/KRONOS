@@ -24,6 +24,7 @@ B35_BASE = "a0395c5"
 B36_BASE = "329194c"
 RAILS_BASE = "445dbfc"
 RND_BASE = "6e206e6"
+AN_BASE = "5cc62f9"  # merge SHA of the RND/governance brief (PR #45); base of this brief
 B30_SEAL = ("93fb05e", "a229b0d")  # BRIEF30 window, pre-sealed (AC7)
 B31_SECTION_10 = {
     "tests/test_stop.py",
@@ -87,6 +88,7 @@ RND_SECTION_10 = RAILS_SECTION_10 | {
     "tests/test_rnd_contract.py",
     "tests/test_commit_authority.py",
 }
+AN_SECTION_10 = RND_SECTION_10  # this brief adds no new paths
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -290,7 +292,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{B35_BASE}..{B36_BASE}")) <= B35_SECTION_10, set(names(f"{B35_BASE}..{B36_BASE}")) - B35_SECTION_10
     assert set(names(f"{B36_BASE}..{RAILS_BASE}")) <= B36_SECTION_10, set(names(f"{B36_BASE}..{RAILS_BASE}")) - B36_SECTION_10
     assert set(names(f"{RAILS_BASE}..{RND_BASE}")) <= RAILS_SECTION_10, set(names(f"{RAILS_BASE}..{RND_BASE}")) - RAILS_SECTION_10
-    assert set(names(f"{RND_BASE}..HEAD")) <= RND_SECTION_10, set(names(f"{RND_BASE}..HEAD")) - RND_SECTION_10
+    assert set(names(f"{RND_BASE}..{AN_BASE}")) <= RND_SECTION_10, set(names(f"{RND_BASE}..{AN_BASE}")) - RND_SECTION_10
+    assert set(names(f"{AN_BASE}..HEAD")) <= AN_SECTION_10, set(names(f"{AN_BASE}..HEAD")) - AN_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet

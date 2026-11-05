@@ -60,7 +60,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.0.0"
+    assert manifest["contract_version"] == "1.1.0"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -93,3 +93,83 @@ def test_continue_has_integrity_step():
 def test_hash_check_fails_closed_on_tamper():
     assert hash_matches(CONTRACT, sha256_file(CONTRACT))
     assert not hash_matches(CONTRACT, "0" * 64)
+
+
+def _validate_report(report):
+    """Stdlib, schema-driven stop-report check. Returns True or raises AssertionError."""
+    schema = json.loads(SCHEMA.read_text())
+    props = schema["properties"]
+    for k in schema["required"]:
+        assert k in report, f"missing required: {k}"
+    for k in report:
+        assert k in props, f"unknown key: {k}"
+    if "report_type" in report:
+        assert report["report_type"] in props["report_type"]["enum"]
+    assert report["why"] in props["why"]["enum"]
+    how = report["how"]
+    assert isinstance(how, dict) and "tests" in how and "gates" in how
+    nxt = report["next"]
+    assert isinstance(nxt, list) and nxt
+    item_schema = props["next"]["items"]
+    for item in nxt:
+        for k in item_schema["required"]:
+            assert k in item, f"next item missing: {k}"
+        assert item["severity"] in item_schema["properties"]["severity"]["enum"]
+    return True
+
+
+def _report(report_type, why):
+    return {
+        "report_type": report_type,
+        "what": "w",
+        "why": why,
+        "who": {"agents": ["kronos-builder"], "models": ["claude-sonnet-5-5"]},
+        "when": {"checkpoint_seq": 1, "timestamp": "2026-01-01T00:00:00Z"},
+        "where": {"branch": "b", "head_sha": "abc", "pr": None, "main": "def"},
+        "how": {"tests": "n passed", "gates": "ok"},
+        "next": [{"rank": 1, "severity": "high", "depends_on": [], "action": "a"}],
+        "recommendation": "r",
+        "operator_action": "continue",
+    }
+
+
+TERMINAL_PATHS = {
+    "STOP AND ASK": ("PAUSE", "gate1"),
+    "PAUSE": ("PAUSE", "blocker"),
+    "BLOCKED": ("BLOCKED", "blocker"),
+    "COMPLETE": ("COMPLETE", "completion"),
+    "no-pending-action": ("PAUSE", "gate1"),
+    "circuit-breaker exhaustion": ("HALT", "failure"),
+    "failed review": ("BLOCKED", "failure"),
+    "contract-integrity hash-mismatch": ("HALT", "failure"),
+    "usage-limit": ("HALT", "usage_limit"),
+}
+
+
+def test_every_terminal_path_report_validates():
+    assert len(TERMINAL_PATHS) == 9
+    for name, (rtype, why) in TERMINAL_PATHS.items():
+        assert _validate_report(_report(rtype, why)), name
+
+
+def test_report_missing_required_field_fails():
+    bad = _report("PAUSE", "gate1")
+    del bad["operator_action"]
+    try:
+        _validate_report(bad)
+    except AssertionError:
+        return
+    raise AssertionError("report missing operator_action validated")
+
+
+def test_contract_is_v1_1_0_with_auto_next():
+    text = CONTRACT.read_text()
+    assert "Version: 1.1.0" in text
+    assert "AUTO-NEXT" in text
+
+
+def test_operative_rails_carry_nine_field_and_hash_mismatch():
+    for p in (ROOT / ".claude" / "commands" / "kronos-continue.md", ROOT / ".claude" / "RAILS.md"):
+        text = p.read_text()
+        assert "nine-field" in text, str(p)
+        assert "contract-integrity hash-mismatch" in text, str(p)

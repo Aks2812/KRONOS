@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.0.0
+Version: 1.1.0
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.0.0.
+This file is the sole binding R&D governance for KRONOS as of version 1.1.0.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -53,9 +53,9 @@ Authoritative pins:
 
 - Circuit breaker: the 3-attempt reviewer-builder cycle is the BUILD bound. Maximum 3 attempts, then HALT and escalate to the maintainer. Exhausting the bound is a PAUSE-DECISION, not a retry.
 - Prose silence is a PAUSE-DECISION. Expected values derive from the brief's prose, never from observed behaviour. Excluded-first default-deny.
-- STOP AND ASK when the next action is outside an approved brief, ambiguous, scope-sensitive, needs authorization not yet given, or an iteration bound is reached. Record the pending_action and a recommendation first.
+- STOP AND ASK when the next action is outside an approved brief, ambiguous, scope-sensitive, needs authorization not yet given, or an iteration bound is reached. Record the pending_action and a recommendation first, and emit the schema-valid nine-field stop-report (§9).
 - STOP WITHOUT ASKING at a usage limit. Do not switch models, start another session, or wait for a reset. A usage limit means stop, not switch models. The operator resumes by typing: continue
-- FAIL CLOSED: if the checkpoint carries a pending_action with no recorded outcome, or a re-derived fact contradicts the checkpoint, STOP and report.
+- FAIL CLOSED: if the checkpoint carries a pending_action with no recorded outcome, or a re-derived fact contradicts the checkpoint, STOP and report with the schema-valid nine-field stop-report (§9).
 - A scope or authorization violation halts; no approval overrides it.
 - Within approved scope, continue without asking routine confirmations.
 
@@ -104,7 +104,7 @@ Before every consequential action, write the next checkpoint (seq + 1) with its 
 
 ## §9 Stop-report (5W+1H)
 
-A stop-report is REQUIRED for every PAUSE, HALT, BLOCKED and COMPLETE report. Required keys:
+A nine-field stop-report is REQUIRED on EVERY terminal path: STOP AND ASK, PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review (BLOCKED), contract-integrity hash-mismatch (HALT), and usage-limit HALT. Each validates against `docs/governance/stop_report.schema.json`; a bare pending_action + recommendation is insufficient. Required keys:
 
 - WHAT
 - WHY
@@ -139,4 +139,8 @@ It is validated by `docs/governance/stop_report.schema.json` (lowercase keys, pl
 
 `docs/governance/contract_manifest.json` records the version and sha256 of this contract AND of the stop-report schema. `/kronos-continue` verifies both hashes before any loop action and STOPS on mismatch (fail-closed). Every new loop checkpoint records the active contract_version and hash.
 
-Contract-Version: 1.0.0
+## §13 Bounded AUTO-NEXT
+
+Within an approved brief's scope the loop selects and executes the single safest, highest-priority unblocked action without routine confirmation. It still pauses for every mandatory pause: merge authorization; §6/§8 live execution; destructive actions; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; material architecture ambiguity. It preserves Thin-Orchestrator delegation (§1) and all existing gates.
+
+Contract-Version: 1.1.0
