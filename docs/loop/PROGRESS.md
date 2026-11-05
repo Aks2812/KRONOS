@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 295
+derived_at: 2026-11-05T17:10:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq294_pending_action_outcome: >
+  NONE at seq 294 (COMPLETE, PR #49 merged to main 08b2641). This turn operator (context.md) accepted SEQ 294 +
+  main 08b2641 and issued an approved governance-only brief: implement contract v1.3.0 (persistent
+  operator-interface + decision-class policy). Branch claude/operator-interface-v13 from clean ff
+  origin/main@08b2641. Authorized scope (8 files): docs/governance/KRONOS_RND_CONTRACT.md,
+  stop_report.schema.json, contract_manifest.json, CLAUDE.md, .claude/RAILS.md,
+  .claude/commands/kronos-continue.md, tests/test_rnd_contract.py, tests/test_commit_authority.py. The two
+  .claude/** files are PROTECTED (hard deny): prepared as ONE external maintainer patch, human-applied, never
+  loop-edited. Decision classes AUTO-CONTINUE/SAFE-TO-APPROVE/REVIEW-REQUIRED/HOLD/NO-ACTION and persistent
+  GFM two-table presentation per the directive. Single-source rule: contract is sole semantic authority;
+  schema mirrors enum + required fields; loop-state records version + hashes only. No feature work; no §6/§8 lift.
+  This brief is REVIEW-REQUIRED (governance + .claude/**).
+stage: >
+  Contract integrity re-verified start-of-turn (v1.2.0, both hashes == manifest). main 08b2641 protected.
+  Orchestrator mapped all 8 files: all already ∈ AB_SECTION_10 (= RND_SECTION_10) in test_commit_authority.py,
+  and this brief creates no new path, so the AB_BASE..HEAD seal-tax scope audit stays green WITHOUT editing
+  test_commit_authority.py (matches PR #49 precedent). Only test_rnd_contract.py (of the two test files) needs
+  new assertions. Only test_rnd_contract.py consumes stop_report.schema.json in the suite (grep), so schema
+  changes are contained. Thin-Orchestrator: implementation delegated to kronos-builder (claude-sonnet-5-5);
+  independent review to kronos-reviewer (claude-haiku-5-5); Opus semantic verify.
+pending_action: >
+  CONSEQUENTIAL: create branch claude/operator-interface-v13 at origin/main@08b2641; dispatch kronos-builder
+  to implement v1.3.0 in the 5 loop-editable files (contract §14 decision-classes + §15 presentation + §16
+  single-source + version bumps to 1.3.0; schema: add decision_class enum [AUTO-CONTINUE,SAFE-TO-APPROVE,
+  REVIEW-REQUIRED,HOLD,NO-ACTION] + opus_effort enum [LOW,MEDIUM,HIGH], both required; manifest version 1.3.0
+  + recomputed contract+schema sha256; CLAUDE.md single-source reference; test_rnd_contract.py updated+new
+  assertions) and WRITE the external .claude maintainer patch (RAILS.md + kronos-continue.md reference-only
+  operationalization) to /home/void/Void-Projects/KRONOS_PC/OPERATOR_INTERFACE_V13.patch; commit loop files
+  (explicit paths, kronos-loop noreply author/committer, Co-Authored-By Opus); run focused tests. Orchestrator
+  verifies scope ⊆ authorized, manifest hashes, focused green, patch git apply --check clean; push branch; then
+  PAUSE (REVIEW-REQUIRED) for maintainer to hand-apply the .claude patch. NO PR yet, NO merge, NO §6/§8 lift.
+  If any edited path is outside the 5 loop-editable files, ABORT + nine-field stop-report.
+recommendation: >
+  After builder + orchestrator verification and branch push, PAUSE for the maintainer to hand-apply
+  OPERATOR_INTERFACE_V13.patch to the two .claude/** files on claude/operator-interface-v13. Next turn commits
+  those atomically, opens ONE draft PR, runs focused + canonical full suites, Haiku + Opus verify, PAUSE before
+  merge (GATE-2).
+# KRONOS loop-state checkpoint
 seq: 294
 derived_at: 2026-11-05T16:45:00Z
 contract_version: 1.2.0
