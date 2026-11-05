@@ -376,3 +376,13 @@ def test_schema_next_item_has_decision_class():
     item = _schema()["properties"]["next"]["items"]
     assert "decision_class" in item["required"]
     assert set(item["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+
+
+def test_operative_claude_files_count_neutral_report_term():
+    # F1 single-source: the rails must not carry a normative field-count label;
+    # they reference the count-neutral term the contract defines.
+    for p in (ROOT / ".claude" / "RAILS.md",
+              ROOT / ".claude" / "commands" / "kronos-continue.md"):
+        text = p.read_text()
+        assert "nine-field" not in text, str(p)
+        assert "canonical schema-validated" in text, str(p)
