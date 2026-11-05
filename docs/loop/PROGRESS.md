@@ -1,4 +1,46 @@
 # KRONOS loop-state checkpoint
+seq: 298
+derived_at: 2026-11-05T18:40:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 (PR #50) carries PROPOSED contract v1.3.0 (binding main still v1.2.0).
+  Proposed contract aadd2ba9ddd28ac06f084e2285a1f35391dc4a121b220885f6bcd6d9b52f11c3, schema
+  d9aeebd2ef1f334d70e880677a3268f4085bf7739ace261e5f102dd6e950f375. loop-state records v1.3.0 only after merge.
+seq297_pending_action_outcome: >
+  DONE. Committed the two maintainer-applied .claude files (Option B, commit 9ebe376) and the single-source
+  operative-reference test (commit a162739), both kronos-loop noreply + Co-Authored-By Opus 4.8; head
+  a1627390de00ae0be49d3ff940f15ae03b3514af. Pushed. Opened ONE draft PR #50 base main (all 7 authorized files;
+  scope audit = exactly those 7, all in AB_SECTION_10, seal-tax green). Orchestrator focused 63 passed; full
+  canonical suite 4033 passed / 1 skipped / 0 failed (385.71s). Independent Haiku 5.5 reviewer (brief = v1.3.0
+  AC + diff origin/main..a1627390, no builder report): VERDICT PASS all 9 AC; its own runs focused 63 passed +
+  full 4033 passed/1 skipped/0 failed (378.85s); confirmed .claude non-destructive (+8/-0 RAILS, +9/-0
+  kronos-continue, all boundary phrases survive). Opus Gate-2 semantic PASS on all AC.
+  FINDING F1 (self-created contract<->schema contradiction, orchestrator judges BLOCKING per §14): this brief
+  added decision_class + opus_effort to stop_report.schema.json required (now 11 required fields), but the
+  contract still calls it a "nine-field stop-report" (§4:56, §4:58, §9:107, §13:154) and §9 lists only the 9
+  5W+1H keys; the two .claude files also say "nine-field". §16 asserts the schema MIRRORS the required fields,
+  so the count/label now contradicts the schema the same brief shipped. F2 (low): rails restate class/column
+  lists (accepted, reference-only). F3 (info): governance deletions limited to version/hash/required lines.
+stage: >
+  Decision class REVIEW-REQUIRED. Contract integrity re-verified start-of-turn (branch v1.3.0 self-consistent;
+  binding main v1.2.0). main 08b2641 protected. PR #50 OPEN, draft, head a1627390, mergeStateStatus CLEAN,
+  statusCheckRollup [] (ci none). All ACs pass and suites are green, but F1 is a self-created governance
+  coherence defect touching the §16 mirror (primary objective), so this is NOT presented as SAFE-TO-APPROVE.
+  Fixing F1 spans governance (loop-editable contract §4/§9/§13) AND .claude/** (RAILS.md + kronos-continue.md
+  "nine-field" wording = hard deny, needs a second external maintainer patch) = human-gated + scope-sensitive.
+  No merge, no ready, no section 6/8 lift.
+pending_action: NONE (awaiting operator GATE-2 decision on F1)
+recommendation: >
+  FIX F1 BEFORE MERGE. Authorize a bounded follow-up: contract §9 lists all 11 required keys (add
+  DECISION_CLASS per §14, OPUS_EFFORT per §15) and the "nine-field" label becomes count-neutral
+  ("schema-valid stop-report (§9)") in §4/§9/§13; a second external maintainer patch makes the same wording
+  change in .claude/RAILS.md + .claude/commands/kronos-continue.md; re-run suites + re-review, then PAUSE GATE-2
+  on the new head. Materially-different alternative: operator accepts F1 as a tracked low follow-up and
+  authorizes GATE-2 merge of PR #50 at head a1627390 as-is (loop then re-measures the ten-item MERGE-GATE).
+
+# KRONOS loop-state checkpoint
 seq: 297
 derived_at: 2026-11-05T18:10:00Z
 contract_version: 1.2.0
