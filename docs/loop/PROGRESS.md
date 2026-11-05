@@ -1,4 +1,27 @@
 # KRONOS loop-state checkpoint
+seq: 266
+derived_at: 2026-11-04T18:10:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq265_pending_action_outcome: >
+  SUPERSEDED by operator directive (context.md, 2026-11-04): before hand-apply, REVISE the external patch so the
+  CONTRACT-INTEGRITY start-of-turn hash-mismatch stop ALSO emits the complete nine-field report validating against
+  stop_report.schema.json. Required, not optional — every terminal path must use the nine-field format. Same 2-file
+  scope (.claude/RAILS.md, .claude/commands/kronos-continue.md); do not modify repo files or weaken .claude/** deny.
+  Regenerate patch at same path, git apply --check, verify semantics, report new sha256 + line summary, then pause.
+stage: OPTION B patch REVISION round. Prior patch (sha 7582f4f6...) to be superseded in place at
+  /home/void/Void-Projects/KRONOS_PC/AUTO_NEXT_CLAUDE_FILES.patch with the added contract-integrity terminal-path
+  coverage. Loop makes no repo change; .claude/** hard deny preserved. §6/§8 live-run still PAUSED (SEQ 140).
+  Do NOT touch 3c712d4.
+pending_action: Dispatch kronos-builder (sonnet-5-5) to regenerate the external patch adding: (a) kronos-continue.md
+  CONTRACT INTEGRITY "On any mismatch STOP and report (fail-closed)" -> emit the nine-field stop-report (§9) validating
+  against stop_report.schema.json; (b) add "contract-integrity hash-mismatch (HALT)" to the terminal-path enumerations
+  in BOTH files. Keep prior two concerns. Verify git apply --check exit 0 + repo clean + scope == 2 files, Gate-2
+  semantic verify, report new sha256 + line summary; then PAUSE for operator hand-apply. No repo writes, no commit,
+  no push, no PR, no deny lift, no §6/§8 lift, no feature work.
+recommendation: After revised patch verified appliable, PAUSE and hand apply commands to operator.
+# KRONOS loop-state checkpoint
 seq: 265
 derived_at: 2026-11-04T17:55:00Z
 contract_version: 1.0.0
