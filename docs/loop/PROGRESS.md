@@ -1,4 +1,27 @@
 # KRONOS loop-state checkpoint
+seq: 277
+derived_at: 2026-11-05T01:40:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq276_pending_action_outcome: >
+  DONE. Maintainer applied patch sha256 b4bf1c76f2f9f578e58f4513b5514ce5f7ccf9b5cde3d4bfc342ee0d17cbb42d to the
+  working tree on claude/auto-brief-policy @ 68d7943. Verified: exactly the two authorized files changed
+  (.claude/RAILS.md +10, .claude/commands/kronos-continue.md +21, 0 deletions); git apply --check --reverse OK
+  (working tree equals patch); zero personal email in both files; AUTO-BRIEF present; kronos-loop noreply identity
+  rule present.
+stage: >
+  About to commit the maintainer-applied .claude/ files onto claude/auto-brief-policy (loop never authored them;
+  staging human-applied changes per Option B, operator-directed). PR #47 head will advance. GATE-2 still HELD.
+pending_action: >
+  CONSEQUENTIAL: stage exactly .claude/RAILS.md and .claude/commands/kronos-continue.md, commit on
+  claude/auto-brief-policy (committer kronos-loop <kronos-loop@users.noreply.github.com>), push branch (advances
+  PR #47 head), rerun focused + full suites, dispatch independent Haiku reviewer + Opus semantic verify, then
+  checkpoint outcome and PAUSE at GATE-2 with the new exact head SHA. NO merge, NO ready.
+recommendation: >
+  After green suites + reviewer PASS + Opus PASS, authorize GATE-2 merge of PR #47 at the NEW head SHA (recorded
+  in the next checkpoint), landing contract v1.2.0 and its operational .claude/ behavior atomically.
+# KRONOS loop-state checkpoint
 seq: 276
 derived_at: 2026-11-05T01:10:00Z
 contract_version: 1.1.0
