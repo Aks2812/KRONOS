@@ -14,8 +14,8 @@ pauses, halts, iteration bounds and scope controls — remain in force through t
 
 CONTRACT INTEGRITY (START-OF-TURN, BEFORE any loop action): compute the sha256 of
 `docs/governance/KRONOS_RND_CONTRACT.md` and `docs/governance/stop_report.schema.json` and compare each to
-the value recorded in `docs/governance/contract_manifest.json`. On any mismatch STOP and report
-(fail-closed); do not proceed. Each new checkpoint records the active contract_version and
+the value recorded in `docs/governance/contract_manifest.json`. On any mismatch STOP and emit the nine-field stop-report (§9)
+validating against `docs/governance/stop_report.schema.json` (fail-closed); do not proceed. Each new checkpoint records the active contract_version and
 contract hash.
 
 START OF EVERY TURN: `git fetch origin kronos/loop-state main`. Read the TOP (highest-seq)
@@ -26,7 +26,7 @@ names, its state / draft / merged / head and whether that head is an ancestor of
 the sha256 of the brief the checkpoint names. Where the checkpoint disagrees with live
 Git/GitHub, LIVE WINS — and report the mismatch. FAIL CLOSED: if the checkpoint carries a
 pending_action with no recorded outcome, or any re-derived fact contradicts the checkpoint,
-STOP and report; do not proceed. Never reconstruct state from this conversation.
+STOP and emit the nine-field stop-report; do not proceed. Never reconstruct state from this conversation.
 
 ROLES (model ids come from `.claude/agents/*`, never from this text): Opus orchestrator and
 semantic verifier; `kronos-researcher` (read-only mapping, returns cited facts);
@@ -44,9 +44,18 @@ ACT WITHOUT ASKING: repository reads; the brief's named tests; the brief's named
 compose stack; commits and pushes to a feature branch and to the state branch; creating a
 draft PR; edits to the files an approved brief permits.
 
+AUTO-NEXT (bounded): within an approved brief's scope, select and execute the single safest,
+highest-priority unblocked action without routine confirmation. Still pause for every
+mandatory pause: merge authorization; §6/§8 live execution; destructive actions;
+security-boundary changes; protected-branch writes; production-impacting scope expansion;
+exhausted repair limits; material architecture ambiguity. Thin-Orchestrator delegation and
+all gates remain in force.
+
 STOP AND ASK the operator when the next action is outside an approved brief, is ambiguous,
 is scope-sensitive, needs authorization not yet given, or an iteration bound is reached.
-Record the pending_action and your recommendation first, then wait.
+Record the pending_action and your recommendation first, emit the schema-valid nine-field
+stop-report (what, why, who, when, where, how, next, recommendation, operator_action;
+`docs/governance/stop_report.schema.json`, §9), then wait.
 
 MERGING: merge only the PR the operator names this turn, and nothing else. Before proposing
 it, re-measure the full ten-item MERGE-GATE in the same turn: main protected; PR not draft;
@@ -57,6 +66,10 @@ summary line, never `$?`); the brief's scope-guard / seal-tax scope audit green;
 Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merge only with
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
+
+TERMINAL STOP PATHS (each emits the schema-valid nine-field stop-report, §9): STOP AND ASK,
+PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review
+(BLOCKED), contract-integrity hash-mismatch (HALT), usage-limit HALT.
 
 STOP WITHOUT ASKING when a usage limit is reached. Do not switch models, start another
 session, or wait for a reset. The operator resumes by typing: continue

@@ -115,3 +115,18 @@ repo copy, so a duplicate is a hazard, not a convenience.
 agent in user scope (`~/.claude/commands`, `~/.claude/agents`) or in a second `.claude/` inside
 the repo tree. It only reads; it never copies and never deletes. Reconcile by removing the
 out-of-repo copy — never by copying the repo into a global scope.
+
+## Terminal stop paths emit the nine-field stop-report; AUTO-NEXT is bounded
+
+Every terminal path emits the nine-field 5W+1H stop-report (what, why, who, when, where, how,
+next, recommendation, operator_action) validating against
+`docs/governance/stop_report.schema.json` (contract §9): STOP AND ASK, PAUSE, BLOCKED,
+COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review (BLOCKED),
+contract-integrity hash-mismatch (HALT), usage-limit HALT. A bare pending_action +
+recommendation is insufficient.
+
+AUTO-NEXT is bounded: within an approved brief's scope the loop executes the single safest,
+highest-priority unblocked action without routine confirmation, but still pauses for merge
+authorization, §6/§8 live execution, destructive actions, security-boundary changes,
+protected-branch writes, production-impacting scope expansion, exhausted repair limits, and
+material architecture ambiguity. Thin-Orchestrator delegation and all existing gates stand.
