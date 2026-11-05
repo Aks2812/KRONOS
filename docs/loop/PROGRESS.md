@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 287
+derived_at: 2026-11-05T13:00:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq286_pending_action_outcome: >
+DONE. External maintainer patch prepared for .claude/RAILS.md + .claude/commands/kronos-continue.md. NOT applied;
+.claude/** hard deny respected (Option B, maintainer hand-applies). Patch adds RAILS.md section "Canonical
+full-suite test runner — project .venv, disk-backed TMPDIR" (+20) and tightens the kronos-continue.md MERGE-GATE
+local-test clause (+6/-2): canonical runner TMPDIR=<disk> rtk test .venv/bin/python -m pytest -q; prohibits bare
+rtk test pytest / bare pytest / system-Python fallback; fails closed (STOP + nine-field) when .venv/bin/python
+unavailable, never masks collection errors; pytest tmp_path scratch must use disk-backed TMPDIR not tmpfs /tmp.
+Saved OUTSIDE repo: /home/void/Void-Projects/KRONOS_PC/ENV_RUNNER_CLAUDE_FILES.patch. git apply --check exit 0
+(clean against main 0d0988c). sha256 edf67488023fdfc6b380c795ed7cf5909a8de1cefc6f20815923c30a46f48854.
+stage: >
+GATE-2 cycle fully complete: brief48 merged to main 0d0988cf349e9eb66eadf5e604fd7dc96dcd2d2e; env-runner
+maintainer patch prepared, verified (--check clean), hashed, NOT applied. PAUSED. No next AUTO-BRIEF started
+(operator-directed hold). §6/§8 NOT lifted.
+pending_action: NONE (awaiting operator)
+recommendation: >
+Operator hand-applies /home/void/Void-Projects/KRONOS_PC/ENV_RUNNER_CLAUDE_FILES.patch (sha256 edf67488...) to
+.claude/RAILS.md + .claude/commands/kronos-continue.md via the normal .claude/ canonical-on-main PR path, then
+resumes the loop (typing: continue) to begin the next AUTO-BRIEF cycle. Remaining backlog: (1) wire predicate
+tests to live loop code (INELIGIBLE: live/§6-§8 + ambiguous, human-gated); (3-4) AN-brief contract-doc LOW
+(governance, human-gated). Loop will not self-apply the patch, edit .claude/** in-repo, or start a brief until directed.
+# KRONOS loop-state checkpoint
 seq: 286
 derived_at: 2026-11-05T12:45:00Z
 contract_version: 1.2.0
