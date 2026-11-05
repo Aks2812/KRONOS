@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.1.0
+Version: 1.2.0
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.1.0.
+This file is the sole binding R&D governance for KRONOS as of version 1.2.0.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -143,4 +143,16 @@ It is validated by `docs/governance/stop_report.schema.json` (lowercase keys, pl
 
 Within an approved brief's scope the loop selects and executes the single safest, highest-priority unblocked action without routine confirmation. It still pauses for every mandatory pause: merge authorization; §6/§8 live execution; destructive actions; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; material architecture ambiguity. It preserves Thin-Orchestrator delegation (§1) and all existing gates.
 
-Contract-Version: 1.1.0
+### §13.1 Standing AUTO-BRIEF envelope
+
+When `pending_action` is NONE (no pre-approved brief is open), the loop does not halt solely for want of a brief. It inspects the authoritative checkpoint backlog and roadmap, selects the single highest-priority ELIGIBLE action, creates that action's scoped brief, and executes research -> build -> review -> repair -> draft PR without routine authorization.
+
+An action is ELIGIBLE only if it is ALL of: recorded (named in the checkpoint backlog or roadmap), unblocked, reversible, branch-local, precisely scoped, non-live, and non-destructive; AND it touches none of: secrets, permissions, security boundaries, governance (this contract, the integrity manifest, the stop-report schema), `.claude/**`, or any protected-branch modification.
+
+The mandatory pauses are unchanged and override selection: merge authorization; §6/§8 live execution; destructive actions; governance changes; `.claude/**` changes; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; and material or unresolved ambiguity. An ineligible backlog item is never auto-selected; it is deferred to the maintainer.
+
+A missing pre-approved brief MUST NOT cause a pause when an eligible recorded backlog item exists. If no eligible item exists, the loop emits the complete nine-field idle (`no-pending-action`) stop-report (§9) and waits.
+
+AUTO-BRIEF preserves Thin-Orchestrator delegation (§1), the gates (§3), the MERGE-GATE (§7), write-ahead checkpointing (§8), and the seal-tax (§11). It never crosses a human gate: a created brief still PAUSES before merge for GATE-2.
+
+Contract-Version: 1.2.0

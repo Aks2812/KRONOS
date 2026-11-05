@@ -130,3 +130,13 @@ highest-priority unblocked action without routine confirmation, but still pauses
 authorization, §6/§8 live execution, destructive actions, security-boundary changes,
 protected-branch writes, production-impacting scope expansion, exhausted repair limits, and
 material architecture ambiguity. Thin-Orchestrator delegation and all existing gates stand.
+
+## Standing AUTO-BRIEF envelope (contract v1.2.0 §13.1)
+
+When the top checkpoint's `pending_action` is NONE the loop no longer stops solely for want of a pre-approved brief: it selects the single highest-priority ELIGIBLE backlog/roadmap item, creates its scoped brief, and runs it end to end to a draft PR, still pausing before merge for GATE-2.
+
+ELIGIBLE excludes governance (the contract, `contract_manifest.json`, `stop_report.schema.json`), `.claude/**`, secrets, permissions, security boundaries, and protected-branch writes. So this envelope can never auto-select a change to these rail files or to the contract — those stay human-gated and arrive only by external maintainer patch. The SEQ-272 four-item backlog therefore auto-selects only the two test-file follow-ups (#1 `test_rnd_contract.py` docstring, #2 bad-enum negative case); the two contract-edit follow-ups (#3, #4) are governance and stay ineligible.
+
+The `.claude/**` hard deny is unchanged and is never weakened by AUTO-BRIEF. Every mandatory pause (merge authorization; §6/§8 live execution; destructive actions; governance changes; `.claude/**` changes; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; material or unresolved ambiguity) still holds and overrides selection.
+
+Automated loop-state checkpoint commits MUST use the identity `kronos-loop <kronos-loop@users.noreply.github.com>`. A personal email must never appear in public checkpoint history.
