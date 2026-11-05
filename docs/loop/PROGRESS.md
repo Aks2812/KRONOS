@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 290
+derived_at: 2026-11-05T14:45:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq289_pending_action_outcome: >
+Operator directed (context.md this turn): HOLD GATE-2 for PR #49; resolve reviewer F1 before merge via an
+incremental external maintainer patch (two .claude files only). DONE: patch prepared, verified, NOT applied.
+Replaces every <disk-backed-dir> placeholder (2 occurrences: .claude/RAILS.md:147, .claude/commands/kronos-continue.md:65)
+with the concrete portable location ${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp; requires mkdir -p; requires
+verifying the dir is disk-backed not tmpfs (findmnt -no FSTYPE --target "$TMPDIR" / df -PT MUST NOT be tmpfs);
+fails closed (STOP + nine-field §9) if the dir cannot be created or resolves to tmpfs/non-disk-backed, never falls
+back to tmpfs /tmp. Canonical runner `rtk test .venv/bin/python -m pytest -q` preserved verbatim (count 1 per file).
+stage: >
+Independent verification (orchestrator): git diff scope = exactly .claude/RAILS.md (+ ... -5) and
+.claude/commands/kronos-continue.md (2 files, 10 insertions / 5 deletions); zero <disk-backed-dir> remaining;
+concrete path present; the 5 deleted lines are only the old placeholder runner lines + the reworded tmp_path
+paragraph, all re-added concretized — no gate, deny, or .claude/** hard deny weakened; no personal email. Saved
+OUTSIDE repo: /home/void/Void-Projects/KRONOS_PC/ENV_RUNNER_F1_INCREMENTAL.patch. git apply --check vs PR #49 head
+8f9bfe868b975cecc40b756c12513731e28f81fa exit 0 (repo clean, no repo file modified). sha256
+4ad011c3e147c7a5cdbe8fa97a2e337c1477c1128701dd87ce2a119844232083. Contract integrity re-verified start-of-turn
+(v1.2.0 both hashes == manifest). GATE-2 PR #49 HELD; no AUTO-BRIEF; §6/§8 NOT lifted.
+pending_action: NONE (awaiting maintainer application + operator)
+recommendation: >
+Maintainer hand-applies ENV_RUNNER_F1_INCREMENTAL.patch (sha256 4ad011c3...) onto claude/env-runner-policy over
+head 8f9bfe8 (.claude/** Option B; loop will not self-apply). Loop then commits the maintainer-applied change
+(kronos-loop noreply), pushes (advances PR #49 head), re-runs focused + full via the canonical runner, obtains
+independent Haiku + Opus semantic verification, and PAUSES at GATE-2 with the new exact head SHA. Do not merge,
+start another AUTO-BRIEF, or lift §6/§8 until directed.
+# KRONOS loop-state checkpoint
 seq: 289
 derived_at: 2026-11-05T14:15:00Z
 contract_version: 1.2.0
