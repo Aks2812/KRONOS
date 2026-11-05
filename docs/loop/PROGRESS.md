@@ -1,4 +1,27 @@
 # KRONOS loop-state checkpoint
+seq: 264
+derived_at: 2026-11-04T17:40:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq263_pending_action_outcome: >
+  RESOLVED — operator chose Option B (context.md, 2026-11-04). Preserve the .claude/** hard deny.
+  Sonnet 5.5 (kronos-builder) to prepare ONE minimal unified patch touching ONLY .claude/RAILS.md and
+  .claude/commands/kronos-continue.md, based on main@5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c, saved
+  OUTSIDE the repo at /home/void/Void-Projects/KRONOS_PC/AUTO_NEXT_CLAUDE_FILES.patch. Do NOT apply,
+  do NOT modify repository files. Report sha256 + changed-line summary + separate git apply --check and
+  human-apply commands. Then pause. Remaining 6 files NOT built; hard deny NOT lifted; no feature work.
+stage: OPTION B patch-preparation. Loop produces an external (outside-repo) unified patch for the two
+  .claude/ files so the maintainer can hand-apply them (preserving the .claude/** hard boundary); the loop
+  itself never Edits .claude/ and makes no repo change this step. §6/§8 live-run still PAUSED (SEQ 140).
+  Do NOT touch 3c712d4.
+pending_action: Dispatch kronos-builder (sonnet-5-5) to author the external patch per the two concerns
+  (every-terminal-path nine-field stop-report fix + bounded AUTO-NEXT), verify with git apply --check
+  (read-only, no repo modification), save to the external path, report sha256/summary/commands; then PAUSE.
+  No repo writes, no commit, no push, no PR, no deny lift, no feature work.
+recommendation: After patch lands + is verified appliable, PAUSE and hand the apply commands to the operator;
+  await operator hand-apply before building the remaining six files.
+# KRONOS loop-state checkpoint
 seq: 263
 derived_at: 2026-11-04T17:25:00Z
 contract_version: 1.0.0
