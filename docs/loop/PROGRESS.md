@@ -1,4 +1,26 @@
 # KRONOS loop-state checkpoint
+seq: 270
+derived_at: 2026-11-04T19:45:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq269_pending_action_outcome: >
+  DONE — feature branch claude/auto-next-policy pushed to origin; DRAFT PR #46 opened (base main,
+  head claude/auto-next-policy @ c9024cefa89d6f878c7c6c5386f50341d84ec17c, isDraft true, state OPEN, MERGEABLE).
+  Build green (full suite 4021 passed / 1 skipped / 0 failed; focused 51 passed); independent kronos-reviewer PASS AC1-AC6;
+  Opus Gate-2 PASS; scope = 6 authorized paths; schema + CLAUDE.md untouched; contract on-disk sha256 == manifest.
+stage: PAUSE before merge. Contract v1.1.0 is on PR #46 only, NOT yet on main (start-of-turn integrity gate on main stays
+  v1.0.0 until this merges; after merge the manifest hash e218c751... becomes the on-main expectation). Live-run
+  (sections 6 and 8) still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: AWAITING operator GATE-2 merge authorization for PR #46 (head SHA c9024cefa89d6f878c7c6c5386f50341d84ec17c).
+  NOTE PR #46 is DRAFT; MERGE-GATE item 2 (PR not draft) requires the operator to mark it ready (gh pr ready) OR explicitly
+  authorize the loop to, since the loop may not mark a PR ready without asking. On authorization, re-measure the full
+  ten-item MERGE-GATE in the same turn and merge ONLY with: gh pr merge 46 --squash --match-head-commit
+  c9024cefa89d6f878c7c6c5386f50341d84ec17c (never --admin, never --auto). No merge, no ready-for-review, no deny lift,
+  no live-run lift without GATE.
+recommendation: Operator reviews PR #46; to merge, mark it ready (or authorize the loop to) and authorize the merge naming
+  head SHA c9024cefa89d6f878c7c6c5386f50341d84ec17c. Optionally fold in the 4 LOW non-blocking review nits first.
+# KRONOS loop-state checkpoint
 seq: 269
 derived_at: 2026-11-04T19:30:00Z
 contract_version: 1.1.0
