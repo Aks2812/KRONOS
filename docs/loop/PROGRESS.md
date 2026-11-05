@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 276
+derived_at: 2026-11-05T01:10:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq275_pending_action_outcome: >
+  HOLD. Operator confirmed eligibility reading (#1/#2 AUTO-BRIEF eligible; governance #3/#4 ineligible,
+  human-gated) and HELD GATE-2: PR #47 must land ATOMICALLY with its operational .claude/ behavior, so no
+  merge yet. External maintainer patch prepared (NOT applied; .claude/** hard deny; no repo files modified):
+  /home/void/Void-Projects/KRONOS_PC/AUTO_BRIEF_CLAUDE_FILES.patch, sha256
+  b4bf1c76f2f9f578e58f4513b5514ce5f7ccf9b5cde3d4bfc342ee0d17cbb42d, append-only, 2 files / 31 insertions /
+  0 deletions (.claude/RAILS.md +10, .claude/commands/kronos-continue.md +21), based on claude/auto-brief-policy
+  @ 68d79431e3c2ca4e873405b9863e205a7f2f7c1f. git apply --check PASS from repo root (both files byte-identical to
+  68d7943 and to current main). Semantics verified: operationalizes v1.2.0 AUTO-BRIEF; SEQ-272 eligible subset
+  auto-selects #1/#2; mandatory pauses + .claude/** hard deny preserved and never weakened; requires
+  kronos-loop <kronos-loop@users.noreply.github.com> for automated loop-state commits; contains no personal email.
+stage: >
+  GATE-2 HELD (atomic landing). PR #47 draft OPEN, head 68d7943, base main, MERGEABLE. v1.2.0 on PR #47 only,
+  NOT on main. On-main integrity gate stays v1.1.0 (e218c751 / 652bf6ba). Live-run (sections 6 and 8) PAUSED
+  (SEQ 140). Prior checkpoints 273/274 carry a personal-email committer (pre-interruption); not rewritten.
+pending_action: >
+  AWAITING maintainer application of AUTO_BRIEF_CLAUDE_FILES.patch to .claude/ (external, by human), THEN operator
+  GATE-2 authorization to land PR #47 atomically with that .claude/ behavior at head 68d7943. No loop action until
+  then; loop never applies the patch and never edits .claude/.
+recommendation: >
+  Maintainer applies the verified patch (sha256 b4bf1c76...) to .claude/, commits it, then authorizes GATE-2 so
+  PR #47 (contract v1.2.0) and the operational .claude/ behavior land together.
+# KRONOS loop-state checkpoint
 seq: 275
 derived_at: 2026-11-05T00:40:00Z
 contract_version: 1.1.0
