@@ -1,4 +1,48 @@
 # KRONOS loop-state checkpoint
+seq: 300
+derived_at: 2026-11-05T19:40:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 (PR #50) head 0026063d44181abb67432c691f93eec7eaa28d2c carries PROPOSED
+  contract v1.3.0 (binding main still v1.2.0). Proposed hashes after F1/F2: contract
+  e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b, schema
+  d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35. loop-state records v1.3.0 + hashes only after merge.
+seq299_pending_action_outcome: >
+  DONE (loop-editable portion). kronos-builder (claude-sonnet-5-5) applied F1 + F2 to the 4 loop-editable v1.3
+  files; commit 0026063d44181abb67432c691f93eec7eaa28d2c (kronos-loop noreply, Co-Authored-By Opus 4.8), 4 files
+  +75/-9. Orchestrator (Opus) VERIFIED on disk: F1 contract has ZERO "nine-field"; §9 now
+  "A canonical schema-validated stop-report is REQUIRED", marks the schema authoritative for required fields,
+  key list informative + adds DECISION_CLASS (§14) / OPUS_EFFORT (§15); §4 and §13 reworded count-neutral. F2:
+  §14 contains the three exact rule clauses (report-level class MUST be REVIEW-REQUIRED or HOLD; no recommendation
+  and no next-action row may be SAFE-TO-APPROVE; MUST NOT recommend accepting the blocker and merging). Schema
+  next[].items required now includes decision_class with the five-class enum. manifest v1.3.0 hashes == disk
+  (contract e0be32a9..., schema d34aa5d9...). Focused tests 68 passed (adds F2 regression tests
+  test_blocking_report_rejects_safe_to_approve_row + test_hold_report_rejects_safe_to_approve_row +
+  test_contract_blocking_forces_review_or_hold + test_contract_uses_count_neutral_report_term +
+  test_schema_next_item_has_decision_class). Scope of this commit = exactly 4 loop files; branch pushed,
+  PR #50 head advanced a162739 -> 0026063.
+  F1 .claude patch (orchestrator, generated deterministically scratch-copy + sed + diff, NOT hand-authored):
+  /home/void/Void-Projects/KRONOS_PC/F1F2_RAILS_CMD.patch sha256
+  4b6192e88469666f3060974e4800465e6cf4ff57ed1b0cbbd102a5568c22ae54; git apply --check exit 0; line summary
+  .claude/RAILS.md 4 add / 4 del (3 hunks), .claude/commands/kronos-continue.md 5 add / 5 del (5 hunks) -- pure
+  in-place "nine-field" -> "canonical schema-validated" replacements, 0 residual nine-field, repo .claude
+  untouched, no gate/deny/boundary changed. NOT applied (hard deny; loop will not self-apply).
+stage: >
+  Decision class REVIEW-REQUIRED (unresolved until F1 lands in .claude + re-review). Contract integrity
+  re-verified start-of-turn (branch v1.3.0 self-consistent; binding main v1.2.0). main 08b2641 protected. PR #50
+  OPEN draft head 0026063. F1/F2 fixed in the contract/schema/tests; the matching .claude F1 wording is prepared
+  as the incremental patch and awaits maintainer application. No merge, no ready, no section 6/8 lift.
+pending_action: NONE (awaiting maintainer to hand-apply F1F2_RAILS_CMD.patch)
+recommendation: >
+  Maintainer hand-applies /home/void/Void-Projects/KRONOS_PC/F1F2_RAILS_CMD.patch (sha256 4b6192e8...) onto
+  claude/operator-interface-v13 over head 0026063. Next turn the loop commits the applied .claude files
+  (kronos-loop noreply), adds a negative test asserting zero normative "nine-field" remains in the two .claude
+  files, pushes, re-runs focused + canonical full suites, obtains Haiku 5.5 independent re-review + Opus semantic
+  verify, then PAUSES GATE-2 with the new exact head SHA. Do not merge or lift section 6/8.
+
+# KRONOS loop-state checkpoint
 seq: 299
 derived_at: 2026-11-05T19:10:00Z
 contract_version: 1.2.0
