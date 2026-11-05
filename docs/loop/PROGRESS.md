@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 301
+derived_at: 2026-11-05T20:05:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 (PR #50) carries PROPOSED v1.3.0 (binding main still v1.2.0). Contract
+  e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b, schema
+  d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35. loop-state records v1.3.0 + hashes after merge.
+seq300_pending_action_outcome: >
+  DONE. Maintainer hand-applied F1F2_RAILS_CMD.patch (sha256 4b6192e8...) to the working tree over head 0026063.
+  Orchestrator VERIFIED: git apply --reverse --check of the F1 patch exits 0 (working tree == patch); diffstat
+  +9/-9 in-place across .claude/RAILS.md (3 hunks) and .claude/commands/kronos-continue.md (5 hunks); zero
+  "nine-field" remain in either file; "canonical schema-validated" present (RAILS 4, kronos-continue 5); all
+  boundaries intact (gh pr merge --admin x2, the squash --match-head-commit merge rule x1); the v1.3.0 decision
+  section still present. Non-destructive.
+stage: >
+  Decision class REVIEW-REQUIRED (pending commit + full re-review). Contract integrity re-verified start-of-turn
+  (branch v1.3.0 self-consistent; binding main v1.2.0). main 08b2641 protected. PR #50 OPEN draft head 0026063
+  CLEAN. Option B: loop commits maintainer-authored .claude working-tree changes (does NOT edit .claude/**).
+  No merge, no ready, no section 6/8 lift.
+pending_action: >
+  CONSEQUENTIAL: (1) add a negative test to tests/test_rnd_contract.py asserting zero normative "nine-field" in
+  both .claude files and that each contains "canonical schema-validated"; (2) commit the two maintainer-applied
+  .claude files (Option B, kronos-loop noreply, Co-Authored-By Opus 4.8); (3) commit the test (kronos-loop
+  noreply); (4) push (advances PR #50 head); (5) run focused + canonical full suite TMPDIR disk-backed
+  .venv/bin/python -m pytest -q (require 0 failed); (6) dispatch kronos-reviewer (claude-haiku-5-5) independent
+  re-review, brief = v1.3.0 AC incl F1 count-neutral + F2 consistency + diff origin/main..HEAD, no builder report;
+  (7) Opus Gate-2 semantic verify; record exact head SHA; PAUSE GATE-2. NO merge, NO ready, NO section 6/8 lift.
+  If any path outside the 7 authorized files is touched, ABORT + nine-field... (canonical schema-validated) stop-report.
+recommendation: >
+  On green suites + Haiku PASS + Opus PASS with both F1 and F2 resolved and no unresolved blocking finding,
+  PAUSE for operator GATE-2 merge authorization naming PR #50 and its exact head SHA (protected-branch merge =
+  mandatory pause). Only then may a SAFE-TO-APPROVE readiness classification apply.
+
+# KRONOS loop-state checkpoint
 seq: 300
 derived_at: 2026-11-05T19:40:00Z
 contract_version: 1.2.0
