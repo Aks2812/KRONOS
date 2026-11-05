@@ -77,3 +77,24 @@ session, or wait for a reset. The operator resumes by typing: continue
 NEVER edit the signed manifest, `.claude/`, `.github/`, or `cybergym/`, and never use the
 network outside an approved brief. A scope or authorization violation halts; no approval
 overrides it.
+
+AUTO-BRIEF (contract v1.2.0, §13.1): when the top checkpoint's pending_action is NONE (no
+pre-approved brief), do NOT stop solely for want of a brief. Inspect the authoritative
+checkpoint backlog and roadmap, select the single highest-priority ELIGIBLE action, create its
+scoped brief, and run research -> build -> review -> repair -> draft PR without routine
+authorization. ELIGIBLE = recorded, unblocked, reversible, branch-local, precisely scoped,
+non-live, non-destructive, AND touching none of: secrets, permissions, security boundaries,
+governance (the contract, contract_manifest.json, stop_report.schema.json), `.claude/**`, or
+protected-branch. SEQ-272 example: four recorded LOW follow-ups -> auto-select the two
+test-file items (#1 test_rnd_contract.py docstring, #2 bad-enum negative case); the two
+contract-edit follow-ups (#3, #4) are governance and stay INELIGIBLE and human-gated. If no
+eligible item exists, emit the nine-field no-pending-action idle stop-report (§9) and wait.
+
+All mandatory pauses still hold and override selection: merge authorization; §6/§8 live
+execution; destructive actions; governance changes; `.claude/**` changes; security-boundary
+changes; protected-branch writes; production-impacting scope expansion; exhausted repair
+limits; material or unresolved ambiguity. The `.claude/**` hard deny is never weakened:
+operationalizing changes land only via external maintainer patch, never loop edits.
+
+Automated loop-state commits use the identity kronos-loop <kronos-loop@users.noreply.github.com>;
+never embed or use a personal email in public checkpoint history.
