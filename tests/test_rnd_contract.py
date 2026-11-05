@@ -177,12 +177,24 @@ def test_operative_rails_carry_nine_field_and_hash_mismatch():
 
 
 # SPEC AUTO-BRIEF: reference eligibility predicate mirrors §13.1 of the contract.
+def _path_is_governance(p):
+    return (p.startswith("docs/governance/")
+            or p.rsplit("/", 1)[-1] in ("contract_manifest.json", "stop_report.schema.json"))
+
+
+def _path_is_claude(p):
+    return p.startswith(".claude/")
+
+
 def _eligible(item):
     positives = ("recorded", "unblocked", "reversible", "branch_local", "scoped")
     negatives = ("live", "destructive", "protected_branch",
-                 "touches_secrets", "touches_permissions", "touches_security",
-                 "touches_governance", "touches_claude")
-    return all(item[k] for k in positives) and not any(item[k] for k in negatives)
+                 "touches_secrets", "touches_permissions", "touches_security")
+    paths = item["paths"]
+    governance = item["touches_governance"] or any(_path_is_governance(p) for p in paths)
+    claude = item["touches_claude"] or any(_path_is_claude(p) for p in paths)
+    return (all(item[k] for k in positives) and not any(item[k] for k in negatives)
+            and not governance and not claude)
 
 
 def _select(backlog):
@@ -221,6 +233,12 @@ def test_seq272_governance_followups_are_ineligible():
     assert not _eligible(by_id["low3"])
     assert not _eligible(by_id["low4"])
     assert _eligible(by_id["low1"]) and _eligible(by_id["low2"])
+
+
+def test_eligibility_derives_governance_from_paths():
+    assert not _eligible(_mk("g", 1, ["docs/governance/KRONOS_RND_CONTRACT.md"]))
+    assert not _eligible(_mk("m", 1, ["docs/governance/contract_manifest.json"]))
+    assert not _eligible(_mk("c", 1, [".claude/RAILS.md"]))
 
 
 def test_empty_or_all_ineligible_backlog_yields_idle():
