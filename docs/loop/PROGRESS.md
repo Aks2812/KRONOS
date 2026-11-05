@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 289
+derived_at: 2026-11-05T14:15:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq288_pending_action_outcome: >
+DONE. Committed maintainer-applied env-runner patch on claude/env-runner-policy (committer kronos-loop
+<kronos-loop@users.noreply.github.com>, Co-Authored-By Claude Opus 4.8) -> head
+8f9bfe868b975cecc40b756c12513731e28f81fa; pushed; DRAFT PR #49 opened base main. Diff identical to prepared patch
+edf67488023fdfc6b380c795ed7cf5909a8de1cefc6f20815923c30a46f48854; scope = exactly .claude/RAILS.md +
+.claude/commands/kronos-continue.md (+24/-2). Focused tests/test_rnd_contract.py + tests/test_commit_authority.py
+56 passed. Full suite via canonical runner TMPDIR=<disk> rtk test .venv/bin/python -m pytest -q: orchestrator 4026
+passed/1 skipped/0 failed (465.14s), independent Haiku reviewer 4026 passed/1 skipped/0 failed (489.19s).
+Independent Haiku VERDICT PASS all AC (AC1 scope two files; AC2 requires .venv/bin/python; AC3 disk-backed TMPDIR;
+AC4 prohibits bare rtk test pytest/system-Python; AC5 fails closed STOP+nine-field, no collection-error masking;
+AC6 no personal email, only pre-existing kronos-loop noreply context; AC7 every pre-existing gate + .claude/** hard
+deny preserved, 2 deletions = reworded MERGE-GATE clause; AC8 both suites 0 failed). Opus Gate-2 semantic PASS.
+stage: >
+Env-runner rails change built, reviewed, verified; draft PR #49 at head 8f9bfe8 base main 0d0988c, mergeStateStatus
+CLEAN, statusCheckRollup [] (ci none). PAUSED at GATE-2 for operator merge authorization (protected-branch merge =
+mandatory pause; loop cannot self-authorize). No AUTO-BRIEF started; §6/§8 NOT lifted. Reviewer LOW finding F1
+(placeholder <disk-backed-dir> non-prescriptive in both .claude files) is a maintainer follow-up only: loop cannot
+edit .claude/** (hard deny); recorded for operator, not acted.
+pending_action: NONE (awaiting operator GATE-2)
+recommendation: >
+Authorize GATE-2 merge of PR #49 at exact head 8f9bfe868b975cecc40b756c12513731e28f81fa. On authorization the loop
+re-measures the ten-item MERGE-GATE in-turn and runs gh pr ready 49, gh pr merge 49 --squash --match-head-commit
+8f9bfe868b975cecc40b756c12513731e28f81fa (never --admin, never --auto). Optional maintainer follow-up before/after
+merge: tighten F1 by naming a concrete disk-backed TMPDIR (or a check) in .claude/RAILS.md +
+.claude/commands/kronos-continue.md via another external patch (loop will not self-apply). Do not start another
+AUTO-BRIEF or lift §6/§8 until directed.
+# KRONOS loop-state checkpoint
 seq: 288
 derived_at: 2026-11-05T13:30:00Z
 contract_version: 1.2.0
