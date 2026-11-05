@@ -1,4 +1,13 @@
 # KRONOS loop-state checkpoint
+seq: 262
+derived_at: 2026-11-04T17:10:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+stage: EXECUTING operator-authorized brief (context.md GATE-1, 2026-11-04). Contract v1.1.0 bounded AUTO-NEXT + stop-report terminal-path regression fix. Branch claude/auto-next-policy cut from clean main@5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c (origin/main, protected void-rule-kronos). START-OF-TURN contract integrity gate PASS (v1.0.0 hashes equal manifest). seq 261 pending_action (AWAITING OPERATOR DIRECTION) RESOLVED by operator context.md: SEQ 261 accepted; §6/§8 live-run pause NOT lifted (held since SEQ 140); authorized 8-file scope (KRONOS_RND_CONTRACT.md, stop_report.schema.json, contract_manifest.json, CLAUDE.md, .claude/RAILS.md, .claude/commands/kronos-continue.md, tests/test_rnd_contract.py, tests/test_commit_authority.py). Observed regression: /kronos-continue no-pending STOP AND ASK path emitted pending_action+recommendation only, not the nine-field schema-valid stop-report. Plan: contract to 1.1.0 (strengthen so every terminal path STOP AND ASK/PAUSE/BLOCKED/COMPLETE/no-pending/circuit-breaker-exhaustion/failed-review emits schema-valid nine-field report; add bounded AUTO-NEXT section preserving Thin-Orchestrator + all gates + mandatory pauses); command + RAILS operationalize; tests/test_rnd_contract.py add terminal-path validators + version bump; tests/test_commit_authority.py seal RND window 6e206e6..5cc62f9 + open 5cc62f9..HEAD (AN_SECTION_10 = RND_SECTION_10, all 8 files already in-scope); contract_manifest.json contract hash + version refresh; schema + CLAUDE.md untouched (surgical, terminal paths already validate against current 4 report_type values). Models per .claude/agents: researcher sonnet-5 (mapping dispatched), builder sonnet-5-5, reviewer haiku-5-5, Opus Gate-2. Do NOT touch 3c712d4.
+pending_action: Dispatch kronos-builder on claude/auto-next-policy for the v1.1.0 edits (8-file scope), then independent kronos-reviewer + Opus Gate-2, update hashes, run focused + full suites, open DRAFT PR if green, then PAUSE before merge with the nine-field report. No merge, no ready-for-review, no §6/§8 lift without further GATE.
+recommendation: Proceed with build under approved scope; pause at draft PR for GATE-2 merge authorization.
+# KRONOS loop-state checkpoint
 
 seq: 261
 derived_at: 2026-11-04T16:40:00Z
