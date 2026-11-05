@@ -144,7 +144,7 @@ Automated loop-state checkpoint commits MUST use the identity `kronos-loop <kron
 ## Canonical full-suite test runner — project `.venv`, disk-backed `TMPDIR`
 
 The full suite runs ONLY through the project virtualenv interpreter:
-`TMPDIR=<disk-backed-dir> rtk test .venv/bin/python -m pytest -q` (the focused form is the
+`TMPDIR="${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp" rtk test .venv/bin/python -m pytest -q` (the focused form is the
 same with the test path appended). `.venv/bin/python` carries this project's pinned
 dependencies (e.g. `kuzu==0.11.3`, `pyproject.toml` / `requirements.txt`); the system
 interpreter does not.
@@ -157,6 +157,11 @@ Fail closed: if `.venv/bin/python` is missing or not runnable, STOP and emit the
 stop-report (§9); never substitute the system interpreter, and never mask a missing dependency
 with `--continue-on-collection-errors` or by ignoring collection errors.
 
-pytest `tmp_path` scratch MUST point at a disk-backed `TMPDIR`, never the tmpfs `/tmp`: a full
-run writes large per-test `kuzu` databases and will otherwise exhaust the volume mid-run and
-abort the measurement. Clear that scratch dir after the run.
+pytest `tmp_path` scratch MUST point at a disk-backed `TMPDIR`, concretely
+`${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp`, never the tmpfs `/tmp`: a full run writes
+large per-test `kuzu` databases and will otherwise exhaust the volume mid-run and abort the
+measurement. Create the directory first (`mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp"`)
+and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDIR"` (equivalently
+`df -PT "$TMPDIR"`) MUST NOT report `tmpfs`. Fail closed: if that directory cannot be created, or
+resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the nine-field stop-report (§9);
+never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.

@@ -62,7 +62,7 @@ it, re-measure the full ten-item MERGE-GATE in the same turn: main protected; PR
 open and unmerged; head SHA equals the SHA the operator authorized; independent reviewer
 PASS on the brief's §8 acceptance criteria by evidence; CI green or `ci: none` recorded; the
 brief's own local test evidence re-measured (suite 0 failed via the canonical runner
-`TMPDIR=<disk-backed-dir> rtk test .venv/bin/python -m pytest -q`, decided from the runner's
+`TMPDIR="${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp" rtk test .venv/bin/python -m pytest -q`, decided from the runner's
 summary line, never `$?`; never bare `rtk test pytest` or system Python; fail closed if
 `.venv/bin/python` is unavailable); the brief's scope-guard / seal-tax scope audit green; orchestrator
 Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merge only with
