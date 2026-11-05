@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 288
+derived_at: 2026-11-05T13:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq287_pending_action_outcome: >
+Operator directed (context.md this turn): maintainer hand-applied env-runner patch
+edf67488023fdfc6b380c795ed7cf5909a8de1cefc6f20815923c30a46f48854 on local branch claude/env-runner-policy
+(working tree, uncommitted) at base main 0d0988cf349e9eb66eadf5e604fd7dc96dcd2d2e. Loop VERIFIED (not authored):
+git status = exactly .claude/RAILS.md + .claude/commands/kronos-continue.md modified (+24/-2); working diff
+IDENTICAL to the prepared patch edf67488; required properties all present — requires .venv/bin/python; disk-backed
+TMPDIR; prohibits bare `rtk test pytest`/bare pytest/`/usr/bin/python` system-Python; fails closed (STOP +
+nine-field §9) if .venv/bin/python unavailable, never masks collection errors; no personal email added (only hit is
+the pre-existing kronos-loop@users.noreply context line; zero andika1904/gmail); the two deletions are the reworded
+MERGE-GATE local-test clause only — every existing gate and .claude/** hard deny preserved.
+stage: >
+Option B: loop commits maintainer-authored .claude/ working-tree changes (does NOT edit .claude/**). Contract
+integrity re-verified start-of-turn (v1.2.0, both hashes == manifest). main 0d0988c; branch claude/env-runner-policy
+local only (no remote yet); no AUTO-BRIEF; §6/§8 NOT lifted.
+pending_action: >
+CONSEQUENTIAL (operator-directed): commit the maintainer-applied .claude/RAILS.md + .claude/commands/kronos-continue.md
+on claude/env-runner-policy (committer kronos-loop <kronos-loop@users.noreply.github.com>, Co-Authored-By Claude
+Opus 4.8); push branch; open DRAFT PR; run focused + full suites with the NEW canonical runner
+TMPDIR=<disk> rtk test .venv/bin/python -m pytest -q (require 0 failed); dispatch independent Haiku reviewer (brief
+= the patch property checklist + diff range base..HEAD) + Opus Gate-2 semantic verify; record exact head SHA; PAUSE
+at GATE-2. NO merge, NO ready, NO AUTO-BRIEF, NO §6/§8 lift. If diff != edf67488 or scope != the two files, ABORT +
+nine-field stop-report.
+recommendation: >
+On green suites + Haiku PASS + Opus PASS, PAUSE for operator GATE-2 merge authorization naming the draft PR and its
+exact head SHA (protected-branch merge = mandatory pause).
+# KRONOS loop-state checkpoint
 seq: 287
 derived_at: 2026-11-05T13:00:00Z
 contract_version: 1.2.0
