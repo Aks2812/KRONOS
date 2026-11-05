@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 293
+derived_at: 2026-11-05T16:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq292_pending_action_outcome: >
+  NONE at seq 292 (PAUSED GATE-2). This turn operator (context.md) AUTHORIZED GATE-2 merge of PR #49 ONLY at
+  exact head 76b9d3284e3c603e2e806f350c5648c5ceb93ead; accepted the two LOW findings as non-blocking backlog;
+  directed re-measure the full ten-item MERGE-GATE via canonical runner, then gh pr ready + squash-merge with
+  exact-head protection (no --admin, no --auto); verify main after; no AUTO-BRIEF; pause after for the
+  consolidated persistent Markdown-table + decision-class policy work.
+stage: >
+  Contract integrity re-verified start-of-turn (v1.2.0, both hashes == manifest). Ten-item MERGE-GATE
+  re-measured this turn, all green: (1) main 0d0988c protected=true; (2) PR #49 draft -> will gh pr ready;
+  (3) OPEN unmerged; (4) head 76b9d328 == operator-authorized SHA; (5) independent reviewer VERDICT PASS all 8
+  §8 AC (seq 292); (6) statusCheckRollup [] = ci none; (7) local evidence re-measured THIS turn via canonical
+  runner TMPDIR=${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp (ext4): focused 56 passed, full 4026 passed/1
+  skipped/0 failed (630.48s); (8) scope audit green = exactly .claude/RAILS.md + .claude/commands/kronos-continue.md
+  on origin/main..76b9d328; (9) Opus Gate-2 semantic PASS; (10) no hard-boundary/out-of-scope file touched.
+  Head re-confirmed unchanged at 76b9d328.
+pending_action: >
+  CONSEQUENTIAL (operator-authorized protected-branch merge): gh pr ready 49, then
+  gh pr merge 49 --squash --match-head-commit 76b9d3284e3c603e2e806f350c5648c5ceb93ead (never --admin, never
+  --auto). Then verify main integrity (new main HEAD is the squash commit, is a descendant of 0d0988c, contains
+  the F1 change; branch deleted by merge is acceptable). NO AUTO-BRIEF; §6/§8 NOT lifted. If head != 76b9d328 at
+  merge time or --match-head-commit rejects, ABORT + nine-field stop-report.
+recommendation: >
+  After merge, verify main, then COMPLETE and PAUSE for the consolidated persistent Markdown-table and
+  decision-class policy implementation (operator-directed next work; do not auto-start it).
+
+# KRONOS loop-state checkpoint
 seq: 292
 derived_at: 2026-11-05T15:55:00Z
 contract_version: 1.2.0
