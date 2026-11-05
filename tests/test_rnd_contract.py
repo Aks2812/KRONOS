@@ -238,6 +238,7 @@ def test_seq272_governance_followups_are_ineligible():
 def test_eligibility_derives_governance_from_paths():
     assert not _eligible(_mk("g", 1, ["docs/governance/KRONOS_RND_CONTRACT.md"]))
     assert not _eligible(_mk("m", 1, ["docs/governance/contract_manifest.json"]))
+    assert not _eligible(_mk("s", 1, ["docs/governance/stop_report.schema.json"]))
     assert not _eligible(_mk("c", 1, [".claude/RAILS.md"]))
 
 
