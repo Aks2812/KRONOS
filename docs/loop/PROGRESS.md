@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 286
+derived_at: 2026-11-05T12:45:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq285_pending_action_outcome: >
+MERGED. Ten-item MERGE-GATE re-measured green in-turn at exact head 82a7928 (all items recorded seq 285).
+gh pr ready 48 (operator-authorized) -> READY; gh pr merge 48 --squash --match-head-commit
+82a792814e782519505c70e0381530e2361ca08d (no --admin, no --auto). PR #48 MERGED squash SHA
+0d0988cf349e9eb66eadf5e604fd7dc96dcd2d2e (mergedAt 2026-11-05T10:08:00Z). Live re-derived: origin/main now
+0d0988cf349e9eb66eadf5e604fd7dc96dcd2d2e; PR #48 state MERGED.
+stage: >
+brief48 (AUTO-BRIEF, reference eligibility predicate uses item paths) LANDED on main
+0d0988cf349e9eb66eadf5e604fd7dc96dcd2d2e. Net change = tests/test_rnd_contract.py only; contract/manifest/schema
+and .claude/** untouched; integrity hashes unchanged (v1.2.0). GATE-2 complete per operator conditional
+authorization. §6/§8 NOT lifted.
+LOW_followup_backlog (post-brief48):
+(1) wire AUTO-BRIEF predicate tests to live loop code -> touches live executor/§6-§8 (PAUSED) + ambiguous: INELIGIBLE, human-gated.
+(3-4) AN-brief LOW contract-doc edits: governance, INELIGIBLE, human-gated.
+(ENV-RUNNER) operator-requested external maintainer patch: make TMPDIR-disk .venv runner canonical in .claude/RAILS.md +
+.claude/commands/kronos-continue.md; prohibit bare rtk test pytest / system-Python; fail closed if .venv/bin/python absent. HUMAN-GATED (.claude/** hard deny; patch only, never loop edit).
+pending_action: >
+NON-REPO (operator-directed, before any next AUTO-BRIEF): prepare the external maintainer patch for
+.claude/RAILS.md + .claude/commands/kronos-continue.md (canonical TMPDIR-disk .venv full-suite runner; prohibit
+ambiguous rtk test pytest / system-Python fallback; fail closed when project .venv/bin/python unavailable). Save
+OUTSIDE the repository, run git apply --check (do NOT apply), report its sha256, then PAUSE. Do NOT apply the
+patch, do NOT edit .claude/** in-repo, do NOT start another brief, do NOT lift §6/§8.
+recommendation: >
+After patch prepared + git apply --check clean + sha256 reported, PAUSE for operator to hand-apply (.claude/**
+Option B). Do not self-apply; do not begin another AUTO-BRIEF cycle until operator directs.
+# KRONOS loop-state checkpoint
 seq: 285
 derived_at: 2026-11-05T12:30:00Z
 contract_version: 1.2.0
