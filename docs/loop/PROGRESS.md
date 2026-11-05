@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 297
+derived_at: 2026-11-05T18:10:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 carries PROPOSED contract v1.3.0 (binding main still v1.2.0). Proposed
+  contract aadd2ba9ddd28ac06f084e2285a1f35391dc4a121b220885f6bcd6d9b52f11c3, schema
+  d9aeebd2ef1f334d70e880677a3268f4085bf7739ace261e5f102dd6e950f375. loop-state records v1.3.0 only after merge.
+seq296_pending_action_outcome: >
+  DONE. Maintainer hand-applied the corrected OPERATOR_INTERFACE_V13.patch (sha256 eb858556...) to the working
+  tree of claude/operator-interface-v13 over head 6c54a94. Orchestrator VERIFIED: git apply --reverse --check of
+  the corrected patch exits 0 (working tree == patch); diffstat +17 insertions only across exactly
+  .claude/RAILS.md (append, 175 lines, all boundary phrases intact: merge/force denies, kronos-loop identity,
+  canonical runner) and .claude/commands/kronos-continue.md (clean insert, merge rule intact); non-destructive.
+stage: >
+  Decision class REVIEW-REQUIRED (governance + .claude/**). Contract integrity re-verified start-of-turn (branch
+  v1.3.0 self-consistent: on-disk contract+schema == branch manifest). main 08b2641 protected. Branch head 6c54a94.
+  Option B: loop commits maintainer-authored .claude working-tree changes (does NOT edit .claude/**). No PR yet.
+  No section 6 / section 8 lift.
+pending_action: >
+  CONSEQUENTIAL: (1) add one operative-reference test to tests/test_rnd_contract.py asserting the two .claude
+  files reference the decision-class / presentation policy (section 14 / section 15) -- loop-authored, enforces
+  the single-source operationalization claim (section 11 seal-tax). (2) commit the two maintainer-applied .claude
+  files (Option B, kronos-loop noreply, Co-Authored-By Opus 4.8); (3) commit the test addition (kronos-loop
+  noreply); (4) push branch; (5) open ONE draft PR base main (all 7 files); (6) run focused + canonical full
+  suite TMPDIR disk-backed .venv/bin/python -m pytest -q (require 0 failed); (7) dispatch kronos-reviewer
+  (claude-haiku-5-5) independent review brief = v1.3.0 AC + diff range origin/main..HEAD, no builder report;
+  (8) Opus Gate-2 semantic verify; record exact head SHA; PAUSE GATE-2. NO merge, NO ready, NO section 6/8 lift.
+  If any path outside the 7 authorized files is touched, ABORT + nine-field stop-report.
+recommendation: >
+  On green suites + Haiku PASS + Opus PASS, PAUSE for operator GATE-2 merge authorization naming the draft PR and
+  its exact head SHA (protected-branch merge = mandatory pause).
+
+# KRONOS loop-state checkpoint
 seq: 296
 derived_at: 2026-11-05T17:45:00Z
 contract_version: 1.2.0
