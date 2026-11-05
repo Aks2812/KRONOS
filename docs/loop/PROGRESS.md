@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 267
+derived_at: 2026-11-04T18:25:00Z
+contract_version: 1.0.0
+contract_sha256_contract: 68fa056ee99af4918f1a692baf3bd1e466121a6e550552471e283c005eee175d
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq266_pending_action_outcome: >
+  DONE — kronos-builder (sonnet-5-5) regenerated the external patch adding Concern 3; orchestrator Gate-2 verified.
+  Patch: /home/void/Void-Projects/KRONOS_PC/AUTO_NEXT_CLAUDE_FILES.patch (overwrote prior 7582f4f6...).
+  NEW sha256: b8c264925d82785bc2da70a00652d18a95458f8f65aa611bc987c6640f902739
+  Scope: EXACTLY 2 files — .claude/RAILS.md (+15/-0), .claude/commands/kronos-continue.md (+21/-4); 32 ins / 4 del total;
+  no other file; no contract-version string; base main@5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c. git apply --check = exit 0
+  (clean, read-only); repo working tree clean. Content: (C1) every-terminal-path nine-field stop-report; (C2) bounded
+  AUTO-NEXT w/ full mandatory-pause list + Thin-Orchestrator + gates; (C3 NEW) CONTRACT INTEGRITY start-of-turn
+  hash-mismatch sentence -> "STOP and emit the nine-field stop-report (§9) validating against stop_report.schema.json
+  (fail-closed)", AND "contract-integrity hash-mismatch (HALT)" added to the terminal-path enumerations in BOTH files
+  (9 paths each: STOP AND ASK, PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion HALT, failed review
+  BLOCKED, contract-integrity hash-mismatch HALT, usage-limit HALT). Gate-2 semantic PASS.
+stage: PAUSE — revised external .claude/ patch prepared + verified appliable; awaiting operator hand-apply (Option B;
+  .claude/** hard deny preserved; loop never Edited .claude/, no repo change; claude/auto-next-policy == main 5cc62f9).
+  §6/§8 live-run still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: AWAITING operator hand-apply of AUTO_NEXT_CLAUDE_FILES.patch (sha256 b8c264...) to a branch based on
+  main@5cc62f9 (git -C <repo> apply <patch>). After apply (or other direction), the loop builds the remaining SIX authorized
+  files (docs/governance/{KRONOS_RND_CONTRACT.md -> v1.1.0, stop_report.schema.json [likely untouched],
+  contract_manifest.json hash+version refresh}, CLAUDE.md [likely untouched], tests/{test_rnd_contract.py +terminal-path
+  validators +version bump to 1.1.0 at line 63, test_commit_authority.py seal RND window 6e206e6..5cc62f9 + open 5cc62f9..HEAD}),
+  runs focused+full suites, opens a DRAFT PR, then PAUSES before merge with the nine-field report. No merge, no ready-for-review,
+  no deny lift, no §6/§8 lift, no feature work without GATE.
+recommendation: Verify with git apply --check, hand-apply, then reply to resume the loop for the six files.
+# KRONOS loop-state checkpoint
 seq: 266
 derived_at: 2026-11-04T18:10:00Z
 contract_version: 1.0.0
