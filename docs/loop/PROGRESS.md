@@ -1,4 +1,28 @@
 # KRONOS loop-state checkpoint
+seq: 269
+derived_at: 2026-11-04T19:30:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq268_pending_action_outcome: >
+  BUILD GREEN + BOTH GATES PASS. Branch claude/auto-next-policy HEAD c9024cefa89d6f878c7c6c5386f50341d84ec17c
+  (2 commits over 5cc62f9: aac4161 maintainer .claude/ patch; c9024ce contract v1.1.0 + manifest + tests). Full suite
+  (.venv pytest) = 4021 passed, 1 skipped, 0 failed (435s); focused test_rnd_contract.py + test_commit_authority.py
+  = 51 passed. Scope audit: git diff --name-only 5cc62f9..HEAD = exactly the 6 authorized paths (.claude/RAILS.md,
+  .claude/commands/kronos-continue.md, docs/governance/KRONOS_RND_CONTRACT.md, docs/governance/contract_manifest.json,
+  tests/test_commit_authority.py, tests/test_rnd_contract.py); stop_report.schema.json + CLAUDE.md UNCHANGED. Contract
+  on-disk sha256 e218c751... == manifest; schema hash unchanged. Independent kronos-reviewer (haiku-5-5) VERDICT PASS on
+  AC1-AC6 by evidence; Opus Gate-2 semantic PASS. Reviewer 4 LOW findings accepted NON-BLOCKING (optional follow-up):
+  _validate_report docstring should say partial; add a bad-enum negative case; TERMINAL_PATHS mapping is a test fixture
+  (not doc-normative); the section 12 hash-mismatch clause relies on section 9 rather than repeating the nine-field text.
+stage: BUILD complete + verified; opening DRAFT PR, then PAUSE before merge (GATE-2 merge authorization is the maintainer
+  authority). Contract v1.1.0 is NOT yet on main (the start-of-turn integrity gate on main stays v1.0.0 until this merges).
+  Live-run (sections 6 and 8) still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+pending_action: Push feature branch claude/auto-next-policy to origin and open a DRAFT PR (gh pr create --draft) targeting
+  main; record PR number + head SHA; then PAUSE before merge with the nine-field stop-report awaiting operator GATE-2 merge
+  authorization naming the PR + head SHA. No merge, no gh pr ready, no --admin, no --auto, no deny lift, no live-run lift.
+recommendation: Open the draft PR, then pause for operator GATE-2 merge authorization.
+# KRONOS loop-state checkpoint
 seq: 268
 derived_at: 2026-11-04T18:45:00Z
 contract_version: 1.0.0
