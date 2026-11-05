@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 302
+derived_at: 2026-11-05T20:40:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 (PR #50) carries PROPOSED v1.3.0 (binding main still v1.2.0). Branch ref
+  head e9998bc1de428bd18733771d5fd15b5f360c2b46; contract e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b,
+  schema d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35. loop-state records v1.3.0 after merge.
+seq301_pending_action_outcome: >
+  DONE on content; BLOCKED on a GitHub state inconsistency. Committed the maintainer-applied F1 .claude files
+  (Option B, commit 7202141) + the count-neutral enforcement test (777d27a) + a fix updating the pre-existing
+  test_operative_rails_carry_* assertion from "nine-field" to "canonical schema-validated" (commit
+  e9998bc1de428bd18733771d5fd15b5f360c2b46; the prior assertion red-ed once the patch removed nine-field from the
+  rails -- caught and fixed this turn). Scope origin/main..e9998bc = exactly the 7 authorized files. Orchestrator
+  focused 69 passed; full canonical suite 4039 passed / 1 skipped / 0 failed (551.59s) on local HEAD e9998bc.
+  Independent Haiku 5.5 re-review (brief = v1.3.0 AC incl F1/F2 + diff origin/main..e9998bc, no builder report):
+  VERDICT PASS all 8 AC, NO unresolved blocking finding; its own runs focused 69 passed + full 4039 passed/1
+  skipped/0 failed (528.16s); F1 nine-field == 0 in contract + both .claude files, F2 three clauses + schema
+  next[] decision_class, .claude non-destructive (only the 9 nine-field lines replaced in place, boundaries
+  intact). Opus Gate-2 semantic PASS. Both F1 and F2 resolved.
+  BLOCKER: GitHub PR #50 head pointer is STUCK at the stale 777d27ad51b702f14ed8feeeb105507c78544d6a across 5
+  polls, while origin branch ref = e9998bc (git ls-remote confirms). The e9998bc push initially hit repeated
+  "remote: Internal Server Error" (500) before succeeding; GitHub did not refresh the PR head to e9998bc. 777d27a
+  LACKS the test-fix commit and would fail focused, so a merge of PR #50 now (which would --match/-squash the PR
+  head) risks merging a red commit. LIVE mismatch reported: branch ref e9998bc vs PR head 777d27a.
+stage: >
+  Decision class HOLD (unavailable/inconsistent required environment: GitHub PR head pointer does not reflect the
+  branch ref). Contract integrity re-verified start-of-turn (branch v1.3.0 self-consistent; binding main v1.2.0).
+  main 08b2641 protected. Content is merge-ready (no blocking finding) but the PR object is not. No merge, no PR
+  close/reopen, no force-push (all unauthorized/unsafe here). No section 6/8 lift.
+pending_action: NONE (awaiting GitHub PR head to reconcile to e9998bc, or operator direction)
+recommendation: >
+  Wait for GitHub to reconcile PR #50 head to e9998bc1de428bd18733771d5fd15b5f360c2b46 (branch ref already there),
+  then re-measure the ten-item MERGE-GATE and PAUSE for operator GATE-2. If it does not reconcile, operator may
+  advise a safe nudge (e.g. authorize a no-op re-push or a maintainer-side PR refresh). Do NOT merge while PR head
+  != branch ref: merging would squash the stale, red 777d27a. Do not authorize GATE-2 against 777d27a.
+
+# KRONOS loop-state checkpoint
 seq: 301
 derived_at: 2026-11-05T20:05:00Z
 contract_version: 1.2.0
