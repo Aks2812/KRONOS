@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 278
+derived_at: 2026-11-05T02:20:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq277_pending_action_outcome: >
+  DONE. Committed maintainer-applied .claude/ onto claude/auto-brief-policy as
+  f12eb0dafa2a128391534c28292c70b05f55a2f6 (committer kronos-loop <kronos-loop@users.noreply.github.com>,
+  Co-Authored-By Claude Opus 4.8). PR #47 head advanced to f12eb0d (draft OPEN). Focused 55 passed; full suite
+  4025 passed / 1 skipped / 0 failed (orchestrator re-measured). Independent Haiku reviewer VERDICT PASS all AC
+  (AC1 scope=6 authorized paths; AC2 contract v1.2.0, manifest sha256 5095bf38==disk, schema unchanged; AC3
+  .claude/ operationalizes AUTO-BRIEF + SEQ-272 #1/#2 + hard-deny-never-weakened + noreply identity, +31/-0;
+  AC4 privacy andika1904=0 gmail=0; AC5 seal-tax AN sealed@3f6dbc3, AB window<=AB_SECTION_10; AC6 focused 55 /
+  full 4025 0-failed re-measured). Opus Gate-2 semantic PASS. One LOW informational (contract tests use fixtures),
+  non-blocking.
+stage: >
+  v1.2.0 + operational .claude/ staged atomically on PR #47 (head f12eb0d), NOT on main. On-main integrity gate
+  stays v1.1.0 (e218c751 / 652bf6ba). Live-run (sections 6 and 8) PAUSED (SEQ 140). GATE-2 held.
+pending_action: >
+  AWAITING operator GATE-2 merge authorization for PR #47 at EXACT head
+  f12eb0dafa2a128391534c28292c70b05f55a2f6. On authorization: re-measure full ten-item MERGE-GATE in-turn, then
+  gh pr ready 47 + gh pr merge 47 --squash --match-head-commit f12eb0d... (never --admin, never --auto).
+recommendation: >
+  Authorize GATE-2 merge of PR #47 at head f12eb0dafa2a128391534c28292c70b05f55a2f6. Both the contract v1.2.0
+  governance change and its .claude/ operationalization are present and verified; they land together in one squash.
+# KRONOS loop-state checkpoint
 seq: 277
 derived_at: 2026-11-05T01:40:00Z
 contract_version: 1.1.0
