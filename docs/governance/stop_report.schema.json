@@ -46,12 +46,13 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["rank", "severity", "depends_on", "action"],
+        "required": ["rank", "severity", "depends_on", "action", "decision_class"],
         "properties": {
           "rank": {"type": "integer"},
           "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
           "depends_on": {"type": "array", "items": {"type": "string"}},
-          "action": {"type": "string"}
+          "action": {"type": "string"},
+          "decision_class": {"type": "string", "enum": ["AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"]}
         }
       }
     },

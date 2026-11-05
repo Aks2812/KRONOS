@@ -118,6 +118,7 @@ def _validate_report(report):
         for k in item_schema["required"]:
             assert k in item, f"next item missing: {k}"
         assert item["severity"] in item_schema["properties"]["severity"]["enum"]
+        assert item["decision_class"] in item_schema["properties"]["decision_class"]["enum"]
     return True
 
 
@@ -132,7 +133,7 @@ def _report(report_type, why):
         "how": {"tests": "n passed", "gates": "ok"},
         "decision_class": "REVIEW-REQUIRED",
         "opus_effort": "LOW",
-        "next": [{"rank": 1, "severity": "high", "depends_on": [], "action": "a"}],
+        "next": [{"rank": 1, "severity": "high", "depends_on": [], "action": "a", "decision_class": "REVIEW-REQUIRED"}],
         "recommendation": "r",
         "operator_action": "continue",
     }
@@ -315,3 +316,63 @@ def test_operative_claude_files_reference_decision_policy():
         text = p.read_text()
         assert "§14" in text and "§16" in text, str(p)
         assert "operationalize" in text, str(p)
+
+
+def _class_consistent(report):
+    # Contract §14 F2 rule: while a blocking finding is unresolved (report level
+    # REVIEW-REQUIRED or HOLD), nothing may be SAFE-TO-APPROVE.
+    if report["decision_class"] in {"REVIEW-REQUIRED", "HOLD"}:
+        if report["decision_class"] == "SAFE-TO-APPROVE":
+            return False
+        if any(it.get("decision_class") == "SAFE-TO-APPROVE" for it in report["next"]):
+            return False
+    return True
+
+
+def test_blocking_report_rejects_safe_to_approve_row():
+    # Reproduces the seq-298 contradiction: a REVIEW-REQUIRED report must not
+    # carry a SAFE-TO-APPROVE next-action row while the blocker is unresolved.
+    bad = _report("PAUSE", "gate2")
+    bad["decision_class"] = "REVIEW-REQUIRED"
+    bad["next"] = [
+        {"rank": 1, "severity": "high", "depends_on": ["operator"],
+         "action": "fix the blocker", "decision_class": "REVIEW-REQUIRED"},
+        {"rank": 2, "severity": "medium", "depends_on": ["operator"],
+         "action": "accept blocker and merge", "decision_class": "SAFE-TO-APPROVE"},
+    ]
+    assert not _class_consistent(bad)
+
+    good = dict(bad)
+    good["next"] = [
+        {"rank": 1, "severity": "high", "depends_on": ["operator"],
+         "action": "fix the blocker", "decision_class": "REVIEW-REQUIRED"},
+    ]
+    assert _class_consistent(good)
+
+
+def test_hold_report_rejects_safe_to_approve_row():
+    bad = _report("HALT", "blocker")
+    bad["decision_class"] = "HOLD"
+    bad["next"] = [{"rank": 1, "severity": "critical", "depends_on": [],
+                    "action": "x", "decision_class": "SAFE-TO-APPROVE"}]
+    assert not _class_consistent(bad)
+
+
+def test_contract_blocking_forces_review_or_hold():
+    text = CONTRACT.read_text()
+    assert "the report-level decision class MUST be `REVIEW-REQUIRED` or `HOLD`" in text
+    assert "no recommendation and no next-action row may be classified `SAFE-TO-APPROVE`" in text
+    assert "MUST NOT recommend accepting the blocker and merging" in text
+
+
+def test_contract_uses_count_neutral_report_term():
+    text = CONTRACT.read_text()
+    assert "nine-field" not in text
+    assert "canonical schema-validated stop-report" in text
+    assert "authoritative for the required fields" in text
+
+
+def test_schema_next_item_has_decision_class():
+    item = _schema()["properties"]["next"]["items"]
+    assert "decision_class" in item["required"]
+    assert set(item["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
