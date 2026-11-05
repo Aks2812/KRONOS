@@ -14,6 +14,7 @@ CONTRACT_REF = "docs/governance/KRONOS_RND_CONTRACT.md"
 REQUIRED_KEYS = {
     "what", "why", "who", "when", "where", "how",
     "next", "recommendation", "operator_action",
+    "decision_class", "opus_effort",
 }
 PINS = {
     "kronos-researcher.md": "claude-sonnet-5",
@@ -60,7 +61,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.2.0"
+    assert manifest["contract_version"] == "1.3.0"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -106,6 +107,8 @@ def _validate_report(report):
     if "report_type" in report:
         assert report["report_type"] in props["report_type"]["enum"]
     assert report["why"] in props["why"]["enum"]
+    assert report["decision_class"] in props["decision_class"]["enum"]
+    assert report["opus_effort"] in props["opus_effort"]["enum"]
     how = report["how"]
     assert isinstance(how, dict) and "tests" in how and "gates" in how
     nxt = report["next"]
@@ -127,6 +130,8 @@ def _report(report_type, why):
         "when": {"checkpoint_seq": 1, "timestamp": "2026-01-01T00:00:00Z"},
         "where": {"branch": "b", "head_sha": "abc", "pr": None, "main": "def"},
         "how": {"tests": "n passed", "gates": "ok"},
+        "decision_class": "REVIEW-REQUIRED",
+        "opus_effort": "LOW",
         "next": [{"rank": 1, "severity": "high", "depends_on": [], "action": "a"}],
         "recommendation": "r",
         "operator_action": "continue",
@@ -162,9 +167,9 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_2_0_with_auto_brief():
+def test_contract_is_v1_3_0_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.2.0" in text
+    assert "Version: 1.3.0" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -252,3 +257,51 @@ def test_contract_envelope_lists_eligibility_criteria():
     for phrase in ("recorded", "unblocked", "reversible", "branch-local", "precisely scoped",
                    "non-live", "non-destructive", "MUST NOT cause a pause", "no-pending-action"):
         assert phrase in text, phrase
+
+
+DECISION_CLASSES = {"AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"}
+
+
+def test_schema_has_decision_class_enum():
+    enum = _schema()["properties"]["decision_class"]["enum"]
+    assert set(enum) == DECISION_CLASSES
+    assert "decision_class" in _schema()["required"]
+
+
+def test_schema_has_opus_effort_enum():
+    enum = _schema()["properties"]["opus_effort"]["enum"]
+    assert set(enum) == {"LOW", "MEDIUM", "HIGH"}
+    assert "opus_effort" in _schema()["required"]
+
+
+def test_contract_defines_five_decision_classes():
+    text = CONTRACT.read_text()
+    assert "## §14 Decision classes" in text
+    for cls in DECISION_CLASSES:
+        assert f"`{cls}`" in text, cls
+    assert "blocking regardless of its nominal severity" in text
+
+
+def test_contract_presentation_policy_columns():
+    text = CONTRACT.read_text()
+    assert "## §15 Persistent terminal presentation" in text
+    for col in ("Report Type", "Decision Class", "Opus Effort"):
+        assert col in text, col
+    for col in ("Rank", "Severity", "Dependencies", "Action"):
+        assert col in text, col
+    assert "Box-drawing characters are rejected" in text
+    assert "GitHub-flavored Markdown" in text
+    assert "<br>" in text
+    assert "authorization line" in text
+
+
+def test_single_source_rule_present():
+    text = CONTRACT.read_text()
+    assert "## §16 Single-source rule" in text
+    assert "sole semantic authority" in text
+
+
+def test_claude_md_references_decision_policy():
+    text = (ROOT / "CLAUDE.md").read_text()
+    assert "§14" in text and "§15" in text
+    assert "sole semantic authority" in text

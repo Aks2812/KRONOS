@@ -1,7 +1,7 @@
 {
-  "contract_version": "1.2.0",
+  "contract_version": "1.3.0",
   "files": [
-    {"path": "docs/governance/KRONOS_RND_CONTRACT.md", "sha256": "5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4"},
-    {"path": "docs/governance/stop_report.schema.json", "sha256": "652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c"}
+    {"path": "docs/governance/KRONOS_RND_CONTRACT.md", "sha256": "aadd2ba9ddd28ac06f084e2285a1f35391dc4a121b220885f6bcd6d9b52f11c3"},
+    {"path": "docs/governance/stop_report.schema.json", "sha256": "d9aeebd2ef1f334d70e880677a3268f4085bf7739ace261e5f102dd6e950f375"}
   ]
 }

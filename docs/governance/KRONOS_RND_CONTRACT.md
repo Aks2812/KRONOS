@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.2.0
+Version: 1.3.0
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.2.0.
+This file is the sole binding R&D governance for KRONOS as of version 1.3.0.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -155,4 +155,37 @@ A missing pre-approved brief MUST NOT cause a pause when an eligible recorded ba
 
 AUTO-BRIEF preserves Thin-Orchestrator delegation (§1), the gates (§3), the MERGE-GATE (§7), write-ahead checkpointing (§8), and the seal-tax (§11). It never crosses a human gate: a created brief still PAUSES before merge for GATE-2.
 
-Contract-Version: 1.2.0
+## §14 Decision classes
+
+Every terminal evaluation carries exactly one decision class. This contract is the sole semantic authority for the set and its meaning; `CLAUDE.md`, `.claude/RAILS.md`, `.claude/commands/kronos-continue.md`, and `docs/governance/stop_report.schema.json` operationalize or mirror these classes and never independently redefine them.
+
+- `AUTO-CONTINUE` — eligible, reversible, in-scope work: checkpoint and continue without operator confirmation.
+- `SAFE-TO-APPROVE` — a routine protected-branch merge with exact-head independent review, complete green gates, zero failures, and no unresolved purpose-critical or Medium/Critical finding.
+- `REVIEW-REQUIRED` — governance, `.claude/**`, security, privacy, authorization, destructive/history-rewriting action, §6/§8 live execution, ambiguous scope, or a purpose-critical residual finding.
+- `HOLD` — red, incomplete, or conflicting evidence; an unavailable required environment; a dirty working tree; or an exhausted circuit breaker.
+- `NO-ACTION` — a complete or genuinely idle state.
+
+A finding that weakens the brief's primary acceptance objective is blocking regardless of its nominal severity.
+
+A decision class is a readiness statement, never an authorization. `SAFE-TO-APPROVE` does not cross GATE-2: a protected-branch merge still requires the explicit maintainer authorization of §3 and the ten-item re-measurement of §7. No decision class weakens the merge, live-use (§6), security, privacy, `.claude/**` hard-deny (§5), or circuit-breaker (§4) boundaries.
+
+## §15 Persistent terminal presentation
+
+Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
+
+- Render as GitHub-flavored Markdown — not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- One summary table with exactly these columns: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort.
+- One next-actions table with exactly these columns: Rank, Severity, Dependencies, Decision Class, Action.
+- Escape pipe characters inside cells (`\|`) and use `<br>` for multi-line cells.
+- Provide exactly one preferred recommendation; list alternatives only when materially different.
+- A `SAFE-TO-APPROVE` report includes exactly one authorization line naming the PR number and the full head SHA.
+- Intermediate progress updates stay concise; the complete tables are required only at genuine terminal states.
+- Opus effort defaults to LOW; MEDIUM or HIGH requires a stated reason in the report. Thin-Orchestrator delegation (§1) is preserved.
+
+## §16 Single-source rule
+
+- This contract is the sole semantic authority for the decision classes (§14) and the persistent terminal-presentation policy (§15). `CLAUDE.md`, `.claude/RAILS.md`, and `.claude/commands/kronos-continue.md` reference and operationalize those clauses; they never independently redefine them.
+- `docs/governance/stop_report.schema.json` mirrors only the permitted decision-class enum and the required fields; it carries no decision-class semantics of its own.
+- After merge, `kronos/loop-state` records the active `contract_version` (1.3.0) and the verified hashes only; it never duplicates the contract body.
+
+Contract-Version: 1.3.0
