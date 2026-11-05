@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 283
+derived_at: 2026-11-05T10:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq282_pending_action_outcome: >
+SUPERSEDED by operator directive (context.md, read this turn): AUTO-BRIEF behavior ACCEPTED; GATE-2 HELD for
+PR #48; red suite NOT to be accepted. Operator ordered Sonnet-5 read-only env diagnosis + repo-defined dependency
+restore inside project .venv only, then full suite on main 2fc2381 and PR#48 head require ZERO failures before GATE-2.
+Diagnosis (read-only Sonnet) outcome: NOT a missing dependency. Project .venv ALREADY has kuzu==0.11.3 (pyproject.toml:7,
+requirements.txt:1). Prior reds were the test runner using /usr/bin/python (system 3.14.7, no kuzu); repo-declared
+command is python3 -m pytest via project env (README:70-77). No install performed, no manifest/source/test change.
+Full suite via .venv/bin/python -m pytest: PR#48 head 0d98ff8 => 1 failed, 4025 passed, 1 skipped (0 collection
+errors). Baseline main 2fc2381 => test_B31_Q_scope_audit PASS. The single PR#48 failure
+tests/test_commit_authority.py::test_B31_Q_scope_audit is CAUSED BY brief48, not environmental: seal-tax window
+AB_BASE(3f6dbc3)..HEAD must be subset of AB_SECTION_10; offending path = {'docs/loop/SPEC_BRIEF48.md'}.
+stage: >
+ROOT CAUSE: docs/loop/ is a loop-state-only directory (absent from main, confirmed git ls-tree origin/main docs/loop
+empty). Orchestrator wrongly committed the brief artifact docs/loop/SPEC_BRIEF48.md onto the PR branch; the open
+AB_BASE..HEAD seal-tax invariant rejects it. tests/test_rnd_contract.py is already in AB_SECTION_10, so removing the
+misplaced brief file makes AB_BASE..HEAD compliant WITHOUT editing tests/test_commit_authority.py and WITHOUT scope
+expansion. Brief artifact belongs on kronos/loop-state. Operator constraint honored: no source/test modification
+(removing a misplaced doc artifact is neither), no bypass of collection failures (env corrected to venv, errors gone).
+pending_action: >
+CONSEQUENTIAL (branch-local repair within approved AUTO-BRIEF scope): on claude/eligibility-paths-brief48, git rm
+docs/loop/SPEC_BRIEF48.md and commit (committer kronos-loop noreply, Co-Authored-By Claude Opus 4.8) so net
+AB_BASE..HEAD = tests/test_rnd_contract.py only; add SPEC_BRIEF48.md to kronos/loop-state (its home); push branch
+(advances PR #48 head); re-run FULL suite via .venv/bin/python -m pytest on the NEW PR#48 head and on main 2fc2381,
+require 0 failed both; re-run focused tests/test_rnd_contract.py. NO merge, NO ready, NO PR comment. If new head
+still red, or any path outside tests/test_rnd_contract.py in AB window, ABORT and emit nine-field stop-report.
+recommendation: >
+On both suites 0-failed, record new PR#48 head SHA + evidence in next checkpoint and PAUSE for operator GATE-2 merge
+authorization (protected-branch merge = mandatory pause). Do not merge; do not lift §6/§8.
+# KRONOS loop-state checkpoint
 seq: 282
 derived_at: 2026-11-05T09:45:00Z
 contract_version: 1.2.0
