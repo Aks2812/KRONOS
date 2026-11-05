@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 281
+derived_at: 2026-11-05T09:10:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq280_pending_action_outcome: >
+NONE at seq 280 (seq279 MERGE recorded DONE). Start-of-turn re-derived LIVE and matches: main HEAD
+2fc2381e7a94cf217b175b0a32577e741506c90e; ruleset void-rule-kronos enforcement=active (main protected);
+PR #47 state MERGED, mergeCommit 2fc2381, head f12eb0d; contract integrity v1.2.0 both hashes == manifest.
+No dangling pending_action. AUTO-BRIEF (§13.1) regime: inspect backlog, auto-select highest-priority ELIGIBLE.
+stage: >
+AUTO-BRIEF SELECTION (seq 280 NONE). Backlog: (1) wire predicate tests to live loop code -> touches live
+executor/§6-§8 live-run (PAUSED) + materially ambiguous => mandatory pause, INELIGIBLE; (2) reference _eligible
+predicate ignores item paths (dead paths field; governance/.claude ride only on hand-set flag) -> test-file-only,
+recorded/unblocked/reversible/branch-local/scoped/non-live/non-destructive, touches none of secrets/permissions/
+security/governance/.claude/protected-branch => ELIGIBLE; (3-4) edit the contract => governance, human-gated,
+INELIGIBLE. Selected (2) = single highest-priority ELIGIBLE. Brief SPEC_BRIEF48 authored (scope:
+tests/test_rnd_contract.py only; §3 seal prior PR#47 @2fc2381; AC1-AC5; suite tests/test_rnd_contract.py + full).
+pending_action: >
+CONSEQUENTIAL (branch-local, within approved AUTO-BRIEF scope): create feature branch
+claude/eligibility-paths-brief48 off main 2fc2381; dispatch kronos-builder to implement SPEC_BRIEF48 touching ONLY
+tests/test_rnd_contract.py (+ add docs/loop/SPEC_BRIEF48.md on the branch); commit (committer
+kronos-loop <kronos-loop@users.noreply.github.com>, Co-Authored-By Claude Opus 4.8); run focused + full suites;
+dispatch independent kronos-reviewer (given brief + diff range 2fc2381..HEAD only, never the builder report);
+Opus Gate-2 semantic verify; repair within scope if red; open DRAFT PR (#48). NO merge, NO ready, NO PR comment.
+If any changed path outside §1, or reviewer FAIL, or ambiguity surfaces -> ABORT, emit nine-field stop-report.
+recommendation: >
+Proceed autonomously per standing AUTO-BRIEF envelope. On green focused+full suite, reviewer PASS, Gate-2 PASS,
+open draft PR #48 and PAUSE for operator GATE-2 merge authorization (protected-branch merge is a mandatory pause).
+# KRONOS loop-state checkpoint
 seq: 280
 derived_at: 2026-11-05T08:25:00Z
 contract_version: 1.2.0
