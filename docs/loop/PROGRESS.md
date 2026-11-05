@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 299
+derived_at: 2026-11-05T19:10:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+proposed_v13_hashes: >
+  Branch claude/operator-interface-v13 (PR #50) carries PROPOSED contract v1.3.0 (binding main still v1.2.0).
+  Current branch head a1627390 hashes: contract aadd2ba9ddd2..., schema d9aeebd2ef1f.... These change this turn
+  (F1/F2 edits). loop-state records v1.3.0 + new hashes only after merge.
+seq298_pending_action_outcome: >
+  NONE at seq 298 (REVIEW-REQUIRED PAUSE on F1). This turn operator (context.md) HELD GATE-2 and directed fixing
+  BOTH semantic contradictions before merge, within the existing 7-file v1.3 scope only. F1: replace every
+  normative "nine-field" with "canonical schema-validated stop-report" (schema authoritative for required fields;
+  NOT another hard-coded count) in contract sections 4/9/13 and the corresponding RAILS/command references. F2:
+  codify decision-class consistency -- while any unresolved purpose-critical/blocking finding exists the
+  report-level class MUST be REVIEW-REQUIRED or HOLD, no recommendation or next-action row may be SAFE-TO-APPROVE,
+  and the report must not recommend accepting the blocker and merging; add regression tests covering this exact
+  contradictory-report scenario (which my seq 298 report itself violated via a SAFE-TO-APPROVE next-row under a
+  REVIEW-REQUIRED blocker). .claude changes via ONE incremental external maintainer patch (git apply --check,
+  report SHA + line summary, pause; do NOT apply / do NOT bypass hard deny).
+stage: >
+  Decision class REVIEW-REQUIRED. Contract integrity re-verified start-of-turn (branch v1.3.0 self-consistent;
+  binding main v1.2.0). main 08b2641 protected. PR #50 OPEN draft head a1627390. Thin-Orchestrator: in-repo edits
+  delegated to kronos-builder (claude-sonnet-5-5); the .claude maintainer patch is generated deterministically by
+  the orchestrator (scratch-copy + sed + diff, NOT hand-authored -- a destructive hand-diff was caught last turn)
+  and verified; independent review by kronos-reviewer (claude-haiku-5-5) + Opus semantic verify next turn
+  post-apply. No merge, no ready, no section 6/8 lift.
+pending_action: >
+  CONSEQUENTIAL: builder edits the loop-editable v1.3 files -- contract (F1 sections 4/9/13 wording ->
+  "canonical schema-validated stop-report"; section 9 marks the key list informative + schema authoritative +
+  adds DECISION_CLASS/OPUS_EFFORT keys; F2 rule added to section 14), schema (add decision_class to each next[]
+  item, mirror enum, required-in-next), tests/test_rnd_contract.py (update _report/_validate + next-item required
+  test for next decision_class; add F2 regression tests + F1 contract-wording presence tests), manifest
+  (recompute hashes). Builder runs focused tests (0 failed). Orchestrator generates the incremental .claude patch
+  (nine-field -> canonical schema-validated across RAILS.md + kronos-continue.md), git apply --check exit 0,
+  reports SHA256 + line summary; verifies scope ⊆ 5 loop files; commits loop edits (kronos-loop noreply); pushes
+  (advances PR #50 head); PAUSE for maintainer to hand-apply the .claude patch. NO merge, NO full re-review yet.
+recommendation: >
+  After builder + orchestrator verification and branch push, PAUSE for the maintainer to hand-apply the
+  incremental .claude patch. Next turn commits the applied .claude files, adds the .claude "no normative
+  nine-field remains" negative test, re-runs focused + full suites, Haiku + Opus re-review, PAUSE GATE-2.
+
+# KRONOS loop-state checkpoint
 seq: 298
 derived_at: 2026-11-05T18:40:00Z
 contract_version: 1.2.0
