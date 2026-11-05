@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 285
+derived_at: 2026-11-05T12:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq284_pending_action_outcome: >
+Operator GATE-2 CONDITIONALLY AUTHORIZED PR #48 at exact head 82a792814e782519505c70e0381530e2361ca08d
+(context.md this turn). Conditions re-measured and MET. Transient disk-full blocker resolved: tmpfs /tmp had
+filled to 7.8G from accumulated pytest tmp_path kuzu .kz scratch under /tmp/pytest-of-void across concurrent
+full-suite runs; cleared (df /tmp now 1% used), and pytest scratch redirected to disk-backed
+TMPDIR=/home/void/.cache/kronos-pytest-tmp (runner command otherwise verbatim). Stray leftover run PID 718280 killed.
+stage: >
+Ten-item MERGE-GATE re-measured IN-TURN at exact head 82a7928, all green: (1) main protected ruleset
+void-rule-kronos enforcement=active; (2) draft -> will gh pr ready 48 (operator-authorized); (3) OPEN+unmerged;
+(4) head 82a792814e782519505c70e0381530e2361ca08d == operator-authorized SHA, enforced by --match-head-commit;
+(5) independent Haiku reviewer VERDICT PASS all §8 AC on this exact head (AC1 scope=tests/test_rnd_contract.py only;
+AC2 paths OR'd with flags; AC3 fail-open closed, fails on pre-change predicate; AC4 SEQ272 no regression);
+(6) statusCheckRollup [] -> ci none; (7) suite 0 failed re-measured via TMPDIR-disk rtk test .venv/bin/python
+-m pytest -q: orchestrator 4026 passed/1 skipped/0 failed, Haiku 4026 passed/1 skipped/0 failed, focused 17 passed;
+(8) seal-tax test_B31_Q_scope_audit PASS, AB_BASE(3f6dbc3)..HEAD subset of AB_SECTION_10, net diff 2fc2381..HEAD
+= tests/test_rnd_contract.py only; (9) Opus Gate-2 semantic PASS (predicate correct, scoped, fail-open closed,
+baseline parity); (10) no hard-boundary/out-of-scope file touched. mergeStateStatus CLEAN. committer kronos-loop
+noreply, andika1904/gmail=0 in diff.
+pending_action: >
+CONSEQUENTIAL MERGE (operator-authorized, protected-branch): gh pr ready 48, then
+gh pr merge 48 --squash --match-head-commit 82a792814e782519505c70e0381530e2361ca08d (NEVER --admin, NEVER --auto).
+If head != 82a7928 or any gate item not green at execution, ABORT and emit nine-field stop-report. After merge:
+record squash merge SHA, re-derive main, write outcome checkpoint, PAUSE.
+recommendation: >
+Merge PR #48 at 82a7928 squash + --match-head-commit. Post-merge: do NOT start another AUTO-BRIEF; prepare the
+operator-requested external maintainer patch for .claude/RAILS.md + .claude/commands/kronos-continue.md (canonical
+TMPDIR-disk venv runner; prohibit bare rtk test pytest / system-Python; fail closed if .venv/bin/python absent),
+save OUTSIDE repo, git apply --check, report sha256, PAUSE. Do not apply the patch; do not lift §6/§8.
+# KRONOS loop-state checkpoint
 seq: 284
 derived_at: 2026-11-05T11:05:00Z
 contract_version: 1.2.0
