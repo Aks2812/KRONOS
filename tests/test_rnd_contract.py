@@ -175,10 +175,10 @@ def test_contract_is_v1_3_0_with_auto_brief():
     assert "AUTO-BRIEF" in text
 
 
-def test_operative_rails_carry_nine_field_and_hash_mismatch():
+def test_operative_rails_carry_stop_report_and_hash_mismatch():
     for p in (ROOT / ".claude" / "commands" / "kronos-continue.md", ROOT / ".claude" / "RAILS.md"):
         text = p.read_text()
-        assert "nine-field" in text, str(p)
+        assert "canonical schema-validated" in text, str(p)
         assert "contract-integrity hash-mismatch" in text, str(p)
 
 
