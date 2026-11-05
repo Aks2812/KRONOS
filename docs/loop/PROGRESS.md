@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 272
+derived_at: 2026-11-05T02:20:00Z
+contract_version: 1.1.0
+contract_sha256_contract: e218c751c78e46f414a3f2866c7ef1404f76e0bd624a97c7ef33b53c286cc5ea
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+seq271_pending_action_outcome: >
+  MERGED. gh pr ready 46 (operator-authorized) then gh pr merge 46 --squash --match-head-commit
+  c9024cefa89d6f878c7c6c5386f50341d84ec17c (no --admin, no --auto). PR #46 MERGED at squash SHA
+  3f6dbc394124a3b23b7169fcc1a590dcd5ffbd41 (2026-11-05T02:14:29Z). Full ten-item MERGE-GATE was green in-turn: suite
+  re-measure 4021 passed / 1 skipped / 0 failed; head c9024ce unchanged and enforced via --match-head-commit; main
+  protected (void-rule-kronos); PR marked ready then OPEN+unmerged at merge; independent Haiku reviewer PASS AC1-AC6;
+  ci none (statusCheckRollup empty); seal-tax scope audit green (in suite); Opus Gate-2 PASS; scope = 6 authorized paths,
+  no hard-boundary file.
+stage: CONTRACT v1.1.0 LANDED on main 3f6dbc394124a3b23b7169fcc1a590dcd5ffbd41. Bounded AUTO-NEXT (§13) + nine-field
+  stop-report required on EVERY terminal path (STOP AND ASK, PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker
+  exhaustion HALT, failed review BLOCKED, contract-integrity hash-mismatch HALT, usage-limit HALT) now binding; the
+  observed regression (no-pending / STOP AND ASK emitting only pending_action+recommendation, and the contract-integrity
+  hash-mismatch stop) is fixed. origin/main = 3f6dbc39; on-main contract sha256 e218c751... == contract_manifest.json,
+  contract_version 1.1.0, start-of-turn integrity gate GREEN on main. Local main NOT reset (still 5cc62f9; squash so
+  c9024ce is not an ancestor; operator fast-forwards local main). Open PRs: only #13/#14 (old DRAFTs). Live-run
+  (sections 6 and 8) still PAUSED (SEQ 140). Do NOT touch 3c712d4.
+seal_tax_next: >
+  The AUTO-NEXT brief window is now closed at its merge commit. The NEXT brief must, in tests/test_commit_authority.py,
+  SEAL the AN window to the merge SHA (assert names(5cc62f90d5b8f81e2e68a602e1952fa3932d7a9c..3f6dbc394124a3b23b7169fcc1a590dcd5ffbd41) <= AN_SECTION_10,
+  which equals RND_SECTION_10) and OPEN a new window 3f6dbc39..HEAD against its own SECTION allowlist. Record AN_SEAL =
+  3f6dbc394124a3b23b7169fcc1a590dcd5ffbd41.
+LOW_followup_backlog:
+  - test_rnd_contract.py _validate_report docstring should state it is a partial (not full JSON Schema) check.
+  - test_rnd_contract.py add a bad-enum / bad report_type negative case alongside the missing-field one.
+  - TERMINAL_PATHS report_type/why mapping lives only in the test fixture; not doc-normative in the contract.
+  - KRONOS_RND_CONTRACT.md section 12 hash-mismatch clause relies on section 9 rather than repeating the nine-field text.
+pending_action: NONE — operator-authorized AUTO-NEXT brief (contract v1.1.0) COMPLETE and merged. AWAITING OPERATOR
+  DIRECTION: (a) authorize the next R&D brief (name file + scope), or (b) schedule the 4 LOW follow-ups as a brief, or
+  (c) explicitly lift the live-run pause (sections 6 and 8, held since SEQ 140), or (d) confirm idle hold. No merge, no
+  feature work, no live-run lift, no deny lift without a fresh GATE.
+recommendation: Confirm idle hold or name the next brief; the 4 LOW follow-ups are the smallest ready next unit if desired.
+# KRONOS loop-state checkpoint
 seq: 271
 derived_at: 2026-11-04T20:05:00Z
 contract_version: 1.1.0
