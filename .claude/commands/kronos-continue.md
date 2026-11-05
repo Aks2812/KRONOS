@@ -61,8 +61,10 @@ MERGING: merge only the PR the operator names this turn, and nothing else. Befor
 it, re-measure the full ten-item MERGE-GATE in the same turn: main protected; PR not draft;
 open and unmerged; head SHA equals the SHA the operator authorized; independent reviewer
 PASS on the brief's §8 acceptance criteria by evidence; CI green or `ci: none` recorded; the
-brief's own local test evidence re-measured (suite 0 failed, decided from the runner's
-summary line, never `$?`); the brief's scope-guard / seal-tax scope audit green; orchestrator
+brief's own local test evidence re-measured (suite 0 failed via the canonical runner
+`TMPDIR=<disk-backed-dir> rtk test .venv/bin/python -m pytest -q`, decided from the runner's
+summary line, never `$?`; never bare `rtk test pytest` or system Python; fail closed if
+`.venv/bin/python` is unavailable); the brief's scope-guard / seal-tax scope audit green; orchestrator
 Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merge only with
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.

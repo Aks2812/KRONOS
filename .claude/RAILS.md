@@ -140,3 +140,23 @@ ELIGIBLE excludes governance (the contract, `contract_manifest.json`, `stop_repo
 The `.claude/**` hard deny is unchanged and is never weakened by AUTO-BRIEF. Every mandatory pause (merge authorization; §6/§8 live execution; destructive actions; governance changes; `.claude/**` changes; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; material or unresolved ambiguity) still holds and overrides selection.
 
 Automated loop-state checkpoint commits MUST use the identity `kronos-loop <kronos-loop@users.noreply.github.com>`. A personal email must never appear in public checkpoint history.
+
+## Canonical full-suite test runner — project `.venv`, disk-backed `TMPDIR`
+
+The full suite runs ONLY through the project virtualenv interpreter:
+`TMPDIR=<disk-backed-dir> rtk test .venv/bin/python -m pytest -q` (the focused form is the
+same with the test path appended). `.venv/bin/python` carries this project's pinned
+dependencies (e.g. `kuzu==0.11.3`, `pyproject.toml` / `requirements.txt`); the system
+interpreter does not.
+
+Prohibited: bare `rtk test pytest`, bare `pytest`, or any `/usr/bin/python` / system-Python
+fallback. Those resolve to an interpreter without the project dependencies and surface as
+spurious `ModuleNotFoundError` collection errors — a false red, never a real suite result.
+
+Fail closed: if `.venv/bin/python` is missing or not runnable, STOP and emit the nine-field
+stop-report (§9); never substitute the system interpreter, and never mask a missing dependency
+with `--continue-on-collection-errors` or by ignoring collection errors.
+
+pytest `tmp_path` scratch MUST point at a disk-backed `TMPDIR`, never the tmpfs `/tmp`: a full
+run writes large per-test `kuzu` databases and will otherwise exhaust the volume mid-run and
+abort the measurement. Clear that scratch dir after the run.
