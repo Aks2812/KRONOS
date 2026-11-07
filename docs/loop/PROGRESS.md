@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 314
+derived_at: 2026-11-07T14:40:00Z
+contract_version: 1.3.1
+contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: AWAIT_MAINTAINER_PATCH_V1_3_2_GOVERNANCE
+report_type: STOP_AND_ASK
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+what:
+Operator authorized v1.3.2 terminal-format repair brief (context.md). Brief substantive deliverables
+(contract §15 edit + Version 1.3.2, contract_manifest.json version/hash bump, pre-response self-check rule)
+live only in hard-deny files: docs/governance/KRONOS_RND_CONTRACT.md, contract_manifest.json,
+.claude/RAILS.md, .claude/commands/kronos-continue.md.
+why:
+RAILS §138 + §9 hard deny: governance contract, contract_manifest.json, stop_report.schema.json, and
+.claude/** arrive only by external maintainer patch; no approval overrides the hard deny. Loop-ownable
+piece is regression coverage in tests/test_rnd_contract.py, which asserts the finalized §15 text and so
+must follow the maintainer patch.
+recommendation:
+Maintainer hand-applies the governance/manifest/.claude portion onto branch kronos/v1.3.2-terminal-format
+(or provides final §15 text + target assertion strings). Then loop adds tests/test_rnd_contract.py
+regression coverage (fence, literal pipes, separator rows, required fields, forbidden box chars), Haiku
+reviews, Opus verifies, draft PR, pause GATE-2.
+operator_action:
+Choose: (A) apply governance patch first then signal loop to add tests; or (B) provide final contract text
+so loop writes failing tests now (PR stays red until patch lands).
+live_state:
+origin/main cc6120f508221a00d84f149cbf36af441132e9c3 (= PR #51 merge). contract_version 1.3.1 on main;
+integrity hashes match manifest and checkpoint. No branch/PR created this turn. No files edited.
+---
+
+# KRONOS loop-state checkpoint
 seq: 313
 derived_at: 2026-11-07T14:10:00Z
 contract_version: 1.3.1
