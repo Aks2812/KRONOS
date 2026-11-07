@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 313
+derived_at: 2026-11-07T14:10:00Z
+contract_version: 1.3.1
+contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NONE
+report_type: COMPLETE
+decision_class: NO-ACTION
+opus_effort: LOW
+seq312_pending_action_outcome: >
+  DONE. gh pr merge 51 --squash --match-head-commit aca2b60de4615fb57fd109f48f06bb6c83be648b succeeded (no
+  --admin, no --auto). PR #51 state MERGED, mergedAt 2026-11-07T13:49:12Z, merge commit
+  cc6120f508221a00d84f149cbf36af441132e9c3. Marked ready pre-merge.
+post_merge_integrity: >
+  PASS. origin/main advanced to cc6120f508221a00d84f149cbf36af441132e9c3. main manifest contract_version
+  1.3.1; main KRONOS_RND_CONTRACT.md sha256 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470
+  == manifest; main stop_report.schema.json sha256 d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+  == manifest (schema unchanged); contract Version: 1.3.1 and Contract-Version: 1.3.1. Contract v1.3.1 now
+  sole-binding on main.
+what_changed: >
+  v1.3.1 §15 terminal-format repair: two canonical literal GFM pipe-table templates (Summary 11-col,
+  Next-actions 5-col); require literal GFM tables; prohibit box-drawing AND flat key/value; state escaping;
+  regression test test_section15_terminal_format_is_literal_gfm_tables. All v1.3 fields/decision-classes/
+  autonomy/gate semantics preserved. §6/§8 NOT lifted; no product work.
+nonblocking_backlog_for_future_governance_brief: >
+  (all human-gated, governance INELIGIBLE for AUTO-BRIEF) LOW reviewer notes on new regression test: (1)
+  class check whole-file not §14/§15; (2) separator regex not per-table; (3) no flat-kv/escaping assertion;
+  (4) no decision-class semantics check. Plus pre-existing SEQ-309 four items. None blocking.
+where:
+  branch: main
+  head_sha: cc6120f508221a00d84f149cbf36af441132e9c3
+  pr: "51 (MERGED)"
+  main: cc6120f508221a00d84f149cbf36af441132e9c3 (protected)
+outcome: COMPLETE
+
+# KRONOS loop-state checkpoint
 seq: 312
 derived_at: 2026-11-07T14:00:00Z
 contract_version: 1.3.0
