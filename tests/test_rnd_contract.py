@@ -61,7 +61,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.3.0"
+    assert manifest["contract_version"] == "1.3.1"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -168,9 +168,9 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_3_0_with_auto_brief():
+def test_contract_is_v1_3_1_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.3.0" in text
+    assert "Version: 1.3.1" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -386,3 +386,18 @@ def test_operative_claude_files_count_neutral_report_term():
         text = p.read_text()
         assert "nine-field" not in text, str(p)
         assert "canonical schema-validated" in text, str(p)
+
+
+def test_section15_terminal_format_is_literal_gfm_tables():
+    text = CONTRACT.read_text()
+    s15 = text[text.index("## §15"):text.index("## §16")]
+    summary = ("| Report Type | Decision Class | What | Why | Who | When | Where | How "
+               "| Recommendation | Operator Action | Opus Effort |")
+    nxt = "| Rank | Severity | Dependencies | Decision Class | Action |"
+    assert summary in s15
+    assert nxt in s15
+    assert re.search(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$", s15, re.M)
+    for cls in ("AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"):
+        assert cls in text
+    banned = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
+    assert not [c for c in banned if c in text]

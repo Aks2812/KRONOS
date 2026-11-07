@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.3.0
+Version: 1.3.1
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.3.0.
+This file is the sole binding R&D governance for KRONOS as of version 1.3.1.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -177,10 +177,25 @@ A decision class is a readiness statement, never an authorization. `SAFE-TO-APPR
 
 Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
 
-- Render as GitHub-flavored Markdown — not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
-- One summary table with exactly these columns: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort.
-- One next-actions table with exactly these columns: Rank, Severity, Dependencies, Decision Class, Action.
-- Escape pipe characters inside cells (`\|`) and use `<br>` for multi-line cells.
+- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row. Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- Flat key/value terminal reports (e.g. `What: ...` lines in place of a table) are prohibited.
+- One summary table with exactly these columns, in this order: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort. Canonical template:
+
+```markdown
+| Report Type | Decision Class | What | Why | Who | When | Where | How | Recommendation | Operator Action | Opus Effort |
+|---|---|---|---|---|---|---|---|---|---|---|
+| <type> | <class> | <what> | <why> | <who> | <when> | <where> | <how> | <recommendation> | <operator action> | <LOW> |
+```
+
+- One next-actions table with exactly these columns, in this order: Rank, Severity, Dependencies, Decision Class, Action. Canonical template:
+
+```markdown
+| Rank | Severity | Dependencies | Decision Class | Action |
+|---|---|---|---|---|
+| 1 | <severity> | <dependencies> | <class> | <action> |
+```
+
+- Escape every pipe character inside a cell as `\|`, and write multi-line cell content with `<br>` (never a raw newline inside a cell).
 - Provide exactly one preferred recommendation; list alternatives only when materially different.
 - A `SAFE-TO-APPROVE` report includes exactly one authorization line naming the PR number and the full head SHA.
 - Intermediate progress updates stay concise; the complete tables are required only at genuine terminal states.
@@ -190,6 +205,6 @@ Every terminal report (§9) is rendered for the operator as GitHub-flavored Mark
 
 - This contract is the sole semantic authority for the decision classes (§14) and the persistent terminal-presentation policy (§15). `CLAUDE.md`, `.claude/RAILS.md`, and `.claude/commands/kronos-continue.md` reference and operationalize those clauses; they never independently redefine them.
 - `docs/governance/stop_report.schema.json` mirrors only the permitted decision-class enum and the required fields; it carries no decision-class semantics of its own.
-- After merge, `kronos/loop-state` records the active `contract_version` (1.3.0) and the verified hashes only; it never duplicates the contract body.
+- After merge, `kronos/loop-state` records the active `contract_version` (1.3.1) and the verified hashes only; it never duplicates the contract body.
 
-Contract-Version: 1.3.0
+Contract-Version: 1.3.1
