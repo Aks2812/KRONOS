@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 309
+derived_at: 2026-11-07T13:00:00Z
+contract_version: 1.3.0
+contract_sha256_contract: e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NONE
+report_type: COMPLETE
+decision_class: NO-ACTION
+opus_effort: LOW
+seq308_pending_action_outcome: >
+DONE. gh pr merge 50 --squash --match-head-commit e9998bc1de428bd18733771d5fd15b5f360c2b46 succeeded (no
+--admin, no --auto). PR #50 state MERGED, mergedAt 2026-11-07T12:57:49Z, merge commit
+6a8d1d93f08476044e57ef3cd362206cb8f35b26.
+post_merge_integrity: >
+PASS. origin/main advanced to 6a8d1d93f08476044e57ef3cd362206cb8f35b26. main manifest
+contract_version 1.3.0; main KRONOS_RND_CONTRACT.md sha256 e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b
+== manifest; main stop_report.schema.json sha256 d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+== manifest; contract Version line = 1.3.0. Contract v1.3.0 now sole-binding on main (§16: loop-state
+records active contract_version + verified hashes only; never duplicates body).
+nonblocking_backlog_for_future_governance_brief: >
+(all human-gated, governance = INELIGIBLE for AUTO-BRIEF): (1) §14 blocking-rule enforced only by
+test-local helper _class_consistent, not by schema or a real-report validation path; (2) report_type not in
+schema required list though §15 presents Report Type column; (3) schema why-enum lacks values for
+no-pending-action and contract-integrity hash-mismatch terminal paths; (4) no bad-enum negative case in
+test_rnd_contract.py; module docstring unchanged; the two SEQ-272 test follow-ups not yet landed.
+state: COMPLETE. v1.3.0 merged + verified. No pending_action. §6/§8 NOT lifted. No AUTO-BRIEF started.
+# KRONOS loop-state checkpoint
 seq: 308
 derived_at: 2026-11-07T02:00:00Z
 contract_version: 1.2.0
