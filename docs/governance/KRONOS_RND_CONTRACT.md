@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.2.0
+Version: 1.3.0
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.2.0.
+This file is the sole binding R&D governance for KRONOS as of version 1.3.0.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -53,9 +53,9 @@ Authoritative pins:
 
 - Circuit breaker: the 3-attempt reviewer-builder cycle is the BUILD bound. Maximum 3 attempts, then HALT and escalate to the maintainer. Exhausting the bound is a PAUSE-DECISION, not a retry.
 - Prose silence is a PAUSE-DECISION. Expected values derive from the brief's prose, never from observed behaviour. Excluded-first default-deny.
-- STOP AND ASK when the next action is outside an approved brief, ambiguous, scope-sensitive, needs authorization not yet given, or an iteration bound is reached. Record the pending_action and a recommendation first, and emit the schema-valid nine-field stop-report (§9).
+- STOP AND ASK when the next action is outside an approved brief, ambiguous, scope-sensitive, needs authorization not yet given, or an iteration bound is reached. Record the pending_action and a recommendation first, and emit the canonical schema-validated stop-report (§9).
 - STOP WITHOUT ASKING at a usage limit. Do not switch models, start another session, or wait for a reset. A usage limit means stop, not switch models. The operator resumes by typing: continue
-- FAIL CLOSED: if the checkpoint carries a pending_action with no recorded outcome, or a re-derived fact contradicts the checkpoint, STOP and report with the schema-valid nine-field stop-report (§9).
+- FAIL CLOSED: if the checkpoint carries a pending_action with no recorded outcome, or a re-derived fact contradicts the checkpoint, STOP and report with the canonical schema-validated stop-report (§9).
 - A scope or authorization violation halts; no approval overrides it.
 - Within approved scope, continue without asking routine confirmations.
 
@@ -104,7 +104,7 @@ Before every consequential action, write the next checkpoint (seq + 1) with its 
 
 ## §9 Stop-report (5W+1H)
 
-A nine-field stop-report is REQUIRED on EVERY terminal path: STOP AND ASK, PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review (BLOCKED), contract-integrity hash-mismatch (HALT), and usage-limit HALT. Each validates against `docs/governance/stop_report.schema.json`; a bare pending_action + recommendation is insufficient. Required keys:
+A canonical schema-validated stop-report is REQUIRED on EVERY terminal path: STOP AND ASK, PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review (BLOCKED), contract-integrity hash-mismatch (HALT), and usage-limit HALT. Each validates against `docs/governance/stop_report.schema.json`; a bare pending_action + recommendation is insufficient. The schema (`docs/governance/stop_report.schema.json`) is authoritative for the required fields; the keys below are informative, not a field count:
 
 - WHAT
 - WHY
@@ -115,6 +115,8 @@ A nine-field stop-report is REQUIRED on EVERY terminal path: STOP AND ASK, PAUSE
 - NEXT (array, ranked by severity and dependency)
 - RECOMMENDATION (exactly one)
 - OPERATOR_ACTION (the exact response required)
+- DECISION_CLASS (exactly one class, §14)
+- OPUS_EFFORT (§15)
 
 It is validated by `docs/governance/stop_report.schema.json` (lowercase keys, plus `report_type`) and is a superset of v7's prior five-item hand-up (why stopped; checkpoint; what completed with evidence; recommended next plus alternatives; exact maintainer response), which was mandatory on every pause or finish.
 
@@ -151,8 +153,43 @@ An action is ELIGIBLE only if it is ALL of: recorded (named in the checkpoint ba
 
 The mandatory pauses are unchanged and override selection: merge authorization; §6/§8 live execution; destructive actions; governance changes; `.claude/**` changes; security-boundary changes; protected-branch writes; production-impacting scope expansion; exhausted repair limits; and material or unresolved ambiguity. An ineligible backlog item is never auto-selected; it is deferred to the maintainer.
 
-A missing pre-approved brief MUST NOT cause a pause when an eligible recorded backlog item exists. If no eligible item exists, the loop emits the complete nine-field idle (`no-pending-action`) stop-report (§9) and waits.
+A missing pre-approved brief MUST NOT cause a pause when an eligible recorded backlog item exists. If no eligible item exists, the loop emits the complete canonical schema-validated idle (`no-pending-action`) stop-report (§9) and waits.
 
 AUTO-BRIEF preserves Thin-Orchestrator delegation (§1), the gates (§3), the MERGE-GATE (§7), write-ahead checkpointing (§8), and the seal-tax (§11). It never crosses a human gate: a created brief still PAUSES before merge for GATE-2.
 
-Contract-Version: 1.2.0
+## §14 Decision classes
+
+Every terminal evaluation carries exactly one decision class. This contract is the sole semantic authority for the set and its meaning; `CLAUDE.md`, `.claude/RAILS.md`, `.claude/commands/kronos-continue.md`, and `docs/governance/stop_report.schema.json` operationalize or mirror these classes and never independently redefine them.
+
+- `AUTO-CONTINUE` — eligible, reversible, in-scope work: checkpoint and continue without operator confirmation.
+- `SAFE-TO-APPROVE` — a routine protected-branch merge with exact-head independent review, complete green gates, zero failures, and no unresolved purpose-critical or Medium/Critical finding.
+- `REVIEW-REQUIRED` — governance, `.claude/**`, security, privacy, authorization, destructive/history-rewriting action, §6/§8 live execution, ambiguous scope, or a purpose-critical residual finding.
+- `HOLD` — red, incomplete, or conflicting evidence; an unavailable required environment; a dirty working tree; or an exhausted circuit breaker.
+- `NO-ACTION` — a complete or genuinely idle state.
+
+A finding that weakens the brief's primary acceptance objective is blocking regardless of its nominal severity.
+
+While any such blocking finding is unresolved, the report-level decision class MUST be `REVIEW-REQUIRED` or `HOLD`; no recommendation and no next-action row may be classified `SAFE-TO-APPROVE`; and the report MUST NOT recommend accepting the blocker and merging. `SAFE-TO-APPROVE` becomes available only once no blocking finding remains.
+
+A decision class is a readiness statement, never an authorization. `SAFE-TO-APPROVE` does not cross GATE-2: a protected-branch merge still requires the explicit maintainer authorization of §3 and the ten-item re-measurement of §7. No decision class weakens the merge, live-use (§6), security, privacy, `.claude/**` hard-deny (§5), or circuit-breaker (§4) boundaries.
+
+## §15 Persistent terminal presentation
+
+Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
+
+- Render as GitHub-flavored Markdown — not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- One summary table with exactly these columns: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort.
+- One next-actions table with exactly these columns: Rank, Severity, Dependencies, Decision Class, Action.
+- Escape pipe characters inside cells (`\|`) and use `<br>` for multi-line cells.
+- Provide exactly one preferred recommendation; list alternatives only when materially different.
+- A `SAFE-TO-APPROVE` report includes exactly one authorization line naming the PR number and the full head SHA.
+- Intermediate progress updates stay concise; the complete tables are required only at genuine terminal states.
+- Opus effort defaults to LOW; MEDIUM or HIGH requires a stated reason in the report. Thin-Orchestrator delegation (§1) is preserved.
+
+## §16 Single-source rule
+
+- This contract is the sole semantic authority for the decision classes (§14) and the persistent terminal-presentation policy (§15). `CLAUDE.md`, `.claude/RAILS.md`, and `.claude/commands/kronos-continue.md` reference and operationalize those clauses; they never independently redefine them.
+- `docs/governance/stop_report.schema.json` mirrors only the permitted decision-class enum and the required fields; it carries no decision-class semantics of its own.
+- After merge, `kronos/loop-state` records the active `contract_version` (1.3.0) and the verified hashes only; it never duplicates the contract body.
+
+Contract-Version: 1.3.0

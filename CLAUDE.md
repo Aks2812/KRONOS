@@ -10,3 +10,5 @@ Instruction precedence, highest first:
 4. `.claude/RAILS.md`. Enforcement rails; they operationalize #2.
 5. `.claude/agents/*`, `.claude/commands/kronos-continue.md`. Role and command definitions.
 6. Global `~/.claude` baseline. Project instructions override it.
+
+Terminal reports follow the contract's decision classes (§14) and persistent terminal-presentation policy (§15); `docs/governance/KRONOS_RND_CONTRACT.md` is their sole semantic authority (§16) and every file here only operationalizes it.

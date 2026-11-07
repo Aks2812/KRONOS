@@ -3,9 +3,11 @@
   "title": "KRONOS stop-report (5W+1H)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["what", "why", "who", "when", "where", "how", "next", "recommendation", "operator_action"],
+  "required": ["what", "why", "who", "when", "where", "how", "next", "recommendation", "operator_action", "decision_class", "opus_effort"],
   "properties": {
     "report_type": {"type": "string", "enum": ["PAUSE", "HALT", "BLOCKED", "COMPLETE"]},
+    "decision_class": {"type": "string", "enum": ["AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"]},
+    "opus_effort": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
     "what": {"type": "string"},
     "why": {"type": "string", "enum": ["usage_limit", "gate1", "gate2", "blocker", "failure", "completion"]},
     "who": {
@@ -44,12 +46,13 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["rank", "severity", "depends_on", "action"],
+        "required": ["rank", "severity", "depends_on", "action", "decision_class"],
         "properties": {
           "rank": {"type": "integer"},
           "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
           "depends_on": {"type": "array", "items": {"type": "string"}},
-          "action": {"type": "string"}
+          "action": {"type": "string"},
+          "decision_class": {"type": "string", "enum": ["AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"]}
         }
       }
     },
