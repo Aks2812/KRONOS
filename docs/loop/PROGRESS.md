@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 306
+derived_at: 2026-11-07T01:05:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+pending_action: HOLD_MAIN_NOT_PROTECTED
+seq305_pending_action_outcome: >
+DONE + reconciled. gh pr close 50 then gh pr reopen 50 succeeded; GitHub recomputed PR #50 head from
+branch ref. VERIFIED PR #50 head API now e9998bc1de428bd18733771d5fd15b5f360c2b46 == branch ref e9998bc.
+gh pr ready 50 succeeded: PR #50 state OPEN, isDraft false, mergeable MERGEABLE, base main, unmerged.
+merge_gate_remeasure: >
+Item1 main-protected: FAIL. Live gh api repos/Aks2812/KRONOS/branches/main/protection -> HTTP 404
+"Branch not protected". Contradicts prior checkpoints' 'main protected' assertion; LIVE WINS, mismatch
+reported. Item2 not-draft: PASS (isDraft false). Item3 open/unmerged: PASS. Item4 head==authorized
+e9998bc: PASS. Item6 CI: PASS (no checks reported -> ci:none). Item10 scope origin/main..e9998bc = exactly
+7 authorized files (.claude/RAILS.md, .claude/commands/kronos-continue.md, CLAUDE.md,
+docs/governance/KRONOS_RND_CONTRACT.md, docs/governance/contract_manifest.json,
+docs/governance/stop_report.schema.json, tests/test_rnd_contract.py): PASS. Items 5 (independent reviewer
+PASS), 7 (canonical suite 0 failed), 9 (Gate-2 semantic) NOT re-measured this turn -- halted on item1 hard
+failure, fail-closed, to avoid spending full suite + reviewer on a merge that cannot proceed.
+why_hold: >
+MERGE-GATE requires item1 main-protected. Live main is NOT protected. Conditional GATE-2 authorized only
+IF every gate passes; it does not. Enabling branch protection is a permissions/security-boundary change =
+mandatory pause; loop cannot perform it and will not merge to an unprotected main unilaterally.
+recommendation: >
+MAINTAINER enable branch protection on main (required_pull_request_reviews + enforce_admins, matching the
+contract's protected-main precondition), OR operator explicitly waive MERGE-GATE item1 for this merge.
+Then loop re-measures the remaining gate items: dispatch independent kronos-reviewer (claude-haiku-5-5) on
+v1.3.0 S8 AC over origin/main..e9998bc; re-run canonical suite TMPDIR disk-backed .venv/bin/python -m
+pytest -q (decide from summary line, 0 failed); Gate-2 semantic PASS; then squash-merge PR #50 with
+exact-head protection on e9998bc (never admin/auto). Do NOT merge while main unprotected.
+# KRONOS loop-state checkpoint
 seq: 305
 derived_at: 2026-11-07T00:45:00Z
 contract_version: 1.2.0
