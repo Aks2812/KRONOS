@@ -4,7 +4,7 @@ Version: 1.3.2
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.3.1.
+This file is the sole binding R&D governance for KRONOS as of version 1.3.2.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -177,7 +177,7 @@ A decision class is a readiness statement, never an authorization. `SAFE-TO-APPR
 
 Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
 
-- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row, and both tables MUST be emitted together inside exactly one fenced code block whose info string is `markdown` (one fence for the whole terminal report, never two separate fences). Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row, and both tables MUST be emitted together inside exactly one fenced code block whose info string is `markdown` (one fence for the whole terminal report, never two separate fences). Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected. The two canonical column templates shown later in this section are illustrative documentation examples, not a rendered terminal report, and the separate fences used to present them do not fall under this one-fence rule.
 - Every table row is a single physical line; a necessary internal break is written as `<br>`, never a raw newline inside a cell or a row split across physical lines.
 - Pre-response self-check (perform before emitting any terminal report; re-render on any failure): exactly one fenced `markdown` block; two literal pipe tables, each with a header row and a `|---|` separator row; the Summary carries all eleven fields in the order above; the Next-Actions carries Rank, Severity, Dependencies, Decision Class, Action; every row on one physical line with internal breaks as `<br>`; no flat key/value report; no box-drawing character anywhere.
 - Flat key/value terminal reports (e.g. `What: ...` lines in place of a table) are prohibited.
