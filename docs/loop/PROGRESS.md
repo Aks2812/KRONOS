@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 307
+derived_at: 2026-11-07T01:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+pending_action: MERGE_GATE_REMEASURE_THEN_CONDITIONAL_GATE2_PR50
+operator_brief: >
+/home/void/context.md: do NOT enable/modify/waive protection. Re-evaluate MERGE-GATE item1 READ-ONLY via
+GitHub branch-rules/rulesets. If an active enforced ruleset protects refs/heads/main satisfying the
+boundary -> item1 PASS. If item1 passes, complete remaining MERGE-GATE + exact-head Haiku review +
+canonical suite + Opus semantic, then execute already-authorized conditional GATE-2 for PR #50 at exact
+head e9998bc. After merge: verify main + v1.3 integrity, checkpoint, report, stop.
+item1_resolution: >
+PASS by ruleset evidence (read-only). Ruleset void-rule-kronos id 25333712, enforcement=active,
+target=branch, conditions.ref_name.include=["~DEFAULT_BRANCH"] (main is default/base), rules=[deletion,
+non_fast_forward, pull_request(squash allowed)], bypass_actors=[], current_user_can_bypass="never".
+Classic branch-protection 404 was a false negative; ruleset protects main (no direct push, no force-push,
+no deletion, PR-gated, no bypass). Semantic 'main protected' SATISFIED.
+seq306_pending_action_outcome: >
+Superseded. item1 now PASS. Proceeding to re-measure items 5 (independent Haiku exact-head review on
+v1.3.0 AC, diff origin/main..e9998bc, no builder report), 7 (canonical suite 0 failed), 8 (seal-tax scope
+audit green), 9 (Opus Gate-2 semantic), plus branch self-consistency (manifest hashes == branch
+contract/schema sha256, version 1.3.0). Items 2,3,4,6,10 already PASS.
+plan: >
+Verify branch e9998bc manifest self-consistency; run canonical suite at e9998bc (TMPDIR disk-backed
+.venv/bin/python -m pytest -q, decide from summary); dispatch kronos-reviewer (claude-haiku-5-5); Opus
+semantic PASS; if all ten PASS, squash-merge PR #50 with --match-head-commit e9998bc (never admin/auto).
+Head e9998bc confirmed == branch ref == PR head, not draft, open, mergeable.
+# KRONOS loop-state checkpoint
 seq: 306
 derived_at: 2026-11-07T01:05:00Z
 contract_version: 1.2.0
