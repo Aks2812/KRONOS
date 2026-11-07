@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 316
+derived_at: 2026-11-07T15:55:00Z
+contract_version: 1.3.1
+contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: GATE2_MERGE_AUTH_PR52_AT_7a40327
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+seq315_pending_action_outcome:
+DONE. Maintainer applied V132_PORTABLE_REPORT_FIX_F1F2.patch. Loop committed F1/F2 fix (1a06f72).
+F3 promoted to in-scope: Sonnet added structural validator test (7a40327). Fix re-verified.
+branch:
+kronos/v1.3.2-terminal-format pushed; head 7a4032717158403a4b5250e70e3697b761370c85. 4 commits off main
+cc6120f: 5c0735a (governance v1.3.2 §15) + fccdee2 (phrase regression) + 1a06f72 (F1/F2 fix) +
+7a40327 (F3 structural validator). Draft PR #52 OPEN, base main, head 7a40327.
+evidence:
+Full canonical suite 4042 passed, 1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk TMPDIR).
+Focused tests/test_rnd_contract.py 33 passed. Fresh independent Haiku exact-head review on 7a40327 =
+PASS, 7/7 criteria; manifest contract hash fd540d... and schema d34aa5... recomputed == manifest; scope
+exactly 5 files; no box-drawing chars in governance text; F1/F2 resolved, F3 addressed by structural test.
+pending_action detail:
+GATE-2 protected-branch merge of PR #52 requires explicit maintainer authorization naming PR number and
+full head SHA; loop then re-measures the ten-item MERGE-GATE in the same turn and, on all-PASS, squash-
+merges exact-head (--squash --match-head-commit 7a4032717158403a4b5250e70e3697b761370c85; never --admin,
+never --auto).
+recommendation:
+Authorize merge of PR #52 at head 7a4032717158403a4b5250e70e3697b761370c85.
+operator_action:
+Confirm GATE-2 merge of PR #52 at head 7a4032717158403a4b5250e70e3697b761370c85, or request changes.
+live_state:
+origin/main cc6120f (v1.3.2 unmerged). PR #52 draft/open. Working tree clean apart from untracked .tmp/.
+---
+
+# KRONOS loop-state checkpoint
 seq: 315
 derived_at: 2026-11-07T15:20:00Z
 contract_version: 1.3.1
