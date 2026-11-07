@@ -1,4 +1,45 @@
 # KRONOS loop-state checkpoint
+seq: 311
+derived_at: 2026-11-07T13:40:00Z
+contract_version: 1.3.0
+contract_sha256_contract: e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: GATE2_AUTHORIZATION_PR51_v1.3.1
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+seq310_pending_action_outcome: >
+  DONE. v1.3.1 §15 terminal-format repair built + reviewed + draft PR opened. Builder (claude-sonnet-5-5)
+  commit aca2b60de4615fb57fd109f48f06bb6c83be648b on branch kronos/v1.3.1-terminal-format, 3 files
+  (+43/-13): docs/governance/KRONOS_RND_CONTRACT.md (§15 two canonical GFM templates, require literal GFM
+  tables, prohibit box-drawing AND flat key/value, state \|/<br> escaping; version 1.3.0->1.3.1 incl §0,§16,
+  Contract-Version), docs/governance/contract_manifest.json (contract_version 1.3.1 + recomputed contract
+  sha256 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470; schema entry unchanged),
+  tests/test_rnd_contract.py (new test_section15_terminal_format_is_literal_gfm_tables + version asserts).
+independent_review: >
+  kronos-reviewer claude-haiku-5-5, exact-head aca2b60, measured itself (no builder report passed). VERDICT
+  PASS, 7/7 acceptance criteria. Suite tests/test_rnd_contract.py = 31 passed / 0 failed / 0 skipped
+  (summary line). Scope audit git diff --name-only origin/main..aca2b60 = exactly the 3 authorized files, no
+  .claude/**. Manifest contract hash == sha256sum of contract; schema hash unchanged vs main. Only LOW
+  non-blocking findings: regression test could tighten (class check file-wide not §14/§15-scoped; separator
+  regex not per-table; no flat-kv/escaping assertion; no decision-class semantics). None blocking.
+opus_semantic_verify: >
+  PASS. Diff confirms §15-only + version pins; §1-§14 and §16 semantics unchanged; both canonical templates
+  present with correct column order; manifest self-consistent; schema unmodified. §6/§8 NOT lifted. Four
+  unrelated governance backlog items excluded per brief.
+where:
+  branch: kronos/v1.3.1-terminal-format
+  head_sha: aca2b60de4615fb57fd109f48f06bb6c83be648b
+  pr: "51 (DRAFT, OPEN, base main)"
+  main: 6a8d1d93f08476044e57ef3cd362206cb8f35b26 (protected)
+next: >
+  PAUSE at GATE-2. Loop does NOT self-authorize merge. Awaiting explicit maintainer GATE-2 naming PR #51 and
+  exact head SHA aca2b60de4615fb57fd109f48f06bb6c83be648b. On authorization: mark ready (if instructed),
+  re-measure ten-item MERGE-GATE same turn, then gh pr merge 51 --squash --match-head-commit <SHA>; never
+  --admin/--auto.
+outcome: PAUSE_AWAITING_GATE2
+
+# KRONOS loop-state checkpoint
 seq: 310
 derived_at: 2026-11-07T13:20:00Z
 contract_version: 1.3.0
