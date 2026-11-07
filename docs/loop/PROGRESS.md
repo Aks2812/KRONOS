@@ -1,4 +1,44 @@
 # KRONOS loop-state checkpoint
+seq: 317
+derived_at: 2026-11-07T16:30:00Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NONE
+report_type: COMPLETE
+decision_class: NO-ACTION
+opus_effort: LOW
+seq316_pending_action_outcome:
+DONE. Operator authorized GATE-2 for PR #52 at head 7a4032717158403a4b5250e70e3697b761370c85.
+PR marked ready; full ten-item MERGE-GATE re-measured in-turn, 10/10 PASS. gh pr merge 52 --squash
+--match-head-commit 7a4032717158403a4b5250e70e3697b761370c85 succeeded (no --admin, no --auto).
+PR #52 MERGED, mergedAt 2026-11-07T15:42:53Z, merge commit bb00179d8d4dc43f2cc43b5877b93eff9ec795fa.
+merge_gate_10of10:
+(1) main protected=true. (2) PR not draft. (3) OPEN/unmerged/MERGEABLE. (4) head==authorized 7a40327.
+(5) independent Haiku exact-head review 7/7 PASS (seq316). (6) ci: none recorded in PR body.
+(7) full canonical suite 4042 passed, 1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk
+TMPDIR, decided from SUMMARY not $?). (8) scope-guard/seal-tax tests 2996 passed. (9) Opus Gate-2 semantic
+review PASS (§15 wording self-consistent; templates exemption resolves F2; F1 fixed; F3 structural test).
+(10) scope exactly 5 files; no .github/cybergym/secrets/out-of-scope.
+post_merge_integrity:
+PASS. origin/main advanced bb00179d8d4dc43f2cc43b5877b93eff9ec795fa. main manifest contract_version 1.3.2;
+KRONOS_RND_CONTRACT.md sha256 fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1 == manifest;
+stop_report.schema.json sha256 d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35 == manifest
+(schema unchanged); contract Version: 1.3.2, line 7 "as of version 1.3.2", Contract-Version: 1.3.2.
+Contract v1.3.2 now sole-binding on main.
+what_changed:
+§15 portable terminal-format repair: both tables inside exactly one fenced markdown block; one-physical-line
+rule with <br>; pre-response self-check clause; templates clarified as illustrative examples exempt from the
+one-fence rule. RAILS.md + kronos-continue.md mirrors to v1.3.2. tests/test_rnd_contract.py: phrase-level +
+structural validator regression (_validate_terminal_report rejects two-fence split, flat key/value, box char,
+missing separator). Governance/manifest/.claude content via two external maintainer patches
+(V132_PORTABLE_REPORT_MAINTAINER.patch, V132_PORTABLE_REPORT_FIX_F1F2.patch); loop carried + added tests.
+backlog_note:
+Reviewer INFO (self-check text does not restate template exemption; covered by §15 one-fence bullet) NOT
+merged, excluded per operator. Unrelated governance backlog excluded.
+---
+
+# KRONOS loop-state checkpoint
 seq: 316
 derived_at: 2026-11-07T15:55:00Z
 contract_version: 1.3.1
