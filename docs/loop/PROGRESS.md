@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 304
+derived_at: 2026-11-07T00:30:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+pending_action: HOLD_AWAIT_MAINTAINER_PR50_HEAD_RESYNC
+operator_brief: >
+/home/void/context.md: finish v1.3 only; no new feature work; S6/S8 not lifted. Authorize SAFE reversible
+non-content PR/ref refresh preserving reviewed commit/tree e9998bc. Forbid: create commit, change files,
+rebase, force-push, rewrite history, close/recreate PR, merge mismatched head. GATE-2 conditionally
+authorized IFF head==e9998bc AND all gates green.
+attempts: >
+(1) Re-derived live: origin/main 08b2641 protected; branch ref API e9998bc; PR #50 head API 777d27a,
+draft true, open, MERGEABLE, repo Aks2812/KRONOS. (2) No-op re-push exact sha e9998bc ->
+'Everything up-to-date', no ref-update event, PR head UNCHANGED 777d27a. (3) Git Refs API same-sha update
+(force=false) BLOCKED by RAILS.md (API writes prohibited; read-only only). force-push / delete-recreate /
+commit / rebase all forbidden by operator brief. Loop reconciliation EXHAUSTED.
+seq303_pending_action_outcome: >
+HOLD. PR #50 head sync stuck server-side (GitHub PR head pointer 777d27a never advanced to branch ref
+e9998bc, consistent with seq302 push-time HTTP 500). No loop-permitted, operator-permitted action can fire
+the ref-update event needed to re-sync; equal-sha push no-ops, API ref write blocked by rails.
+recommendation: >
+MAINTAINER minimal recovery (preserves commit+tree e9998bc, branch untouched, reversible, same PR #50):
+close then immediately reopen PR #50 (web UI, or the close then reopen PR subcommands). Reopen forces
+GitHub to recompute PR head from current branch ref = e9998bc. This is close/reopen of the SAME PR #50,
+NOT close-and-create-new and NOT branch delete -- distinct from the brief's 'close/recreate the PR'
+prohibition on the LOOP; confirm operator accepts. Alt if operator declines close/reopen: maintainer
+re-push e9998bc from a client outside rails with an explicit ref update to emit the sync event. After
+PR #50 head reports e9998bc, operator marks ready; loop re-measures full ten-item MERGE-GATE, then GATE-2
+squash-merge with exact-head protection on e9998bc (never admin/auto). Do NOT merge while head != e9998bc
+or draft.
+# KRONOS loop-state checkpoint
 seq: 303
 derived_at: 2026-11-07T00:00:00Z
 contract_version: 1.2.0
