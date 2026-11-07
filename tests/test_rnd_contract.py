@@ -61,7 +61,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.3.1"
+    assert manifest["contract_version"] == "1.3.2"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -168,9 +168,9 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_3_1_with_auto_brief():
+def test_contract_is_v1_3_2_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.3.1" in text
+    assert "Version: 1.3.2" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -401,3 +401,20 @@ def test_section15_terminal_format_is_literal_gfm_tables():
         assert cls in text
     banned = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
     assert not [c for c in banned if c in text]
+
+
+def test_section15_v1_3_2_single_fence_and_self_check():
+    text = CONTRACT.read_text()
+    s15 = text[text.index("## §15"):text.index("## §16")]
+    assert ("both tables MUST be emitted together inside exactly one fenced code "
+            "block whose info string is `markdown`") in s15
+    assert "Every table row is a single physical line" in s15
+    assert "Pre-response self-check" in s15
+    check = s15[s15.index("Pre-response self-check"):]
+    for frag in ("exactly one fenced",
+                 "header row and a ",
+                 "all eleven fields",
+                 "Rank, Severity, Dependencies, Decision Class, Action",
+                 "no flat key/value report",
+                 "no box-drawing character"):
+        assert frag in check, frag
