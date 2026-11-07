@@ -418,3 +418,58 @@ def test_section15_v1_3_2_single_fence_and_self_check():
                  "no flat key/value report",
                  "no box-drawing character"):
         assert frag in check, frag
+
+
+SUMMARY_HEADER = ("| Report Type | Decision Class | What | Why | Who | When | Where "
+                  "| How | Recommendation | Operator Action | Opus Effort |")
+NEXT_HEADER = "| Rank | Severity | Dependencies | Decision Class | Action |"
+_SEP_RE = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$")
+_FLAT_RE = re.compile(
+    r"^\s*(Report Type|Decision Class|What|Why|Who|When|Where|How|Recommendation"
+    r"|Operator Action|Opus Effort|Rank|Severity|Dependencies|Action)\s*:")
+_BOX_CHARS = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
+
+
+def _validate_terminal_report(report: str) -> None:
+    """Structural check of a terminal report; raises AssertionError if non-conforming."""
+    assert not [c for c in _BOX_CHARS if c in report], "box-drawing character"
+    lines = report.splitlines()
+    opens = [i for i, l in enumerate(lines) if re.match(r"^```markdown\s*$", l)]
+    closes = [i for i, l in enumerate(lines) if re.match(r"^```\s*$", l)]
+    fences = [i for i, l in enumerate(lines) if l.startswith("```")]
+    assert len(opens) == 1, "need exactly one ```markdown fence"
+    assert len(closes) == 1, "need exactly one closing fence"
+    assert len(fences) == 2, "extra fence present"
+    assert opens[0] < closes[0], "closing fence before opening"
+    inner = lines[opens[0] + 1:closes[0]]
+    pos = []
+    for header in (SUMMARY_HEADER, NEXT_HEADER):
+        assert inner.count(header) == 1, f"header missing or repeated: {header}"
+        idx = inner.index(header)
+        assert idx + 1 < len(inner) and _SEP_RE.match(inner[idx + 1]), \
+            f"separator row missing after: {header}"
+        pos.append(idx)
+    assert pos[0] < pos[1], "Summary table must precede Next-Actions table"
+    for i, l in enumerate(lines):
+        if opens[0] <= i <= closes[0] and (i in (opens[0], closes[0])):
+            continue
+        if l.lstrip().startswith("|"):
+            continue
+        assert not _FLAT_RE.match(l), f"flat key/value line: {l!r}"
+
+
+def test_terminal_report_structure_validator():
+    import pytest
+    summary = [SUMMARY_HEADER, "|---|---|---|---|---|---|---|---|---|---|---|",
+               "| STOP | A | w | y | me | now | here | how | rec | act | high |"]
+    nxt = [NEXT_HEADER, "|---|---|---|---|---|", "| 1 | high | none | A | do it |"]
+    good = "\n".join(["```markdown", *summary, "", *nxt, "```"])
+    _validate_terminal_report(good)
+
+    split = "\n".join(["```markdown", *summary, "```", "", "```markdown", *nxt, "```"])
+    flat = "\n".join(["```markdown", "What: thing happened", "", *nxt, "```"])
+    box = good.replace("| STOP |", "| ─ STOP |")
+    nosep = "\n".join(["```markdown", summary[0], summary[2], "", *nxt, "```"])
+    for bad in (split, flat, box, nosep):
+        with pytest.raises(AssertionError):
+            _validate_terminal_report(bad)
