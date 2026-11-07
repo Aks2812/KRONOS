@@ -69,11 +69,14 @@ Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merg
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
 
-DECISION CLASS + PRESENTATION (contract v1.3.0 §14–§16): every terminal report carries exactly one decision
+DECISION CLASS + PRESENTATION (contract v1.3.2 §14–§16): every terminal report carries exactly one decision
 class — AUTO-CONTINUE, SAFE-TO-APPROVE, REVIEW-REQUIRED, HOLD, or NO-ACTION — and renders as GitHub-flavored
-Markdown with one summary table (Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation,
-Operator Action, Opus Effort) and one next-actions table (Rank, Severity, Dependencies, Decision Class, Action);
-no box-drawing characters; escape `|` and use `<br>` in cells; exactly one preferred recommendation; a
+Markdown with both tables together inside exactly one fenced `markdown` block: one summary table (Report Type,
+Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort) and one
+next-actions table (Rank, Severity, Dependencies, Decision Class, Action); every table row on one physical line;
+no box-drawing characters; escape `|` and use `<br>` in cells; a pre-response self-check (exactly one `markdown`
+fence, both tables with `|---|` separator rows, all required fields present, no flat key/value, no box-drawing)
+before emitting; exactly one preferred recommendation; a
 SAFE-TO-APPROVE report adds one authorization line naming the PR and full head SHA; Opus effort defaults LOW
 (MEDIUM/HIGH needs a stated reason). The contract §14–§16 is the sole authority; this command only
 operationalizes it and never redefines a class or column.

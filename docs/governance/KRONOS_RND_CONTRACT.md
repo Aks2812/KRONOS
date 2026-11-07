@@ -1,6 +1,6 @@
 # KRONOS R&D Contract
 
-Version: 1.3.1
+Version: 1.3.2
 
 ## §0 Status & authority
 
@@ -177,7 +177,9 @@ A decision class is a readiness statement, never an authorization. `SAFE-TO-APPR
 
 Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
 
-- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row. Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row, and both tables MUST be emitted together inside exactly one fenced code block whose info string is `markdown` (one fence for the whole terminal report, never two separate fences). Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected.
+- Every table row is a single physical line; a necessary internal break is written as `<br>`, never a raw newline inside a cell or a row split across physical lines.
+- Pre-response self-check (perform before emitting any terminal report; re-render on any failure): exactly one fenced `markdown` block; two literal pipe tables, each with a header row and a `|---|` separator row; the Summary carries all eleven fields in the order above; the Next-Actions carries Rank, Severity, Dependencies, Decision Class, Action; every row on one physical line with internal breaks as `<br>`; no flat key/value report; no box-drawing character anywhere.
 - Flat key/value terminal reports (e.g. `What: ...` lines in place of a table) are prohibited.
 - One summary table with exactly these columns, in this order: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort. Canonical template:
 
@@ -205,6 +207,6 @@ Every terminal report (§9) is rendered for the operator as GitHub-flavored Mark
 
 - This contract is the sole semantic authority for the decision classes (§14) and the persistent terminal-presentation policy (§15). `CLAUDE.md`, `.claude/RAILS.md`, and `.claude/commands/kronos-continue.md` reference and operationalize those clauses; they never independently redefine them.
 - `docs/governance/stop_report.schema.json` mirrors only the permitted decision-class enum and the required fields; it carries no decision-class semantics of its own.
-- After merge, `kronos/loop-state` records the active `contract_version` (1.3.1) and the verified hashes only; it never duplicates the contract body.
+- After merge, `kronos/loop-state` records the active `contract_version` (1.3.2) and the verified hashes only; it never duplicates the contract body.
 
-Contract-Version: 1.3.1
+Contract-Version: 1.3.2

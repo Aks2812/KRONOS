@@ -166,10 +166,12 @@ and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDI
 resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the canonical schema-validated stop-report (§9);
 never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.
 
-## Decision classes & persistent terminal presentation (contract v1.3.0 §14–§16)
+## Decision classes & persistent terminal presentation (contract v1.3.2 §14–§16)
 
 The contract is the sole semantic authority for the five decision classes (AUTO-CONTINUE, SAFE-TO-APPROVE,
 REVIEW-REQUIRED, HOLD, NO-ACTION) and for the persistent GitHub-flavored-Markdown presentation of terminal
-reports (one summary table, one next-actions table, no box-drawing, escaped pipes with `<br>`, exactly one
-preferred recommendation, a PR + full-head-SHA authorization line for SAFE-TO-APPROVE, Opus effort defaulting
-to LOW). This file references and operationalizes §14–§16; it does not redefine any class or column.
+reports (both tables together inside exactly one fenced `markdown` block, one summary table, one next-actions
+table, every row on one physical line, no box-drawing, no flat key/value report, escaped pipes with `<br>`, a
+pre-response self-check before emitting, exactly one preferred recommendation, a PR + full-head-SHA
+authorization line for SAFE-TO-APPROVE, Opus effort defaulting to LOW). This file references and operationalizes
+§14–§16; it does not redefine any class or column.
