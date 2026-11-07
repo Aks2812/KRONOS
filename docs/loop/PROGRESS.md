@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 308
+derived_at: 2026-11-07T02:00:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+pending_action: GATE2_SQUASH_MERGE_PR50_AT_e9998bc
+authorization: >
+Operator GATE-2 pre-authorized (/home/void/context.md, this turn): execute already-authorized conditional
+GATE-2 for PR #50 at exact head e9998bc1de428bd18733771d5fd15b5f360c2b46 IFF item1 passes and all gates
+green. Squash-merge with exact-head protection; never --admin/--auto.
+merge_gate_all_pass: >
+10/10 PASS. (1) main protected: ruleset void-rule-kronos id 25333712 enforcement=active target
+~DEFAULT_BRANCH rules=[deletion,non_fast_forward,pull_request] bypass_actors=[] can_bypass=never. (2) not
+draft. (3) open/unmerged. (4) head==e9998bc==authorized. (5) independent kronos-reviewer claude-haiku-5-5
+VERDICT PASS A-H, no builder report passed, own worktree @e9998bc, suite 4039 passed/1 skipped/0 failed
+(547.21s), manifest hashes independently recomputed e0be32a/d34aa5d == manifest. (6) CI: no checks ->
+ci:none. (7) Opus-run canonical suite @e9998bc: 4039 passed/1 skipped in 544.80s, 0 failed (TMPDIR
+disk-backed .venv/bin/python -m pytest -q, decided from summary line). (8) seal-tax/scope-audit tests green
+in-suite; diff --name-only origin/main..e9998bc = exactly 7 authorized files. (9) Opus Gate-2 semantic
+PASS: F1 resolved (nine-field -> canonical schema-validated, schema authoritative), schema +decision_class
++opus_effort 11 required, §14 five classes == schema enum, §15/§16 coherent, manifest self-consistent. (10)
+no out-of-scope/hard-boundary file (7 = approved governance set).
+decision_class: REVIEW-REQUIRED (governance + .claude/**); human GATE-2 satisfied by operator authorization.
+reviewer_findings_nonblocking: >
+All Low/Info/pre-existing, none blocking: (L) §14 blocking-rule enforced only by test-local helper
+_class_consistent; (L pre-existing) report_type not in schema required; (L pre-existing) why-enum lacks
+no-pending-action / hash-mismatch values; (info) residual v1.2.0 strings are AUTO-BRIEF feature labels not
+version pins; no bad-enum negative case / docstring unchanged (criterion used 'e.g.', not failed). Record as
+NON-BLOCKING BACKLOG for a future governance brief (human-gated).
+merge_command: gh pr merge 50 --squash --match-head-commit e9998bc1de428bd18733771d5fd15b5f360c2b46
+post_merge_plan: >
+After merge: verify origin/main advanced + is now v1.3.0; recompute main contract+schema sha256 == new
+manifest (e0be32a/d34aa5d) and version 1.3.0; write loop-state checkpoint recording contract_version 1.3.0
++ verified hashes; emit v1.3.0 §15 GFM terminal tables (Report Type..Opus Effort; Rank..Action); stop.
+# KRONOS loop-state checkpoint
 seq: 307
 derived_at: 2026-11-07T01:30:00Z
 contract_version: 1.2.0
