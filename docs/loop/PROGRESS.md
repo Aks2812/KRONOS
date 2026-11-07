@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 310
+derived_at: 2026-11-07T13:20:00Z
+contract_version: 1.3.0
+contract_sha256_contract: e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: V131_TERMINAL_FORMAT_REPAIR_BUILD_REVIEW_DRAFTPR_THEN_PAUSE_GATE2
+operator_brief: >
+  /home/void/context.md: GATE-1 authorize narrowly scoped v1.3.1 governance repair of §15
+  terminal-format compliance. Preserve all v1.3 fields/decision-classes/autonomy/gate semantics
+  unchanged. Require terminal Summary + Next-Actions as literal GFM pipe tables; prohibit box-drawing
+  and flat key/value reports; provide canonical table templates + safe multiline-cell escaping; add
+  regression coverage (required headers, separator rows, decision classes, no box-drawing). Exclude the
+  four unrelated governance backlog items. No product work; do not lift §6/§8. Sonnet 5.5 build,
+  Haiku 5.5 exact-head review, Opus orchestration + semantic verify. Draft PR, checkpoint, pause GATE-2.
+scope:
+  - docs/governance/KRONOS_RND_CONTRACT.md (§15 templates/escaping/prohibit-flat; bump 1.3.0->1.3.1)
+  - docs/governance/contract_manifest.json (contract_version 1.3.1 + recomputed contract sha256)
+  - tests/test_rnd_contract.py (regression + version asserts)
+  hard_boundary_excluded: .claude/** (RAILS.md, commands/kronos-continue.md already reference/operationalize
+    §14-§16 per §16; no redefinition needed, so no .claude edit in scope)
+plan: branch kronos/v1.3.1-terminal-format from main 6a8d1d9; builder(sonnet-5-5) 3 files; independent
+  reviewer(haiku-5-5) measures suite itself; Opus semantic verify; draft PR; write seq 310 outcome; PAUSE GATE-2.
+live_reconcile: main 6a8d1d9 == checkpoint; PR#50 MERGED == checkpoint; no mismatch.
+outcome: PENDING
+
+# KRONOS loop-state checkpoint
 seq: 309
 derived_at: 2026-11-07T13:00:00Z
 contract_version: 1.3.0
