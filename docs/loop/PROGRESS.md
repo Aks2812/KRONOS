@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 312
+derived_at: 2026-11-07T14:00:00Z
+contract_version: 1.3.0
+contract_sha256_contract: e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc94b0a8d9a7b
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: GATE2_SQUASH_MERGE_PR51_AT_aca2b60
+operator_brief: >
+  /home/void/context.md: GATE-2 authorize PR #51 at exact head aca2b60de4615fb57fd109f48f06bb6c83be648b.
+  Mark ready, re-measure full ten-item MERGE-GATE in-turn; if all green squash-merge with exact-head
+  protection; never --admin/--auto. Exclude optional LOW findings and unrelated governance backlog. After
+  merge verify main + v1.3.1 contract/manifest integrity, checkpoint, report, stop. No product work; no §6/§8 lift.
+merge_gate_remeasure: >
+  10/10 PASS. (1) main protected=true (gh api branches/main). (2) PR marked ready pre-merge (was draft).
+  (3) OPEN/unmerged. (4) head aca2b60de4615fb57fd109f48f06bb6c83be648b == operator-authorized SHA. (5)
+  independent reviewer claude-haiku-5-5 exact-head aca2b60 VERDICT PASS 7/7 (seq 311), measured itself. (6)
+  CI: ci:none (commits/aca2b60/check-runs = []). (7) Opus-run tests/test_rnd_contract.py 31 passed/0
+  failed/0 skipped, canonical runner TMPDIR disk .venv/bin/python -m pytest -q, summary line. (8) scope
+  audit git diff --name-only origin/main..aca2b60 = 3 files (KRONOS_RND_CONTRACT.md, contract_manifest.json,
+  test_rnd_contract.py). (9) Opus Gate-2 semantic PASS (§15 + version pins only; §1-§14/§16 intact). (10)
+  no hard-boundary/out-of-scope (.claude/**, manifest.py, .github/, cybergym/) touched.
+merge_command: gh pr merge 51 --squash --match-head-commit aca2b60de4615fb57fd109f48f06bb6c83be648b
+where:
+  branch: kronos/v1.3.1-terminal-format
+  head_sha: aca2b60de4615fb57fd109f48f06bb6c83be648b
+  pr: "51"
+  main: 6a8d1d93f08476044e57ef3cd362206cb8f35b26 (protected)
+post_merge_plan: >
+  verify origin/main advanced; recompute main contract+schema sha256 == new manifest (510ab7d3/d34aa5d9) and
+  version 1.3.1; write seq 313 outcome recording contract_version 1.3.1 + verified hashes; emit §15 GFM terminal
+  tables; stop.
+outcome: PENDING
+
+# KRONOS loop-state checkpoint
 seq: 311
 derived_at: 2026-11-07T13:40:00Z
 contract_version: 1.3.0
