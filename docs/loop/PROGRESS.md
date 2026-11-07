@@ -1,4 +1,26 @@
 # KRONOS loop-state checkpoint
+seq: 305
+derived_at: 2026-11-07T00:45:00Z
+contract_version: 1.2.0
+contract_sha256_contract: 5095bf38c6ff6aa053c2e117ddd04c6a7a670fc270012ad92d956d877a3d55e4
+contract_sha256_schema: 652bf6ba4253383b5e797dbe9db2a7893529497079ffd2602461fb7a9b79928c
+pending_action: CLOSE_REOPEN_PR50_TO_REFRESH_HEAD
+operator_brief: >
+/home/void/context.md: AUTHORIZE option (a) close then immediately reopen SAME PR #50 to refresh GitHub
+head pointer. Then verify PR #50 head == e9998bc1de428bd18733771d5fd15b5f360c2b46. Forbid: modify files,
+create commits, force-push, rebase, delete branches, create another PR. If head stays stale -> HOLD and
+stop, no retry. If reconciled -> mark ready, re-measure full MERGE-GATE, continue under previously
+authorized conditional GATE-2. After merge: verify main + v1.3 integrity, checkpoint, report, stop.
+seq304_pending_action_outcome: >
+Superseded by operator authorization of option (a). Proceeding to close+reopen PR #50 (same PR number,
+branch ref e9998bc untouched, commit/tree preserved, reversible).
+plan: >
+(1) gh pr close 50 ; gh pr reopen 50. (2) Re-derive PR #50 head via API. (3) If head==e9998bc: mark ready,
+re-measure ten-item MERGE-GATE (main protected, not draft, open/unmerged, head==e9998bc, independent
+reviewer PASS on v1.3.0 S8 AC, CI green or ci:none, canonical suite 0 failed, scope-guard/seal-tax green,
+Gate-2 semantic PASS, no hard-boundary file), then squash-merge --match-head-commit e9998bc (never
+admin/auto). (4) Else HOLD, stop, no retry.
+# KRONOS loop-state checkpoint
 seq: 304
 derived_at: 2026-11-07T00:30:00Z
 contract_version: 1.2.0
