@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 315
+derived_at: 2026-11-07T15:20:00Z
+contract_version: 1.3.1
+contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21bc9d17ad470
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: AWAIT_MAINTAINER_PATCH_FIX_F1F2
+report_type: BLOCKED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+seq314_pending_action_outcome:
+Path A proceeding. Maintainer applied V132_PORTABLE_REPORT_MAINTAINER.patch. Branch
+kronos/v1.3.2-terminal-format created off main cc6120f; 2 commits: 5c0735a (governance v1.3.2,
+4 files) + fccdee2 (test_rnd_contract.py regression). Not pushed. No PR.
+review:
+Independent Haiku reviewer (kronos-reviewer) on origin/main..HEAD = FAIL. Mechanics PASS: suite 32 passed
+via canonical runner; manifest contract hash d88a84... == disk; schema unchanged; scope exactly 5 files; 0
+box-drawing chars. Two MEDIUM contract-text defects (both in hard-deny KRONOS_RND_CONTRACT.md, loop cannot
+self-repair): F1 line 7 still "as of version 1.3.1" contradicts bumped Version line; F2 §15 single-fence
+rule contradicts the two separate template fences in same section (doc examples, unclarified). F3 LOW:
+new test is string-presence only (advisory, acceptable for governance text).
+pending_action detail:
+Revised maintainer patch prepared: /home/void/Void-Projects/KRONOS_PC/V132_PORTABLE_REPORT_FIX_F1F2.patch
+(sha256 cdc509e1cacf225528bbc00adbed0d41a497cc63720336053b7042484d425a18), 2 files
+(KRONOS_RND_CONTRACT.md + contract_manifest.json), apply-clean on branch HEAD fccdee2, 0 box chars.
+Fixes F1 (line 7 -> 1.3.2) and F2 (clarifies templates are illustrative examples exempt from one-fence
+rule). Re-hashes manifest contract entry d88a84... -> fd540d... .
+recommendation:
+Maintainer applies FIX_F1F2 patch to branch working tree; loop commits it (3rd branch commit), re-runs
+independent Haiku review, then (on PASS) pushes branch + draft PR + pause GATE-2.
+operator_action:
+Apply V132_PORTABLE_REPORT_FIX_F1F2.patch and confirm; or direct alternative handling of F1/F2.
+live_state:
+origin/main cc6120f (not advanced; v1.3.2 unmerged). Branch local only. No push this turn beyond this
+checkpoint. Working tree clean apart from untracked .tmp/.
+---
+
+# KRONOS loop-state checkpoint
 seq: 314
 derived_at: 2026-11-07T14:40:00Z
 contract_version: 1.3.1
