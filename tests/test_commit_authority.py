@@ -303,6 +303,48 @@ def test_B31_Q_scope_audit(nonet):
     assert not nonet
 
 
+# ---- SPEC_BRIEF49: six-exact whole-window scope audit (AC11, maintainer amendment) ----
+# Separately authorized maintainer patch. This file (tests/test_commit_authority.py) is a
+# seventh, audit-only maintainer path and is NOT part of the SPEC_BRIEF49 implementation scope.
+# Both endpoints are fixed SHAs (no ..HEAD): the audit is stable after squash merge and never
+# becomes a HEAD-relative recurring failure.
+B49_BASE = "bb00179d8d4dc43f2cc43b5877b93eff9ec795fa"       # PR #52 merge; SPEC_BRIEF49 base
+B49_IMPL_HEAD = "f02c2dc62b144b9c7df26227832222c1b1cf85d8"  # sealed implementation head (the six)
+B49_SIX = {
+    "docs/governance/KRONOS_RND_CONTRACT.md",
+    "docs/governance/stop_report.schema.json",
+    "docs/governance/contract_manifest.json",
+    "tests/test_rnd_contract.py",
+    ".claude/RAILS.md",
+    ".claude/commands/kronos-continue.md",
+}
+B49_AUDIT_FILE = "tests/test_commit_authority.py"  # the seventh, audit-only maintainer path
+B49_BRANCH_SEVEN = B49_SIX | {B49_AUDIT_FILE}
+
+
+def test_B49_six_exact_scope_audit(nonet):
+    def names(rng):
+        return set(subprocess.run(
+            ["git", "diff", "--name-only", rng], cwd=ROOT, capture_output=True, text=True, check=True
+        ).stdout.split())
+
+    # (1) implementation subset equals the exact six files (sealed to the fixed impl head).
+    impl = names(f"{B49_BASE}..{B49_IMPL_HEAD}")
+    assert impl == B49_SIX, impl ^ B49_SIX
+    # (2) complete authorized branch equals those six plus the audit-only maintainer file.
+    assert B49_BRANCH_SEVEN == B49_SIX | {B49_AUDIT_FILE}
+    assert len(B49_BRANCH_SEVEN) == 7
+    assert B49_AUDIT_FILE not in B49_SIX  # the seventh is audit-only, not implementation scope.
+    # (3) every other path fails: nothing outside the seven is authorized, and the sealed
+    #     impl window (equality above) admits no file beyond the six.
+    for forbidden in ("CLAUDE.md", "docs/governance/source_migration_map.md",
+                      "src/kronos/manifest.py", ".github/workflows/ci.yml",
+                      ".claude/agents/kronos-builder.md"):
+        assert forbidden not in B49_BRANCH_SEVEN
+    # (4) stability: both endpoints are fixed SHAs; this assertion never references HEAD.
+    assert not nonet
+
+
 # ---- SPEC_BRIEF32: required source identity on write facades ----
 def _spy(g, monkeypatch):
     seen = []
