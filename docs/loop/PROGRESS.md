@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 325
+derived_at: 2026-11-11T15:48:10Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NEEDS-DECISION_SPEC_BRIEF49_AC11_EXISTING_AUDIT_INSUFFICIENT
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq324_pending_action_outcome:
+AC11 maintainer amendment APPLIED then amended-AC11 UNMET -> NEEDS-DECISION (operator directive
+/home/void/context.md). Brief amendment (operator-authorized, maintainer): SPEC_BRIEF49_PROPOSED.md AC11 (and §12
+item 10) rewritten -- a complete bb00179..HEAD file-window audit must pass against the EXACT authorized six-file
+scope rejecting every path outside those six; the audit need NOT be duplicated inside tests/test_rnd_contract.py;
+the existing authoritative tests/test_commit_authority.py::test_B31_Q_scope_audit MAY satisfy AC11 ONLY IF it
+demonstrably (a) measures the complete bb00179..HEAD window AND (b) rejects every path outside the six; this is
+test deduplication, NOT a waiver of scope enforcement. Brief SHA-256 changed e0ce7079093b4ccab4a937e1c92389e641e3e7466dbd257e3585e9658d5262ea
+-> 3e1044a39ca06e724f37eeea9dbd2fbe8d3079d8303d5d79ee17216459d96174 (governing brief now the amended SHA).
+RE-MEASUREMENT at exact head f02c2dc62b144b9c7df26227832222c1b1cf85d8: tests/test_commit_authority.py::
+test_B31_Q_scope_audit = 1 passed, BUT it does NOT satisfy amended AC11. Proof: the audit asserts
+set(names("3f6dbc3..HEAD")) <= RND_SECTION_10. (a) base = 3f6dbc3 (PR#46 / v1.2.0), NOT the B49 base bb00179
+(PR#52); it measures a SUPERSET window (3f6dbc3..HEAD = 8 files) that covers but is not the B49 window
+(bb00179..HEAD = exactly the 6). (b) allowlist RND_SECTION_10 is far broader than the six; the audit's current
+window PASSES two paths OUTSIDE the authorized six -- CLAUDE.md and tests/test_commit_authority.py -- so it does
+NOT reject every path outside the six. Condition (b) fails unambiguously; therefore per operator line 19 the
+existing audit does not fully satisfy amended AC11 -> NEEDS-DECISION. Did NOT add files, weaken coverage, run the
+fresh review, merge, or lift §6/§8. Implementation unchanged (head still f02c2dc; F1 already resolved, suite
+4061/1/0, fail-closed confirmed by external jsonschema probe at seq324). PR #53 kept DRAFT. Options for operator:
+(1 recommended) authorize a maintainer patch to tests/test_commit_authority.py (outside §10 allowlist, so loop
+cannot edit it) adding a B49 six-exact seal -- assert set(names("bb00179..HEAD")) == the six authorized files
+(reject every out-of-six path), following that file's existing per-brief BASE+seal machinery; loop delivers the
+.patch, maintainer applies; (2) direct a six-exact HEAD-relative audit in tests/test_rnd_contract.py (in §10
+allowlist) with base bb00179 -- reintroduces the in-rnd duplication the amendment removed and adds recurring
+seal-tax; (3) further-amend AC11 to accept the existing RND_SECTION_10-scoped audit as sufficient (scope enforced
+at governance-allowlist granularity, not six-exact) -- weakens the stated six-exact intent. AC1/AC9 remain
+resolved by Option-2 schema authorization. seq324 AC11-disposition decision superseded by this evidenced finding.
+
+# KRONOS loop-state checkpoint
 seq: 324
 derived_at: 2026-11-11T15:39:28Z
 contract_version: 1.3.2
