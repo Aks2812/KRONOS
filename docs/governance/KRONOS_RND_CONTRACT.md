@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.3.2
+Version: 1.4.0
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.3.2.
+This file is the sole binding R&D governance for KRONOS as of version 1.4.0.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -120,6 +120,8 @@ A canonical schema-validated stop-report is REQUIRED on EVERY terminal path: STO
 
 It is validated by `docs/governance/stop_report.schema.json` (lowercase keys, plus `report_type`) and is a superset of v7's prior five-item hand-up (why stopped; checkpoint; what completed with evidence; recommended next plus alternatives; exact maintainer response), which was mandatory on every pause or finish.
 
+Under contract v1.4.0 the object additionally carries `contract_version` and, when `contract_version` is `1.4.0`, the strict render fields that back §15: the `[WHEN]` milestone (locked baseline, numerator, denominator, percentage-or-`UNKNOWN`, remaining gates, ETA assumptions, confidence) under `when.milestone`; the Goal-Framed Reference Knowledge Transfer Ledger under `how.reference_ledger` (with an explicit not-applicable form); and the orchestrator-effort justification under `effort_justification`. The extension is version-discriminated: reports from earlier contract versions validate against the permissive base unchanged, preserving historical-report compatibility, while v1.4.0 validation is never loosened. The schema remains authoritative for the required fields.
+
 ## §10 Artifact authority & precedence
 
 1. This contract outranks v7/CE provenance.
@@ -173,40 +175,36 @@ While any such blocking finding is unresolved, the report-level decision class M
 
 A decision class is a readiness statement, never an authorization. `SAFE-TO-APPROVE` does not cross GATE-2: a protected-branch merge still requires the explicit maintainer authorization of §3 and the ten-item re-measurement of §7. No decision class weakens the merge, live-use (§6), security, privacy, `.claude/**` hard-deny (§5), or circuit-breaker (§4) boundaries.
 
+The set is exactly the five classes above. The strings `RESEARCH-ONLY`, `DEFERRED`, and `NO-OP` are not members of this set; they MUST NOT appear in the Decision-Class position of any rendered report, and rendering any non-enum string there is a render failure. Research influence never silently upgrades a decision class: the report-level Decision Class stays one of the five regardless of any reference-knowledge disposition.
+
 ## §15 Persistent terminal presentation
 
-Every terminal report (§9) is rendered for the operator as GitHub-flavored Markdown; the underlying report object still validates against `docs/governance/stop_report.schema.json`.
+Every terminal report (§9) is rendered for the operator as an ordered sequence of bracket-labeled sections in GitHub-flavored Markdown, read top to bottom; the underlying report object still validates against `docs/governance/stop_report.schema.json`. The rendering is presentation-only: what the loop emits for a human changes, what it validates against does not. The report is bounded — detailed evidence remains in artifacts (`.claude/pipeline/**` and the evidence store), referenced by evidence ID — and intermediate progress updates stay concise; the full labeled report is required only at the genuine terminal states of §9. Box-drawing characters are rejected; a necessary internal break inside a line is written as `<br>`, never a raw newline.
 
-- The terminal Summary and Next-Actions MUST be rendered as literal GitHub-flavored-Markdown pipe tables, each with a header row and a `|---|` separator row, and both tables MUST be emitted together inside exactly one fenced code block whose info string is `markdown` (one fence for the whole terminal report, never two separate fences). Not Unicode/ASCII box tables, and not raw JSON by default. Box-drawing characters are rejected. The two canonical column templates shown later in this section are illustrative documentation examples, not a rendered terminal report, and the separate fences used to present them do not fall under this one-fence rule.
-- Every table row is a single physical line; a necessary internal break is written as `<br>`, never a raw newline inside a cell or a row split across physical lines.
-- Pre-response self-check (perform before emitting any terminal report; re-render on any failure): exactly one fenced `markdown` block; two literal pipe tables, each with a header row and a `|---|` separator row; the Summary carries all eleven fields in the order above; the Next-Actions carries Rank, Severity, Dependencies, Decision Class, Action; every row on one physical line with internal breaks as `<br>`; no flat key/value report; no box-drawing character anywhere.
-- Flat key/value terminal reports (e.g. `What: ...` lines in place of a table) are prohibited.
-- One summary table with exactly these columns, in this order: Report Type, Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort. Canonical template:
+The sections render in this exact order:
 
-```markdown
-| Report Type | Decision Class | What | Why | Who | When | Where | How | Recommendation | Operator Action | Opus Effort |
-|---|---|---|---|---|---|---|---|---|---|---|
-| <type> | <class> | <what> | <why> | <who> | <when> | <where> | <how> | <recommendation> | <operator action> | <LOW> |
-```
+1. `[STATUS]` — the first section; it renders `Report Type` (from `report_type`) and exactly one valid §14 Decision Class (from `decision_class`). An invalid or non-enum string in the Decision-Class position is a render failure.
+2. `[WHY]` — one line; the `why` value in plain language.
+3. `[WHERE]` — branch, head SHA, PR (or none), and main; from `where`.
+4. `[WHEN]` — `checkpoint_seq` and `timestamp`, plus the milestone fields: locked baseline, numerator, denominator, percentage, remaining gates, ETA assumptions, and confidence. The percentage MUST name its locked-milestone baseline, numerator, and denominator; if no defensible baseline exists the section renders `UNKNOWN`, never an invented percentage or ETA.
+5. `[WHAT]` — the `what` summary, bounded. The conditional Goal-Framed Reference Knowledge Transfer Ledger renders here, nested under `[WHAT]`; it appears only when external-reference knowledge materially influenced this iteration, and otherwise states in one line that none materially influenced this iteration (never omitted silently).
+6. `[WHO]` — agents and models; from `who`.
+7. `[HOW]` — evidence, tests, and gates, bounded and detailed by evidence ID; from `how`.
+8. `[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]` — the `next` array, ranked by severity then dependency; each row carries Rank, Severity, Dependencies, Decision Class, and Action on a single physical line.
+9. `[MOST RECOMMENDED ACTION]` — exactly one preferred recommendation (`recommendation`), limited to three sentences and 60 words; alternatives only when materially different.
+10. `[OPERATOR ACTION]` — the exact operator response required (`operator_action`); a `SAFE-TO-APPROVE` report adds exactly one authorization line naming the PR number and the full head SHA.
+11. The final line `RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification>` is mandatory on every terminal report. It is presentation-only, rendering the existing validated `opus_effort` enum plus one concise technical justification; default LOW, with MEDIUM or HIGH requiring the stated reason. Thin-Orchestrator delegation (§1) is preserved.
 
-- One next-actions table with exactly these columns, in this order: Rank, Severity, Dependencies, Decision Class, Action. Canonical template:
+The Goal-Framed Reference Knowledge Transfer Ledger, when it renders, carries one physical line per materially-influencing reference, each naming: source, pinned SHA, evidence ID, license / privacy status, Observed / Inferred / Unknown epistemic status, G1 / G2 / G3 mapping, clean-room evolution, disposition (Adopt / Adapt / Defer / Investigate / Reject), and implementation status. Implementation status is the sole authority for whether anything shipped; it reads not-implemented unless a merged PR or measured evidence proves otherwise. The loop MUST never represent research as implemented. The ledger's machine form nests under `how.reference_ledger`, with an explicit not-applicable form when no reference materially influenced the iteration.
 
-```markdown
-| Rank | Severity | Dependencies | Decision Class | Action |
-|---|---|---|---|---|
-| 1 | <severity> | <dependencies> | <class> | <action> |
-```
+The machine object remains schema-valid and version-discriminated: a report rendered under this section declares `contract_version` `1.4.0`, nests the `[WHEN]` milestone fields under `when.milestone`, and carries the ledger under `how.reference_ledger` and the justification under `effort_justification`; reports from earlier contract versions validate against the permissive base unchanged, so historical reports stay valid and v1.4.0 validation is never loosened.
 
-- Escape every pipe character inside a cell as `\|`, and write multi-line cell content with `<br>` (never a raw newline inside a cell).
-- Provide exactly one preferred recommendation; list alternatives only when materially different.
-- A `SAFE-TO-APPROVE` report includes exactly one authorization line naming the PR number and the full head SHA.
-- Intermediate progress updates stay concise; the complete tables are required only at genuine terminal states.
-- Opus effort defaults to LOW; MEDIUM or HIGH requires a stated reason in the report. Thin-Orchestrator delegation (§1) is preserved.
+Flat key/value terminal reports (for example `What: ...` lines in place of the labeled sections) are prohibited. Pre-response self-check (perform before emitting any terminal report; re-render on any failure): the labeled sections appear in the order above with `[STATUS]` first and a valid §14 Decision Class; `[WHEN]` names its locked baseline, numerator, denominator, remaining gates, ETA assumptions, and confidence, or renders `UNKNOWN`; the conditional ledger is present under `[WHAT]` or states none materially influenced this iteration; `[MOST RECOMMENDED ACTION]` holds exactly one preferred recommendation within three sentences and 60 words; the final `RECOMMENDED ORCHESTRATOR EFFORT` line is present with a justification; no flat key/value report; no box-drawing character anywhere.
 
 ## §16 Single-source rule
 
 - This contract is the sole semantic authority for the decision classes (§14) and the persistent terminal-presentation policy (§15). `CLAUDE.md`, `.claude/RAILS.md`, and `.claude/commands/kronos-continue.md` reference and operationalize those clauses; they never independently redefine them.
 - `docs/governance/stop_report.schema.json` mirrors only the permitted decision-class enum and the required fields; it carries no decision-class semantics of its own.
-- After merge, `kronos/loop-state` records the active `contract_version` (1.3.2) and the verified hashes only; it never duplicates the contract body.
+- After merge, `kronos/loop-state` records the active `contract_version` (1.4.0) and the verified hashes only; it never duplicates the contract body.
 
-Contract-Version: 1.3.2
+Contract-Version: 1.4.0
