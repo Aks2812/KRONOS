@@ -530,6 +530,10 @@ def test_schema_v140_structure():
     assert set(s["required"]) == REQUIRED_KEYS
     assert set(s["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
     assert set(s["properties"]["next"]["items"]["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+    # fail-closed version discrimination: contract_version is an explicit enum AND required
+    assert s["properties"]["contract_version"]["type"] == "string"
+    assert list(s["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
+    assert {"required": ["contract_version"]} in s["allOf"]
 
 
 def _report_v140(**over):
@@ -621,12 +625,81 @@ def test_v140_invalid_decision_class_fails():
     raise AssertionError("v1.4.0 report with invalid decision class validated")
 
 
-def test_legacy_report_compat_no_contract_version():
-    # historical-report compatibility: a 1.3.2-style report (no contract_version,
-    # no milestone/ledger/effort_justification) still validates against the base.
-    legacy = _report("PAUSE", "blocker")
-    assert "contract_version" not in legacy
-    assert _validate_report(legacy)
+# Fail-closed version discrimination. Evidenced from committed history: contract versions
+# 1.0.0..1.3.2 all shipped (KRONOS_RND_CONTRACT.md "Version:" history), but the current
+# 11-required-key / five-decision-class stop-report object shape was introduced at contract
+# v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
+# versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
+LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
+ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + ["1.4.0"]
+_MISSING = object()
+
+
+def _validate_discriminated(report):
+    """Stdlib mirror of the schema's fail-closed version discrimination.
+
+    contract_version MUST be present and one of ALLOWED_CONTRACT_VERSIONS; a missing,
+    non-string, or unrecognized/malformed value is rejected (never silent legacy fallback).
+    Exact 1.4.0 -> strict v1.4.0 branch; a legacy version -> permissive base.
+    """
+    v = report.get("contract_version", _MISSING)
+    assert v is not _MISSING, "missing contract_version"
+    assert isinstance(v, str), "non-string contract_version"
+    assert v in ALLOWED_CONTRACT_VERSIONS, f"unrecognized contract_version: {v!r}"
+    if v == "1.4.0":
+        _validate_v140(report)
+    else:
+        _validate_report(report)
+    return True
+
+
+def test_allowed_versions_match_schema_enum():
+    assert list(_schema()["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
+
+
+def test_legacy_versions_validate_against_base():
+    # positive: every evidenced base-compatible legacy version validates (permissive base)
+    for v in LEGACY_CONTRACT_VERSIONS:
+        legacy = _report("PAUSE", "blocker")
+        legacy["contract_version"] = v
+        assert _validate_discriminated(legacy), v
+
+
+def test_exact_1_4_0_validates_strict():
+    # positive: exact 1.4.0 enters the strict branch
+    assert _validate_discriminated(_report_v140())
+
+
+def test_malformed_or_unknown_version_rejected():
+    # negative: malformed, incomplete, unknown-future, and prefixed versions are rejected
+    for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", ""):
+        r = _report_v140()
+        r["contract_version"] = bad
+        try:
+            _validate_discriminated(r)
+        except AssertionError:
+            continue
+        raise AssertionError(f"rejected version validated: {bad!r}")
+
+
+def test_missing_or_non_string_version_rejected():
+    # negative: a missing contract_version (old unversioned report) is rejected, not legacy fallback
+    missing = _report("PAUSE", "blocker")
+    assert "contract_version" not in missing
+    try:
+        _validate_discriminated(missing)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("missing contract_version validated")
+    # negative: a non-string contract_version is rejected
+    nonstr = _report_v140()
+    nonstr["contract_version"] = 140
+    try:
+        _validate_discriminated(nonstr)
+    except AssertionError:
+        return
+    raise AssertionError("non-string contract_version validated")
 
 
 _BOX_CHARS = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
