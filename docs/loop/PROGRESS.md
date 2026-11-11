@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 322
+derived_at: 2026-11-11T14:27:02Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: GATE-2_MERGE_AUTH_PR53_SPEC_BRIEF49_V140_AT_32d9fd9
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq321_pending_action_outcome:
+DONE (D-C maintainer-patch phase, operator-authorized /home/void/context.md). Both maintainer hand-patches
+applied on-branch via git apply (not builder authoring) and committed explicit-path as a SEPARATE commit
+32d9fd90076406755115950db2a7544b2fecfbbc (distinct from governance commit bf9929e per contract 11 rollback):
+.claude/RAILS.md and .claude/commands/kronos-continue.md rewritten from v1.3.2 two-pipe-table wording to v1.4.0
+labeled-section wording; zero 1.3.2 remains in either; both still reference and operationalize 14-16, redefine
+nothing. CLAUDE.md confirmed NO change needed (grep for 1.3.2, 1.4.0, table, pipe, column, Report Type, fenced
+returns none; it references 14/15/16 generically, section numbers unchanged); brief 10 named CLAUDE.md patch
+unnecessary. No JSON Schema validator present (jsonschema, fastjsonschema, check-jsonschema all absent), so
+operator step 7 skipped as directed (no dependency install, no scope expansion); stdlib mirror retained. FRESH
+independent reviewer (claude-haiku-5-5, given NO builder or maintainer reasoning) at exact head 32d9fd9: PASS.
+Reviewer full suite 4057 passed, 1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk TMPDIR,
+decided from SUMMARY line not the exit code); orchestrator full suite independently 4057 passed, 1 skipped,
+0 failed. Scope: git diff bb00179..32d9fd9 name-only = exactly 6 files (4 governance + 2 .claude), all members
+of RND_SECTION_10; no src, .github, cybergym, CLAUDE.md, or other-.claude paths. Branch hashes contract
+890070ea3d7c3744c062c023d52a8f03bcddf9bd5b350b607c0d70fc8478fd4e and schema
+b22fc0280023390f1f66b7f3116062405c1ba6b667408db3259c4eeb3b361a6b match the branch manifest (version 1.4.0).
+Main protected via active ruleset void-rule-kronos (25333712: deletion, non_fast_forward, pull_request), so
+MERGE-GATE item 1 PASS. AC1-AC11 PASS (AC8 now satisfied on-branch). Non-blocking: schema if/then not executed
+by any test (no validator in env); contract_version typed string without enum (LOW; whitespace variants skip
+the strict branch; the loop emits exact 1.4.0); 12.10 whole-window audit test not added (green by measurement
+via test_commit_authority test_B31_Q_scope_audit; that file is outside the 10 allowlist). PR #53 kept DRAFT; no
+merge, not marked ready, no protection change, no 6/8 lift. PAUSE at GATE-2: protected-branch squash-merge of
+PR #53 requires explicit maintainer authorization naming PR #53 and the full 40-char head SHA
+32d9fd90076406755115950db2a7544b2fecfbbc; the loop then re-measures the ten-item MERGE-GATE in the same turn
+and, on all-PASS, runs gh pr merge 53 --squash --match-head-commit 32d9fd90076406755115950db2a7544b2fecfbbc
+(never --admin, never --auto). seq321 resolved.
+
+# KRONOS loop-state checkpoint
 seq: 321
 derived_at: 2026-11-11T13:51:07Z
 contract_version: 1.3.2
