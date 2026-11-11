@@ -1,4 +1,27 @@
 # KRONOS loop-state checkpoint
+seq: 318
+derived_at: 2026-11-11T09:58:37Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: IMPLEMENT_SPEC_BRIEF49_V140_HUMAN_READABLE_TERMINAL_REPORTING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+seq318_pending_action:
+Operator GATE-1 APPROVED SPEC_BRIEF49 (Contract v1.4.0 Human-Readable Terminal Reporting) at brief
+SHA-256 e0ce7079093b4ccab4a937e1c92389e641e3e7466dbd257e3585e9658d5262ea, decisions D-A/D-B/D-C/D-D.
+Loop implementation allowlist (ONLY): docs/governance/KRONOS_RND_CONTRACT.md,
+docs/governance/contract_manifest.json, tests/test_rnd_contract.py.
+docs/governance/stop_report.schema.json is READ-ONLY and MUST remain byte-identical
+(d34aa5d9...); if D-A derivation tests fail, return NEEDS-DECISION, do not edit the schema.
+Maintainer-patch allowlist (separately audited, builders prohibited from .claude/**):
+CLAUDE.md, .claude/RAILS.md, .claude/commands/kronos-continue.md.
+Plan: feature branch off main bb00179; Thin-Orchestrator researcher->builder->reviewer;
+draft PR after independent review; PAUSE at GATE-2 (no merge). No product code, no §6/§8 lift.
+seq317_pending_action_outcome: NONE (idle COMPLETE/NO-ACTION at seq 317).
+
+# KRONOS loop-state checkpoint
 seq: 317
 derived_at: 2026-11-07T16:30:00Z
 contract_version: 1.3.2
