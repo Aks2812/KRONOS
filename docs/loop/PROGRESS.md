@@ -1,4 +1,50 @@
 # KRONOS loop-state checkpoint
+seq: 323
+derived_at: 2026-11-11T15:12:39Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NEEDS-DECISION_SPEC_BRIEF49_F1_CONTRACT_PROSE_CONTRADICTS_FAILCLOSED
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq322_pending_action_outcome:
+DONE then BLOCKED-ON-DECISION. Operator-directed fail-closed contract_version discrimination repair implemented
+(operator directive /home/void/context.md) on branch kronos/v1.4.0-human-readable-reporting, new commit
+4f519f18191c03295be11e6b02d0237a5212839e (on top of governance bf9929e + maintainer-patch 32d9fd9). Scope held to
+schema+test+manifest: stop_report.schema.json contract_version now {type string, enum [1.3.0,1.3.1,1.3.2,1.4.0]}
+and required via allOf; missing / non-string / unknown / malformed (1.4.0-with-space, leading-space, v1.4.0, 1.4,
+future) REJECTED, no silent legacy fallback; exact 1.4.0 strict then-branch retained. Legacy set EVIDENCED not
+guessed: versions 1.0.0..1.3.2 shipped; current 11-key/5-class object shape (decision_class) entered schema at
+v1.3.0 (commit 6a8d1d9/PR#50), so only 1.3.0/1.3.1/1.3.2 are base-compatible; 1.0.0/1.1.0/1.2.0 (nine-field) excluded.
+Tests: positive per legacy version + exact 1.4.0; negative malformed/unknown/missing/non-string; enum asserted ==
+evidenced allowlist. Manifest schema hash re-pinned (branch schema 71db009217554c85e32c260255d920d03ca3c776ba7cd926e678c9f125fcfd8c,
+contract 890070ea3d7c3744c062c023d52a8f03bcddf9bd5b350b607c0d70fc8478fd4e). Orchestrator full suite 4061 passed,
+1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk TMPDIR, SUMMARY line not exit code). FRESH
+independent reviewer (claude-haiku-5-5, no builder/maintainer reasoning) at exact head 4f519f1: all stated checks
+PASS (fail-closed schema, evidenced allowlist neither over- nor under-inclusive, scope=6 files, hashes==manifest,
+main protected via ruleset void-rule-kronos, AC1-AC11), BUT VERDICT FAIL on one MEDIUM blocking finding F1.
+F1: the fail-closed repair makes two BINDING contract sentences false at this head -- KRONOS_RND_CONTRACT.md line
+123 ("reports from earlier contract versions validate against the permissive base unchanged, preserving
+historical-report compatibility") and line 200 ("historical reports stay valid") -- because an UNVERSIONED
+historical report is now rejected (test_rnd_contract.py test_missing_or_non_string_version_rejected asserts this).
+Brief §11 rollback claim ("invalidates no previously emitted or stored report") also now false for unversioned
+reports. Contract §11 requires every claim be enforced-or-softened before it ships; the only §11-compliant fix is
+to SOFTEN those contract sentences (a KRONOS_RND_CONTRACT.md edit + manifest contract-hash re-pin). That contract
+edit is inside the brief's §10 allowlist but OUTSIDE the operator's stated "schema/test/manifest" scope for this
+repair step, and the operator directed "do not expand scope". Non-blocking (reviewer): F2 schema-level negatives
+run against the stdlib mirror not a real validator (jsonschema absent, install barred); F3 base milestone/
+reference_ledger shapes now type-check for all versions (theoretical, no 1.3.x report carried those keys); F4 no
+in-repo whole-window scope-audit test (covered by test_commit_authority test_B31_Q_scope_audit measurement); F5
+ruleset void-rule-kronos requires PR but 0 required approvals and no status-check rule. PR #53 kept DRAFT; no
+merge, not marked ready, no protection change, no §6/§8 lift. STOP AND ASK: operator must authorize ONE resolution
+before this can proceed -- (1) authorize softening KRONOS_RND_CONTRACT.md lines 123/200 (and the §9 "historical-
+report compatibility" / schema $comment wording) to state fail-closed semantics (recognized-version reports
+validate; unversioned/unknown rejected), with manifest contract-hash re-pin, keeping validation fail-closed; or
+(2) direct an alternative resolution. Validation will NOT be weakened. seq322 GATE-2 pending superseded by this
+decision.
+
+# KRONOS loop-state checkpoint
 seq: 322
 derived_at: 2026-11-11T14:27:02Z
 contract_version: 1.3.2
