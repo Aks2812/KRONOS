@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 324
+derived_at: 2026-11-11T15:39:28Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NEEDS-DECISION_SPEC_BRIEF49_AC11_DISPOSITION_BEFORE_GATE2
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq323_pending_action_outcome:
+DONE (F1 closed, operator Option 1 /home/void/context.md). Smallest contract-prose alignment applied: §9 (line
+123) and §15 (line 200) rewritten + schema $comment aligned to fail-closed semantics (contract_version required
+and recognized; legacy 1.3.0/1.3.1/1.3.2 validate against permissive base; missing/malformed/unknown fail closed;
+historical unversioned reports remain evidence, NOT schema-valid v1.4.0 objects; no record rewritten/migrated;
+v1.4.0 never loosened). §10 had no compat claim; no test asserted old prose. Manifest re-pinned: contract
+b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9, schema
+654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f. Committed f02c2dc62b144b9c7df26227832222c1b1cf85d8
+(commit landed on a detached HEAD left by the reviewer checkout; branch ref fast-forwarded 4f519f1..f02c2dc and
+pushed; origin branch == f02c2dc). Legacy set {1.3.0,1.3.1,1.3.2} re-confirmed complete from evidence (decision_class
+/11-key object entered at v1.3.0 commit 6a8d1d9; identical blob d34aa5d9 through bb00179; 1.0.0/1.1.0/1.2.0
+nine-field blob 652bf6ba excluded; all-branch sweep finds only 1.0.0..1.4.0). Orchestrator full suite 4061 passed,
+1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk TMPDIR, SUMMARY not exit code). FRESH independent
+reviewer (claude-haiku-5-5, no builder/maintainer reasoning) at exact head f02c2dc: F1 RESOLVED; ran a real
+jsonschema 4.26.0 validator probe on system python (/usr/bin/python3 -I; NO .venv install, no dependency added)
+that CONFIRMED fail-closed end-to-end (legacy 1.3.x valid; missing, 1.2.0, 1.0.0, '1.4.0 ', ' 1.4.0', 'v1.4.0',
+'1.4', '9.9.9', '', int 140 all rejected; strict 1.4.0 enforced; extra when/how keys rejected; bad decision class
+rejected). Scope: git diff bb00179..f02c2dc = exactly 6 files (4 governance + 2 .claude), CLAUDE.md byte-identical;
+sha256sum -c OK; main protected via ruleset void-rule-kronos. Reviewer verdict FAIL rests ONLY on: AC1/AC9 (schema
+sha moved d34aa5d9 -> 654dd7f2 vs brief's literal 'byte-identical' -- but this is the operator-AUTHORIZED Option 2
+D-A schema amendment; reviewer lacked that authorization history; RESOLVED by operator decision on record) and
+AC11 (brief §12.10 in-brief whole-window scope-audit test absent from tests/test_rnd_contract.py; the existing
+tests/test_commit_authority.py test_B31_Q_scope_audit already green-covers the AB_BASE..HEAD 6-file window, but
+that file is OUTSIDE the §10 allowlist so the loop cannot edit it to add a B49 seal). All other ACs PASS. PR #53
+kept DRAFT; no merge, not marked ready, no protection change, no §6/§8 lift. STOP AND ASK: operator must dispose of
+AC11 before GATE-2 -- (1 recommended) WAIVE AC11 (the existing test_commit_authority audit already covers the
+window; adding a second HEAD-relative audit in test_rnd_contract.py would create duplicate future whole-window
+seal-tax on every later governance brief) and then authorize GATE-2 merge of PR #53 at full head SHA
+f02c2dc62b144b9c7df26227832222c1b1cf85d8; or (2) direct adding a HEAD-relative scope-audit test to
+tests/test_rnd_contract.py (in §10 allowlist; accepts the recurring seal-tax); or (3) authorize a maintainer patch
+to tests/test_commit_authority.py (outside §10) adding a B49 seal. AC1/AC9 already resolved by Option-2 authorization.
+seq323 NEEDS-DECISION (F1) resolved.
+
+# KRONOS loop-state checkpoint
 seq: 323
 derived_at: 2026-11-11T15:12:39Z
 contract_version: 1.3.2
