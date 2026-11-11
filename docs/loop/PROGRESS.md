@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 320
+derived_at: 2026-11-11T13:01:13Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: IMPLEMENT_SPEC_BRIEF49_V140_OPTION2_SCHEMA_AMENDMENT
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq319_pending_action_outcome:
+WRITE-AHEAD. Operator RESOLVED seq319 NEEDS-DECISION by selecting Option 2 and authorizing the D-A scope
+amendment (operator directive /home/void/context.md, 2026-11-11), for SPEC_BRIEF49 at approved brief
+SHA-256 e0ce7079093b4ccab4a937e1c92389e641e3e7466dbd257e3585e9658d5262ea. Loop allowlist EXPANDED to add
+docs/governance/stop_report.schema.json (previously read-only) for the SMALLEST STRICT v1.4.0 extension
+necessary to validate: (a) [WHEN] locked baseline, numerator, denominator, percentage-or-UNKNOWN, remaining
+gates, ETA assumptions, confidence; (b) conditional Goal-Framed Reference Knowledge Transfer Ledger under
+[WHAT]/how with explicit not-applicable representation; (c) final orchestrator-effort justification.
+Requirements (operator): preserve all existing required fields + five decision classes + authorization
+boundaries; no unbounded catch-all; preserve historical-report compatibility via version-discriminated path
+(do not loosen v1.4.0); update contract_manifest.json with new contract AND schema hashes; add positive,
+negative, legacy-compat, and invalid-decision-class tests; invalid classes RESEARCH-ONLY/DEFERRED/NO-OP MUST
+fail; no product-code / src manifest.py / CyberGym / live-use changes; do NOT modify repository protection
+settings; at GATE-2 determine protection via repository rulesets/branch-target matching (classic 404 alone is
+not proof main is unprotected). Effort MEDIUM (changes validated governance object + compatibility boundary).
+Plan: feature branch kronos/v1.4.0-human-readable-reporting off main bb00179; Thin-Orchestrator builder
+(claude-sonnet-5-5) -> independent reviewer (claude-haiku-5-5); draft PR after review PASS; PAUSE at GATE-2
+(no merge). Allowlist (§10, amended): KRONOS_RND_CONTRACT.md, stop_report.schema.json, contract_manifest.json,
+tests/test_rnd_contract.py. .claude/** + CLAUDE.md remain maintainer-patch only (builders prohibited).
+Live mismatch recorded: main classic branch-protection endpoint returns 404; per operator this is NOT proof
+main is unprotected; GATE-2 re-measures protection via rulesets/branch-target. seq319 NEEDS-DECISION resolved.
+
+# KRONOS loop-state checkpoint
 seq: 319
 derived_at: 2026-11-11T10:02:28Z
 contract_version: 1.3.2
