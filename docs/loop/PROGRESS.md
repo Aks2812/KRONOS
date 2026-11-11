@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 319
+derived_at: 2026-11-11T10:02:28Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NEEDS-DECISION_SPEC_BRIEF49_DA_DERIVATION_FAILS
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+seq318_pending_action_outcome:
+STOPPED pre-build. D-A derivation requirement NOT met -> NEEDS-DECISION per GATE-1 scope correction
+(schema read-only, byte-identical; if D-A tests fail, return NEEDS-DECISION, do not edit schema).
+Read-only researcher (claude-sonnet-5) produced a field-by-field derivation table. Most render fields
+derive from the validated object (stop_report.schema.json): [STATUS] report_type/decision_class,
+[WHY] why, [WHERE] where.*, [WHEN] checkpoint_seq/timestamp, [WHAT] what, [WHO] who.*,
+[HOW] how.tests/gates, [NEXT] next.items.*, recommendation, operator_action, opus_effort,
+and the SAFE-TO-APPROVE authorization line (composite where.pr + where.head_sha).
+DO NOT derive from the validated object (schema defines no such property; only the permissive,
+un-validated sub-object extension area would carry them): [WHEN] locked milestone baseline,
+numerator, denominator, remaining gates, ETA assumptions, confidence; and the Goal-Framed Reference
+Knowledge Transfer Ledger (no field anywhere; `what` is a string, `how` lists only tests/gates).
+Permissive-container tolerance (when/how have no additionalProperties:false) means the object is not
+REJECTED if these keys appear, but tolerance is not validation; an acceptance test cannot PROVE these
+render requirements derive from the validated object. Schema is read-only/byte-identical, so no schema
+edit is permitted to close the gap. => NEEDS-DECISION.
+No builder dispatched. No edits on feature branch kronos/v1.4.0-human-readable-reporting (base bb00179,
+0 commits). Schema untouched (sha256 d34aa5d9... unchanged). No product code, no PR, GATE-2 not reached.
+Operator must choose one of options 1/2/3 in the stop-report NEXT before implementation can resume.
+seq317 idle COMPLETE/NO-ACTION remains the last completed state.
+
+# KRONOS loop-state checkpoint
 seq: 318
 derived_at: 2026-11-11T09:58:37Z
 contract_version: 1.3.2
