@@ -69,17 +69,21 @@ Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merg
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
 
-DECISION CLASS + PRESENTATION (contract v1.3.2 §14–§16): every terminal report carries exactly one decision
+DECISION CLASS + PRESENTATION (contract v1.4.0 §14–§16): every terminal report carries exactly one decision
 class — AUTO-CONTINUE, SAFE-TO-APPROVE, REVIEW-REQUIRED, HOLD, or NO-ACTION — and renders as GitHub-flavored
-Markdown with both tables together inside exactly one fenced `markdown` block: one summary table (Report Type,
-Decision Class, What, Why, Who, When, Where, How, Recommendation, Operator Action, Opus Effort) and one
-next-actions table (Rank, Severity, Dependencies, Decision Class, Action); every table row on one physical line;
-no box-drawing characters; escape `|` and use `<br>` in cells; a pre-response self-check (exactly one `markdown`
-fence, both tables with `|---|` separator rows, all required fields present, no flat key/value, no box-drawing)
-before emitting; exactly one preferred recommendation; a
-SAFE-TO-APPROVE report adds one authorization line naming the PR and full head SHA; Opus effort defaults LOW
-(MEDIUM/HIGH needs a stated reason). The contract §14–§16 is the sole authority; this command only
-operationalizes it and never redefines a class or column.
+Markdown as an ordered sequence of bracket-labeled sections: [STATUS] first (Report Type + one valid Decision
+Class), then [WHY], [WHERE], [WHEN] (locked baseline, numerator, denominator, percentage-or-UNKNOWN, remaining
+gates, ETA assumptions, confidence), [WHAT] (with the conditional Goal-Framed Reference Knowledge Transfer
+Ledger), [WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY] (rank, severity, depends_on, decision_class,
+action), [MOST RECOMMENDED ACTION] (one recommendation, three sentences / 60 words), [OPERATOR ACTION], and a
+final RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification> line; every row on one physical line;
+no box-drawing characters; internal breaks with `<br>`; a pre-response self-check before emitting (sections in
+order, [STATUS] first with a valid Decision Class, [WHEN] fields or UNKNOWN, the conditional ledger or an
+explicit none line, the bounded recommendation, the effort line, no flat key/value, no box-drawing);
+RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position; a SAFE-TO-APPROVE report adds
+one authorization line naming the PR and full head SHA; Opus effort defaults LOW (MEDIUM/HIGH needs a stated
+reason). The contract §14–§16 is the sole authority; this command only operationalizes it and never redefines a
+class or label.
 
 TERMINAL STOP PATHS (each emits the canonical schema-validated stop-report, §9): STOP AND ASK,
 PAUSE, BLOCKED, COMPLETE, no-pending-action, circuit-breaker exhaustion (HALT), failed review
