@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 321
+derived_at: 2026-11-11T13:51:07Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: GATE-2_MERGE_AUTH_PR53_SPEC_BRIEF49_V140
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+seq320_pending_action_outcome:
+DONE (build + independent review). SPEC_BRIEF49 Contract v1.4.0 human-readable labeled-section terminal
+reporting implemented on branch kronos/v1.4.0-human-readable-reporting, head bf9929ed20aa7473f3956a8b1ab3799a34b4fb74.
+Four files only (§10 Option-2 amended allowlist): docs/governance/KRONOS_RND_CONTRACT.md (§15 rewritten to
+ordered bracket-labeled sections; §14 forbidden-render clarification RESEARCH-ONLY/DEFERRED/NO-OP; §9 v1.4.0
+object note; version 1.3.2->1.4.0 incl. line 7), docs/governance/stop_report.schema.json (version-discriminated
+strict v1.4.0 then-branch: when.milestone 7 fields, how.reference_ledger applicable+9-field entries,
+effort_justification; base when/how stay PERMISSIVE for legacy, closed only under contract_version==1.4.0;
+numerator/denominator anyOf integer|UNKNOWN; ledger applicable:false=>entries maxItems 0), contract_manifest.json
+(1.4.0 + re-pinned hashes), tests/test_rnd_contract.py (labeled-section + v1.4.0 schema-structure + positive/
+negative/legacy-compat/invalid-class tests). Branch hashes: contract 890070ea3d7c3744c062c023d52a8f03bcddf9bd5b350b607c0d70fc8478fd4e,
+schema b22fc0280023390f1f66b7f3116062405c1ba6b667408db3259c4eeb3b361a6b (== branch manifest).
+Independent reviewer (claude-haiku-5-5) at EXACT head bf9929e: PASS. Full canonical suite (its own run) 4057
+passed, 1 skipped, 0 failed (rtk test .venv/bin/python -m pytest -q, disk TMPDIR, SUMMARY line, not $?). AC1-AC11
+PASS or deferred: AC8 (.claude/RAILS.md, kronos-continue.md two-table wording) is D-C maintainer-hand-patch only;
+loop cannot edit .claude/**. Patches delivered + git-apply-check clean at
+/home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF49_maintainer_patches/0001-RAILS-v1.4.0-labeled-sections.patch and
+0002-kronos-continue-v1.4.0-labeled-sections.patch. (Brief §10 also named a CLAUDE.md patch; CLAUDE.md:14 is
+version-neutral so none needed; maintainer to confirm.) AC11 whole-window scope-audit green by measurement via
+test_commit_authority.py test_B31_Q_scope_audit (AB_BASE..HEAD subset RND_SECTION_10; four files already members);
+no second HEAD-relative audit added (would double seal-tax; that file is outside the §10 allowlist anyway).
+Draft PR #53 OPEN, head bf9929e, ci: none. PROTECTION CORRECTION: main IS protected via active repository ruleset
+void-rule-kronos (id 25333712: deletion, non_fast_forward, pull_request required); the classic branch-protection
+endpoint 404 recorded at seq320 is NOT proof of no protection (operator-directed), so MERGE-GATE item 1 = PASS.
+PAUSE at GATE-2: protected-branch merge requires explicit maintainer authorization naming PR #53 and full head
+SHA bf9929ed20aa7473f3956a8b1ab3799a34b4fb74, AND the maintainer applying both .claude patches alongside merge;
+loop then re-measures the ten-item MERGE-GATE in the same turn and, on all-PASS, squash-merges exact-head
+(gh pr merge 53 --squash --match-head-commit bf9929ed...; never --admin, never --auto). seq320 write-ahead resolved.
+
+# KRONOS loop-state checkpoint
 seq: 320
 derived_at: 2026-11-11T13:01:13Z
 contract_version: 1.3.2
