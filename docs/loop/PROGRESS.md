@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 331
+derived_at: 2026-11-12T05:10:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: AUTO-BRIEF_SPEC_BRIEF50_F1_BUILD_REVIEW_DRAFTPR
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: scoped test+dependency follow-up, foreground build/review, draft PR only
+brief: docs/loop/SPEC_BRIEF50.md
+brief_sha256: 594083e19f0332e831461b8c2f29e71511c2fce003f40a8cfc3111f0da43bc0b
+base_main: 8f42638bb6d3601ac7fb981b1ccb9a2e2b8fa202
+seq330_pending_action_outcome:
+DONE. Re-derived live: main HEAD 8f42638 = PR#53 squash mergeCommit (MERGED 2026-11-12T04:44:29Z, head
+7edb2fc). Contract/schema sha256 match manifest (1.4.0). Checkpoint 330 agrees with live, no mismatch.
+AUTO-BRIEF (§13.1) invoked on operator authorization of follow-up F1. Triage of recorded PR#53 follow-ups:
+F2 (CLAUDE.md §15-renderer wording), F3 (contract_manifest.json formatting), F4 (stop_report.schema.json
+formatting) INELIGIBLE = governance surfaces, human-gated. F5 (test-name divergence) NOT selected =
+coverage-equivalent cosmetic, historical-provenance basis. F1 operator-authorized and selected.
+
+PENDING (seq 331): build SPEC_BRIEF50 (F1) on feature branch from main 8f42638 — add jsonschema (exact pin)
+to requirements.txt + pyproject.toml dev extra; add jsonschema-backed validation in tests/test_rnd_contract.py
+exercising the REAL docs/governance/stop_report.schema.json (positive validate, negative rejected, mirror/real
+drift guard). Permitted files EXACTLY: requirements.txt, pyproject.toml, tests/test_rnd_contract.py. Schema,
+contract, manifest, .claude/** NOT touched. Then foreground kronos-reviewer, repair if needed, draft PR. NO
+merge, NO mark-ready, NO protected-branch write. Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 330
 derived_at: 2026-11-12T04:50:00Z
 contract_version: 1.4.0
