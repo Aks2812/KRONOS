@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 326
+derived_at: 2026-11-11T16:05:00Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: REDISPATCH_SPEC_BRIEF49_EXACT_HEAD_REVIEW_PR53_AT_f8b49f3
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: post-restart recovery reconciling a live/checkpoint head mismatch and a lost reviewer verdict
+seq325_pending_action_outcome:
+RECOVERY per operator directive (resume checkpointed SPEC_BRIEF49 recovery; OS restart interrupted fresh Haiku
+review after head f8b49f3 pushed and full suite completed; do NOT infer/fabricate lost verdict; reconcile scratch
+safely; recover from durable loop-state; re-dispatch independent exact-head review; do NOT merge).
+seq325 NEEDS-DECISION AC11 SUPERSEDED by maintainer disposition (option 3): maintainer AC11 patch
+0003-test_commit_authority-B49-six-exact-scope-audit applied to tests/test_commit_authority.py (outside loop
+edit scope, maintainer-only), advancing head f02c2dc -> f8b49f3 (2 commits 298988d + f8b49f3, +48 lines, single
+file tests/test_commit_authority.py), durable on origin/kronos/v1.4.0-human-readable-reporting.
+LIVE re-derivation (LIVE WINS): main HEAD bb00179 NOT protected; PR#53 OPEN DRAFT unmerged, head f8b49f3, base
+main; f8b49f3 NOT ancestor of main (unmerged). MISMATCH vs seq325 (head f02c2dc; seq325 assumed protected-main
+MERGE-GATE context) recorded; no merge pending.
+Brief SPEC_BRIEF49_PROPOSED.md sha256 3e1044a39ca06e724f37eeea9dbd2fbe8d3079d8303d5d79ee17216459d96174 matches
+amended brief SHA recorded at seq325. Brief integrity OK.
+SCRATCH reconciled SAFE: registered worktree .tmp/b49-wt clean at HEAD f8b49f3, nothing unpushed (HEAD ==
+origin feature head), only untracked .venv symlink + pytest-of-void tmp; all work durable on origin. No
+destructive action taken.
+Fresh Haiku reviewer verdict at f8b49f3 LOST to restart; NOT reconstructed from conversation. WRITE-AHEAD:
+re-dispatching independent kronos-reviewer at EXACT head f8b49f3 against amended brief, measuring its own §8
+acceptance + canonical suite; builder report/reasoning NOT passed. NO merge, PR#53 stays DRAFT, no protection
+change, no ready-for-review, no issue close. Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 325
 derived_at: 2026-11-11T15:48:10Z
 contract_version: 1.3.2
