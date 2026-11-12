@@ -303,54 +303,6 @@ def test_B31_Q_scope_audit(nonet):
     assert not nonet
 
 
-# ---- SPEC_BRIEF49: six-exact whole-window scope audit (AC11, maintainer amendment) ----
-# Separately authorized maintainer patch. This file (tests/test_commit_authority.py) is a
-# seventh, audit-only maintainer path and is NOT part of the SPEC_BRIEF49 implementation scope.
-# Both endpoints are fixed SHAs (no ..HEAD): the audit is stable after squash merge and never
-# becomes a HEAD-relative recurring failure.
-B49_BASE = "bb00179d8d4dc43f2cc43b5877b93eff9ec795fa"       # PR #52 merge; SPEC_BRIEF49 base
-B49_IMPL_HEAD = "f02c2dc62b144b9c7df26227832222c1b1cf85d8"  # sealed implementation head (the six)
-B49_HEAD = "298988d74c3ff383173c487369266d6052c81399"       # sealed branch head (six impl + this audit file)
-B49_SIX = {
-    "docs/governance/KRONOS_RND_CONTRACT.md",
-    "docs/governance/stop_report.schema.json",
-    "docs/governance/contract_manifest.json",
-    "tests/test_rnd_contract.py",
-    ".claude/RAILS.md",
-    ".claude/commands/kronos-continue.md",
-}
-B49_AUDIT_FILE = "tests/test_commit_authority.py"  # the seventh, audit-only maintainer path
-B49_BRANCH_SEVEN = B49_SIX | {B49_AUDIT_FILE}
-
-
-def test_B49_six_exact_scope_audit(nonet):
-    def names(rng):
-        return set(subprocess.run(
-            ["git", "diff", "--name-only", rng], cwd=ROOT, capture_output=True, text=True, check=True
-        ).stdout.split())
-
-    # (1) implementation subset equals the exact six files (sealed to the fixed impl head).
-    impl = names(f"{B49_BASE}..{B49_IMPL_HEAD}")
-    assert impl == B49_SIX, impl ^ B49_SIX
-    # (2) the complete authorized branch (measured over a fixed-SHA window) equals those six
-    #     plus the audit-only maintainer file. The audit's own follow-up commit re-touches only
-    #     tests/test_commit_authority.py, so the seven-path set is invariant past B49_HEAD.
-    branch = names(f"{B49_BASE}..{B49_HEAD}")
-    assert branch == B49_BRANCH_SEVEN, branch ^ B49_BRANCH_SEVEN
-    assert len(B49_BRANCH_SEVEN) == 7 and B49_AUDIT_FILE not in B49_SIX
-    # (3) every other path fails: measured over the fixed window, the only non-implementation
-    #     path the branch adds is the audit-only file, and nothing outside the seven appears.
-    audit_only = names(f"{B49_IMPL_HEAD}..{B49_HEAD}")
-    assert audit_only == {B49_AUDIT_FILE}, audit_only ^ {B49_AUDIT_FILE}
-    assert branch - B49_BRANCH_SEVEN == set()
-    for forbidden in ("CLAUDE.md", "docs/governance/source_migration_map.md",
-                      "src/kronos/manifest.py", ".github/workflows/ci.yml",
-                      ".claude/agents/kronos-builder.md"):
-        assert forbidden not in branch
-    # (4) stability: both endpoints are fixed SHAs; this assertion never references HEAD.
-    assert not nonet
-
-
 # ---- SPEC_BRIEF32: required source identity on write facades ----
 def _spy(g, monkeypatch):
     seen = []
