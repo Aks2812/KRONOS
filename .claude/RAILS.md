@@ -166,15 +166,21 @@ and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDI
 resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the canonical schema-validated stop-report (§9);
 never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.
 
-## Decision classes & persistent terminal presentation (contract v1.4.0 §14–§16)
+## Decision classes & persistent terminal presentation (contract v1.4.1 §14–§16)
 
 The contract is the sole semantic authority for the five decision classes (AUTO-CONTINUE, SAFE-TO-APPROVE,
 REVIEW-REQUIRED, HOLD, NO-ACTION) and for the persistent GitHub-flavored-Markdown presentation of terminal
 reports as an ordered sequence of bracket-labeled sections ([STATUS] first, then [WHY], [WHERE], [WHEN], [WHAT],
-[WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY], [MOST RECOMMENDED ACTION], [OPERATOR ACTION], and a
-final RECOMMENDED ORCHESTRATOR EFFORT line), read top to bottom, every row on one physical line, no box-drawing,
-no flat key/value report, internal breaks with `<br>`, a pre-response self-check before emitting, exactly one
-preferred recommendation within three sentences and 60 words, a PR + full-head-SHA authorization line for
-SAFE-TO-APPROVE, Opus effort defaulting to LOW. RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the
-Decision-Class position. This file references and operationalizes §14–§16; it does not redefine any class or
+[WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY], [MOST RECOMMENDED ACTION], [OPERATOR ACTION], [NEXT
+PROMPT], and a final RECOMMENDED ORCHESTRATOR EFFORT line), read top to bottom; the [HOW TO DO FOR NEXT STEP
+BASED ON SEVERITY] section renders as readable bullets (one per next-step entry), never a wide or box-drawing
+table; no flat key/value report, internal breaks with `<br>`, a pre-response self-check before emitting, exactly
+one preferred recommendation within three sentences and 60 words, a PR + full-head-SHA authorization line for
+SAFE-TO-APPROVE, Opus effort defaulting to LOW. [NEXT PROMPT] is presentation-only: it renders the exact next
+operator prompt derived from decision_class/operator_action/recommendation/where.pr/where.head_sha, as exactly
+one fenced text block (<=120 words) when a prompt exists or NONE with a reason otherwise, per the contract §15
+decision-class matrix; it never broadens scope, infers §6/§8 authority, weakens a blocker, or emits an
+override/bypass prompt under HOLD, and the self-check rejects a truncated, merged, malformed, or incomplete
+[NEXT PROMPT]. RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position. This file
+references and operationalizes §14–§16; it does not redefine any class or
 label.

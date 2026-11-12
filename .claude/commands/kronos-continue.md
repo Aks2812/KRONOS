@@ -69,17 +69,22 @@ Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merg
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
 
-DECISION CLASS + PRESENTATION (contract v1.4.0 §14–§16): every terminal report carries exactly one decision
+DECISION CLASS + PRESENTATION (contract v1.4.1 §14–§16): every terminal report carries exactly one decision
 class — AUTO-CONTINUE, SAFE-TO-APPROVE, REVIEW-REQUIRED, HOLD, or NO-ACTION — and renders as GitHub-flavored
 Markdown as an ordered sequence of bracket-labeled sections: [STATUS] first (Report Type + one valid Decision
 Class), then [WHY], [WHERE], [WHEN] (locked baseline, numerator, denominator, percentage-or-UNKNOWN, remaining
 gates, ETA assumptions, confidence), [WHAT] (with the conditional Goal-Framed Reference Knowledge Transfer
 Ledger), [WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY] (rank, severity, depends_on, decision_class,
-action), [MOST RECOMMENDED ACTION] (one recommendation, three sentences / 60 words), [OPERATOR ACTION], and a
-final RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification> line; every row on one physical line;
-no box-drawing characters; internal breaks with `<br>`; a pre-response self-check before emitting (sections in
+action), [MOST RECOMMENDED ACTION] (one recommendation, three sentences / 60 words), [OPERATOR ACTION], [NEXT PROMPT]
+(one fenced text block with the next operator prompt derived from decision_class/operator_action/recommendation/
+where.pr/where.head_sha, <=120 words, or NONE with a reason; per the contract §15 decision-class matrix; never
+broadens scope, infers §6/§8 authority, weakens a blocker, or emits an override/bypass under HOLD), and a
+final RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification> line; the [HOW TO DO FOR NEXT STEP
+BASED ON SEVERITY] section renders as readable bullets, never a wide or box-drawing table; no box-drawing
+characters; internal breaks with `<br>`; a pre-response self-check before emitting (sections in
 order, [STATUS] first with a valid Decision Class, [WHEN] fields or UNKNOWN, the conditional ledger or an
-explicit none line, the bounded recommendation, the effort line, no flat key/value, no box-drawing);
+explicit none line, the bounded recommendation, the [NEXT PROMPT] section present and not truncated/merged/malformed/incomplete, the
+effort line, no flat key/value, no box-drawing);
 RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position; a SAFE-TO-APPROVE report adds
 one authorization line naming the PR and full head SHA; Opus effort defaults LOW (MEDIUM/HIGH needs a stated
 reason). The contract §14–§16 is the sole authority; this command only operationalizes it and never redefines a
