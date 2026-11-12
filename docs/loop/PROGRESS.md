@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 335
+derived_at: 2026-11-12T06:25:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: MERGE_PR54_SQUASH_AT_e36df6d
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: operator GATE-2 received; deterministic head-pinned squash merge
+brief: docs/loop/SPEC_BRIEF50.md
+brief_sha256: 6e40d5564a87675a0b157038b829cc4da5b0b58db1a6e0af4a0c669bca8dd813
+base_main: 8f42638bb6d3601ac7fb981b1ccb9a2e2b8fa202
+feature_branch: kronos/f1-jsonschema-schema-validation
+feature_head: e36df6d45099a9b826a63e13c2159616e0628eed
+pr: 54
+authorized_sha: e36df6d45099a9b826a63e13c2159616e0628eed
+seq334_pending_action_outcome:
+DONE. Draft PR#54 opened (recorded seq 334). Operator GATE-2 authorization RECEIVED this turn: merge PR#54 at
+exact head e36df6d (squash).
+
+TEN-ITEM MERGE-GATE re-measured SAME turn, ALL GREEN:
+(1) main protected: ruleset active main = pull_request + non_fast_forward + deletion.
+(2) PR#54 to be marked ready (gh pr ready 54) immediately before merge.
+(3) OPEN, unmerged, head NOT ancestor of origin/main.
+(4) head e36df6d == operator-authorized SHA (unchanged).
+(5) independent kronos-reviewer PASS AC1-AC9 + §12 binding e36df6d (seq 333).
+(6) ci:none -- statusCheckRollup empty, no checks reported.
+(7) canonical suite re-measured this turn: 4064 passed, 1 skipped, 0 failed (.venv/bin/python, disk TMPDIR, 443s).
+(8) scope/seal-tax green: 8f42638..e36df6d = exactly {pyproject.toml, requirements.txt, test_rnd_contract.py,
+    test_commit_authority.py}; test_B31_Q_scope_audit PASS in suite.
+(9) Opus Gate-2 semantic PASS.
+(10) no hard-boundary/out-of-scope: docs/governance, .claude, .github, cybergym 0-byte diff.
+
+PENDING (seq 335): gh pr ready 54; then gh pr merge 54 --squash --match-head-commit e36df6d (NO --admin, NO
+--auto). Post-merge: verify PR#54 MERGED, origin/main advanced, head e36df6d ancestor of new main. Outcome +
+squash SHA recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 334
 derived_at: 2026-11-12T06:08:00Z
 contract_version: 1.4.0
