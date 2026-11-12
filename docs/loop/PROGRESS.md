@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 336
+derived_at: 2026-11-12T09:46:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: NONE
+report_type: COMPLETE
+decision_class: NO-ACTION
+opus_effort: LOW
+opus_effort_reason: authorized squash merge done + mechanical post-merge verification
+brief: docs/loop/SPEC_BRIEF50.md
+brief_sha256: 6e40d5564a87675a0b157038b829cc4da5b0b58db1a6e0af4a0c669bca8dd813
+base_main: d012af5cf8454ffb8da4364eebe9ceaf68d07651
+seq335_pending_action_outcome:
+DONE. gh pr ready 54 (marked ready). gh pr merge 54 --squash --match-head-commit e36df6d (NO --admin, NO
+--auto). PR#54 MERGED 2026-11-12T09:44:42Z, squash commit d012af5cf8454ffb8da4364eebe9ceaf68d07651;
+origin/main 8f42638 -> d012af5.
+POST-MERGE VERIFY: main HEAD d012af5. Merge diff 8f42638..d012af5 = exactly the four permitted files
+{pyproject.toml, requirements.txt, tests/test_commit_authority.py, tests/test_rnd_contract.py}. jsonschema==4.25.1
+present on main (requirements.txt). stop_report.schema.json sha256 654dd7f... on main = base (byte-identical,
+governance untouched). Squash => e36df6d not literal ancestor (expected).
+
+SPEC_BRIEF50 (F1: schema-backed stop-report validation via jsonschema) COMPLETE and merged. Closes PR#53
+reviewer finding F1. No pre-approved next brief. Loop idle awaiting operator direction.
+Remaining PR#53 follow-ups still open and human-gated: F2 (CLAUDE.md §15-renderer wording, maintainer
+hand-patch), F3 (contract_manifest.json formatting), F4 (stop_report.schema.json formatting) -- all governance.
+F5 (test-name divergence) WONTFIX-recommended (coverage-equivalent). Two LOW non-blocking F1 findings (seq 333)
+carried, no action required.
+# KRONOS loop-state checkpoint
 seq: 335
 derived_at: 2026-11-12T06:25:00Z
 contract_version: 1.4.0
