@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 327
+derived_at: 2026-11-11T16:20:00Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: NEEDS-DECISION_SPEC_BRIEF49_REVIEW_FAIL_DA_SCHEMA_AND_AC11_SCOPE
+report_type: BLOCKED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: semantic reconciliation of a governance-level (D-A / schema-authorization) review failure
+seq326_pending_action_outcome:
+DONE. Independent exact-head kronos-reviewer COMPLETE at head f8b49f3 (brief SPEC_BRIEF49_PROPOSED.md sha
+3e1044a3 confirmed; base bb00179; range bb00179..f8b49f3 = 6 commits, 7 changed paths: .claude/RAILS.md,
+.claude/commands/kronos-continue.md, docs/governance/KRONOS_RND_CONTRACT.md, contract_manifest.json,
+stop_report.schema.json, tests/test_commit_authority.py, tests/test_rnd_contract.py). Canonical runner
+(.venv/bin/python, disk TMPDIR) SUMMARY: 4062 passed, 1 skipped, 0 failed. Builder report NOT passed to reviewer.
+VERDICT: FAIL -- DO NOT MERGE (semantic verifier concurs; verdict measured, not reconstructed).
+PASS: AC2,AC2a,AC3,AC4,AC5,AC6,AC6a,AC6b,AC7,AC8,AC10.
+FAIL AC1: schema NOT byte-identical -- stop_report.schema.json sha d34aa5 (bb00179) -> 654dd7f2 (HEAD); schema
+gained top-level allOf requiring contract_version + contract_version enum + effort_justification + if/then
+closing when/how with additionalProperties:false; no NEEDS-DECISION record authorizes this D-A schema change.
+FAIL AC9: manifest records CHANGED schema sha 654dd7f2; brief requires manifest keep UNCHANGED base schema sha.
+FAIL AC11: bb00179..HEAD window = 7 paths incl tests/test_commit_authority.py; brief mandates EXACTLY six +
+reject every out-of-six path. test_B49_six_exact_scope_audit enforces the 7-path set (its own comment calls the
+7th "audit-only maintainer path", unauthorized by brief TEXT -- only by 298988d commit message) AND measures
+fixed bb00179..298988d (B49_HEAD), NOT ..HEAD. test_B31_Q_scope_audit measures 3f6dbc3..HEAD vs RND_SECTION_10
+superset (incl CLAUDE.md, .claude/**) so cannot reject out-of-six -> cannot satisfy AC11.
+HIGH-1 (D-A): contract_version now REQUIRED for all reports -> historical unversioned reports fail validation;
+brief 1/5/11 forbid object-breaking changes and state no stored report invalidated; contract prose line 39 admits
+it. HIGH-2 (D-A): schema edit + closed when/how under v1.4.0 is a schema change D-A did NOT authorize; brief 16
+requires NEEDS-DECISION for that. MED: contract_manifest.json reformatted to one minified line (non-semantic).
+LIVE at close: main bb00179 NOT protected; PR#53 OPEN DRAFT unmerged head f8b49f3; f8b49f3 NOT ancestor of main.
+NO merge, PR#53 stays DRAFT, no protection change, no ready-for-review, no issue close. Scratch left intact
+(worktree .tmp/b49-wt clean at f8b49f3).
+STOP AND ASK -- operator must dispose before any further work:
+(A) D-A/schema: either revert stop_report.schema.json to base sha d34aa5 (drop contract_version-required + when/how
+closure), OR record a NEEDS-DECISION authorizing the schema change and reconcile brief 1/5/11 + AC1.
+(B) AC11 scope: either re-pin the audit to EXACTLY six paths measured over bb00179..HEAD, OR authorize the 7th path
+tests/test_commit_authority.py in the brief TEXT.
+(C) AC9 manifest schema sha follows (A).
+RECOMMENDATION (preferred): return SPEC_BRIEF49 to NEEDS-DECISION; revert schema to base sha d34aa5 and re-pin
+AC11 to six-exact over bb00179..HEAD; keep PR#53 DRAFT. No merge authorization possible while AC1/AC9/AC11 fail.
+# KRONOS loop-state checkpoint
 seq: 326
 derived_at: 2026-11-11T16:05:00Z
 contract_version: 1.3.2
