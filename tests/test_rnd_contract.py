@@ -61,7 +61,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.0"
+    assert manifest["contract_version"] == "1.4.1"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -168,9 +168,10 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_4_0_with_auto_brief():
+def test_contract_is_v1_4_1_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.4.0" in text
+    assert "Version: 1.4.1" in text
+    assert "Contract-Version: 1.4.1" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -286,7 +287,7 @@ def test_contract_defines_five_decision_classes():
 LABELED_SECTIONS = [
     "[STATUS]", "[WHY]", "[WHERE]", "[WHEN]", "[WHAT]", "[WHO]", "[HOW]",
     "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]",
-    "[MOST RECOMMENDED ACTION]", "[OPERATOR ACTION]",
+    "[MOST RECOMMENDED ACTION]", "[OPERATOR ACTION]", "[NEXT PROMPT]",
 ]
 
 
@@ -500,7 +501,7 @@ def test_schema_v140_structure():
     s = _schema()
     assert s["properties"]["contract_version"]["type"] == "string"
     assert s["properties"]["effort_justification"]["type"] == "string"
-    assert s["if"]["properties"]["contract_version"]["const"] == "1.4.0"
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1"]
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -553,7 +554,7 @@ def _report_v140(**over):
 def _validate_v140(report):
     """Stdlib mirror of the schema's version-discriminated v1.4.0 branch."""
     _validate_report(report)  # base object still validates
-    assert report.get("contract_version") == "1.4.0"
+    assert report.get("contract_version") in STRICT_CONTRACT_VERSIONS
     assert isinstance(report.get("effort_justification"), str) and report["effort_justification"]
     milestone = report["when"]["milestone"]
     for k in V140_MILESTONE_KEYS:
@@ -631,7 +632,8 @@ def test_v140_invalid_decision_class_fails():
 # v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
 # versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
 LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
-ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + ["1.4.0"]
+STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1"]
+ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + STRICT_CONTRACT_VERSIONS
 _MISSING = object()
 
 
@@ -646,7 +648,7 @@ def _validate_discriminated(report):
     assert v is not _MISSING, "missing contract_version"
     assert isinstance(v, str), "non-string contract_version"
     assert v in ALLOWED_CONTRACT_VERSIONS, f"unrecognized contract_version: {v!r}"
-    if v == "1.4.0":
+    if v in STRICT_CONTRACT_VERSIONS:
         _validate_v140(report)
     else:
         _validate_report(report)
@@ -731,6 +733,7 @@ def _positive_vectors():
         legacy["contract_version"] = v
         vectors.append((f"legacy {v}", legacy))
     vectors.append(("exact 1.4.0", _report_v140()))
+    vectors.append(("exact 1.4.1", _report_v140(contract_version="1.4.1")))
     vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
     return vectors
 
@@ -743,7 +746,8 @@ def _negative_vectors():
     nonstr = _report_v140()
     nonstr["contract_version"] = 140
     vectors.append(("non-string contract_version", nonstr))
-    for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", ""):
+    for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", "",
+                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1"):
         r = _report_v140()
         r["contract_version"] = bad
         vectors.append((f"version {bad!r}", r))
@@ -817,16 +821,182 @@ def test_terminal_report_structure_validator():
         "1 high none REVIEW-REQUIRED do it",
         "[MOST RECOMMENDED ACTION] do the thing",
         "[OPERATOR ACTION] approve",
+        "[NEXT PROMPT] NONE — loop continues autonomously",
         "RECOMMENDED ORCHESTRATOR EFFORT: LOW — routine",
     ])
     _validate_terminal_report(good)
 
     box = good.replace("[STATUS]", "─ [STATUS]", 1)
     missing = good.replace("[OPERATOR ACTION] approve\n", "")
+    no_next = good.replace("[NEXT PROMPT] NONE — loop continues autonomously\n", "")
     noeffort = good.replace("RECOMMENDED ORCHESTRATOR EFFORT: LOW — routine", "done")
     lines = good.splitlines()
     lines[1], lines[2] = lines[2], lines[1]  # swap [WHY] and [WHERE] -> out of order
     out_of_order = "\n".join(lines)
-    for bad in (box, missing, noeffort, out_of_order):
+    for bad in (box, missing, no_next, noeffort, out_of_order):
         with pytest.raises(AssertionError):
             _validate_terminal_report(bad)
+
+
+# ---- SPEC_BRIEF51 / contract v1.4.1: precise next-prompt reporting ----
+def _s15():
+    text = CONTRACT.read_text()
+    return text[text.index("## §15"):text.index("## §16")]
+
+
+def _next_prompt_block():
+    s15 = _s15()
+    start = s15.index("`[NEXT PROMPT]` —")
+    end = s15.index("12. The final line")
+    return s15[start:end]
+
+
+def test_schema_v141_minimal_widen():
+    s = _schema()
+    assert s["properties"]["contract_version"]["enum"] == [
+        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1"]
+    assert "const" not in s["if"]["properties"]["contract_version"]
+    assert s["if"]["required"] == ["contract_version"]
+    assert set(s["required"]) == REQUIRED_KEYS
+    assert len(s["required"]) == 11
+    assert set(s["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+    assert set(s["properties"]["next"]["items"]["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+    assert s["additionalProperties"] is False
+    # no new top-level key: [NEXT PROMPT] is presentation-only
+    assert set(s["properties"]) == {
+        "report_type", "contract_version", "decision_class", "opus_effort",
+        "effort_justification", "what", "why", "who", "when", "where", "how",
+        "next", "recommendation", "operator_action"}
+    assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
+    assert "milestone" in s["then"]["properties"]["when"]["required"]
+    assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
+
+
+def _strict_report(version):
+    return _report_v140(contract_version=version)
+
+
+def test_real_schema_validates_exact_1_4_0_and_1_4_1_strict():
+    validator = _real_validator()
+    for v in ("1.4.0", "1.4.1"):
+        r = _strict_report(v)
+        assert r["contract_version"] == v
+        assert validator.is_valid(r), v
+        # strict fields are enforced for both versions
+        for drop in (lambda x: x.pop("effort_justification"),
+                     lambda x: x["when"].pop("milestone"),
+                     lambda x: x["how"].pop("reference_ledger")):
+            bad = _strict_report(v)
+            drop(bad)
+            assert not validator.is_valid(bad), v
+
+
+_MISSING_VERSION = object()
+
+
+def test_real_schema_rejects_bad_contract_versions_fail_closed():
+    validator = _real_validator()
+    cases = [_MISSING_VERSION, "", "1.4", "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", 141, 1.41, None, ["1.4.1"]]
+    for bad in cases:
+        r = _strict_report("1.4.1")
+        if bad is _MISSING_VERSION:
+            del r["contract_version"]
+        else:
+            r["contract_version"] = bad
+        assert not validator.is_valid(r), repr(bad)
+
+
+def test_next_prompt_named_placed_and_mandatory():
+    s15 = _s15()
+    assert "[NEXT PROMPT]" in s15
+    assert s15.index("[OPERATOR ACTION]") < s15.index("[NEXT PROMPT]") < s15.index(
+        "RECOMMENDED ORCHESTRATOR EFFORT")
+    block = _next_prompt_block()
+    assert "mandatory on every terminal report" in block
+    assert "presentation-only" in block
+
+
+def test_next_prompt_one_fenced_text_block_no_alternatives_120_words():
+    block = _next_prompt_block()
+    assert "exactly one fenced ```text block" in block
+    assert "one prompt" in block
+    assert "no alternatives" in block
+    assert "no commentary inside the fence" in block
+    assert "bare token `NONE`" in block
+    assert "no fence" in block
+    assert "at most 120 words" in block
+
+
+def test_next_prompt_decision_class_matrix():
+    block = _next_prompt_block()
+    for cls in DECISION_CLASSES:
+        assert f"- `{cls}` —" in block, cls
+    assert "`NONE — loop continues autonomously`" in block
+    sta = block[block.index("- `SAFE-TO-APPROVE` —"):block.index("- `NO-ACTION` —")]
+    assert "one fenced ```text block" in sta
+    assert "`where.pr`" in sta and "full head SHA" in sta and "`where.head_sha`" in sta
+    na = block[block.index("- `NO-ACTION` —"):block.index("- `REVIEW-REQUIRED` —")]
+    assert "authoritative roadmap or backlog item" in na
+    assert "never fabricated" in na
+    assert "`NONE` with the reason" in na
+    rr = block[block.index("- `REVIEW-REQUIRED` —"):block.index("- `HOLD` —")]
+    assert "one fenced ```text block" in rr
+    assert "every required human choice and boundary" in rr
+    assert "does not make it" in rr
+    assert "does not pre-authorize a merge" in rr
+    hold = block[block.index("- `HOLD` —"):]
+    assert "never renders an override, bypass, force" in hold
+    assert "`--admin`" in hold and "`--auto`" in hold
+    assert "remediation step or the safe resume condition" in hold
+    assert "render failure" in hold
+
+
+def test_next_prompt_boundary_constraints_and_none_fallback():
+    block = _next_prompt_block()
+    for frag in ("derived only from `decision_class`, `operator_action`, `recommendation`, "
+                 "`where.pr`, and `where.head_sha`",
+                 "never invented",
+                 "MUST NOT broaden scope beyond the approved brief",
+                 "§6/§8 (live-use) authority",
+                 "weaken or bypass a blocker or gate",
+                 "introduce a new target",
+                 "raw external-reference instructions",
+                 "never upgrades or overrides a decision class",
+                 "renders `NONE` with the reason instead"):
+        assert frag in block, frag
+
+
+def test_severity_section_is_readable_bullets_not_table():
+    s15 = _s15()
+    line = [l for l in s15.splitlines() if "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]" in l
+            and l.startswith("8.")][0]
+    assert "readable bullets" in line
+    assert "one bullet per `next` entry" in line
+    assert "`rank · severity · decision_class · depends_on · action`" in line
+    assert "never a wide pipe table" in line
+    assert "never box-drawing" in line
+    assert "single physical line" not in line
+    assert not [c for c in _BOX_CHARS if c in CONTRACT.read_text()]
+
+
+def test_next_prompt_self_check():
+    s15 = _s15()
+    check = s15[s15.index("Pre-response self-check"):]
+    assert "`[NEXT PROMPT]` is present and complete" in check
+    for frag in ("truncated", "merged with another section",
+                 "malformed (missing or incorrect fence)", "incomplete"):
+        assert frag in check, frag
+
+
+def test_version_discrimination_prose_covers_1_4_0_and_1_4_1():
+    text = CONTRACT.read_text()
+    s9 = text[text.index("## §9"):text.index("## §10")]
+    assert "exactly `1.4.0` or exactly `1.4.1`" in s9
+    assert "never loosened" in s9
+    s15 = _s15()
+    assert "exactly `1.4.0` or exactly `1.4.1`" in s15
+    assert "never loosened" in s15
+    s14 = text[text.index("## §14"):text.index("## §15")]
+    assert "`[NEXT PROMPT]`" in s14
+    assert "changes neither the five classes nor their meanings" in s14
