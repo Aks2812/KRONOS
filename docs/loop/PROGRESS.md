@@ -1,4 +1,73 @@
 # KRONOS loop-state checkpoint
+seq: 345
+derived_at: 2026-11-12T18:15:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: OPERATOR_GATE1_REVIEW_SPEC_BRIEF52_V142_SINGLE_LINE_NEXT_PROMPT_AND_ANSWER_Q1_Q4
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: authored a cross-surface (6-file) governance brief with a fail-closed presentation rule + deterministic five-class/200-char test design; consistency reasoning beyond a mechanical edit
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
+brief_sha256: 5ae8e90f338ee955d94692a3edeb002835f081ac75f3176bbc6f150788e73cae
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE; re-measure at any MERGE-GATE.
+
+seq345_context_and_outcome:
+TURN: operator directed (hold product/§6-§8 decision from seq 344) draft a GOVERNANCE-ONLY brief for contract
+v1.4.2: [NEXT PROMPT] -> one copy-ready line <=200 Unicode chars; only exact action + essential identifiers +
+mandatory pause + critical prohibitions; explanations/alternatives/paths/evidence in report fields; never
+truncate; if no safe prompt fits emit verbatim "REVIEW-REQUIRED: discuss the decision above; do not act.";
+deterministic tests for all five decision classes + fail closed above 200 chars; update contract/schema/
+manifest/version/docs consistently; Sonnet read-only mapping; PROPOSED brief + test plan ONLY, pause GATE-1,
+no implementation/product work.
+
+START-OF-TURN (live): contract integrity MATCH (9e595dee / d3a7012f vs manifest v1.4.1). main e2f7422 ==
+origin/main. Prior checkpoint seq 344 (REVIEW-REQUIRED, product decision held) present on loop-state @ aa3a19a.
+
+MAPPING (kronos-researcher, Sonnet, read-only, 21 tool uses) of every v1.4.1 [NEXT PROMPT] surface:
+- KRONOS_RND_CONTRACT.md: Contract-Version line ~218; §16 contract_version ~216; §15 [NEXT PROMPT] rule ~198
+  (fenced text block, "at most 120 words", derivation list, MUST-NOT prohibitions); per-class sub-bullets
+  ~199-203; pre-response self-check ~210; §14 additive cross-ref ~180. NOTE: lines 198-210 returned
+  compressed/omitted by tools; patcher MUST re-read literally before diffing.
+- stop_report.schema.json: contract_version enum ~32-38 lists 1.3.0/1.3.1/1.3.2/1.4.0/1.4.1; strict if/then
+  branch ~333-350 keyed on {1.4.0,1.4.1}; schema has NO [NEXT PROMPT]/next-prompt reference (presentation rule,
+  not schema field).
+- contract_manifest.json: {contract_version 1.4.1, contract sha 9e595dee...432c5 (64-hex), schema sha
+  d3a7012f...1a0a (64-hex)}. (Researcher's "65-char" note was a rendering artifact; orchestrator confirmed both
+  are standard 64-hex via sha256sum.)
+- .claude/RAILS.md ~179-184 and .claude/commands/kronos-continue.md ~78-86: carry [NEXT PROMPT] "<=120 words",
+  fenced block, prohibitions, self-check list. (.claude/** HARD DENY for loop -> maintainer hand-apply, Option B.)
+- tests/test_rnd_contract.py: helpers _s15()/_next_prompt_block() ~842-851; tests
+  test_next_prompt_* and test_terminal_report_structure_validator + version-discrimination test assert the
+  120-word/fenced/per-class/self-check prose. Canonical five-class list DECISION_CLASSES used for parametrization.
+- grep "120 words"/"NEXT PROMPT"/"copy-ready": exactly 3 .md files (contract, RAILS, kronos-continue); no other.
+- Newest brief number: KRONOS_PC has 29/30/31/49/51_PROPOSED; repo root up to 36; 51 referenced in tests ->
+  next free = 52.
+
+DELIVERABLE: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md (sha256 5ae8e90f...e73cae, 234 lines).
+Sections: §0 goal map (G2 under G3; governance/presentation only, not G1); §1 feature spec (single line, <=200
+Unicode CODE POINTS = Python len; content-minimal; never truncate; verbatim fallback; derivation/prohibitions
+intact; per-class single-line forms); §2 six-file edit plan with cited anchors (A contract, B schema version-
+enum+strict-branch+$comment only, C manifest recompute-both-hashes-last, D RAILS maintainer-applied, E
+kronos-continue maintainer-applied, F tests); §3 deterministic test plan (rename 120-words test; parametrized
+five-class presence test; 200/201 boundary fail-closed pure test; fallback-literal test; 1.4.2 strict-branch
+schema test; version-consistency test; all in test_rnd_contract.py, NO new src module; canonical runner only);
+§4 AC1-AC10; §5 scope seal (six files; src/.github/cybergym/CLAUDE.md/§6-§8 hard-excluded); §6 build/apply split
+(loop builds A,B,C,F; maintainer hand-applies D,E on same branch, B51 precedent); §7 GATE-1 questions Q1 char
+unit (code points vs graphemes), Q2 retain one-line fence, Q3 fallback presentation-only (no class change), Q4
+contract changelog location.
+
+DECISION: STOP AND ASK at GATE-1. REVIEW-REQUIRED. No repo files touched; product decision from seq 344 held;
+no §6/§8 authority sought or implied. Canonical stop-report (§9) built + VALIDATED against
+stop_report.schema.json via .venv jsonschema 4.25.1 (why=gate1). who: orchestrator Opus + Sonnet mapping.
+
+PENDING (seq 345): operator GATE-1 approve/reject SPEC_BRIEF52_PROPOSED.md and answer Q1-Q4; or amend. On
+approval + answers: loop builds contract/schema/manifest/tests on a feature branch; maintainer hand-applies the
+two .claude files; then independent review -> draft PR; pause GATE-2 + every mandatory boundary. No §6/§8 lift.
+
+# KRONOS loop-state checkpoint
 seq: 344
 derived_at: 2026-11-12T17:30:00Z
 contract_version: 1.4.1
