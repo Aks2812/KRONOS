@@ -1,4 +1,67 @@
 # KRONOS loop-state checkpoint
+seq: 344
+derived_at: 2026-11-12T17:30:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: OPERATOR_RECONCILE_STALE_RESEARCH_RECORD_THEN_RULE_ON_NONLIVE_AUTONOMY_WIRING_GATE1
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: security-boundary candidate requiring GATE authorization + reconciliation of a stale/missing authoritative goal-gap record; beyond mechanical AUTO-BRIEF selection
+brief: NONE (no brief created; AUTO-BRIEF eligibility screen failed for the sole candidate)
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+main_protected: NO protection via classic branch-protection (404); active repository ruleset void-rule-kronos (id 25333712, enforcement active) governs main. LIVE; re-measure at any MERGE-GATE.
+
+seq344_context_and_outcome:
+TURN: operator context.md asked to resume product R&D and AUTO-BRIEF-select the single highest-priority
+eligible NON-governance product increment advancing G1/G2/G3; Sonnet research read-only; smallest reversible
+branch-local non-live non-destructive slice; exclude governance, .claude/**, secrets, permissions,
+protected-branch, §6/§8 live.
+
+START-OF-TURN (live, re-derived): contract integrity MATCH (contract 9e595dee, schema d3a7012f vs
+contract_manifest.json v1.4.1). main e2f7422 == origin/main; PR#55 state=MERGED @ e2f7422 (merge == main);
+e2f7422 ancestor-ok. Open non-loop PRs #13, #14 are old, untouched. No pending_action at seq 343. Consistent.
+
+RESEARCH (kronos-researcher, Sonnet, read-only, 43 tool uses): findings cited below.
+1. AUTHORITATIVE-RECORD DISCREPANCY (material): context.md names /home/void/KRONOS_RESEARCH_RECORD.md -> does
+   NOT exist. On-disk copy /home/void/Void-Projects/KRONOS_PC/KRONOS_RESEARCH_RECORD.md is v5 (2026-10-16),
+   pinned main @ 3d89223. Tracked loop-state copy docs/loop/KRONOS_RESEARCH_RECORD.md is v6 (2026-10-19),
+   pinned main @ faac345. BOTH predate current main e2f7422 and MISSTATE G1 coverage: both claim web/infra
+   "schema-only" and FORK-2 the active pre-S3 blocker. Current code contradicts: web ingestion
+   src/kronos/ingest/web/parser.py:1 (SPEC_BRIEF13), infra src/kronos/ingest/infra/parser.py:1 (SPEC_BRIEF11),
+   dns src/kronos/ingest/dns/parser.py:1 (SPEC_BRIEF26); validators validate/web_validator.py +
+   validate/infra_validator.py (SPEC_BRIEF36:26-27); FORK-2 closed scope_guard.py:943 is_in_scope node-type
+   aware (SPEC_BRIEF10.3/10.4); agent layer present agent/{dispatcher,planner,executor,reviewer,drivers,
+   live_driver,live_executor,contracts}.py; S7 invalidation validate/invalidation.py:1 (SPEC_BRIEF15).
+   The goal-gap map the operator pointed at is STALE; selecting against it would be unsound.
+2. SOLE CITED UNBUILT NON-GOVERNANCE INCREMENT: wire the signed autonomy envelope (autonomy.py authorize/
+   effective-envelope evaluation) into the dispatcher action-gating path. autonomy.py:1-6 declares pure
+   evaluation, "Nothing here is called by the dispatcher, an executor, a driver or a tool". Confirmed unwired:
+   only reference under src is watchdog.py:4,38 reading .autonomy.watchdog as POLICY DATA, not an authorize()
+   gate. SPEC_BRIEF29.md:379 names it the explicit deferred next-brief ("Wiring + stop primitive + watchdog =
+   next brief"); SPEC_BRIEF30 built stop.py+watchdog.py but NOT the dispatcher authorize() gate; no SPEC_BRIEF
+   31-36 is the wiring brief. dispatcher.py:130-145 phase-1/phase-2 commit path unchanged.
+3. No second comparably-cited non-governance increment found this pass. SPEC_BRIEF36 already satisfied in code
+   (commit.py:110-111). Five most-recent main commits all governance/contract (e2f7422,d012af5,8f42638,
+   bb00179,cc6120f) -> that class is INELIGIBLE non-governance.
+
+ELIGIBILITY SCREEN (candidate #1): FAILS AUTO-BRIEF. The signed autonomy envelope IS the authorization/
+security boundary; wiring authorize() into dispatcher gating is a SECURITY-BOUNDARY change AND adjacent to the
+contract's §6/§8 live-execution mandatory pause (KRONOS_RND_CONTRACT.md:73,148,156). AUTO-BRIEF excludes
+security boundaries and §6/§8 live; both are mandatory pauses. => No eligible item for autonomous build.
+
+DECISION: STOP AND ASK. decision_class REVIEW-REQUIRED. No brief created, no code change, no feature branch,
+no PR. Canonical stop-report (§9) built and VALIDATED against stop_report.schema.json via .venv jsonschema
+4.25.1 (strict v1.4.1 branch: contract_version+effort_justification; when.milestone; how.reference_ledger
+applicable=false/0 entries). who: orchestrator Opus + researcher Sonnet. why: blocker.
+
+PENDING (seq 344): operator (1) confirm the authoritative research record and refresh it to current main
+e2f7422 so a true goal-gap map exists; (2) rule whether autonomy->dispatcher wiring crosses §6/§8 live
+execution, and if authorizing, issue GATE-1 for a STRICTLY NON-LIVE pure-evaluation gating brief with no live
+driver/executor activation; OR name a different eligible increment. No §6/§8 lift. All mandatory pauses hold.
+
+# KRONOS loop-state checkpoint
 seq: 343
 derived_at: 2026-11-12T16:05:00Z
 contract_version: 1.4.1
