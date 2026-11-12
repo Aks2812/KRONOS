@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 339
+derived_at: 2026-11-12T11:40:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: RUN_COMPLETE_SUITE_DISPATCH_HAIKU_REVIEW_OPEN_DRAFT_PR_B51_THEN_PAUSE_GATE2
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: independent Haiku review + draft PR on six-file governance diff; verification-heavy
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
+brief_sha256: 5d682da2e68f3d16fce45f0c1c4249260d76615c43d85ef615e4b8839d6065a8
+base_main: d012af5cf8454ffb8da4364eebe9ceaf68d07651
+feature_branch: kronos/b51-next-prompt-v141
+feature_head: 6fcdb4bc755401c2605f2d069db48790bf437707
+new_contract_sha256: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+new_schema_sha256: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+seq338_pending_action_outcome:
+DONE. Maintainer hand-applied both .claude patches and committed 6fcdb4b "chore(governance): apply B51 Claude
+rails", pushed to origin/kronos/b51-next-prompt-v141. ORCHESTRATOR RE-VERIFIED live: diff --name-only
+d012af5..6fcdb4b = EXACTLY the six authorized files {KRONOS_RND_CONTRACT.md, stop_report.schema.json,
+contract_manifest.json, tests/test_rnd_contract.py, .claude/RAILS.md, .claude/commands/kronos-continue.md} and
+nothing else. Governance four files byte-identical to orchestrator-verified commit 3527581 (empty diff 3527581..
+6fcdb4b for those paths). Root CLAUDE.md untouched (0-byte diff). Contract Version 1.4.1 + Contract-Version 1.4.1;
+manifest contract_version 1.4.1 with both hashes matching sha256sum on disk (contract 9e595dee..., schema
+d3a7012f...). .claude diff carries [NEXT PROMPT] additions.
+
+PENDING (seq 339): run focused schema/report tests + complete canonical suite (0 failed via SUMMARY line, disk
+TMPDIR, .venv/bin/python); dispatch fresh Haiku 5.5 kronos-reviewer given ONLY the brief + exact-head six-file
+diff d012af5..6fcdb4b (never the builder report); open DRAFT PR base main; then PAUSE at GATE-2 (merge auth is
+operator-only). No mark-ready, no merge, no §6/§8, no CLAUDE.md. Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 338
 derived_at: 2026-11-12T11:05:00Z
 contract_version: 1.4.0
