@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 347
+derived_at: 2026-11-12T19:45:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: OPERATOR_GATE2_DECIDE_CLAUDE_SEQUENCING_AND_AUTHORIZE_MERGE_B52_PR56_AT_ad9df394
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: draft PR open after independent PASS + one-cycle repair; operator must decide .claude sequencing and authorize the merge (mandatory pause) before a ten-item MERGE-GATE re-measure
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
+brief_sha256: 5ae8e90f338ee955d94692a3edeb002835f081ac75f3176bbc6f150788e73cae
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+feature_branch: kronos/b52-next-prompt-v142
+feature_head: ad9df39464d58147f90ee3a875707068eb4b902e
+pr: 56
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE; re-measure at MERGE-GATE.
+
+seq346_pending_action_outcome:
+DONE. Pushed kronos/b52-next-prompt-v142 @ ad9df394 to origin. Created DRAFT PR #56 (base main, head
+ad9df394). Live-derived: PR#56 state OPEN, isDraft true, headRefOid ad9df39464d58147f90ee3a875707068eb4b902e,
+base main, statusCheckRollup empty (ci: none). No merge, no ready-mark, no --admin/--auto. PAUSED at GATE-2.
+
+STATE SUMMARY (seq 347): SPEC_BRIEF52 v1.4.2 built + independently reviewed PASS (AC1-AC10) + repaired one
+cycle. Draft PR #56 open at head ad9df394. Four-file governance+test window green; canonical suite 4084 passed/
+1 skipped/0 failed. Two .claude/** operationalizers (RAILS.md:181, kronos-continue.md:80) still say "<=120
+words" and are maintainer-hand-applied, NOT on the branch.
+
+PENDING (seq 347, mandatory pause): operator (A) decides .claude sequencing — (a) maintainer hand-applies the
+two .claude edits onto kronos/b52-next-prompt-v142 before merge (restores six-file intent; changes head SHA ->
+re-review + re-authorize at the new head), or (b) merge the four files now and apply .claude as immediate
+follow-up; AND (B) if merging, names PR #56 and authorizes head SHA ad9df394 (or the new head if (a)), after
+which the orchestrator re-measures the full ten-item MERGE-GATE in the same turn and, only if all green, runs
+gh pr merge 56 --squash --match-head-commit <authorized-SHA> (NO --admin, NO --auto; mark-ready requires operator
+authorization too). No §6/§8 lift; no product work.
+
+# KRONOS loop-state checkpoint
 seq: 346
 derived_at: 2026-11-12T19:30:00Z
 contract_version: 1.4.1
