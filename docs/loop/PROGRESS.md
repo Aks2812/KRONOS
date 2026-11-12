@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 328
+derived_at: 2026-11-11T16:55:00Z
+contract_version: 1.3.2
+contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294e9d39893d1
+contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
+pending_action: SPEC_BRIEF49_OPTION2_RECONCILED_RUN_FULLSUITE_THEN_FRESH_REVIEW_AT_7edb2fc
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: operator-directed Option-2 brief reconciliation + feature revert + re-review pipeline
+seq327_pending_action_outcome:
+DONE per operator directive (/home/void/context.md). (1) READ-ONLY loop-state integrity audit PASS: chain
+a5a3bb7(327)->8724891(326)->b3c0649(325)->d27fc6c(324)->... contiguous seq; 6 provenance files present and
+byte-identical pre/post incident (b3c0649 vs tip); orphaned bad commit e743ca1 (my erroneous seq326 push that
+deleted 6 files) differs from good 8724891 ONLY by re-adding those 6 files, PROGRESS.md byte-identical between
+them -> NO checkpoint commit/outcome lost or unreachable; force-push rewrote only the erroneous tip
+e743ca1 -> 8724891, ancestors untouched. Integrity PROVEN.
+(2) Option-2 PERSISTED in brief SPEC_BRIEF49_PROPOSED.md: v1.4.0 schema amendment explicitly authorized (D-A
+Option 2); AC1 now expects strict fail-closed versioned validation (contract_version required; legacy
+1.3.0/1.3.1/1.3.2 on permissive base; missing/malformed/unknown rejected; never loosened; historical unversioned
+reports remain evidence, NOT rewritten/migrated/fabricated); AC9 now expects manifest to pin NEW (amended) schema
+sha256. Reconciled sections §0,§1,§2,§3,§5,§10,§11,§12(1,10),§16 D-A, GATE-1. Brief sha256
+3e1044a39ca06e724f37eeea9dbd2fbe8d3079d8303d5d79ee17216459d96174 -> 244acb7d3917fe304f7cbe62b874869bf909cb71954ee429322657833da7f93d (governing brief now re-amended SHA).
+(3) AC11 re-amended: independent GATE-TIME measurement (not a committed test); seventh audit-only path removed.
+tests/test_commit_authority.py RESTORED byte-identical to base bb00179 on feature branch (loop commit, kronos-loop
+identity). Feature head f8b49f3 -> 7edb2fc4d5b2c9d2f9eb2ab95f8b8714a4657f1d (pushed; PR#53 OPEN DRAFT).
+(4) AC11 GATE-TIME MEASUREMENT PASS: git diff --name-only bb00179..7edb2fc = EXACTLY six authorized paths:
+.claude/RAILS.md, .claude/commands/kronos-continue.md, docs/governance/KRONOS_RND_CONTRACT.md,
+docs/governance/contract_manifest.json, docs/governance/stop_report.schema.json, tests/test_rnd_contract.py --
+count 6, nothing else. test_commit_authority.py no longer in window.
+(5) FOCUSED suite (test_commit_authority.py + test_rnd_contract.py) 91 passed 0 failed; no code references removed
+B49 audit. FULL canonical suite (.venv/bin/python, disk TMPDIR) RUNNING; AC10 result pending.
+Constraints honored: schema validation NOT weakened; no fabricated history; seventh audit-only path NOT retained;
+§6/§8 NOT lifted; no merge; PR#53 stays DRAFT; no protection change; no ready-for-review; AUTO-BRIEF not run.
+NEXT (write-ahead): on full-suite 0-failed, dispatch FRESH Haiku 5.5 review at exact head 7edb2fc using ONLY the
+re-amended brief (244acb7d) + exact diff bb00179..7edb2fc; require UNQUALIFIED PASS; then emit GATE-2 report with
+full 40-char head SHA. On any FAIL or suite red -> NEEDS-DECISION, no merge.
+# KRONOS loop-state checkpoint
 seq: 327
 derived_at: 2026-11-11T16:20:00Z
 contract_version: 1.3.2
