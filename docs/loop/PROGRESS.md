@@ -1,4 +1,64 @@
 # KRONOS loop-state checkpoint
+seq: 346
+derived_at: 2026-11-12T19:30:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: PUSH_B52_BRANCH_ad9df394_AND_CREATE_DRAFT_PR_THEN_PAUSE_GATE2
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: build+independent-review complete with a one-cycle repair; write-ahead before pushing branch and opening a draft PR, and an operator sequencing decision on the maintainer-applied .claude files
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
+brief_sha256: 5ae8e90f338ee955d94692a3edeb002835f081ac75f3176bbc6f150788e73cae
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+feature_branch: kronos/b52-next-prompt-v142
+feature_head: ad9df39464d58147f90ee3a875707068eb4b902e
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE; re-measure at any MERGE-GATE.
+
+seq346_context:
+GATE-1 APPROVED (operator) SPEC_BRIEF52 v1.4.2 single-line bounded [NEXT PROMPT]. Answers: Q1 Unicode code
+points (Python len); Q2 keep single-line ```text fence; Q3 fallback presentation-only (no decision_class
+change); Q4 no changelog file -> record v1.4.2 inline where v1.4.1 is.
+
+BUILD (kronos-builder, foreground) on kronos/b52-next-prompt-v142 from main e2f7422: four files
+{KRONOS_RND_CONTRACT.md, stop_report.schema.json, contract_manifest.json, tests/test_rnd_contract.py}; builder
+commit e93a3971. .claude/** NOT touched (D,E maintainer-hand-applied per brief §6, Option B).
+
+REVIEW-1 (kronos-reviewer, independent, brief+diff only): FAIL (narrow) AC4 — NO-ACTION per-class bullet
+(contract line 201) byte-identical to main, no single-line/200-code-point wording; matrix test lacked a
+NO-ACTION bound assertion. All other AC PASS. Within-scope first-cycle repair (not a mandatory pause).
+
+REPAIR (orchestrator, within approved brief scope): contract line 201 NO-ACTION bullet appended "Where a
+next-direction prompt renders it is one line of at most 200 code points, else the fallback line.";
+test_next_prompt_decision_class_matrix NO-ACTION slice asserts "one line of at most 200 code points" + "fallback
+line"; manifest hashes recomputed (contract fd8577f9..., schema 18cce304...). Canonical suite re-run:
+4084 passed, 1 skipped, 0 failed. Repair commit ad9df394. Diff main..ad9df394 = exactly the four files.
+
+REVIEW-2 (kronos-reviewer, independent, fresh, HEAD ad9df394, brief+diff only): PASS all AC1-AC10. Evidence:
+AC1 version lines 3/7/216/218 read 1.4.2; AC2 §15 line 198 single fenced text line <=200 Unicode code points,
+never truncated; AC3 fallback literal "REVIEW-REQUIRED: discuss the decision above; do not act." present (x2);
+AC4 all five per-class forms updated incl. NO-ACTION line 201 (not byte-identical to main), HOLD still bars
+override/--admin/--auto; AC5 self-check fail-closed-over-200 + verbatim fallback; AC6 schema enum + strict
+if-branch include 1.4.2, $comment extended, no [NEXT PROMPT] field, no other validation loosened; AC7 manifest
+both sha256 == live sha256sum byte-for-byte, contract_version 1.4.2; AC8/scope .claude/src/.github/cybergym/
+CLAUDE.md untouched; AC9 canonical suite 4084 passed/1 skipped/0 failed; AC10 exactly four files. Independent
+jsonschema 4.25.1 check: 1.4.2 strict report valid, missing effort_justification invalid, missing when.milestone
+invalid, 1.4.3 invalid. Box-drawing 0 added. Low findings (non-blocking): tautological within_bound test and
+weak "200"-substring test (both brief-specified shapes); fallback fence-vs-bare status unspecified in §15.
+
+GATE-2 (orchestrator semantic): PASS on the four-file window. OPEN OPERATOR DECISION (not loop's to settle):
+.claude/RAILS.md:181 and .claude/commands/kronos-continue.md:80 still say "<=120 words" and are
+maintainer-hand-applied, NOT on this branch. Merging this branch leaves contract(1.4.2) and those two .claude
+files divergent on main until the maintainer applies them. Operator must choose: (a) maintainer hand-applies the
+two .claude edits onto this branch BEFORE merge (restores six-file AC8/AC10 intent), or (b) merge the four
+governance+test files now and apply .claude as an immediate follow-up. No §6/§8; no product work; no merge
+without operator authorization + ten-item MERGE-GATE re-measure at the named PR + head SHA.
+
+PENDING (seq 346): push kronos/b52-next-prompt-v142 @ ad9df394 to origin; create DRAFT PR to main; then PAUSE
+for GATE-2. Outcome (PR number) recorded in seq 347.
+
+# KRONOS loop-state checkpoint
 seq: 345
 derived_at: 2026-11-12T18:15:00Z
 contract_version: 1.4.1
