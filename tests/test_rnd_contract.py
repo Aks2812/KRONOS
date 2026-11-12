@@ -61,7 +61,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.3.2"
+    assert manifest["contract_version"] == "1.4.0"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -168,9 +168,9 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_3_2_with_auto_brief():
+def test_contract_is_v1_4_0_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.3.2" in text
+    assert "Version: 1.4.0" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -283,13 +283,19 @@ def test_contract_defines_five_decision_classes():
     assert "blocking regardless of its nominal severity" in text
 
 
-def test_contract_presentation_policy_columns():
+LABELED_SECTIONS = [
+    "[STATUS]", "[WHY]", "[WHERE]", "[WHEN]", "[WHAT]", "[WHO]", "[HOW]",
+    "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]",
+    "[MOST RECOMMENDED ACTION]", "[OPERATOR ACTION]",
+]
+
+
+def test_contract_presentation_labeled_sections():
     text = CONTRACT.read_text()
     assert "## §15 Persistent terminal presentation" in text
-    for col in ("Report Type", "Decision Class", "Opus Effort"):
-        assert col in text, col
-    for col in ("Rank", "Severity", "Dependencies", "Action"):
-        assert col in text, col
+    for label in LABELED_SECTIONS:
+        assert label in text, label
+    assert "RECOMMENDED ORCHESTRATOR EFFORT" in text
     assert "Box-drawing characters are rejected" in text
     assert "GitHub-flavored Markdown" in text
     assert "<br>" in text
@@ -388,88 +394,356 @@ def test_operative_claude_files_count_neutral_report_term():
         assert "canonical schema-validated" in text, str(p)
 
 
-def test_section15_terminal_format_is_literal_gfm_tables():
+def test_section15_labeled_sections_in_order():
     text = CONTRACT.read_text()
     s15 = text[text.index("## §15"):text.index("## §16")]
-    summary = ("| Report Type | Decision Class | What | Why | Who | When | Where | How "
-               "| Recommendation | Operator Action | Opus Effort |")
-    nxt = "| Rank | Severity | Dependencies | Decision Class | Action |"
-    assert summary in s15
-    assert nxt in s15
-    assert re.search(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$", s15, re.M)
+    positions = [s15.index(label) for label in LABELED_SECTIONS]
+    assert positions == sorted(positions), "labels out of order"
+    assert s15.index("[STATUS]") == min(positions), "[STATUS] must be first"
+    assert "RECOMMENDED ORCHESTRATOR EFFORT" in s15
     for cls in ("AUTO-CONTINUE", "SAFE-TO-APPROVE", "REVIEW-REQUIRED", "HOLD", "NO-ACTION"):
         assert cls in text
     banned = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
     assert not [c for c in banned if c in text]
 
 
-def test_section15_v1_3_2_single_fence_and_self_check():
+def test_section15_v1_4_0_self_check():
     text = CONTRACT.read_text()
     s15 = text[text.index("## §15"):text.index("## §16")]
-    assert ("both tables MUST be emitted together inside exactly one fenced code "
-            "block whose info string is `markdown`") in s15
-    assert "Every table row is a single physical line" in s15
+    assert "presentation-only" in s15
     assert "Pre-response self-check" in s15
     check = s15[s15.index("Pre-response self-check"):]
-    for frag in ("exactly one fenced",
-                 "header row and a ",
-                 "all eleven fields",
-                 "Rank, Severity, Dependencies, Decision Class, Action",
+    for frag in ("[STATUS]",
+                 "valid §14 Decision Class",
+                 "locked baseline",
+                 "UNKNOWN",
+                 "three sentences and 60 words",
+                 "RECOMMENDED ORCHESTRATOR EFFORT",
                  "no flat key/value report",
                  "no box-drawing character"):
         assert frag in check, frag
 
 
-SUMMARY_HEADER = ("| Report Type | Decision Class | What | Why | Who | When | Where "
-                  "| How | Recommendation | Operator Action | Opus Effort |")
-NEXT_HEADER = "| Rank | Severity | Dependencies | Decision Class | Action |"
-_SEP_RE = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$")
-_FLAT_RE = re.compile(
-    r"^\s*(Report Type|Decision Class|What|Why|Who|When|Where|How|Recommendation"
-    r"|Operator Action|Opus Effort|Rank|Severity|Dependencies|Action)\s*:")
+def test_section15_when_fields_present():
+    s15 = CONTRACT.read_text()
+    s15 = s15[s15.index("## §15"):s15.index("## §16")]
+    for frag in ("locked baseline", "numerator", "denominator",
+                 "remaining gates", "ETA assumptions", "confidence"):
+        assert frag in s15, frag
+    assert "UNKNOWN" in s15
+
+
+def test_section15_reference_ledger_conditional_under_what():
+    s15 = CONTRACT.read_text()
+    s15 = s15[s15.index("## §15"):s15.index("## §16")]
+    assert "Goal-Framed Reference Knowledge Transfer Ledger" in s15
+    assert "nested under `[WHAT]`" in s15
+    assert "materially influenced" in s15
+    assert "none materially influenced this iteration" in s15
+
+
+def test_section15_reference_ledger_fields_and_no_research_as_implemented():
+    s15 = CONTRACT.read_text()
+    s15 = s15[s15.index("## §15"):s15.index("## §16")]
+    for frag in ("source", "pinned SHA", "evidence ID", "license", "Observed",
+                 "Inferred", "Unknown", "G1", "G2", "G3", "clean-room evolution",
+                 "disposition", "implementation status"):
+        assert frag in s15, frag
+    assert "never represent research as implemented" in s15
+
+
+def test_section15_most_recommended_action_bounded():
+    s15 = CONTRACT.read_text()
+    s15 = s15[s15.index("## §15"):s15.index("## §16")]
+    assert "three sentences and 60 words" in s15
+    assert "RECOMMENDED ORCHESTRATOR EFFORT" in s15
+    assert "opus_effort" in s15  # D-D: validated enum, not a rename
+
+
+def test_section15_report_bounded_and_concise_terms():
+    s15 = CONTRACT.read_text()
+    s15 = s15[s15.index("## §15"):s15.index("## §16")]
+    assert "bounded" in s15
+    assert "detailed evidence remains in artifacts" in s15
+    assert "intermediate progress updates stay concise" in s15
+
+
+def test_contract_invalid_decision_class_named_forbidden():
+    text = CONTRACT.read_text()
+    for bad in ("RESEARCH-ONLY", "DEFERRED", "NO-OP"):
+        assert f"`{bad}`" in text, bad
+        assert bad not in DECISION_CLASSES
+    assert "exactly the five classes" in text
+    assert set(_schema()["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+
+
+def test_forbidden_decision_classes_rejected_as_reports():
+    for bad in ("RESEARCH-ONLY", "DEFERRED", "NO-OP"):
+        r = _report("PAUSE", "blocker")
+        r["decision_class"] = bad
+        try:
+            _validate_report(r)
+        except AssertionError:
+            continue
+        raise AssertionError(f"{bad} validated as a report decision class")
+
+
+# ---- v1.4.0 schema extension: version-discriminated strict validation ----
+V140_MILESTONE_KEYS = {"locked_baseline", "numerator", "denominator", "percentage",
+                       "remaining_gates", "eta_assumptions", "confidence"}
+V140_LEDGER_ENTRY_KEYS = {"source", "pinned_sha", "evidence_id", "license_privacy",
+                          "epistemic_status", "goal_mapping", "clean_room_evolution",
+                          "disposition", "implementation_status"}
+
+
+def test_schema_v140_structure():
+    s = _schema()
+    assert s["properties"]["contract_version"]["type"] == "string"
+    assert s["properties"]["effort_justification"]["type"] == "string"
+    assert s["if"]["properties"]["contract_version"]["const"] == "1.4.0"
+    assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
+    assert "milestone" in s["then"]["properties"]["when"]["required"]
+    assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
+    m = s["properties"]["when"]["properties"]["milestone"]
+    assert set(m["required"]) == V140_MILESTONE_KEYS
+    assert m["additionalProperties"] is False
+    rl = s["properties"]["how"]["properties"]["reference_ledger"]
+    assert set(rl["required"]) == {"applicable", "entries"}
+    assert rl["additionalProperties"] is False
+    entry = rl["properties"]["entries"]["items"]
+    assert set(entry["required"]) == V140_LEDGER_ENTRY_KEYS
+    assert entry["additionalProperties"] is False
+    # historical compatibility: base when/how stay permissive (legacy reports unchanged)
+    assert s["properties"]["when"].get("additionalProperties", True) is not False
+    assert s["properties"]["how"].get("additionalProperties", True) is not False
+    # no unbounded catch-all under v1.4.0: the then-branch closes when/how to declared keys
+    assert s["then"]["properties"]["when"]["additionalProperties"] is False
+    assert s["then"]["properties"]["how"]["additionalProperties"] is False
+    # never-invent (AC3): numerator and denominator accept the literal "UNKNOWN"
+    for field in ("numerator", "denominator"):
+        branches = m["properties"][field]["anyOf"]
+        assert any(b.get("const") == "UNKNOWN" for b in branches), field
+    # explicit not-applicable: applicable:false forces an empty ledger
+    assert rl["if"]["properties"]["applicable"]["const"] is False
+    assert rl["then"]["properties"]["entries"]["maxItems"] == 0
+    # object-preservation: the eleven required keys and both five-class enums intact
+    assert set(s["required"]) == REQUIRED_KEYS
+    assert set(s["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+    assert set(s["properties"]["next"]["items"]["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
+    # fail-closed version discrimination: contract_version is an explicit enum AND required
+    assert s["properties"]["contract_version"]["type"] == "string"
+    assert list(s["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
+    assert {"required": ["contract_version"]} in s["allOf"]
+
+
+def _report_v140(**over):
+    r = _report("PAUSE", "blocker")
+    r["contract_version"] = "1.4.0"
+    r["effort_justification"] = "schema change touches the validated object and compatibility boundary"
+    r["when"]["milestone"] = {
+        "locked_baseline": "bb00179", "numerator": 3, "denominator": 11,
+        "percentage": "UNKNOWN", "remaining_gates": ["review", "gate2"],
+        "eta_assumptions": "none", "confidence": "medium",
+    }
+    r["how"]["reference_ledger"] = {"applicable": False, "entries": []}
+    r.update(over)
+    return r
+
+
+def _validate_v140(report):
+    """Stdlib mirror of the schema's version-discriminated v1.4.0 branch."""
+    _validate_report(report)  # base object still validates
+    assert report.get("contract_version") == "1.4.0"
+    assert isinstance(report.get("effort_justification"), str) and report["effort_justification"]
+    milestone = report["when"]["milestone"]
+    for k in V140_MILESTONE_KEYS:
+        assert k in milestone, f"milestone missing: {k}"
+    assert milestone["percentage"] == "UNKNOWN" or isinstance(milestone["percentage"], (int, float))
+    ledger = report["how"]["reference_ledger"]
+    assert {"applicable", "entries"} <= set(ledger)
+    assert isinstance(ledger["applicable"], bool) and isinstance(ledger["entries"], list)
+    for entry in ledger["entries"]:
+        for k in V140_LEDGER_ENTRY_KEYS:
+            assert k in entry, f"ledger entry missing: {k}"
+        assert entry["epistemic_status"] in ("Observed", "Inferred", "Unknown")
+        assert entry["disposition"] in ("Adopt", "Adapt", "Defer", "Investigate", "Reject")
+    return True
+
+
+def test_v140_report_validates_positive():
+    assert _validate_v140(_report_v140())
+
+
+def test_v140_report_with_ledger_entry_validates():
+    r = _report_v140()
+    r["how"]["reference_ledger"] = {"applicable": True, "entries": [{
+        "source": "cybergym", "pinned_sha": "deadbeef", "evidence_id": "EV-1",
+        "license_privacy": "internal", "epistemic_status": "Observed",
+        "goal_mapping": ["G1"], "clean_room_evolution": "re-derived independently",
+        "disposition": "Adapt", "implementation_status": "not-implemented",
+    }]}
+    assert _validate_v140(r)
+
+
+def test_v140_missing_milestone_fails():
+    r = _report_v140()
+    del r["when"]["milestone"]
+    try:
+        _validate_v140(r)
+    except (AssertionError, KeyError):
+        return
+    raise AssertionError("v1.4.0 report missing milestone validated")
+
+
+def test_v140_missing_effort_justification_fails():
+    r = _report_v140()
+    del r["effort_justification"]
+    try:
+        _validate_v140(r)
+    except (AssertionError, KeyError):
+        return
+    raise AssertionError("v1.4.0 report missing effort_justification validated")
+
+
+def test_v140_missing_reference_ledger_fails():
+    r = _report_v140()
+    del r["how"]["reference_ledger"]
+    try:
+        _validate_v140(r)
+    except (AssertionError, KeyError):
+        return
+    raise AssertionError("v1.4.0 report missing reference_ledger validated")
+
+
+def test_v140_invalid_decision_class_fails():
+    r = _report_v140()
+    r["decision_class"] = "RESEARCH-ONLY"
+    try:
+        _validate_v140(r)
+    except AssertionError:
+        return
+    raise AssertionError("v1.4.0 report with invalid decision class validated")
+
+
+# Fail-closed version discrimination. Evidenced from committed history: contract versions
+# 1.0.0..1.3.2 all shipped (KRONOS_RND_CONTRACT.md "Version:" history), but the current
+# 11-required-key / five-decision-class stop-report object shape was introduced at contract
+# v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
+# versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
+LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
+ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + ["1.4.0"]
+_MISSING = object()
+
+
+def _validate_discriminated(report):
+    """Stdlib mirror of the schema's fail-closed version discrimination.
+
+    contract_version MUST be present and one of ALLOWED_CONTRACT_VERSIONS; a missing,
+    non-string, or unrecognized/malformed value is rejected (never silent legacy fallback).
+    Exact 1.4.0 -> strict v1.4.0 branch; a legacy version -> permissive base.
+    """
+    v = report.get("contract_version", _MISSING)
+    assert v is not _MISSING, "missing contract_version"
+    assert isinstance(v, str), "non-string contract_version"
+    assert v in ALLOWED_CONTRACT_VERSIONS, f"unrecognized contract_version: {v!r}"
+    if v == "1.4.0":
+        _validate_v140(report)
+    else:
+        _validate_report(report)
+    return True
+
+
+def test_allowed_versions_match_schema_enum():
+    assert list(_schema()["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
+
+
+def test_legacy_versions_validate_against_base():
+    # positive: every evidenced base-compatible legacy version validates (permissive base)
+    for v in LEGACY_CONTRACT_VERSIONS:
+        legacy = _report("PAUSE", "blocker")
+        legacy["contract_version"] = v
+        assert _validate_discriminated(legacy), v
+
+
+def test_exact_1_4_0_validates_strict():
+    # positive: exact 1.4.0 enters the strict branch
+    assert _validate_discriminated(_report_v140())
+
+
+def test_malformed_or_unknown_version_rejected():
+    # negative: malformed, incomplete, unknown-future, and prefixed versions are rejected
+    for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", ""):
+        r = _report_v140()
+        r["contract_version"] = bad
+        try:
+            _validate_discriminated(r)
+        except AssertionError:
+            continue
+        raise AssertionError(f"rejected version validated: {bad!r}")
+
+
+def test_missing_or_non_string_version_rejected():
+    # negative: a missing contract_version (old unversioned report) is rejected, not legacy fallback
+    missing = _report("PAUSE", "blocker")
+    assert "contract_version" not in missing
+    try:
+        _validate_discriminated(missing)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("missing contract_version validated")
+    # negative: a non-string contract_version is rejected
+    nonstr = _report_v140()
+    nonstr["contract_version"] = 140
+    try:
+        _validate_discriminated(nonstr)
+    except AssertionError:
+        return
+    raise AssertionError("non-string contract_version validated")
+
+
 _BOX_CHARS = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
+_EFFORT_LINE = "RECOMMENDED ORCHESTRATOR EFFORT:"
 
 
 def _validate_terminal_report(report: str) -> None:
-    """Structural check of a terminal report; raises AssertionError if non-conforming."""
+    """Structural check of a v1.4.0 labeled-section terminal report."""
     assert not [c for c in _BOX_CHARS if c in report], "box-drawing character"
-    lines = report.splitlines()
-    opens = [i for i, l in enumerate(lines) if re.match(r"^```markdown\s*$", l)]
-    closes = [i for i, l in enumerate(lines) if re.match(r"^```\s*$", l)]
-    fences = [i for i, l in enumerate(lines) if l.startswith("```")]
-    assert len(opens) == 1, "need exactly one ```markdown fence"
-    assert len(closes) == 1, "need exactly one closing fence"
-    assert len(fences) == 2, "extra fence present"
-    assert opens[0] < closes[0], "closing fence before opening"
-    inner = lines[opens[0] + 1:closes[0]]
     pos = []
-    for header in (SUMMARY_HEADER, NEXT_HEADER):
-        assert inner.count(header) == 1, f"header missing or repeated: {header}"
-        idx = inner.index(header)
-        assert idx + 1 < len(inner) and _SEP_RE.match(inner[idx + 1]), \
-            f"separator row missing after: {header}"
-        pos.append(idx)
-    assert pos[0] < pos[1], "Summary table must precede Next-Actions table"
-    for i, l in enumerate(lines):
-        if opens[0] <= i <= closes[0] and (i in (opens[0], closes[0])):
-            continue
-        if l.lstrip().startswith("|"):
-            continue
-        assert not _FLAT_RE.match(l), f"flat key/value line: {l!r}"
+    for label in LABELED_SECTIONS:
+        i = report.find(label)
+        assert i != -1, f"missing section: {label}"
+        pos.append(i)
+    assert pos == sorted(pos), "sections out of order"
+    assert report.lstrip().startswith("[STATUS]"), "[STATUS] must be first"
+    assert _EFFORT_LINE in report, "missing effort line"
+    assert report.index(_EFFORT_LINE) > pos[-1], "effort line must follow [OPERATOR ACTION]"
 
 
 def test_terminal_report_structure_validator():
     import pytest
-    summary = [SUMMARY_HEADER, "|---|---|---|---|---|---|---|---|---|---|---|",
-               "| STOP | A | w | y | me | now | here | how | rec | act | high |"]
-    nxt = [NEXT_HEADER, "|---|---|---|---|---|", "| 1 | high | none | A | do it |"]
-    good = "\n".join(["```markdown", *summary, "", *nxt, "```"])
+    good = "\n".join([
+        "[STATUS] PAUSE / REVIEW-REQUIRED",
+        "[WHY] blocker",
+        "[WHERE] branch b, head abc, no PR, main def",
+        "[WHEN] seq 1; baseline bb00179 3/11; remaining review,gate2; ETA UNKNOWN; confidence medium",
+        "[WHAT] thing; ledger: none materially influenced this iteration",
+        "[WHO] builder; sonnet",
+        "[HOW] tests EV-1; gates ok",
+        "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]",
+        "1 high none REVIEW-REQUIRED do it",
+        "[MOST RECOMMENDED ACTION] do the thing",
+        "[OPERATOR ACTION] approve",
+        "RECOMMENDED ORCHESTRATOR EFFORT: LOW — routine",
+    ])
     _validate_terminal_report(good)
 
-    split = "\n".join(["```markdown", *summary, "```", "", "```markdown", *nxt, "```"])
-    flat = "\n".join(["```markdown", "What: thing happened", "", *nxt, "```"])
-    box = good.replace("| STOP |", "| ─ STOP |")
-    nosep = "\n".join(["```markdown", summary[0], summary[2], "", *nxt, "```"])
-    for bad in (split, flat, box, nosep):
+    box = good.replace("[STATUS]", "─ [STATUS]", 1)
+    missing = good.replace("[OPERATOR ACTION] approve\n", "")
+    noeffort = good.replace("RECOMMENDED ORCHESTRATOR EFFORT: LOW — routine", "done")
+    lines = good.splitlines()
+    lines[1], lines[2] = lines[2], lines[1]  # swap [WHY] and [WHERE] -> out of order
+    out_of_order = "\n".join(lines)
+    for bad in (box, missing, noeffort, out_of_order):
         with pytest.raises(AssertionError):
             _validate_terminal_report(bad)
