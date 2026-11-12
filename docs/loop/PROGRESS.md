@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 337
+derived_at: 2026-11-12T10:35:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: IMPLEMENT_SPEC_BRIEF51_B51_GOVERNANCE_4FILES_THEN_PAUSE_FOR_MAINTAINER_CLAUDE_PATCH
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: multi-file governance build + schema-version widen + author two .claude maintainer patch artifacts; loop cannot apply .claude
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
+brief_sha256: 5d682da2e68f3d16fce45f0c1c4249260d76615c43d85ef615e4b8839d6065a8
+base_main: d012af5cf8454ffb8da4364eebe9ceaf68d07651
+feature_branch: kronos/b51-next-prompt-v141
+seq336_pending_action_outcome:
+NONE (idle). Operator GATE-1 APPROVE SPEC_BRIEF51 v1.4.1 received at brief sha 5d682da2... (matches).
+D-A/D-B/D-C/D-D as written. Authorized: four-file governance impl {KRONOS_RND_CONTRACT.md,
+stop_report.schema.json, contract_manifest.json, tests/test_rnd_contract.py} on feature branch; two .claude
+files {.claude/RAILS.md, .claude/commands/kronos-continue.md} via separately audited maintainer hand-patch;
+root CLAUDE.md read-only. Final candidate+PR = exactly six authorized files. Pause at GATE-2.
+
+PENDING (seq 337): create branch kronos/b51-next-prompt-v141 @ d012af5; dispatch kronos-builder for the four
+governance files (contract §15 [NEXT PROMPT] + bullet severity render + §14 xref + §9 version text + 1.4.0->1.4.1
+footers; schema two edits: enum +"1.4.1", strict if-discriminator const"1.4.0"->enum["1.4.0","1.4.1"]; new
+tests_as_rules; manifest version 1.4.1 + new contract sha + new schema sha). Run focused+complete suites + strict
+schema validation (positive 1.4.0 & 1.4.1, negatives missing/malformed/ws-suffix/ws-prefix/unknown). Author the
+two .claude maintainer patch artifacts in KRONOS_PC. HARD BOUNDARY: loop never edits .claude/; no approval
+overrides. Therefore PAUSE after governance build for maintainer to hand-apply both .claude patches to the same
+branch; only then (next turn) dispatch fresh Haiku kronos-reviewer on the complete exact-head 6-file diff, open
+draft PR, pause at GATE-2. Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 336
 derived_at: 2026-11-12T09:46:00Z
 contract_version: 1.4.0
