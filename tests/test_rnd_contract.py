@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 GOV = ROOT / "docs" / "governance"
 CONTRACT = GOV / "KRONOS_RND_CONTRACT.md"
@@ -61,7 +63,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.1"
+    assert manifest["contract_version"] == "1.4.2"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -168,10 +170,10 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_4_1_with_auto_brief():
+def test_contract_is_v1_4_2_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.4.1" in text
-    assert "Contract-Version: 1.4.1" in text
+    assert "Version: 1.4.2" in text
+    assert "Contract-Version: 1.4.2" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -501,7 +503,7 @@ def test_schema_v140_structure():
     s = _schema()
     assert s["properties"]["contract_version"]["type"] == "string"
     assert s["properties"]["effort_justification"]["type"] == "string"
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2"]
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -632,7 +634,7 @@ def test_v140_invalid_decision_class_fails():
 # v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
 # versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
 LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
-STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1"]
+STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2"]
 ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + STRICT_CONTRACT_VERSIONS
 _MISSING = object()
 
@@ -734,6 +736,7 @@ def _positive_vectors():
         vectors.append((f"legacy {v}", legacy))
     vectors.append(("exact 1.4.0", _report_v140()))
     vectors.append(("exact 1.4.1", _report_v140(contract_version="1.4.1")))
+    vectors.append(("exact 1.4.2", _report_v140(contract_version="1.4.2")))
     vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
     return vectors
 
@@ -747,7 +750,7 @@ def _negative_vectors():
     nonstr["contract_version"] = 140
     vectors.append(("non-string contract_version", nonstr))
     for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", "",
-                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1"):
+                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.3"):
         r = _report_v140()
         r["contract_version"] = bad
         vectors.append((f"version {bad!r}", r))
@@ -844,6 +847,9 @@ def _s15():
     return text[text.index("## §15"):text.index("## §16")]
 
 
+FALLBACK = "REVIEW-REQUIRED: discuss the decision above; do not act."
+
+
 def _next_prompt_block():
     s15 = _s15()
     start = s15.index("`[NEXT PROMPT]` —")
@@ -854,8 +860,8 @@ def _next_prompt_block():
 def test_schema_v141_minimal_widen():
     s = _schema()
     assert s["properties"]["contract_version"]["enum"] == [
-        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1"]
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1"]
+        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2"]
     assert "const" not in s["if"]["properties"]["contract_version"]
     assert s["if"]["required"] == ["contract_version"]
     assert set(s["required"]) == REQUIRED_KEYS
@@ -877,9 +883,9 @@ def _strict_report(version):
     return _report_v140(contract_version=version)
 
 
-def test_real_schema_validates_exact_1_4_0_and_1_4_1_strict():
+def test_real_schema_validates_exact_1_4_0_1_4_1_1_4_2_strict():
     validator = _real_validator()
-    for v in ("1.4.0", "1.4.1"):
+    for v in ("1.4.0", "1.4.1", "1.4.2"):
         r = _strict_report(v)
         assert r["contract_version"] == v
         assert validator.is_valid(r), v
@@ -917,15 +923,18 @@ def test_next_prompt_named_placed_and_mandatory():
     assert "presentation-only" in block
 
 
-def test_next_prompt_one_fenced_text_block_no_alternatives_120_words():
+def test_next_prompt_one_fenced_text_block_single_line_200_codepoints():
     block = _next_prompt_block()
     assert "exactly one fenced ```text block" in block
-    assert "one prompt" in block
+    assert "one copy-ready prompt" in block
     assert "no alternatives" in block
     assert "no commentary inside the fence" in block
     assert "bare token `NONE`" in block
     assert "no fence" in block
-    assert "at most 120 words" in block
+    assert "exactly one single line" in block
+    assert "at most 200 Unicode code points" in block
+    assert "never truncated" in block
+    assert "120 words" not in block
 
 
 def test_next_prompt_decision_class_matrix():
@@ -935,6 +944,7 @@ def test_next_prompt_decision_class_matrix():
     assert "`NONE — loop continues autonomously`" in block
     sta = block[block.index("- `SAFE-TO-APPROVE` —"):block.index("- `NO-ACTION` —")]
     assert "one fenced ```text block" in sta
+    assert "one line of at most 200 code points" in sta and "fallback line" in sta
     assert "`where.pr`" in sta and "full head SHA" in sta and "`where.head_sha`" in sta
     na = block[block.index("- `NO-ACTION` —"):block.index("- `REVIEW-REQUIRED` —")]
     assert "authoritative roadmap or backlog item" in na
@@ -942,6 +952,7 @@ def test_next_prompt_decision_class_matrix():
     assert "`NONE` with the reason" in na
     rr = block[block.index("- `REVIEW-REQUIRED` —"):block.index("- `HOLD` —")]
     assert "one fenced ```text block" in rr
+    assert "one line of at most 200 code points" in rr and "fallback line" in rr
     assert "every required human choice and boundary" in rr
     assert "does not make it" in rr
     assert "does not pre-authorize a merge" in rr
@@ -950,6 +961,7 @@ def test_next_prompt_decision_class_matrix():
     assert "`--admin`" in hold and "`--auto`" in hold
     assert "remediation step or the safe resume condition" in hold
     assert "render failure" in hold
+    assert "200 code points" in hold and "fallback line" in hold
 
 
 def test_next_prompt_boundary_constraints_and_none_fallback():
@@ -963,8 +975,11 @@ def test_next_prompt_boundary_constraints_and_none_fallback():
                  "introduce a new target",
                  "raw external-reference instructions",
                  "never upgrades or overrides a decision class",
-                 "renders `NONE` with the reason instead"):
+                 "renders the verbatim fallback line"):
         assert frag in block, frag
+    assert FALLBACK in block
+    assert "instead of a clipped prompt" in block
+    assert "does not change `decision_class`" in block
 
 
 def test_severity_section_is_readable_bullets_not_table():
@@ -984,19 +999,73 @@ def test_next_prompt_self_check():
     s15 = _s15()
     check = s15[s15.index("Pre-response self-check"):]
     assert "`[NEXT PROMPT]` is present and complete" in check
+    assert "single line of at most 200 Unicode code points" in check
+    assert "fail closed" in check
+    assert FALLBACK in check
     for frag in ("truncated", "merged with another section",
                  "malformed (missing or incorrect fence)", "incomplete"):
         assert frag in check, frag
 
 
-def test_version_discrimination_prose_covers_1_4_0_and_1_4_1():
+def test_version_discrimination_prose_covers_1_4_0_1_4_1_1_4_2():
     text = CONTRACT.read_text()
     s9 = text[text.index("## §9"):text.index("## §10")]
-    assert "exactly `1.4.0` or exactly `1.4.1`" in s9
+    assert "exactly `1.4.0`, exactly `1.4.1`, or exactly `1.4.2`" in s9
     assert "never loosened" in s9
     s15 = _s15()
-    assert "exactly `1.4.0` or exactly `1.4.1`" in s15
+    assert "exactly `1.4.0`, exactly `1.4.1`, or exactly `1.4.2`" in s15
     assert "never loosened" in s15
     s14 = text[text.index("## §14"):text.index("## §15")]
     assert "`[NEXT PROMPT]`" in s14
     assert "changes neither the five classes nor their meanings" in s14
+
+
+# ---- SPEC_BRIEF52 / contract v1.4.2: single-line bounded [NEXT PROMPT] ----
+def test_next_prompt_bound_is_200_codepoints():
+    block = _next_prompt_block()
+    assert "200" in block
+    assert "120 words" not in block
+
+
+def test_next_prompt_fallback_literal_present():
+    assert FALLBACK in _next_prompt_block()
+
+
+@pytest.mark.parametrize("cls", sorted(DECISION_CLASSES))
+def test_next_prompt_all_five_classes_present(cls):
+    assert f"- `{cls}` —" in _next_prompt_block()
+
+
+def test_next_prompt_fail_closed_over_200():
+    def within_bound(s):
+        return len(s) <= 200
+
+    over = "x" * 201
+    ok = "x" * 200
+    assert len(over) > 200 and not within_bound(over)
+    assert len(ok) == 200 and within_bound(ok)
+    # code points, not bytes or graphemes
+    assert within_bound("\u00e9" * 200) and not within_bound("\u00e9" * 201)
+    block = _next_prompt_block()
+    assert "never truncated" in block
+    assert "instead of a clipped prompt" in block
+    assert FALLBACK in block
+
+
+def test_contract_version_1_4_2_strict_branch():
+    validator = _real_validator()
+    r = _strict_report("1.4.2")
+    assert r["contract_version"] == "1.4.2"
+    assert validator.is_valid(r)
+    bad = _strict_report("1.4.2")
+    bad.pop("effort_justification")
+    assert not validator.is_valid(bad)
+
+
+def test_manifest_and_contract_version_consistent():
+    manifest = json.loads(MANIFEST.read_text())
+    text = CONTRACT.read_text()
+    assert manifest["contract_version"] == "1.4.2"
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.2"
+    s16 = text[text.index("## §16"):]
+    assert "`contract_version` (1.4.2)" in s16
