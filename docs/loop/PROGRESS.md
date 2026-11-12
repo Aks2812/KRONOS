@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 332
+derived_at: 2026-11-12T05:40:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: REPAIR_SPEC_BRIEF50_SEALTAX_THEN_REREVIEW
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: deterministic seal-tax repair (test allowlist bookkeeping), re-review
+brief: docs/loop/SPEC_BRIEF50.md
+brief_sha256: 6e40d5564a87675a0b157038b829cc4da5b0b58db1a6e0af4a0c669bca8dd813
+base_main: 8f42638bb6d3601ac7fb981b1ccb9a2e2b8fa202
+feature_branch: kronos/f1-jsonschema-schema-validation
+feature_head_pre_repair: f259c9bd7b6e542f6a2c148ee93309ebe0b24588
+seq331_pending_action_outcome:
+BUILD DONE then REVIEW FAIL (AC7 only). Builder committed f259c9b: jsonschema==4.25.1 pinned (requirements.txt
++ pyproject.toml dev, identical), three jsonschema.Draft202012Validator tests added to test_rnd_contract.py
+exercising real stop_report.schema.json (positives validate, negatives rejected incl missing contract_version,
+mirror/real drift guard). Scope = exactly 3 permitted files; schema/contract/manifest/.claude byte-identical.
+INDEPENDENT reviewer (kronos-reviewer, fresh full suite): AC1-AC6,AC8 PASS; AC7 FAIL =
+tests/test_commit_authority.py::test_B31_Q_scope_audit red: cumulative audit window AB_BASE(3f6dbc3)..HEAD now
+contains {pyproject.toml, requirements.txt} not in AB_SECTION_10. Full suite 1 failed, 4063 passed, 1 skipped.
+Root cause: standard whole-window seal-tax; brief §2 omitted test_commit_authority.py so branch cannot reach
+AC7 green as written.
+
+REPAIR (seq 332, brief amended sha 6e40d55): §2 amended to add tests/test_commit_authority.py SEAL-TAX ONLY --
+extend AB_SECTION_10 with pyproject.toml + requirements.txt (B32/B36 precedent; no audit-logic change, no base
+re-seal). New AC9 pins that the only test_commit_authority.py change is those two allowlist entries. PENDING:
+dispatch builder for the seal edit, re-run focused + full suite, then independent re-review; draft PR on PASS.
+NO merge, NO mark-ready, NO protected-branch write. Test-only, branch-local, reversible; not governance
+(docs/governance/.claude untouched). Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 331
 derived_at: 2026-11-12T05:10:00Z
 contract_version: 1.4.0
