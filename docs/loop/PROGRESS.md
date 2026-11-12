@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 341
+derived_at: 2026-11-12T12:30:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: REREVIEW_HAIKU_AMENDED_BRIEF_THEN_CONDITIONAL_GATE2_MERGE_PR55
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: AC11 operator-amended to six-file window; obtain unqualified independent PASS then re-measure ten-item MERGE-GATE before authorized merge
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
+brief_sha256_amended: 507a49479f47fb3cd93c432e98c3c59700e7822ba398c5d5c062dca1857e02f3
+brief_sha256_gate1: 5d682da2e68f3d16fce45f0c1c4249260d76615c43d85ef615e4b8839d6065a8
+base_main: d012af5cf8454ffb8da4364eebe9ceaf68d07651
+feature_branch: kronos/b51-next-prompt-v141
+feature_head: 6fcdb4bc755401c2605f2d069db48790bf437707
+pr: 55
+seq340_pending_action_outcome:
+DONE. Operator AC11 CONTROLLING AMENDMENT received: the six-file branch window {KRONOS_RND_CONTRACT.md,
+stop_report.schema.json, contract_manifest.json, tests/test_rnd_contract.py, .claude/RAILS.md,
+.claude/commands/kronos-continue.md} is the intended SPEC_BRIEF51 acceptance scope, superseding the stale
+four-file clause (consistent with GATE-1 directive to carry both maintainer patches on one branch before review).
+Brief amended in KRONOS_PC: AC11 (§9), §10 item 12, and a top amendment banner updated to the six-file window.
+Amended brief sha256 507a49479f47fb3cd93c432e98c3c59700e7822ba398c5d5c062dca1857e02f3 (GATE-1-approved content
+otherwise unchanged; prior sha 5d682da2...). Operator GATE-2 CONDITIONALLY authorized: mark ready + squash-merge
+PR#55 at exact head 6fcdb4b with --match-head-commit, NO --admin, NO --auto, IF AND ONLY IF independent Haiku
+verdict PASS against amended brief AND all ten MERGE-GATE items PASS.
+
+PENDING (seq 341): dispatch fresh Haiku 5.5 kronos-reviewer with ONLY the amended brief + exact-head six-file
+diff d012af5..6fcdb4b to obtain an UNQUALIFIED PASS (AC11 now six-file). On PASS: re-measure full ten-item
+MERGE-GATE same turn; if all green, GATE-2 mark PR#55 ready then gh pr merge 55 --squash --match-head-commit
+6fcdb4bc755401c2605f2d069db48790bf437707. Then push outcome checkpoint, verify origin/main + integrity + rails.
+Any non-PASS or any MERGE-GATE red => STOP, no merge. Do not lift §6/§8. Outcome recorded next checkpoint.
+# KRONOS loop-state checkpoint
 seq: 340
 derived_at: 2026-11-12T12:05:00Z
 contract_version: 1.4.0
