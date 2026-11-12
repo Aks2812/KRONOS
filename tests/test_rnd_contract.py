@@ -950,6 +950,7 @@ def test_next_prompt_decision_class_matrix():
     assert "authoritative roadmap or backlog item" in na
     assert "never fabricated" in na
     assert "`NONE` with the reason" in na
+    assert "one line of at most 200 code points" in na and "fallback line" in na
     rr = block[block.index("- `REVIEW-REQUIRED` —"):block.index("- `HOLD` —")]
     assert "one fenced ```text block" in rr
     assert "one line of at most 200 code points" in rr and "fallback line" in rr
