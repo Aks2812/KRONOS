@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 343
+derived_at: 2026-11-12T16:05:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: NONE
+report_type: COMPLETE
+decision_class: NO-ACTION
+opus_effort: LOW
+opus_effort_reason: authorized squash merge done + mechanical post-merge integrity verification
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
+brief_sha256_amended: 507a49479f47fb3cd93c432e98c3c59700e7822ba398c5d5c062dca1857e02f3
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+seq342_pending_action_outcome:
+DONE. gh pr ready 55 (marked ready). gh pr merge 55 --squash --match-head-commit 6fcdb4b (NO --admin, NO --auto).
+PR#55 MERGED 2026-11-12T16:01:33Z, squash commit e2f74224d50cd5a59422674c71370830f7ab1714; origin/main
+d012af5 -> e2f7422. Squash => 6fcdb4b not literal ancestor (expected).
+POST-MERGE VERIFY on origin/main e2f7422: squash diff d012af5..e2f7422 = exactly the six authorized files
+{KRONOS_RND_CONTRACT.md, stop_report.schema.json, contract_manifest.json, tests/test_rnd_contract.py,
+.claude/RAILS.md, .claude/commands/kronos-continue.md}. CONTRACT INTEGRITY self-consistent on main: manifest
+contract_version 1.4.1; manifest contract sha256 9e595dee... == sha256sum of KRONOS_RND_CONTRACT.md on main;
+manifest schema sha256 d3a7012f... == sha256sum of stop_report.schema.json on main. Contract Version 1.4.1 +
+Contract-Version 1.4.1. Rails consistent: .claude/RAILS.md and kronos-continue.md carry [NEXT PROMPT].
+
+SPEC_BRIEF51 (Contract v1.4.1 Precise Next-Prompt Reporting) COMPLETE and merged. Active contract on main now
+v1.4.1. [NEXT PROMPT] terminal section live. No pre-approved next brief. Loop idle awaiting operator direction.
+Carried LOW non-blocking reviewer findings (coverage-equivalent): §10 test-name divergence; no committed
+CLAUDE.md-unmodified assertion (fact true, 0 diff); "MUST NOT broaden" == "never broadens". No action required.
+# KRONOS loop-state checkpoint
 seq: 342
 derived_at: 2026-11-12T12:55:00Z
 contract_version: 1.4.0
