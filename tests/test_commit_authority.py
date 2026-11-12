@@ -91,7 +91,7 @@ RND_SECTION_10 = RAILS_SECTION_10 | {
 AN_SECTION_10 = RND_SECTION_10  # this brief adds no new paths
 AN_MERGE = "3f6dbc3"  # merge SHA of v1.1.0 brief (PR #46); AN window seals here, not HEAD
 AB_BASE = "3f6dbc3"   # base of the v1.2.0 AUTO-BRIEF brief (PR #46 merge)
-AB_SECTION_10 = RND_SECTION_10  # this brief adds no new paths
+AB_SECTION_10 = RND_SECTION_10 | {"pyproject.toml", "requirements.txt"}  # SPEC_BRIEF50 (F1) dep-pin files
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
