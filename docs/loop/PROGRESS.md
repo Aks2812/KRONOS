@@ -1,4 +1,46 @@
 # KRONOS loop-state checkpoint
+seq: 338
+derived_at: 2026-11-12T11:05:00Z
+contract_version: 1.4.0
+contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e52358efb8c9
+contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
+pending_action: AWAIT_MAINTAINER_HANDPATCH_TWO_CLAUDE_FILES_THEN_HAIKU_REVIEW_B51
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: multi-file governance build + schema-version widen verified; mandatory .claude maintainer-apply pause
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
+brief_sha256: 5d682da2e68f3d16fce45f0c1c4249260d76615c43d85ef615e4b8839d6065a8
+base_main: d012af5cf8454ffb8da4364eebe9ceaf68d07651
+feature_branch: kronos/b51-next-prompt-v141
+feature_head: 352758158365cfe6ccc15ea7d89db44c44d2eb6d
+new_contract_sha256: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+new_schema_sha256: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+seq337_pending_action_outcome:
+DONE (governance build portion). kronos-builder implemented the four authorized files on branch
+kronos/b51-next-prompt-v141; committed 3527581 (author/committer kronos-loop noreply), pushed to origin.
+VERIFIED by orchestrator: (1) git diff --name-only d012af5 = exactly {KRONOS_RND_CONTRACT.md,
+stop_report.schema.json, contract_manifest.json, tests/test_rnd_contract.py}; no untracked. (2) schema diff =
+exactly the two authorized edits (enum +"1.4.1"; strict if-discriminator const"1.4.0"->enum["1.4.0","1.4.1"]);
+11 required keys, additionalProperties:false, then-required, five decision classes all intact. (3) manifest
+contract_version 1.4.1 + both new hashes match sha256sum on disk. (4) contract §15 [NEXT PROMPT] item 11 (five-
+class matrix, one fenced text block, <=120 words, boundary constraints, NONE fallback), effort line item 12,
+severity section bullets, self-check extended, §14 xref, version prose covers 1.4.0+1.4.1 strict, edition 1.4.1,
+§16 active-version 1.4.1. Gate-2 semantic PASS. (5) FULL SUITE via canonical runner: 4074 passed, 1 skipped, 0
+failed (347.91s). (6) Independent strict schema validation PASS: exact 1.4.0 and 1.4.1 validate + 1.4.1 enforces
+effort_justification; negatives missing/empty/"1.4"/"1.4.10"/"1.5.0"/ws-suffix/ws-prefix/non-string all rejected.
+
+Two .claude maintainer patch artifacts authored in KRONOS_PC and git apply --check CLEAN:
+- /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_RAILS.patch (.claude/RAILS.md)
+- /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_KRONOS_CONTINUE.patch (.claude/commands/kronos-continue.md)
+Patches confirmed test-safe (preserve §14/§16/operationalize/canonical-schema-validated; no nine-field).
+
+PENDING (seq 338): MANDATORY PAUSE. Loop hard-deny on .claude/; no approval overrides -> loop cannot apply the
+two patches. Maintainer must hand-apply both patches to branch kronos/b51-next-prompt-v141 and commit (kronos-loop
+noreply identity, public history), yielding exactly the six authorized files on the branch. Only then (next turn):
+dispatch fresh Haiku kronos-reviewer on the complete exact-head six-file diff d012af5..HEAD, re-run complete suite,
+open draft PR, pause at GATE-2. No mark-ready, no merge, no §6/§8, root CLAUDE.md untouched. Outcome recorded next.
+# KRONOS loop-state checkpoint
 seq: 337
 derived_at: 2026-11-12T10:35:00Z
 contract_version: 1.4.0
