@@ -702,6 +702,89 @@ def test_missing_or_non_string_version_rejected():
     raise AssertionError("non-string contract_version validated")
 
 
+# Real-schema validation: the stdlib mirrors above re-implement schema logic; these tests
+# validate the same vectors against docs/governance/stop_report.schema.json via jsonschema.
+def _real_validator():
+    import jsonschema
+    return jsonschema.Draft202012Validator(_schema())
+
+
+def _real_valid(report) -> bool:
+    return _real_validator().is_valid(report)
+
+
+def _ledger_report_v140():
+    r = _report_v140()
+    r["how"]["reference_ledger"] = {"applicable": True, "entries": [{
+        "source": "cybergym", "pinned_sha": "deadbeef", "evidence_id": "EV-1",
+        "license_privacy": "internal", "epistemic_status": "Observed",
+        "goal_mapping": ["G1"], "clean_room_evolution": "re-derived independently",
+        "disposition": "Adapt", "implementation_status": "not-implemented",
+    }]}
+    return r
+
+
+def _positive_vectors():
+    vectors = []
+    for v in LEGACY_CONTRACT_VERSIONS:
+        legacy = _report("PAUSE", "blocker")
+        legacy["contract_version"] = v
+        vectors.append((f"legacy {v}", legacy))
+    vectors.append(("exact 1.4.0", _report_v140()))
+    vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
+    return vectors
+
+
+def _negative_vectors():
+    vectors = []
+    missing = _report("PAUSE", "blocker")
+    assert "contract_version" not in missing
+    vectors.append(("missing contract_version", missing))
+    nonstr = _report_v140()
+    nonstr["contract_version"] = 140
+    vectors.append(("non-string contract_version", nonstr))
+    for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", ""):
+        r = _report_v140()
+        r["contract_version"] = bad
+        vectors.append((f"version {bad!r}", r))
+    no_milestone = _report_v140()
+    del no_milestone["when"]["milestone"]
+    vectors.append(("missing when.milestone", no_milestone))
+    no_effort = _report_v140()
+    del no_effort["effort_justification"]
+    vectors.append(("missing effort_justification", no_effort))
+    no_ledger = _report_v140()
+    del no_ledger["how"]["reference_ledger"]
+    vectors.append(("missing how.reference_ledger", no_ledger))
+    bad_class = _report_v140()
+    bad_class["decision_class"] = "RESEARCH-ONLY"
+    vectors.append(("invalid decision_class", bad_class))
+    return vectors
+
+
+def test_real_schema_accepts_positive_reports():
+    validator = _real_validator()
+    for name, report in _positive_vectors():
+        errors = list(validator.iter_errors(report))
+        assert not errors, f"{name}: {[e.message for e in errors]}"
+
+
+def test_real_schema_rejects_negative_reports():
+    validator = _real_validator()
+    for name, report in _negative_vectors():
+        assert not validator.is_valid(report), f"real schema accepted negative: {name}"
+
+
+def test_mirror_and_real_schema_agree():
+    # drift guard: stdlib mirror verdict must equal the real-schema verdict on every vector
+    for name, report in _positive_vectors() + _negative_vectors():
+        try:
+            mirror_ok = _validate_discriminated(report)
+        except (AssertionError, KeyError):
+            mirror_ok = False
+        assert mirror_ok == _real_valid(report), f"mirror/real-schema drift: {name}"
+
+
 _BOX_CHARS = "┌┐└┘├┤┬┴┼─│╔╗╚╝═║"
 _EFFORT_LINE = "RECOMMENDED ORCHESTRATOR EFFORT:"
 
