@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 358
+derived_at: 2026-11-13T08:45:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: BUILD_REVIEW_DRAFTPR_B1_SCOPED
+report_type: PAUSE
+decision_class: AUTO-CONTINUE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-1 approved B1 (seq357). §13.1 auto-start build->review->repair->draft PR on single test-file assertion; PAUSES before GATE-2 merge
+base_main: 6eb530c12f481940beed714e7ab999febd21d326
+feature_branch: kronos/b1-next-prompt-bound-assert
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING
+
+CONTEXT (seq 358): Operator GATE-1 approval received seq357 for B1 scoped brief.
+Permitted file scope: tests/test_rnd_contract.py ONLY. No governance/.claude/manifest/contract.
+Brief §1-§3:
+ §1 Goal: strengthen test_next_prompt_bound_is_200_codepoints (tests/test_rnd_contract.py:1026-1029)
+   from weak `assert "200" in block` to also assert canonical phrase
+   `assert "at most 200 Unicode code points" in block` (matching sibling line 936), keeping
+   `assert "120 words" not in block`.
+ §2 Scope: exactly one test function; one added assertion; no other edits. Reversible, branch-local.
+ §3 Seal-tax: prior brief B53 (SPEC_BRIEF53) merged at squash SHA 6eb530c; its ..HEAD scope-audit
+   window is sealed to 6eb530c. B1 base_main = 6eb530c; B1 ..HEAD scope-audit = single file
+   tests/test_rnd_contract.py.
+Pipeline: kronos-builder (build) -> kronos-reviewer (independent, runs canonical suite) -> repair if
+needed -> draft PR -> PAUSE for operator GATE-2. No merge this envelope.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 357
 derived_at: 2026-11-13T08:30:00Z
 contract_version: 1.4.3
