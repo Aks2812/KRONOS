@@ -1,4 +1,62 @@
 # KRONOS loop-state checkpoint
+seq: 354
+derived_at: 2026-11-13T00:00:00Z
+contract_version: 1.4.2
+contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e3e4a0c4cba
+contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
+pending_action: GATE2_DECISION_ON_PR57_V143_ACI_AT_63ebdfdf
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Maintainer .claude mirrors applied; PR#57 head advanced 075b9bf5->63ebdfdf; fresh review PASS, mirror test now green; human-gated, paused at GATE-2
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
+brief_sha256: 031453e4ce46709ff25ea4ac630322b95dac73b75ac19e83f89eb53ba7af5a8e
+base_main: 24df0b49c70d525c10f634c6585766d093dded2b
+feature_branch: kronos/b53-v143-aci (maintainer worktree ~/KRONOS-b53-maintainer)
+feature_head: 63ebdfdf6336cf0a8601239fea6355c491fd4ff6
+prior_feature_head: 075b9bf532af88a66db01b5d918ce297201da50e (superseded by mirror commit)
+pr: 57
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE.
+integrity_note: checkpoint contract hashes are still-ACTIVE v1.4.2 baseline on main 24df0b49.
+  v1.4.3 hashes (contract 7bb172c6..664b, schema 7d6f07be..4077) land on main only AFTER GATE-2 merge.
+
+seq354_action: Maintainer hand-applied the B53 .claude mirror patch (B53_CLAUDE_MIRROR.patch) on the
+feature branch as commit 63ebdfdf "chore(governance): mirror v1.4.3 actionable continuation rails".
+PR#57 head advanced 075b9bf5 -> 63ebdfdf. Re-ran hashes, six-file scope audit, mirror test, and a fresh
+independent kronos-reviewer. Paused at GATE-2. NO merge, no §6/§8 lift.
+
+seq354_scope_now_six_files: git diff --name-only 24df0b49 63ebdfdf = exactly:
+docs/governance/KRONOS_RND_CONTRACT.md, docs/governance/stop_report.schema.json,
+docs/governance/contract_manifest.json, tests/test_rnd_contract.py, .claude/RAILS.md,
+.claude/commands/kronos-continue.md. Mirror commit 075b9bf..63ebdfdf touched ONLY the 2 .claude files;
+docs/ and tests/ diff since 075b9bf is empty (build intact).
+
+seq354_mirror_content: both .claude files now read "contract v1.4.3 §14-§16" (no residual v1.4.1/v1.4.2),
+each carries "Actionable Continuation Invariant" and "incomplete-idle recovery"; still state they
+operationalize (not redefine) §14-§16; no decision class redefined.
+
+seq354_hashes: manifest contract_version 1.4.3; recomputed sha256 match disk --
+contract 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b,
+schema 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077. Mirror changed no hashes.
+
+seq354_review: fresh kronos-reviewer (claude-haiku-5-5) at 63ebdfdf, measured independently in a detached
+worktree with .venv symlink. ALL 7 AC PASS. test_rails_and_command_mirror_v1_4_3 now PASSES (no longer
+skipped): pytest -k rails_and_command_mirror = 1 passed, 81 deselected. Full canonical suite via
+.venv/bin/python + disk TMPDIR: 4091 passed, 1 skipped in 353.50s. Only remaining skip = test_mobile_ingest
+MobSF-not-configured (pre-existing, unrelated). Prior-turn rails-mirror skip is gone.
+
+seq354_nonblocking_low: unchanged from seq353 -- 3 new tests exercise local helper predicates not a real
+renderer (no renderer exists; consistent with prior B2 design-limit). Non-blocking; future hardening item.
+
+seq354_pending_action: GATE-2. Maintainer reviews PR#57 and, to merge, authorizes naming PR#57 and head
+SHA 63ebdfdf; orchestrator then re-measures full ten-item MERGE-GATE in-turn and runs
+gh pr ready 57 + gh pr merge 57 --squash --match-head-commit 63ebdfdf6336cf0a8601239fea6355c491fd4ff6
+(NO --admin, NO --auto). After merge: new integrity baseline = v1.4.3 hashes on main; seq353 075b9bf5
+authorization is SUPERSEDED -- only 63ebdfdf is mergeable.
+
+seq354_identity: loop-state commit identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 353
 derived_at: 2026-11-13T00:00:00Z
 contract_version: 1.4.2
