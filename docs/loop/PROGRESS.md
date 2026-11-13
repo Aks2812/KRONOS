@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 364
+derived_at: 2026-11-13T10:55:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: AWAIT_MAINTAINER_HANDAPPLY_V144_GOVERNANCE
+report_type: HOLD
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: Record operator GATE-1 APPROVED on amended v1.4.4 brief; governance is maintainer-hand-applied (Option B); no loop-executable action until the patch lands on main
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+prev_pending_action: GATE1_DECISION_ON_V144_COMPLETION_PROOF_BRIEF
+prev_pending_action_outcome: APPROVED (operator GATE-1 approve, 2026-11-13, amended brief sha 97596bec)
+pending_action_outcome: PENDING (blocked on maintainer hand-apply of v1.4.4 governance file set)
+CONTEXT (seq 364): Operator issued GATE-1 APPROVE on amended SPEC_BRIEF54 (v1.4.4, sha 97596bec).
+LIVE re-derive: main 78dcb76 == base_main; loop-state seq363 cdcc083; brief sha 97596bec matched;
+contract still v1.4.3 (governance NOT yet applied). No mismatch.
+GATE-1 approval authorizes the brief, NOT loop implementation. v1.4.4 governance is maintainer
+hand-applied (Option B); the loop implements nothing here. Permitted maintainer-patch file set:
+  1. docs/governance/KRONOS_RND_CONTRACT.md  (1.4.3 -> 1.4.4, normative edits per brief §4)
+  2. docs/governance/stop_report.schema.json (version enum + optional completion_record shape, §5)
+  3. docs/governance/contract_manifest.json  (contract_version 1.4.4 + re-hash contract+schema;
+     add KRONOS_DONE.md to hashed set per brief §4.1)
+  4. docs/governance/KRONOS_DONE.md          (NEW DoD + G1/G2/G3 milestones + Reconciliation-Sources, §4.1/§4.6)
+  5. .claude/RAILS.md, .claude/commands/kronos-continue.md, CLAUDE.md (mirrors, §9)
+Only AFTER the above land on main may a loop builder touch tests/test_rnd_contract.py (§6.1-§6.15),
+which red until the governance text exists. contract/manifest/schema/.claude remain loop-hard-deny;
+HOLD/boundaries preserved verbatim.
+NEXT: maintainer hand-applies the governance patch to main; then `continue` to re-derive and, if the
+v1.4.4 text + KRONOS_DONE.md are live, select the §6 test-regression as the sole loop-eligible build.
+No implementation taken. loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 363
 derived_at: 2026-11-13T10:40:00Z
 contract_version: 1.4.3
