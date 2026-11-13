@@ -166,7 +166,7 @@ and verify it is disk-backed, not tmpfs — `findmnt -no FSTYPE --target "$TMPDI
 resolves to a tmpfs / non-disk-backed filesystem, STOP and emit the canonical schema-validated stop-report (§9);
 never fall back to the tmpfs `/tmp`. Clear that scratch dir after the run.
 
-## Decision classes & persistent terminal presentation (contract v1.4.1 §14–§16)
+## Decision classes & persistent terminal presentation (contract v1.4.3 §14–§16)
 
 The contract is the sole semantic authority for the five decision classes (AUTO-CONTINUE, SAFE-TO-APPROVE,
 REVIEW-REQUIRED, HOLD, NO-ACTION) and for the persistent GitHub-flavored-Markdown presentation of terminal
@@ -181,6 +181,6 @@ operator prompt derived from decision_class/operator_action/recommendation/where
 one fenced text block holding one single line of at most 200 Unicode code points when a prompt exists (never truncated; if no safe prompt fits the bound, the verbatim fallback line `REVIEW-REQUIRED: discuss the decision above; do not act.` is emitted instead, fail-closed), or NONE with a reason otherwise, per the contract §15
 decision-class matrix; it never broadens scope, infers §6/§8 authority, weakens a blocker, or emits an
 override/bypass prompt under HOLD, and the self-check rejects a truncated, merged, malformed, or incomplete
-[NEXT PROMPT]. RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position. This file
+[NEXT PROMPT]. Actionable Continuation Invariant (§15): a rendered [NEXT PROMPT] body must be exactly one of an exact copy-ready action, a remediation, an operator decision, or the AUTO-CONTINUE marker; a status echo or acknowledgement is a render failure. NO-ACTION (§14) is permitted only on genuine R&D completion; an incomplete-idle state instead triggers incomplete-idle recovery (§13.2) — a read-only kronos-researcher (claude-sonnet-5) roadmap reconciliation presenting exactly one scoped GATE-1 candidate — and a suspended in-scope product action is preserved and restored across a validation/governance detour (§13.3, detour restoration), with HOLD fail-closed. RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position. This file
 references and operationalizes §14–§16; it does not redefine any class or
 label.

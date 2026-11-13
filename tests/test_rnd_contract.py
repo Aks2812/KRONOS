@@ -63,7 +63,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.2"
+    assert manifest["contract_version"] == "1.4.3"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name} <= listed
@@ -170,10 +170,10 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_4_2_with_auto_brief():
+def test_contract_is_v1_4_3_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.4.2" in text
-    assert "Contract-Version: 1.4.2" in text
+    assert "Version: 1.4.3" in text
+    assert "Contract-Version: 1.4.3" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -503,7 +503,7 @@ def test_schema_v140_structure():
     s = _schema()
     assert s["properties"]["contract_version"]["type"] == "string"
     assert s["properties"]["effort_justification"]["type"] == "string"
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -634,7 +634,7 @@ def test_v140_invalid_decision_class_fails():
 # v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
 # versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
 LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
-STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2"]
+STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
 ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + STRICT_CONTRACT_VERSIONS
 _MISSING = object()
 
@@ -737,6 +737,7 @@ def _positive_vectors():
     vectors.append(("exact 1.4.0", _report_v140()))
     vectors.append(("exact 1.4.1", _report_v140(contract_version="1.4.1")))
     vectors.append(("exact 1.4.2", _report_v140(contract_version="1.4.2")))
+    vectors.append(("exact 1.4.3", _report_v140(contract_version="1.4.3")))
     vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
     return vectors
 
@@ -750,7 +751,7 @@ def _negative_vectors():
     nonstr["contract_version"] = 140
     vectors.append(("non-string contract_version", nonstr))
     for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", "",
-                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.3"):
+                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.4"):
         r = _report_v140()
         r["contract_version"] = bad
         vectors.append((f"version {bad!r}", r))
@@ -860,8 +861,8 @@ def _next_prompt_block():
 def test_schema_v141_minimal_widen():
     s = _schema()
     assert s["properties"]["contract_version"]["enum"] == [
-        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2"]
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2"]
+        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
     assert "const" not in s["if"]["properties"]["contract_version"]
     assert s["if"]["required"] == ["contract_version"]
     assert set(s["required"]) == REQUIRED_KEYS
@@ -885,7 +886,7 @@ def _strict_report(version):
 
 def test_real_schema_validates_exact_1_4_0_1_4_1_1_4_2_strict():
     validator = _real_validator()
-    for v in ("1.4.0", "1.4.1", "1.4.2"):
+    for v in ("1.4.0", "1.4.1", "1.4.2", "1.4.3"):
         r = _strict_report(v)
         assert r["contract_version"] == v
         assert validator.is_valid(r), v
@@ -1011,10 +1012,10 @@ def test_next_prompt_self_check():
 def test_version_discrimination_prose_covers_1_4_0_1_4_1_1_4_2():
     text = CONTRACT.read_text()
     s9 = text[text.index("## §9"):text.index("## §10")]
-    assert "exactly `1.4.0`, exactly `1.4.1`, or exactly `1.4.2`" in s9
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, or exactly `1.4.3`" in s9
     assert "never loosened" in s9
     s15 = _s15()
-    assert "exactly `1.4.0`, exactly `1.4.1`, or exactly `1.4.2`" in s15
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, or exactly `1.4.3`" in s15
     assert "never loosened" in s15
     s14 = text[text.index("## §14"):text.index("## §15")]
     assert "`[NEXT PROMPT]`" in s14
@@ -1066,7 +1067,118 @@ def test_contract_version_1_4_2_strict_branch():
 def test_manifest_and_contract_version_consistent():
     manifest = json.loads(MANIFEST.read_text())
     text = CONTRACT.read_text()
-    assert manifest["contract_version"] == "1.4.2"
-    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.2"
+    assert manifest["contract_version"] == "1.4.3"
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.3"
     s16 = text[text.index("## §16"):]
-    assert "`contract_version` (1.4.2)" in s16
+    assert "`contract_version` (1.4.3)" in s16
+
+
+# ---- SPEC_BRIEF53 / contract v1.4.3: Actionable Continuation Invariant ----
+def _section(start, end):
+    text = CONTRACT.read_text()
+    return text[text.index(start):text.index(end)]
+
+
+def test_schema_accepts_1_4_3_strict():
+    validator = _real_validator()
+    r = _strict_report("1.4.3")
+    assert r["contract_version"] == "1.4.3"
+    assert validator.is_valid(r)
+    for drop in (lambda x: x.pop("effort_justification"),
+                 lambda x: x["when"].pop("milestone"),
+                 lambda x: x["how"].pop("reference_ledger")):
+        bad = _strict_report("1.4.3")
+        drop(bad)
+        assert not validator.is_valid(bad)
+    # unknown-future version fails closed
+    assert not validator.is_valid(_strict_report("1.4.4"))
+
+
+_ECHO_DENY = ("validation pass", "holding", "acknowledged", "no action pending",
+              "hold for operator")
+_ACTION_TOKENS = ("gh pr merge", "approve", "reject", "run ", "fix ", "merge ", "discuss",
+                  "NONE — loop continues autonomously")
+
+
+def _is_actionable(body):
+    low = body.strip().lower()
+    if low.startswith("no-action:") or any(d in low for d in _ECHO_DENY):
+        return False
+    return any(t.lower() in low for t in _ACTION_TOKENS)
+
+
+def test_next_prompt_is_actionable_not_echo():
+    block = _next_prompt_block()
+    for frag in ("Actionable Continuation Invariant", "an exact copy-ready action",
+                 "a remediation", "an operator decision", "AUTO-CONTINUE",
+                 "status echo or acknowledgement", "render failure"):
+        assert frag in block, frag
+    for ok in ("gh pr merge 56 --squash --match-head-commit <sha>",
+               "fix the dirty tree then re-run the suite",
+               "approve SPEC_BRIEF53 or reject/amend",
+               "NONE — loop continues autonomously",
+               FALLBACK):
+        assert _is_actionable(ok), ok
+    for echo in ("NO-ACTION: validation PASS (main 24df0b49 …); hold for operator",
+                 "holding", "acknowledged"):
+        assert not _is_actionable(echo), echo
+
+
+def _no_action_ok(open_objectives, eligible_items):
+    return open_objectives == 0 and eligible_items == 0
+
+
+def test_no_action_requires_completion():
+    s14 = _section("## §14", "## §15")
+    assert "permitted only when KRONOS R&D completion criteria are genuinely satisfied" in s14
+    assert "routes to §13.2 incomplete-idle recovery" in s14
+    assert _no_action_ok(0, 0)
+    assert not _no_action_ok(1, 0)
+    assert not _no_action_ok(0, 1)
+
+
+def test_incomplete_idle_dispatches_readonly_reconciliation():
+    s = _section("### §13.2", "### §13.3")
+    for frag in ("Incomplete-idle recovery", "read-only roadmap reconciliation",
+                 "kronos-researcher", "claude-sonnet-5", "writes nothing",
+                 "exactly one scoped candidate at GATE-1", "REVIEW-REQUIRED",
+                 "falls through to the §13.1"):
+        assert frag in s, frag
+
+
+def _restore(suspended, cancelled, hold):
+    return suspended if (suspended and not cancelled and not hold) else None
+
+
+def test_detour_restores_suspended_action():
+    s = _section("### §13.3", "## §14")
+    for frag in ("Detour restoration",
+                 "suspended action MUST be preserved across the detour and restored",
+                 "never clears a HOLD", "never advances past an unresolved blocker"):
+        assert frag in s, frag
+    assert _restore("merge PR 56", cancelled=False, hold=False) == "merge PR 56"
+    assert _restore("merge PR 56", cancelled=True, hold=False) is None
+    assert _restore("merge PR 56", cancelled=False, hold=True) is None
+
+
+def test_no_authority_broadening():
+    s = _section("### §13.3", "## §14")
+    for frag in ("GATE-1", "GATE-2", "--match-head-commit", "§6/§8", "circuit breakers"):
+        assert frag in s, frag
+    block = _next_prompt_block()
+    for frag in ("MUST NOT broaden scope beyond the approved brief",
+                 "§6/§8 (live-use) authority",
+                 "never upgrades or overrides a decision class",
+                 "--admin", "--auto"):
+        assert frag in block, frag
+
+
+def test_rails_and_command_mirror_v1_4_3():
+    rails = ROOT / ".claude" / "RAILS.md"
+    command = ROOT / ".claude" / "commands" / "kronos-continue.md"
+    if "Actionable Continuation Invariant" not in rails.read_text():
+        pytest.skip("maintainer .claude/** hand-apply of v1.4.3 pending (Option B)")
+    for p in (rails, command):
+        t = p.read_text()
+        assert "Actionable Continuation Invariant" in t, p
+        assert "incomplete-idle recovery" in t, p
