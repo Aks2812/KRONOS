@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 363
+derived_at: 2026-11-13T10:40:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: GATE1_DECISION_ON_V144_COMPLETION_PROOF_BRIEF
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Operator-directed amendment of PROPOSED v1.4.4 brief (operator-activated Completion-Gate, exact-main-SHA binding, pinned reconciliation sources, 5 new deterministic tests); proposal-only, no implementation, re-paused GATE-1
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+prev_brief_sha256: 47efdc77453fb5123e6e0e9fe52156c23e2c9e092956b03f5f8edae430e36b94
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING (awaiting operator GATE-1 approve/reject amended v1.4.4 brief)
+CONTEXT (seq 363): Operator directive (/home/void/context.md) amends SPEC_BRIEF54 before GATE-1.
+LIVE re-derive vs seq362 ALL AGREE (main 78dcb76 == base_main; PR#58 MERGED into 78dcb76;
+ruleset void-rule-kronos LIVE; prev brief sha 47efdc77 matched). No mismatch.
+Five amendments applied to the PROPOSED brief (governance text still maintainer-hand-applied; loop
+implements nothing):
+  1. §4.2 Completion Record may be loop-DRAFTED but is inert until an explicit operator COMPLETION-GATE
+     naming full 40-hex main SHA + DoD-Version/KRONOS_DONE.md sha256 + evidence digest; agents cannot
+     self-certify.
+  2. §4.2 SHA binding: active record valid for NO-ACTION only while live origin/main HEAD == certified
+     SHA; any main advancement invalidates -> explicit transition to incomplete-idle until recertified;
+     explicit active|reopened|cleared reopen/clear transition.
+  3. §4.6 (new) pinned reconciliation sources (roadmap/research-record/goal-gap) by id+path+sha256 in
+     KRONOS_DONE.md; missing or mismatched source -> HOLD with remediation; never a candidate, never
+     NO-ACTION. §4.4(2) reconciliation now reads the pinned set.
+  4. §6 tests 11-15 added (deterministic): self_authorization_rejected, main_sha_drift_invalidates,
+     explicit_reopen_transition, source_mismatch_holds, evidence_digest_non_circular; helpers
+     _completion_proven(record,open_roadmap,eligible,live_main_sha), _sources_ok(pins),
+     _evidence_digest(citations). §5 schema completion_record gains activation fields. AC6 added;
+     test-plan table extended to 15.
+  5. Brief sha256 updated (97596bec...), checkpoint written; re-pause GATE-1. No implementation.
+Permitted maintainer-patch file set unchanged: contract, schema, manifest, KRONOS_DONE.md,
+test_rnd_contract.py (tests only after governance text lands), .claude mirrors (Option B).
+Contract/manifest/schema/.claude remain loop-hard-deny. HOLD/boundaries preserved verbatim.
+Operator GATE-1 decision required: approve amended SPEC_BRIEF54 (v1.4.4) maintainer application, or reject.
+No implementation taken pending decision.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 362
 derived_at: 2026-11-13T10:10:00Z
 contract_version: 1.4.3
