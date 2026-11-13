@@ -178,7 +178,7 @@ table; no flat key/value report, internal breaks with `<br>`, a pre-response sel
 one preferred recommendation within three sentences and 60 words, a PR + full-head-SHA authorization line for
 SAFE-TO-APPROVE, Opus effort defaulting to LOW. [NEXT PROMPT] is presentation-only: it renders the exact next
 operator prompt derived from decision_class/operator_action/recommendation/where.pr/where.head_sha, as exactly
-one fenced text block (<=120 words) when a prompt exists or NONE with a reason otherwise, per the contract §15
+one fenced text block holding one single line of at most 200 Unicode code points when a prompt exists (never truncated; if no safe prompt fits the bound, the verbatim fallback line `REVIEW-REQUIRED: discuss the decision above; do not act.` is emitted instead, fail-closed), or NONE with a reason otherwise, per the contract §15
 decision-class matrix; it never broadens scope, infers §6/§8 authority, weakens a blocker, or emits an
 override/bypass prompt under HOLD, and the self-check rejects a truncated, merged, malformed, or incomplete
 [NEXT PROMPT]. RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position. This file

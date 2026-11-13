@@ -76,8 +76,7 @@ Class), then [WHY], [WHERE], [WHEN] (locked baseline, numerator, denominator, pe
 gates, ETA assumptions, confidence), [WHAT] (with the conditional Goal-Framed Reference Knowledge Transfer
 Ledger), [WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY] (rank, severity, depends_on, decision_class,
 action), [MOST RECOMMENDED ACTION] (one recommendation, three sentences / 60 words), [OPERATOR ACTION], [NEXT PROMPT]
-(one fenced text block with the next operator prompt derived from decision_class/operator_action/recommendation/
-where.pr/where.head_sha, <=120 words, or NONE with a reason; per the contract §15 decision-class matrix; never
+(one fenced text block holding one single line of at most 200 Unicode code points, derived from decision_class/operator_action/recommendation/where.pr/where.head_sha, never truncated — if no safe prompt fits the bound, the verbatim fallback line `REVIEW-REQUIRED: discuss the decision above; do not act.` is emitted instead, fail-closed — or NONE with a reason; per the contract §15 decision-class matrix; never
 broadens scope, infers §6/§8 authority, weakens a blocker, or emits an override/bypass under HOLD), and a
 final RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification> line; the [HOW TO DO FOR NEXT STEP
 BASED ON SEVERITY] section renders as readable bullets, never a wide or box-drawing table; no box-drawing
