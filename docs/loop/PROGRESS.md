@@ -1,4 +1,60 @@
 # KRONOS loop-state checkpoint
+seq: 349
+derived_at: 2026-11-12T21:15:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: OPERATOR_GATE2_AUTHORIZE_READY_AND_MERGE_B52_PR56_AT_81e49eba
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: MEDIUM
+opus_effort_reason: maintainer re-patch at new head cleared the sole AC3 defect; full re-measure (suite + hashes + six-file scope + fresh independent review + Gate-2 semantic) all green, now the mandatory merge-authorization pause before a ten-item MERGE-GATE re-measure
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
+brief_sha256: 5ae8e90f338ee955d94692a3edeb002835f081ac75f3176bbc6f150788e73cae
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+feature_branch: kronos/b52-next-prompt-v142
+feature_head: 81e49eba4a1f000bccdca303b0b8c8418e4b73fc
+pr: 56
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE; re-measure at MERGE-GATE.
+
+seq348_pending_action_outcome:
+DONE. Maintainer re-patched the .claude fallback literal (seq 348 HARD-DENY repatch) and pushed
+kronos/b52-next-prompt-v142 to a new head 81e49eba (prior 54e3107). Loop re-derived LIVE at new head and
+re-measured in full:
+- Scope: git diff --name-only origin/main..81e49eba = EXACTLY six files (.claude/RAILS.md,
+  .claude/commands/kronos-continue.md, docs/governance/KRONOS_RND_CONTRACT.md,
+  docs/governance/contract_manifest.json, docs/governance/stop_report.schema.json,
+  tests/test_rnd_contract.py); no src/ .github/ cybergym/ CLAUDE.md. 6 files, +108/-37.
+- AC3 fix verified verbatim: literal "REVIEW-REQUIRED: discuss the decision above; do not act." now
+  grep -F with-the counts: RAILS.md=1 (181), kronos-continue.md=1 (79), contract=2 (198,210),
+  tests=1 (850); without-the=0 in all four. Byte-identical across all four files.
+- Manifest hashes (v1.4.2) match branch blobs: contract fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e3e4a0c4cba,
+  schema 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882.
+- Canonical suite (orchestrator, .venv/bin/python, disk TMPDIR): 4084 passed, 1 skipped in 423.27s; 0 failed.
+- Fresh independent kronos-reviewer (brief+diff only, HEAD 81e49eba, ran own canonical suite
+  4084 passed/1 skipped/0 failed): VERDICT PASS, AC1-AC10 all PASS, scope PASS, manifest-hash PASS.
+- Orchestrator Gate-2 semantic review: PASS. Sole seq-348 AC3 defect resolved; nothing out of scope.
+Live re-derivation at seq 349: main e2f7422 unchanged + protected; PR#56 OPEN, isDraft true, head
+81e49eba, base main, mergeable, unmerged; brief sha 5ae8e90 matches. No live/checkpoint mismatch.
+
+STATE SUMMARY (seq 349): SPEC_BRIEF52 v1.4.2 fully GREEN at head 81e49eba — independent PASS + orchestrator
+Gate-2 PASS, suite 0 failed, six-file scope clean, manifest consistent. Draft PR #56 open. Two MERGE-GATE
+items still require operator action: PR is DRAFT (mark-ready requires operator authorization) and merge itself
+is a mandatory authorization pause.
+
+Non-blocking LOW (carried, not merge blockers): (1) brief §2A.7 one-line v1.4.2 change-note not added (no
+in-file changelog precedent for 1.4.1; Q4 unresolved); (2) test_next_prompt_bound_is_200_codepoints only
+asserts "200" in block (weak); (3) test_next_prompt_fail_closed_over_200 checks a test-local helper, not a
+real renderer (no renderer exists; brief sanctioned); (4) §15 "exactly one single line" redundant wording;
+(5) suite reports 1 skipped (pre-existing, unverified). None affect any AC.
+
+PENDING (seq 349, mandatory merge-authorization pause): operator must (A) authorize marking PR #56 ready
+(exit draft), and (B) name PR #56 and authorize head SHA 81e49eba4a1f000bccdca303b0b8c8418e4b73fc for merge.
+On authorization the orchestrator re-measures the full ten-item MERGE-GATE in the SAME turn and, only if all
+green, runs: gh pr merge 56 --squash --match-head-commit 81e49eba4a1f000bccdca303b0b8c8418e4b73fc. NO --admin,
+NO --auto, NO mark-ready without operator authorization, NO §6/§8 lift, NO .claude loop edit, NO scope
+expansion. Automated loop-state commits: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 348
 derived_at: 2026-11-12T20:40:00Z
 contract_version: 1.4.1
