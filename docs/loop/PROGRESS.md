@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 360
+derived_at: 2026-11-13T09:30:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: MARK_READY_AND_SQUASH_MERGE_B1_PR58_AT_876bdf4
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-2 authorized PR#58 @ 876bdf4; in-turn ten-item MERGE-GATE re-measure + squash-merge
+base_main: 6eb530c12f481940beed714e7ab999febd21d326
+feature_branch: kronos/b1-next-prompt-bound-assert
+feature_head: 876bdf4a0f68172b4ff8647d308c3223f0f0ef18
+pr: 58
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING
+
+ACTION (seq 360): Operator GATE-2 authorized squash-merge PR#58 at head 876bdf4
+(--match-head-commit, NO --admin, NO --auto). Sequence:
+(1) Re-measure full ten-item MERGE-GATE in-turn: live facts GREEN (main 6eb530c protected
+    void-rule-kronos active; PR#58 OPEN head 876bdf4 == authorized SHA; mergeable; scope
+    tests/test_rnd_contract.py only); re-run canonical suite
+    TMPDIR=... rtk test .venv/bin/python -m pytest -q, decide from summary line (0 failed).
+(2) gh pr ready 58; re-verify isDraft false.
+(3) gh pr merge 58 --squash --match-head-commit 876bdf4a0f68172b4ff8647d308c3223f0f0ef18.
+(4) Verify merged; new checkpoint seq361 records merge SHA + outcome.
+On any gate red or head drift: ABORT, emit BLOCKED stop-report, no merge.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 359
 derived_at: 2026-11-13T09:00:00Z
 contract_version: 1.4.3
