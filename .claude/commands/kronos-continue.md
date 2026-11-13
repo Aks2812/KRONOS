@@ -69,7 +69,7 @@ Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merg
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
 
-DECISION CLASS + PRESENTATION (contract v1.4.1 §14–§16): every terminal report carries exactly one decision
+DECISION CLASS + PRESENTATION (contract v1.4.3 §14–§16): every terminal report carries exactly one decision
 class — AUTO-CONTINUE, SAFE-TO-APPROVE, REVIEW-REQUIRED, HOLD, or NO-ACTION — and renders as GitHub-flavored
 Markdown as an ordered sequence of bracket-labeled sections: [STATUS] first (Report Type + one valid Decision
 Class), then [WHY], [WHERE], [WHEN] (locked baseline, numerator, denominator, percentage-or-UNKNOWN, remaining
@@ -84,6 +84,7 @@ characters; internal breaks with `<br>`; a pre-response self-check before emitti
 order, [STATUS] first with a valid Decision Class, [WHEN] fields or UNKNOWN, the conditional ledger or an
 explicit none line, the bounded recommendation, the [NEXT PROMPT] section present and not truncated/merged/malformed/incomplete, the
 effort line, no flat key/value, no box-drawing);
+Actionable Continuation Invariant (§15): a rendered [NEXT PROMPT] body must be exactly one of an exact copy-ready action, a remediation, an operator decision, or the AUTO-CONTINUE marker; a status echo or acknowledgement is a render failure. NO-ACTION (§14) is permitted only on genuine R&D completion; an incomplete-idle state instead triggers incomplete-idle recovery (§13.2) — a read-only kronos-researcher (claude-sonnet-5) roadmap reconciliation presenting exactly one scoped GATE-1 candidate — and a suspended in-scope product action is preserved and restored across a validation/governance detour (§13.3, detour restoration), with HOLD fail-closed.
 RESEARCH-ONLY, DEFERRED, and NO-OP must not appear in the Decision-Class position; a SAFE-TO-APPROVE report adds
 one authorization line naming the PR and full head SHA; Opus effort defaults LOW (MEDIUM/HIGH needs a stated
 reason). The contract §14–§16 is the sole authority; this command only operationalizes it and never redefines a
