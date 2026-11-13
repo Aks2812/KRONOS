@@ -1,4 +1,48 @@
 # KRONOS loop-state checkpoint
+seq: 357
+derived_at: 2026-11-13T08:30:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: GATE1_DECISION_ON_B1_SCOPED_BRIEF
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: §13.2 incomplete-idle recovery; read-only researcher reconciled backlog vs live main 6eb530c; one scoped GATE-1 candidate (B1) presented; no autonomous execution, human gate preserved
+base_main: 6eb530c12f481940beed714e7ab999febd21d326
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING (awaiting operator GATE-1 approve/reject of B1 scoped brief)
+
+CONTEXT (seq 357): seq356 emitted NO-ACTION/COMPLETE but LOW backlog remained (B1, B53-L1, B3, B4).
+Per §14/§13.4 incomplete-but-idle is never NO-ACTION -> entered §13.2 incomplete-idle recovery.
+Live re-derivation GREEN and consistent: PR#57 MERGED 2026-11-13T13:12:10Z, squash mergeCommit
+6eb530c == origin/main HEAD; contract/schema sha256 match contract_manifest.json v1.4.3; main
+protected (void-rule-kronos 25333712 active).
+
+§13.2 researcher reconciliation (read-only kronos-researcher, claude-sonnet-5, Read/Glob/Grep only;
+decided/wrote/recommended nothing) against main 6eb530c, cited findings:
+- B1 (test-file): test_next_prompt_bound_is_200_codepoints at tests/test_rnd_contract.py:1026-1029 asserts
+  weak `assert "200" in block` + `assert "120 words" not in block`. Canonical stronger phrase already
+  asserted by siblings: line 936 `"at most 200 Unicode code points" in block`; line 1004; line 948.
+  ELIGIBLE: test-file only, reversible, branch-local, precisely scopeable to the canonical sibling phrase.
+- B53-L1 (test-file): helpers _is_actionable:1103 / _no_action_ok:1127 / _restore:1149 AND their tests
+  :1110/:1131/:1153 ALREADY EXIST on main. No renderer module exists (glob **/*render* = only .venv).
+  "prior B2" not locatable. STALE/ambiguous -> NOT selected.
+- B3 (contract edit, §15 "exactly one single line" line 206; test coupling line 935): GOVERNANCE, human-gated. INELIGIBLE.
+- B4 (contract in-file change-note precedent): no change-note content found in contract; scope open.
+  GOVERNANCE, human-gated. INELIGIBLE.
+
+SELECTED single GATE-1 candidate: B1. Scoped brief (permitted file: tests/test_rnd_contract.py ONLY):
+strengthen test_next_prompt_bound_is_200_codepoints to additionally assert the canonical phrase
+`"at most 200 Unicode code points" in block` (matching sibling line 936), keeping existing
+`"120 words" not in block`. No governance/.claude/contract/manifest touched. Reversible, branch-local.
+Brief PAUSES before merge (GATE-2) per §13.1.
+
+Operator GATE-1 decision required: approve B1 scoped brief (auto-start research->build->review->
+repair->draft PR) OR reject. No action taken pending decision.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 356
 derived_at: 2026-11-13T13:12:10Z
 contract_version: 1.4.3
