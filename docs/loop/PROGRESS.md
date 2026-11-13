@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 365
+derived_at: 2026-11-13T11:20:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: AWAIT_MAINTAINER_HANDAPPLY_V144_GOVERNANCE
+report_type: HOLD
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: Operator-directed; produced the v1.4.4 maintainer patch artifact (draft, not applied); HOLD unchanged pending maintainer hand-apply
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING (maintainer hand-apply of v1.4.4 governance; loop did not apply)
+patch_artifact: /home/void/Void-Projects/KRONOS_PC/B54_MAINTAINER.patch
+patch_sha256: e689c53bdc65a35b6ad65431ad2af230a3f393314f115f1b3b8e60b2bfeb78ca
+CONTEXT (seq 365): Operator directed creation of the exact maintainer diff for all BRIEF54
+maintainer-owned files vs main 78dcb76. GATE-1 already APPROVED (seq364). Loop produced the patch as
+a DRAFT artifact only; did NOT apply/commit/push/merge it to any tracked branch; main working tree
+untouched. git apply --check against clean 78dcb76: CLEAN for all 6 files. Manifest re-signed and
+SELF-CONSISTENT (embedded sha256 == recomputed post-apply).
+Patch file set (6), post-apply sha256:
+  docs/governance/KRONOS_RND_CONTRACT.md  c9e68e8690937783e844e95d8cd24c6bb79cc2bf3f3ccfa254cee9bf8e2cf8d7  (Version 1.4.3->1.4.4; §13.2 pinned-source HOLD; new §13.4 Completion Record+COMPLETION-GATE+SHA-binding+reopen; §14 NO-ACTION redefinition)
+  docs/governance/stop_report.schema.json 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606  (both contract_version enums add 1.4.4; optional completion_record object w/ activation fields)
+  docs/governance/KRONOS_DONE.md          d7b8282e18bd72d00d837e393cbc88d9bb622641cd9cb408f6c13d078973f0a5  (NEW DoD; G1/G2/G3+Reconciliation-Sources intentionally PENDING -> NO-ACTION unreachable until maintainer fills)
+  docs/governance/contract_manifest.json  (contract_version 1.4.4; 3-file hashed set incl KRONOS_DONE.md)
+  .claude/RAILS.md                        (mirror: v1.4.4 §14-§16; NO-ACTION/Completion-Record wording)
+  .claude/commands/kronos-continue.md     (mirror: v1.4.4; NO-ACTION/Completion-Record wording)
+CLAUDE.md: no mirror change needed (no version-specific anchor); excluded from patch.
+NOTE (maintainer review): contract prose version-enumeration lines (1.4.0..1.4.3 descriptive lists)
+NOT bumped; binding version gate is §0 (now 1.4.4) + the schema enums. Flag for maintainer if full
+enumeration bump desired. Tests/test_rnd_contract.py §6.1-§6.15 NOT in this patch (loop-buildable
+only AFTER governance text lands on main).
+NEXT: maintainer reviews + hand-applies B54_MAINTAINER.patch to main, re-signs, then `continue`.
+No implementation applied. loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 364
 derived_at: 2026-11-13T10:55:00Z
 contract_version: 1.4.3
