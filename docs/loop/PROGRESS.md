@@ -1,4 +1,63 @@
 # KRONOS loop-state checkpoint
+seq: 362
+derived_at: 2026-11-13T10:10:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: GATE1_DECISION_ON_V144_COMPLETION_PROOF_BRIEF
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Operator-directed governance brief drafting (v1.4.4 completion-proof); reframes seq361 as a control defect; proposal+test plan only, no implementation, paused at GATE-1
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 47efdc77453fb5123e6e0e9fe52156c23e2c9e092956b03f5f8edae430e36b94
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING (awaiting operator GATE-1 approve/reject of v1.4.4 brief)
+
+CONTEXT (seq 362): Operator directive (/home/void/context.md) reframes seq361 NO-ACTION/COMPLETE
+as a v1.4.3 control defect: an empty loop-eligible backlog wrongly equated with completed KRONOS
+R&D. No product work. Produced PROPOSED brief + test plan only; checkpoint; pause at GATE-1.
+
+Sonnet-5 read-only mapping (kronos-researcher) against main 78dcb76, cited:
+- Defect root: §14 contract line 178 permits NO-ACTION "only when KRONOS R&D completion criteria
+  are genuinely satisfied" but that phrase is DEFINED NOWHERE (sole mention :178).
+- ABSENT on main: Definition-of-Done, completion record, G1/G2/G3 definitions (only schema enum
+  labels stop_report.schema.json:232-239), roadmap artifact, goal-gap ledger, research record.
+  "authoritative roadmap" named at :152/:154/:164/:209 has no path/artifact on main. docs/loop/
+  does not exist on main.
+- Guard _no_action_ok(open_objectives, eligible_items) tests/test_rnd_contract.py:1128 returns
+  open==0 and eligible==0; nothing derives open_objectives from evidence; no seq361 test.
+- Version bump sites: contract :3,:7,:123,:219,:227,:229; manifest; schema enum; tests
+  (:637 STRICT_CONTRACT_VERSIONS, :660/:887/:1083/:1095 enum, :1012 prose).
+
+Proposed v1.4.4 (SPEC_BRIEF54, maintainer hand-applied governance):
+- New artifact docs/governance/KRONOS_DONE.md (DoD + G1/G2/G3 milestones + done-predicates +
+  Completion-Criteria), joined to contract_manifest.json hashed set.
+- §4.2 durable Completion Record: NO-ACTION legal only when record proves DoD + all G1/G2/G3
+  milestones by live-re-derived evidence AND 0 open roadmap items.
+- §4.3 §14 NO-ACTION redefinition: backlog exhaustion / stale / governance-only never prove
+  completion; absent/stale record -> incomplete-idle.
+- §4.4 §13.2 strengthening: empty-backlog + no valid record -> Sonnet-5 read-only reconcile
+  roadmap+research-record+goal-gap-ledger+live state -> present exactly ONE scoped NON-GOVERNANCE
+  GATE-1 candidate; missing/conflicting/no-candidate -> HOLD or REVIEW-REQUIRED with exact
+  remediation, never NO-ACTION, never fabricated.
+- §4.5 preserves GATE-1/GATE-2, exact-head --match-head-commit, §6/§8, HOLD fail-closed,
+  circuit-breaker, §13.3 detour, ≤200-code-point [NEXT PROMPT] + fallback line. Only tightens.
+- §5 schema enum add 1.4.4; optional completion_record shape.
+- §6 ten deterministic regression tests incl. seq361 reproduction (#3), genuine completion (#4),
+  missing roadmap HOLD (#5), empty reconciliation no-fabrication (#6), governance-only backlog (#7).
+- §9 .claude/** + CLAUDE.md mirrors maintainer hand-applied (Option B).
+
+Permitted maintainer-patch file set: contract, schema, manifest, KRONOS_DONE.md, test_rnd_contract.py
+(tests only after governance text lands), .claude mirrors. Loop implements nothing; contract/manifest/
+schema/.claude are loop-hard-deny. HOLD/boundaries preserved.
+
+Operator GATE-1 decision required: approve SPEC_BRIEF54 (v1.4.4) for maintainer application, or reject.
+No implementation taken pending decision.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 361
 derived_at: 2026-11-13T09:35:00Z
 contract_version: 1.4.3
