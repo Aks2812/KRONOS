@@ -1,4 +1,45 @@
 # KRONOS loop-state checkpoint
+seq: 359
+derived_at: 2026-11-13T09:00:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: GATE2_DECISION_ON_B1_PR58_AT_876bdf4
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: B1 built+independently reviewed PASS (suite 0 failed); draft PR#58 opened; single test-file assertion; paused for operator GATE-2
+brief: B1 scoped (inline, seq358)
+base_main: 6eb530c12f481940beed714e7ab999febd21d326
+feature_branch: kronos/b1-next-prompt-bound-assert
+feature_head: 876bdf4a0f68172b4ff8647d308c3223f0f0ef18
+pr: 58
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING (awaiting operator GATE-2 authorization of PR#58 @ 876bdf4)
+
+seq358_pending_action_outcome:
+DONE. §13.1 auto-start executed:
+(1) Feature branch kronos/b1-next-prompt-bound-assert cut from main 6eb530c.
+(2) kronos-builder: added one assertion `assert "at most 200 Unicode code points" in block` to
+    test_next_prompt_bound_is_200_codepoints (tests/test_rnd_contract.py); 1 file, 1 insertion.
+    Committed 876bdf4, pushed.
+(3) kronos-reviewer (independent, brief+diff only, not builder report): PASS AC1-AC4.
+    - AC1: git diff --name-only 6eb530c..876bdf4 = tests/test_rnd_contract.py only.
+    - AC2: one added assertion; three prior lines unchanged.
+    - AC3: phrase matches live §15 (contract line 206) inside _next_prompt_block slice.
+    - AC4: canonical suite `4091 passed, 1 skipped in 567.21s` = 0 failed (.venv/bin/python, disk TMPDIR).
+(4) Draft PR#58 opened (base main, head 876bdf4, OPEN, MERGEABLE, isDraft true).
+
+Ten-item MERGE-GATE pre-measure (pending operator GATE-2 + in-turn re-measure at merge):
+G1 main protected void-rule-kronos LIVE GREEN; G2 PR draft=true -> gh pr ready at GATE-2 PENDING;
+G3 OPEN+unmerged GREEN; G4 head 876bdf4 (operator must authorize this SHA); G5 reviewer PASS AC1-AC4 GREEN;
+G6 CI none GREEN; G7 suite 0 failed GREEN (re-measure at merge); G8 scope: single file tests/test_rnd_contract.py
+GREEN; G9 Gate-2 semantic PENDING orchestrator; G10 no hard-boundary/out-of-scope GREEN.
+
+Operator GATE-2 required to merge PR#58 at 876bdf4. No merge this envelope.
+loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 358
 derived_at: 2026-11-13T08:45:00Z
 contract_version: 1.4.3
