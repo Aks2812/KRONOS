@@ -1,4 +1,61 @@
 # KRONOS loop-state checkpoint
+seq: 353
+derived_at: 2026-11-13T00:00:00Z
+contract_version: 1.4.2
+contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e3e4a0c4cba
+contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
+pending_action: GATE2_DECISION_ON_PR57_V143_ACI_AT_075b9bf5
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Governance v1.4.3 built+reviewed on feature branch, draft PR#57 open; human-gated, paused at GATE-2
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
+brief_sha256: 031453e4ce46709ff25ea4ac630322b95dac73b75ac19e83f89eb53ba7af5a8e
+base_main: 24df0b49c70d525c10f634c6585766d093dded2b
+feature_branch: kronos/b53-v143-aci
+feature_head: 075b9bf532af88a66db01b5d918ce297201da50e
+pr: 57
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE.
+integrity_note: checkpoint contract hashes are the still-ACTIVE v1.4.2 baseline on main 24df0b49.
+  v1.4.3 hashes (contract 7bb172c6..664b, schema 7d6f07be..4077) land on main only AFTER GATE-2 merge.
+
+seq353_action: GATE-1 approved SPEC_BRIEF53 (operator, prior turn). Ran research -> build -> review
+on feature branch kronos/b53-v143-aci from main 24df0b49. kronos-builder (claude-sonnet-5-5) implemented
+contract v1.4.3 ACI across 4 files; kronos-reviewer (claude-haiku-5-5) independently re-measured.
+Committed 075b9bf5, pushed, opened DRAFT PR#57 base main. Paused at GATE-2. NO merge, no §6/§8.
+
+seq353_gate1_answers: Q1 both denylist+grammar predicate / no NLP; Q2 kronos-researcher/claude-sonnet-5
+read-only; Q3 dedicated optional suspended_action; Q4 Option B .claude hand-apply; Q5 omit change-note.
+
+seq353_scope: 4 files only -- docs/governance/{KRONOS_RND_CONTRACT.md, stop_report.schema.json,
+contract_manifest.json}, tests/test_rnd_contract.py. .claude/** UNTOUCHED (0 diff vs base), maintainer
+hand-applies RAILS.md + kronos-continue.md (Option B). No other file changed; no untracked files.
+
+seq353_changes: Version 1.4.2->1.4.3 (header, footer, §16); §9/§15 version prose quad
+1.4.0/1.4.1/1.4.2/1.4.3; §14 NO-ACTION gated to genuine R&D completion, incomplete-idle routes §13.2;
+new §13.2 incomplete-idle recovery (read-only kronos-researcher/claude-sonnet-5 reconciliation, writes
+nothing, one scoped GATE-1 candidate, falls through §13.1); new §13.3 detour restoration (suspended
+action preserved/restored, HOLD fail-closed, all gates preserved); §15 item 11 ACI + self-check clause;
+schema contract_version + strict if enums += 1.4.3; manifest recompute + contract_version 1.4.3.
+
+seq353_review: kronos-reviewer PASS all 10 AC. Scope clean (4 files, .claude 0 diff, no untracked).
+Manifest hashes recomputed and match disk. Full canonical suite via .venv/bin/python + disk TMPDIR:
+4090 passed, 2 skipped in 584.50s. Skips: test_rails_and_command_mirror_v1_4_3 (expected, .claude
+hand-apply pending Option B); test_mobile_ingest MobSF not configured (pre-existing, unrelated).
+
+seq353_nonblocking_low: 3 new tests (_no_action_ok, _restore, _is_actionable) exercise local helper
+predicates not a real renderer (no renderer exists; consistent with prior B2 design-limit). Prose-fragment
+asserts are real. Non-blocking; note for a future hardening follow-up when a renderer exists.
+
+seq353_pending_action: GATE-2. Maintainer reviews PR#57, and to merge: authorize naming PR#57 and head
+SHA 075b9bf5; orchestrator then re-measures full ten-item MERGE-GATE in-turn and runs
+gh pr ready 57 + gh pr merge 57 --squash --match-head-commit 075b9bf532af88a66db01b5d918ce297201da50e
+(NO --admin, NO --auto). After merge: maintainer hand-applies .claude/** v1.4.3 patch (Option B); then
+new integrity baseline = v1.4.3 hashes; test_rails_and_command_mirror_v1_4_3 activates (expected green).
+
+seq353_identity: loop-state commit identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 352
 derived_at: 2026-11-13T00:00:00Z
 contract_version: 1.4.2
