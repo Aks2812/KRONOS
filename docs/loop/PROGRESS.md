@@ -1,4 +1,52 @@
 # KRONOS loop-state checkpoint
+seq: 348
+derived_at: 2026-11-12T20:40:00Z
+contract_version: 1.4.1
+contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6f11bc432c5
+contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
+pending_action: MAINTAINER_REPATCH_CLAUDE_FALLBACK_LITERAL_INSERT_THE_RAILS181_AND_KC79_THEN_LOOP_REMEASURE_AND_PAUSE_GATE2
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: independent review FAIL on AC3 verbatim fallback literal; .claude hard-deny re-patch required (maintainer), then full re-run+hashes+scope+independent re-review before GATE-2
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
+brief_sha256: 5ae8e90f338ee955d94692a3edeb002835f081ac75f3176bbc6f150788e73cae
+base_main: e2f74224d50cd5a59422674c71370830f7ab1714
+feature_branch: kronos/b52-next-prompt-v142
+feature_head: 54e3107f82a9bd5895249d3ad729fc7a5d45f8e9
+pr: 56
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE; re-measure MERGE-GATE at merge.
+seq347_pending_action_outcome:
+Operator chose Option (a): maintainer hand-applies BRIEF52 D/E .claude edits before merge. Maintainer pushed
+D/E at feature_head 54e3107. Loop re-derived live: PR#56 OPEN/isDraft true/head 54e3107/base main/unmerged;
+main e2f7422 unchanged/protected; diff origin/main..54e3107 = EXACTLY six files (.claude/RAILS.md,
+.claude/commands/kronos-continue.md, docs/governance/KRONOS_RND_CONTRACT.md, contract_manifest.json,
+stop_report.schema.json, tests/test_rnd_contract.py); no src/.github/cybergym/CLAUDE.md. Manifest hashes match
+branch blobs (contract fd8577f9..., schema 18cce304...), contract_version 1.4.2. Canonical suite (orchestrator,
+.venv/bin/python, disk TMPDIR): 4084 passed, 1 skipped, 0 failed. Independent kronos-reviewer (fresh, brief+diff
+only, HEAD 54e3107, ran own suite 4084 passed/1 skipped/0 failed): VERDICT FAIL / DO NOT MERGE.
+STATE SUMMARY (seq 348): BLOCKED on one AC3 defect. Review criteria: scope PASS; version 1.4.2 PASS; manifest
+hashes PASS; contract §15 one-line/<=200-codepoint/never-truncate/fail-closed PASS; self-check PASS; TESTS PASS
+(suite green). Criterion 6 (.claude D/E) FAIL: fallback literal in .claude/RAILS.md and
+.claude/commands/kronos-continue.md reads "REVIEW-REQUIRED: discuss decision above; do not act." (missing "the");
+canonical literal in contract (x2) and tests (x1) is "REVIEW-REQUIRED: discuss the decision above; do not act."
+grep -F counts @54e3107: RAILS without-the=1/with-the=0; kronos-continue without-the=1/with-the=0; contract
+with-the=2; tests with-the=1. AC3 requires verbatim exactly -> FAIL. ROOT CAUSE: orchestrator's seq347 read-only
+old->new proposal copied the contract literal from an RTK-compressed view that had stripped the article "the";
+maintainer applied it verbatim; no test covers the .claude fallback literal, so it slipped. Non-blocking (LOW):
+contract §15 omits brief §1.4 "unfenced/alone" phrasing for fallback; test_next_prompt_fail_closed_over_200 and
+test_next_prompt_bound_is_200_codepoints are weak/near-vacuous; no test asserts the .claude literal; brief
+§2A.7 one-line v1.4.2 change-note not added (consistent with v1.4.1 repo state). .claude/** is HARD DENY for the
+loop: the fix lands only via maintainer hand-patch (Option B), never a loop edit; no approval overrides this.
+FIX (maintainer, exact): in .claude/RAILS.md line 181 and .claude/commands/kronos-continue.md line 79, replace
+"REVIEW-REQUIRED: discuss decision above; do not act." with "REVIEW-REQUIRED: discuss the decision above; do not
+act." (insert "the"); one occurrence each. Recommended: also add a test asserting the verbatim literal in both
+.claude files (test-file edit is loop-buildable, but requires its own GATE-1-approved brief scope; not in B52).
+PENDING (seq 348): maintainer pushes corrected .claude literal to kronos/b52-next-prompt-v142 (new head SHA).
+Then loop re-runs canonical suite + recomputes manifest hashes + six-file scope audit + fresh independent review
+at the new head, writes seq 349, and PAUSES at GATE-2. NO merge, NO ready-mark, NO --admin/--auto, NO .claude
+loop edit, NO §6/§8 lift. Automated loop-state commits: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 347
 derived_at: 2026-11-12T19:45:00Z
 contract_version: 1.4.1
