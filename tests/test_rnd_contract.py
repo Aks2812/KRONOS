@@ -1025,6 +1025,7 @@ def test_version_discrimination_prose_covers_1_4_0_1_4_1_1_4_2():
 # ---- SPEC_BRIEF52 / contract v1.4.2: single-line bounded [NEXT PROMPT] ----
 def test_next_prompt_bound_is_200_codepoints():
     block = _next_prompt_block()
+    assert "at most 200 Unicode code points" in block
     assert "200" in block
     assert "120 words" not in block
 
