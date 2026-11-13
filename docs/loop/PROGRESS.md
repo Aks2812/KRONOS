@@ -1,4 +1,65 @@
 # KRONOS loop-state checkpoint
+seq: 352
+derived_at: 2026-11-13T00:00:00Z
+contract_version: 1.4.2
+contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e3e4a0c4cba
+contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
+pending_action: GATE1_DECISION_ON_SPEC_BRIEF53_V143_ACTIONABLE_CONTINUATION_INVARIANT
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Operator-directed governance brief drafted (proposal + test plan only); paused at GATE-1, no implementation
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
+brief_sha256: 031453e4ce46709ff25ea4ac630322b95dac73b75ac19e83f89eb53ba7af5a8e
+base_main: 24df0b49c70d525c10f634c6585766d093dded2b
+feature_branch: NONE (no branch; proposal doc lives outside repo, GATE-1 pending)
+feature_head: NONE
+pr: NONE
+main_protected: active repository ruleset void-rule-kronos (id 25333712). LIVE.
+
+seq352_action: Per operator directive (/home/void/context.md, read this turn), drafted SPEC_BRIEF53
+(PROPOSED) for contract v1.4.3 "Actionable Continuation Invariant". Proposal + test plan ONLY;
+edited no repo file, no .claude/**, no contract/schema/manifest. Paused at GATE-1.
+
+seq352_scope_v143: Four additive invariants over v1.4.2, no boundary weakened:
+(1) ACI — [NEXT PROMPT] body must be exactly one of {exact copy-ready action, remediation, operator
+    decision, AUTO-CONTINUE marker}; a status echo/acknowledgement is a render failure. v1.4.2
+    single-line <=200-codepoint + verbatim fallback + derivation/prohibitions preserved verbatim.
+(2) NO-ACTION completion gate — NO-ACTION legal only on genuine R&D completion.
+(3) Incomplete-idle recovery — if R&D incomplete with no eligible item, auto-dispatch read-only
+    kronos-researcher (claude-sonnet-5) roadmap reconciliation, present exactly one scoped candidate
+    at GATE-1; empty result falls through to §13.1 idle stop-report. No gate crossed, writes nothing.
+(4) Detour restoration — suspended in-scope product action preserved across a validation/governance
+    detour and restored after. HOLD stays fail-closed; GATE-1/GATE-2, exact-head --match-head-commit,
+    §6/§8, §5 .claude hard-deny, §4 circuit breakers all preserved.
+
+seq352_motivation: seq351 terminal [NEXT PROMPT] was `NO-ACTION: validation PASS ...; hold for
+operator` — a status echo carrying no next action. v1.4.3 ACI forbids exactly that form.
+
+seq352_edit_plan: contract §13.2/§13.3/§14/§15 + strict version set -> 1.4.3; schema two version
+enums += "1.4.3" (no new required key); manifest recompute both hashes + contract_version 1.4.3;
+tests/test_rnd_contract.py new deterministic tests §3.1-§3.10. .claude/RAILS.md and
+.claude/commands/kronos-continue.md MAINTAINER HAND-APPLIED (Option B), loop never edits .claude/**.
+
+seq352_test_plan: 10 deterministic offline tests: v1.4.3 version, schema-accepts-1.4.3-strict,
+manifest-hashes, next_prompt_is_actionable_not_echo, next_prompt_200_fallback_preserved (also
+strengthens B1 with 200/201-codepoint construction), no_action_requires_completion,
+incomplete_idle_dispatches_readonly_reconciliation, detour_restores_suspended_action,
+no_authority_broadening, rails_and_command_mirror_v1_4_3 (RED until maintainer hand-apply).
+
+seq352_gate1_questions: (1) echo detection denylist+structural; (2) confirm reconciliation role
+kronos-researcher/claude-sonnet-5; (3) suspended-action storage dedicated field vs pending_action
+marker; (4) confirm .claude/** Option B hand-apply with mirror test RED until applied;
+(5) change-note precedent add vs omit (default omit per B4).
+
+seq352_pending_action: GATE-1 decision. Maintainer accepts/rejects/amends SPEC_BRIEF53 and answers
+§7 Q1-Q5. On accept, a separate build brief implements §2 (contract/schema/manifest/tests loop-built;
+.claude/** maintainer hand-applied). This brief is INELIGIBLE for AUTO-BRIEF (governance + .claude/**)
+and stays human-gated. No implementation until GATE-1 approval.
+
+seq352_identity: loop-state commit identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 351
 derived_at: 2026-11-13T07:05:00Z
 contract_version: 1.4.2
