@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 384
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
+pending_action: OPEN_DRAFT_PR_R8
+pending_action_outcome: PENDING
+report_type: SAFE-TO-APPROVE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: R8 reviewer PASS; full suite 4131 passed/1 skip/0 failed @ cf9460f; scope+seal+hermetic green. Opening DRAFT PR then STOP for operator GATE-2 (merge maintainer-gated). No merge, no mark-ready.
+base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
+feature_branch: kronos/r8-api-ingestion
+feature_head: cf9460ff37187b2d08eb20d4ec4971df18f64a42
+brief: SPEC_BRIEF_R8_api_ingestion.md sha256 4722ca4d1b7cbf795331eac75b58fff8f9b03ace674ab72db1a7e5f2432e310f
+pr: DRAFT to be opened (base main, head cf9460f)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 384): WRITE-AHEAD. R8 build+seal complete @ cf9460f. Reviewer independent re-review PASS:
+scope audit 5 permitted files only (brief + api __init__/parser + test_api_ingest + seal in
+test_commit_authority.py); seal verified (R7 window sealed @ R7_MERGE=84434eb, R8 window opened, no prior
+assertion weakened); hermetic (json/typing/events/ingest/graph-TYPE_CHECKING only, no net/SDK/live); props
+match schema API_ENDPOINT (url/method/source); no in_scope; method normalised upper; declines reasons-only
+(unparseable_api_inventory, missing_endpoint_url, missing_or_invalid_method); section-5 items 1-7 covered.
+Full canonical suite 4131 passed/1 skipped/0 failed @ cf9460f (SUMMARY line, not dollar-question). Non-
+blocking: url not stripped of surrounding whitespace. 10-item MERGE-GATE: item2 not-draft PENDING (will be
+draft), item4 head-SHA awaits operator authorize; others green. NEXT: open DRAFT PR, Gate-2 semantic PASS,
+STOP for operator GATE-2 naming PR + head cf9460ff37187b2d08eb20d4ec4971df18f64a42. loop-state identity
+kronos-loop kronos-loop at users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 383
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
