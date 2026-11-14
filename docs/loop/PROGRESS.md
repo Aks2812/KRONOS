@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 367
+derived_at: 2026-11-13T12:35:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: AWAIT_MAINTAINER_HANDAPPLY_V144_GOVERNANCE_BETA_ENTRY_DOD
+report_type: HOLD
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: Operator-directed multi-artifact regen completed; HOLD unchanged (governance still maintainer-hand-apply, Option B; nothing landed on main).
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: DONE (seq366 REGEN completed; patch regenerated, re-signed, apply-check CLEAN vs 78dcb76; NOT applied/committed/pushed/merged)
+patch_artifact: /home/void/Void-Projects/KRONOS_PC/B54_MAINTAINER.patch
+patch_sha256: e18bb6f930464b4c1300c662e554d8ee9f26eca1453921e5af703e1050c5fb7f
+packet_artifact: /home/void/Void-Projects/KRONOS_PC/B54_COMPLETION_DECISION_PACKET.md
+packet_sha256: ab56204fcfe3a4de59d68a1aead4dcd72160775ef2cda8067cf4b0d89be09f1a
+kronos_done_sha256_post_apply: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+CONTEXT (seq 367): Outcome of seq366. Operator decisions D1-D9 (context.md) ADOPTED into regenerated
+B54_MAINTAINER.patch (10 files): .claude/RAILS.md, .claude/commands/kronos-continue.md,
+docs/governance/{KRONOS_RND_CONTRACT.md, stop_report.schema.json, KRONOS_DONE.md, contract_manifest.json},
+docs/research/{KRONOS_RESEARCH_RECORD.md, KRONOS_GOAL_FRAMED_REFERENCE_LEDGER_v1.md, sequence8-goal-gap-map.md},
+docs/roadmap/KRONOS_ROADMAP.md. KRONOS_DONE.md now carries Beta-Entry DoD v1: BE-G1-1..7, BE-G2-1..6,
+BE-G3-1..5 with binary PR/TEST/EVAL predicates + repo-relative Reconciliation-Sources pins
+(research 7b003476, ledger 6f2e0c6d, gapmap a7602d33, roadmap ad4256de). manifest v1.4.4 3-file set
+(contract c9e68e86, schema 14574702, KRONOS_DONE b7a1338d). Research-record snapshot refreshed to live
+main 78dcb76 (D5 surgical: impl-state/coverage/test-count + provenance banner naming prior 3d89223;
+prose preserved). contract/schema/.claude hunks reused verbatim from prior v1.4.4 draft. git apply
+--check CLEAN rc0; integrity chain re-verified post-apply in disposable worktree (all manifest hashes +
+all 4 pins match). Full suite NOT re-run (D8 pre-activation builder pass pending). Loop produced DRAFT
+artifact only; governance/.claude remain loop-hard-deny; NOT applied/committed/pushed/merged; no product
+implementation. HOLD preserved.
+NEXT: maintainer hand-applies B54_MAINTAINER.patch (sha e18bb6f930464b4c1300c662e554d8ee9f26eca1453921e5af703e1050c5fb7f) to main 78dcb76, re-signs, pushes;
+then continue. loop-state identity kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 366
 derived_at: 2026-11-13T12:05:00Z
 contract_version: 1.4.3
