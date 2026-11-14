@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 372
+derived_at: 2026-11-14T10:05:00Z
+contract_version_main: 1.4.3
+contract_version_pr59: 1.4.4
+pending_action: AWAIT_OPERATOR_GATE2_MERGE_AUTHORIZATION_PR59
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Retarget + 10-item GATE-2 measured; 9/10 green, item2 (draft) operator-pending; paused before merge per directive. No merge.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+pr: 59
+pr_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+operator_authorized_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+pr_base: main (RETARGETED this turn from kronos/b54-v144-completion-proof)
+pr_state: OPEN, draft, MERGEABLE/CLEAN
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+ci: none
+pending_action_outcome: DONE (seq371): PR59 base retargeted to main; 10-item MERGE-GATE measured.
+gate2_measure: |
+  1 main-protected GREEN; 2 not-draft PENDING (PR is draft, operator marks ready);
+  3 open&unmerged GREEN; 4 head==authorized GREEN (c326e5c); 5 reviewer-PASS GREEN (F1 authorized);
+  6 ci:none GREEN; 7 suite 0-failed GREEN (orch 4105 passed/1 skip @ c326e5c); 8 seal/scope-audit GREEN;
+  9 orchestrator Gate-2 semantic PASS GREEN; 10 no-unauthorized-hard-boundary GREEN (.claude/** F1A-authorized;
+  no .github/cybergym/secrets). 9/10 green; only item 2 (draft) operator-pending.
+CONTEXT (seq 372): Operator F1(A) authorized .claude/** mirrors @ c326e5c. Retargeted PR59 base to main
+(gh pr edit 59 --base main) -> base main, MERGEABLE, CLEAN. 10-item MERGE-GATE re-measured: 9/10 GREEN;
+item2 PR-not-draft PENDING (operator must mark ready; not authorized this turn). Full PR diff vs main =
+12 files: 2 .claude (authorized), 4 docs/governance, 3 docs/research + 1 docs/roadmap, tests/test_commit_authority.py,
+tests/test_rnd_contract.py. No .github/cybergym/secret touched. Decision REVIEW-REQUIRED (governance +
+.claude/** merge, contract §14). MERGE NOT PERFORMED; PR stays draft; paused per directive.
+NEXT: operator authorizes merge -> mark PR59 ready, then:
+gh pr merge 59 --squash --match-head-commit c326e5c6806efe5627901f87f3c0ce923ff245c7
+(never --admin, never --auto). loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+
+# KRONOS loop-state checkpoint
 seq: 371
 derived_at: 2026-11-14T09:55:00Z
 contract_version_main: 1.4.3
