@@ -1,4 +1,45 @@
 # KRONOS loop-state checkpoint
+seq: 370
+derived_at: 2026-11-14T09:30:00Z
+contract_version_main: 1.4.3
+contract_version_pr59: 1.4.4
+integrity_pr59: PASS (manifest v1.4.4 3-file @ c326e5c; contract a725ce4a, schema 14574702, KRONOS_DONE b7a1338d all == recomputed)
+pending_action: AWAIT_OPERATOR_AUTH_CLAUDE_MIRRORS_ON_PR59
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Full suite + independent review of PR59 at c326e5c; green + integrity verified; retarget-to-main HELD on .claude/** hard-boundary authorization (F1). No merge.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+pr: 59
+pr_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+pr_base_current: kronos/b54-v144-completion-proof (NOT retargeted to main this turn)
+pr_branch: kronos/b54-s6-tests
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: REVIEW-REQUIRED (operator must authorize .claude/** mirrors on PR59, or direct removal)
+suite_orchestrator: 4105 passed, 1 skipped, 0 failed (501.33s) @ c326e5c
+suite_reviewer: 4105 passed, 1 skipped (510.39s), independent
+reviewer_verdict: DO-NOT-MERGE; criteria 1-5 PASS (suite/integrity/pins/seal/version-guard), crit6 PARTIAL; blocker F1 .claude/**
+CONTEXT (seq 370): Maintainer applied repair as c326e5c (parent 6c3609a), now PR59 head on
+kronos/b54-s6-tests. PR59 = eadf80f governance + S6 tests (6c3609a) + repair (c326e5c). Orchestrator
+full suite GREEN 4105 passed/1 skip/0 failed; independent reviewer full suite also 4105 passed.
+VERIFIED PASS: manifest integrity v1.4.4 (contract a725ce4a/schema 14574702/KRONOS_DONE b7a1338d);
+4 SRC-* pins match snapshot files; AB_SECTION_10 seals the 5 eadf80f paths, AB_BASE=3f6dbc3 unchanged;
+version guard test_active_version_phrases_reach_1_4_4 passes, no active phrase truncated at 1.4.3;
+all 15 S6 test names present (reviewer F3 14-vs-15 was a miscount -> FALSE ALARM). F2 (test-local
+predicate copies) known/acceptable per brief. F4 one skip pre-existing.
+BLOCKER F1 (why retarget HELD): PR59 carries .claude/RAILS.md (4 lines) + .claude/commands/kronos-continue.md
+(4 lines) v1.4.4 decision-class mirror edits, authored Aks2812 (maintainer, Option B) in eadf80f/c326e5c.
+.claude/** is loop-hard-deny (contract paragraph 5) and a MERGE-GATE no-hard-boundary-file-touched item. The
+loop did NOT edit .claude/ (maintainer did), but merging PR59 to main carries them, requiring explicit
+operator authorization. Mandatory pause (.claude/**, security-boundary, authorization-not-given) overrides
+the conditional retarget directive. Retarget to main NOT performed.
+NEXT: operator decides -- (A) authorize .claude/** mirrors as part of PR59 -> next turn retarget base to
+main + GATE-2 ten-item re-measure; or (B) direct removal of .claude/** from the branch -> re-verify.
+No merge. loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+
+# KRONOS loop-state checkpoint
 seq: 369
 derived_at: 2026-11-13T13:35:00Z
 contract_version_main: 1.4.3
