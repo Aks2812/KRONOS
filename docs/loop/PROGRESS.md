@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 373
+derived_at: 2026-11-14T10:20:00Z
+contract_version_main: 1.4.3
+pending_action: MERGE_PR59_SQUASH_AT_c326e5c
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Operator authorized mark-ready + squash-merge PR59 at exact head c326e5c; same-turn 10-item GATE-2 re-measure then squash with --match-head-commit (no --admin/--auto).
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+pr: 59
+pr_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+operator_authorized_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+pr_base: main
+pr_state_before: OPEN, draft, MERGEABLE/CLEAN
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+ci: none
+pending_action_outcome: PENDING
+CONTEXT (seq 373): WRITE-AHEAD. Operator authorized (verbatim NEXT PROMPT returned): mark PR #59 ready
+and squash-merge at head c326e5c. Live re-derive AGREES: main 78dcb76; PR59 head c326e5c == authorized;
+base main; MERGEABLE/CLEAN. Plan this turn: re-run full canonical suite @ c326e5c (same-turn GATE-2
+item7); if 0 failed, gh pr ready 59 (operator-authorized mark-ready), re-confirm 10 items, then
+gh pr merge 59 --squash --match-head-commit c326e5c6806efe5627901f87f3c0ce923ff245c7 (never --admin,
+never --auto). FAIL-CLOSED: if suite not 0-failed, head drifts off c326e5c, or any gate item regresses,
+ABORT merge and HOLD. loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+
+# KRONOS loop-state checkpoint
 seq: 372
 derived_at: 2026-11-14T10:05:00Z
 contract_version_main: 1.4.3
