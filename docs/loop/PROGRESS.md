@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 376
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
+pending_action: AUTHOR_R7_BRIEF_AND_BUILD_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-1 approved R7 SPEC_BRIEF this turn. Authoring scoped brief then research->build->review->draft PR within scope src/kronos/ingest/cloud/ + tests/test_cloud_ingest.py; hermetic (stdlib json only, no boto3, no network, no live). No merge (GATE-2 separate). No governance/.claude/.github/cybergym touch.
+base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+feature_branch: kronos/r7-cloud-ingestion
+pr: none yet (draft PR to be opened)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 376): WRITE-AHEAD. GATE-1 operator-approved R7 (BE-G1-6 cloud ingestion). Scope strictly
+new files src/kronos/ingest/cloud/{__init__.py,parser.py} + tests/test_cloud_ingest.py. Provider-neutral
+hermetic JSON inventory -> CLOUD_RESOURCE + IDENTITY NodeUpsert + grants EdgeUpsert, mirror infra/parser.py
+two-face pattern (bare-list + IngestPlan), decline malformed with reasons (never raw input), stdlib json
+only. Schema already defines IDENTITY/CLOUD_RESOURCE tables and grants edge (schema.py:71-80,121). NOT
+wiring ingest() dispatcher (__init__.py out of scope; follow-up). DoD BE-G1-6 (KRONOS_DONE:61): module +
+tests/test_cloud_ingest.py present. NEXT: build, review (kronos-reviewer runs test_cloud_ingest + full
+suite), repair if red, draft PR to main; then STOP for GATE-2. loop-state identity kronos-loop
+kronos-loop@users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 375
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
