@@ -22,6 +22,7 @@ The builder may create/edit ONLY:
 - `src/kronos/ingest/cloud/__init__.py`
 - `src/kronos/ingest/cloud/parser.py`
 - `tests/test_cloud_ingest.py`
+- `tests/test_commit_authority.py` (GATE-1 amendment 2026-11-14: seal-tax only — see §4b)
 
 Out of scope, MUST NOT be touched: `src/kronos/ingest/__init__.py` (dispatcher
 wiring is a later follow-up), `src/kronos/schema.py` (the `IDENTITY` /
@@ -83,6 +84,23 @@ source only sets `scope_key`. Emit `ingest_started` / `ingest_declined` /
 `ingest_finished` events via `kronos.events.emit`, exactly as
 `infra/parser.py` does.
 
+## §4b Seal-tax (GATE-1 amendment, `tests/test_commit_authority.py`)
+
+`test_B31_Q_scope_audit` asserts the open window `AB_BASE(3f6dbc3)..HEAD` is a
+subset of `AB_SECTION_10`. R7's four new paths are not in that allowlist, so the
+window must be sealed. Surgical edit only:
+
+1. Seal the historical window at the B54/PR#59 merge SHA: change the last
+   assertion from `{AB_BASE}..HEAD` to `{AB_BASE}..{AB_MERGE}` where
+   `AB_MERGE = "6604e32"` (that window already ⊆ `AB_SECTION_10`).
+2. Open a fresh R7 window: add `R7_BASE = "6604e32"` and
+   `R7_SECTION_10 = {"SPEC_BRIEF_R7_cloud_ingestion.md",
+   "src/kronos/ingest/cloud/__init__.py", "src/kronos/ingest/cloud/parser.py",
+   "tests/test_cloud_ingest.py"}`, and a new assertion
+   `set(names(f"{R7_BASE}..HEAD")) <= R7_SECTION_10`.
+
+No other logic in that file may change. Do not weaken any existing assertion.
+
 ## §5 Tests (`tests/test_cloud_ingest.py`)
 
 Cover, using an in-memory/temp `EngagementGraph` as the other ingest tests do:
@@ -103,7 +121,8 @@ Cover, using an in-memory/temp `EngagementGraph` as the other ingest tests do:
 
 ## §6 Acceptance (reviewer, §8)
 
-- Only the three permitted files changed (scope audit on the PR diff range).
+- Only the permitted files changed (the three product files + the §4b seal in
+  `tests/test_commit_authority.py`); scope audit on the PR diff range.
 - `tests/test_cloud_ingest.py` passes.
 - Full canonical suite 0 failed via
   `TMPDIR="${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp" rtk test .venv/bin/python -m pytest -q`,
