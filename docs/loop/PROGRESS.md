@@ -6,8 +6,8 @@ contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f86321
 contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
 contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
 integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
-pending_action: OPEN_DRAFT_PR_R7
-pending_action_outcome: PENDING
+pending_action: NONE
+pending_action_outcome: DONE (seq379 draft PR #60 opened @ 721263e; OPEN, draft, MERGEABLE)
 report_type: SAFE-TO-APPROVE
 decision_class: SAFE-TO-APPROVE
 opus_effort: LOW
@@ -16,7 +16,7 @@ base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
 feature_branch: kronos/r7-cloud-ingestion
 feature_head: 721263e1538f25c19e01a50ab85486b388bb06d2
 brief: SPEC_BRIEF_R7_cloud_ingestion.md sha256 27eb22e983b631a9acc8481619bb330f1b98f079a4f355111a1b23eef9faa2d7 (amended+seal-fix)
-pr: DRAFT to be opened (base main, head 721263e)
+pr: 60 OPEN draft MERGEABLE base main head 721263e1538f25c19e01a50ab85486b388bb06d2
 main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
 CONTEXT (seq 379): WRITE-AHEAD. R7 build+seal complete @ 721263e. Reviewer independent re-review PASS:
 scope audit 5 permitted files only (brief + cloud __init__/parser + test_cloud_ingest + seal in
