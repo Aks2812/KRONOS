@@ -1,4 +1,49 @@
 # KRONOS loop-state checkpoint
+seq: 369
+derived_at: 2026-11-13T13:35:00Z
+contract_version_main: 1.4.3
+contract_version_build_base: 1.4.4
+integrity_main: PASS (manifest v1.4.3 2-file == recomputed @ 78dcb76)
+integrity_build_base: INCONSISTENT governance text @ eadf80f (manifest/hashes PASS, but contract body 1.4.3 leftovers at §9/§15/§16/footer) -> 4 §6 tests correctly red
+pending_action: AWAIT_MAINTAINER_GOVERNANCE_FIX_AND_SEALTAX_DECISION
+report_type: HOLD
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: §6 tests built+independently reviewed; suite red on two out-of-scope blockers requiring maintainer action; HOLD fail-closed, cannot reach GATE-2.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+build_base: eadf80f567de28be0d0f11fd5417d99596262820
+build_base_branch: kronos/b54-v144-completion-proof
+feature_branch: kronos/b54-s6-tests
+feature_head_sha: 6c3609a25883cbcf5574c63ea60f786362bf56ce
+pr: 59
+pr_state: OPEN draft; base kronos/b54-v144-completion-proof; head 6c3609a; NOT merged, NOT ready
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: DONE (seq368 BUILD completed): §6.1-§6.15 (15 tests) + 4 helpers
+(_completion_proven/_recovery_candidate/_sources_ok/_evidence_digest) added to tests/test_rnd_contract.py
+ONLY (+284/-28); committed 6c3609a; pushed; draft PR #59 opened base governance branch.
+suite_evidence: full suite 5 failed / 4099 passed / 1 skipped (448.69s); test_rnd_contract.py 4 failed / 91 passed.
+reviewer_verdict: FAIL DO-NOT-MERGE; test build sound (15 names + 4 helpers present, deterministic,
+scope clean tests-file-only, no hard rule weakened AC5 PASS); 5 reds all from TWO out-of-scope blockers.
+CONTEXT (seq 369): Outcome of seq368. Loop built §6 tests correctly; they surfaced real defects, not
+test bugs. BLOCKER A (governance): contract eadf80f bumped only §0 Version:1.4.4; 1.4.3 leftovers at
+footer :233 (Contract-Version:1.4.3), §16 :231 "(1.4.3)", §9 ~:105/123 enum, §15 ~:223 enum -> 4 reds.
+Remediation: maintainer edits contract to 1.4.4 at those 4 spots + re-signs contract_manifest.json
+(contract sha256 changes; schema+KRONOS_DONE unchanged). Governance loop-hard-deny Option B. BLOCKER B
+(seal-tax): tests/test_commit_authority.py::test_B31_Q_scope_audit red -- AB_BASE..HEAD (3f6dbc3..HEAD)
+contains eadf80f's 5 added paths (docs/governance/KRONOS_DONE.md, docs/research/{KRONOS_RESEARCH_RECORD.md,
+KRONOS_GOAL_FRAMED_REFERENCE_LEDGER_v1.md, sequence8-goal-gap-map.md}, docs/roadmap/KRONOS_ROADMAP.md)
+not sealed in AB_SECTION_10. Remediation: maintainer seals those in AB_SECTION_10 (edits
+test_commit_authority.py, NOT in B54 scope) or advances AB_BASE. Both blockers out-of-scope for loop
+(authorized file = tests/test_rnd_contract.py only). Tests NOT loosened (AC5). No merge; GATE-2 not
+reachable while red. Reviewer minor notes (non-blocking): AC4 seq361 v1.4.3 side is in-test predicate
+not old-text check; test_rails_and_command_mirror skip-guard is a weakening vector (ran+passed).
+NEXT: maintainer applies BLOCKER A governance fix + decides BLOCKER B seal-tax; then continue -- re-run
+suite; if 0 failed, GATE-2 ten-item re-measure on PR #59. loop-state identity
+kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 368
 derived_at: 2026-11-13T12:55:00Z
 contract_version_main: 1.4.3
