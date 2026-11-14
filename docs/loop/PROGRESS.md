@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 375
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
+pending_action: NONE
+pending_action_outcome: DONE (seq374 state verified; incomplete-idle recovery performed this turn)
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: incomplete-idle recovery §13.2; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R7 presented; maintainer GATE-1 required, no product work auto-started.
+base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+prev_base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+RECONCILIATION (seq 375): §13.2 incomplete-idle recovery. Pinned sources verified on-disk sha256 == pin:
+SRC-RESEARCH 7b003476; SRC-LEDGER 6f2e0c6d; SRC-GAPMAP a7602d33; SRC-ROADMAP ad4256de. No mismatch, no HOLD.
+Read-only kronos-researcher (claude-sonnet-5) reconciled sources vs live main 6604e32. Open roadmap items:
+R7 (BE-G1-6 cloud ingestion), R8 (BE-G1-5 standalone API ingestion), R9 (BE-G1-7 five-domain run),
+R10 (BE-G3-5 eval evidence), R12 (BE-G2-6 live run, BLOCKED until R9+R10). Roadmap order (D7, :36):
+R7 = next product increment; first in Order column. Each open item requires its own GATE-1-approved
+SPEC_BRIEF (ROADMAP :47-48). CANDIDATE = R7: hermetic cloud ingestion (no creds, no SDK, no live cloud
+access; D7 :37-38), scope src/kronos/ingest/cloud/ + tests/test_cloud_ingest.py (KRONOS_DONE :61), maps
+G1/G3. GATE-1 approval maintainer's; NO product work auto-started. NEXT: operator approve or reject R7
+SPEC_BRIEF. loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 374
 derived_at: 2026-11-14T10:40:00Z
 contract_version: 1.4.4
