@@ -91,7 +91,13 @@ RND_SECTION_10 = RAILS_SECTION_10 | {
 AN_SECTION_10 = RND_SECTION_10  # this brief adds no new paths
 AN_MERGE = "3f6dbc3"  # merge SHA of v1.1.0 brief (PR #46); AN window seals here, not HEAD
 AB_BASE = "3f6dbc3"   # base of the v1.2.0 AUTO-BRIEF brief (PR #46 merge)
-AB_SECTION_10 = RND_SECTION_10 | {"pyproject.toml", "requirements.txt"}  # SPEC_BRIEF50 (F1) dep-pin files
+AB_SECTION_10 = RND_SECTION_10 | {"pyproject.toml", "requirements.txt"} | {
+    "docs/governance/KRONOS_DONE.md",
+    "docs/research/KRONOS_RESEARCH_RECORD.md",
+    "docs/research/KRONOS_GOAL_FRAMED_REFERENCE_LEDGER_v1.md",
+    "docs/research/sequence8-goal-gap-map.md",
+    "docs/roadmap/KRONOS_ROADMAP.md",
+}  # SPEC_BRIEF50 (F1) dep-pin files; + B54 v1.4.4 governance/research/roadmap (eadf80f), AB_BASE unchanged
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 

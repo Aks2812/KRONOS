@@ -36,7 +36,8 @@
         "1.4.0",
         "1.4.1",
         "1.4.2",
-        "1.4.3"
+        "1.4.3",
+        "1.4.4"
       ]
     },
     "decision_class": {
@@ -55,6 +56,71 @@
         "LOW",
         "MEDIUM",
         "HIGH"
+      ]
+    },
+    "completion_record": {
+      "$comment": "OPTIONAL per contract v1.4.4 §13.4. A loop-drafted record is inert until an operator COMPLETION-GATE supplies the activation fields; agents never self-certify. certified_main_sha binds the record to an exact main HEAD; any drift invalidates it. evidence_digest is a sha256 over the per-milestone citation set only (non-circular), never over the activation fields.",
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "reopened",
+            "cleared"
+          ]
+        },
+        "certified_main_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dod_version": {
+          "type": "string"
+        },
+        "kronos_done_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "evidence_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "milestones": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "G1",
+              "G2",
+              "G3"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "milestone_id": {
+                  "type": "string"
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "milestone_id",
+                "evidence"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "state",
+        "certified_main_sha",
+        "dod_version",
+        "kronos_done_sha256",
+        "evidence_digest",
+        "milestones"
       ]
     },
     "effort_justification": {
@@ -339,7 +405,8 @@
           "1.4.0",
           "1.4.1",
           "1.4.2",
-          "1.4.3"
+          "1.4.3",
+          "1.4.4"
         ]
       }
     },

@@ -63,10 +63,10 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.3"
+    assert manifest["contract_version"] == "1.4.4"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
-    assert {CONTRACT.name, SCHEMA.name} <= listed
+    assert {CONTRACT.name, SCHEMA.name, "KRONOS_DONE.md"} <= listed
     for f in files:
         assert hash_matches(ROOT / f["path"], f["sha256"]), f["path"]
 
@@ -170,10 +170,10 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_4_3_with_auto_brief():
+def test_contract_is_v1_4_4_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.4.3" in text
-    assert "Contract-Version: 1.4.3" in text
+    assert "Version: 1.4.4" in text
+    assert "Contract-Version: 1.4.4" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -503,7 +503,7 @@ def test_schema_v140_structure():
     s = _schema()
     assert s["properties"]["contract_version"]["type"] == "string"
     assert s["properties"]["effort_justification"]["type"] == "string"
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -634,7 +634,7 @@ def test_v140_invalid_decision_class_fails():
 # v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
 # versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
 LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
-STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
+STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
 ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + STRICT_CONTRACT_VERSIONS
 _MISSING = object()
 
@@ -738,6 +738,7 @@ def _positive_vectors():
     vectors.append(("exact 1.4.1", _report_v140(contract_version="1.4.1")))
     vectors.append(("exact 1.4.2", _report_v140(contract_version="1.4.2")))
     vectors.append(("exact 1.4.3", _report_v140(contract_version="1.4.3")))
+    vectors.append(("exact 1.4.4", _report_v140(contract_version="1.4.4")))
     vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
     return vectors
 
@@ -751,7 +752,7 @@ def _negative_vectors():
     nonstr["contract_version"] = 140
     vectors.append(("non-string contract_version", nonstr))
     for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", "",
-                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.4"):
+                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.5", "1.4.4 ", " 1.4.4"):
         r = _report_v140()
         r["contract_version"] = bad
         vectors.append((f"version {bad!r}", r))
@@ -861,8 +862,8 @@ def _next_prompt_block():
 def test_schema_v141_minimal_widen():
     s = _schema()
     assert s["properties"]["contract_version"]["enum"] == [
-        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3"]
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]
+        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
     assert "const" not in s["if"]["properties"]["contract_version"]
     assert s["if"]["required"] == ["contract_version"]
     assert set(s["required"]) == REQUIRED_KEYS
@@ -870,11 +871,11 @@ def test_schema_v141_minimal_widen():
     assert set(s["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
     assert set(s["properties"]["next"]["items"]["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
     assert s["additionalProperties"] is False
-    # no new top-level key: [NEXT PROMPT] is presentation-only
+    # only new top-level key: optional completion_record (v1.4.4); [NEXT PROMPT] is presentation-only
     assert set(s["properties"]) == {
         "report_type", "contract_version", "decision_class", "opus_effort",
         "effort_justification", "what", "why", "who", "when", "where", "how",
-        "next", "recommendation", "operator_action"}
+        "next", "recommendation", "operator_action", "completion_record"}
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -886,7 +887,7 @@ def _strict_report(version):
 
 def test_real_schema_validates_exact_1_4_0_1_4_1_1_4_2_strict():
     validator = _real_validator()
-    for v in ("1.4.0", "1.4.1", "1.4.2", "1.4.3"):
+    for v in ("1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"):
         r = _strict_report(v)
         assert r["contract_version"] == v
         assert validator.is_valid(r), v
@@ -1012,10 +1013,10 @@ def test_next_prompt_self_check():
 def test_version_discrimination_prose_covers_1_4_0_1_4_1_1_4_2():
     text = CONTRACT.read_text()
     s9 = text[text.index("## §9"):text.index("## §10")]
-    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, or exactly `1.4.3`" in s9
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`" in s9
     assert "never loosened" in s9
     s15 = _s15()
-    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, or exactly `1.4.3`" in s15
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`" in s15
     assert "never loosened" in s15
     s14 = text[text.index("## §14"):text.index("## §15")]
     assert "`[NEXT PROMPT]`" in s14
@@ -1068,10 +1069,10 @@ def test_contract_version_1_4_2_strict_branch():
 def test_manifest_and_contract_version_consistent():
     manifest = json.loads(MANIFEST.read_text())
     text = CONTRACT.read_text()
-    assert manifest["contract_version"] == "1.4.3"
-    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.3"
+    assert manifest["contract_version"] == "1.4.4"
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.4"
     s16 = text[text.index("## §16"):]
-    assert "`contract_version` (1.4.3)" in s16
+    assert "`contract_version` (1.4.4)" in s16
 
 
 # ---- SPEC_BRIEF53 / contract v1.4.3: Actionable Continuation Invariant ----
@@ -1092,7 +1093,7 @@ def test_schema_accepts_1_4_3_strict():
         drop(bad)
         assert not validator.is_valid(bad)
     # unknown-future version fails closed
-    assert not validator.is_valid(_strict_report("1.4.4"))
+    assert not validator.is_valid(_strict_report("1.4.5"))
 
 
 _ECHO_DENY = ("validation pass", "holding", "acknowledged", "no action pending",
@@ -1129,13 +1130,7 @@ def _no_action_ok(open_objectives, eligible_items):
     return open_objectives == 0 and eligible_items == 0
 
 
-def test_no_action_requires_completion():
-    s14 = _section("## §14", "## §15")
-    assert "permitted only when KRONOS R&D completion criteria are genuinely satisfied" in s14
-    assert "routes to §13.2 incomplete-idle recovery" in s14
-    assert _no_action_ok(0, 0)
-    assert not _no_action_ok(1, 0)
-    assert not _no_action_ok(0, 1)
+# v1.4.3 predicate retained for the seq361 defect reproduction only; NOT a completion proof.
 
 
 def test_incomplete_idle_dispatches_readonly_reconciliation():
@@ -1174,12 +1169,302 @@ def test_no_authority_broadening():
         assert frag in block, frag
 
 
-def test_rails_and_command_mirror_v1_4_3():
+def test_rails_and_command_mirror_v1_4_4():
     rails = ROOT / ".claude" / "RAILS.md"
     command = ROOT / ".claude" / "commands" / "kronos-continue.md"
     if "Actionable Continuation Invariant" not in rails.read_text():
-        pytest.skip("maintainer .claude/** hand-apply of v1.4.3 pending (Option B)")
+        pytest.skip("maintainer .claude/** hand-apply pending (Option B)")
     for p in (rails, command):
         t = p.read_text()
         assert "Actionable Continuation Invariant" in t, p
         assert "incomplete-idle recovery" in t, p
+        assert "contract v1.4.4" in t, p
+        assert "NO-ACTION" in t, p
+
+
+# ---- SPEC_BRIEF54 / contract v1.4.4: completion proof (Beta-Entry DoD v1) ----
+DONE = GOV / "KRONOS_DONE.md"
+SHA_A = "a" * 40
+SHA_B = "b" * 40
+SHA_DONE = "c" * 64
+ACTIVATION_FIELDS = ("certified_main_sha", "dod_version", "kronos_done_sha256",
+                     "evidence_digest", "state")
+HOLD_SIGNAL = "HOLD"
+
+
+def _evidence_digest(citations):
+    """Non-circular: canonicalize and hash ONLY the citation set (never activation fields)."""
+    canon = sorted(json.dumps(c, sort_keys=True, separators=(",", ":")) for c in citations)
+    return hashlib.sha256("\n".join(canon).encode()).hexdigest()
+
+
+def _citations(record):
+    return [c for goal in ("G1", "G2", "G3") for c in record["milestones"].get(goal, [])]
+
+
+def _completion_proven(record, open_roadmap, eligible, live_main_sha):
+    """True only for a valid operator-activated, SHA-bound, digest-verified record with 0 open work."""
+    if record is None:
+        return False
+    if record.get("state") != "active":
+        return False
+    if record.get("activated_by") != "operator":  # test-local model of the COMPLETION-GATE actor
+        return False
+    sha = record.get("certified_main_sha")
+    if not sha or sha != live_main_sha:
+        return False
+    if not all(record.get(k) for k in ACTIVATION_FIELDS):
+        return False
+    if any(not record["milestones"].get(g) for g in ("G1", "G2", "G3")):
+        return False
+    cites = _citations(record)
+    if not all(c.get("rederives") is True for c in cites):
+        return False
+    if record["evidence_digest"] != _evidence_digest(cites):
+        return False
+    return open_roadmap == 0 and eligible == 0
+
+
+def _recovery_candidate(sources):
+    """Returns a HOLD signal, None, or one non-governance candidate. Never fabricates."""
+    if not sources.get("pins_ok", False):
+        return HOLD_SIGNAL
+    for cand in sources.get("candidates", []):
+        if not cand.get("governance") and not cand.get("maintainer_gated"):
+            return cand
+    return None
+
+
+def _sources_ok(pins, root=ROOT):
+    """OK iff every pinned source exists and its sha256 matches; else a HOLD naming the path."""
+    for path, pin in pins.items():
+        f = Path(root) / path
+        if not f.is_file():
+            return {"decision": HOLD_SIGNAL, "remediation": f"restore missing pinned source {path}"}
+        if sha256_file(f) != pin:
+            return {"decision": HOLD_SIGNAL,
+                    "remediation": f"pinned source {path} sha256 mismatch; maintainer re-pin or restore"}
+    return {"decision": "OK"}
+
+
+def _good_record(sha=SHA_A, **over):
+    cites = {"G1": [{"milestone_id": "BE-G1-1", "evidence": "PR x", "rederives": True}],
+             "G2": [{"milestone_id": "BE-G2-1", "evidence": "PR y", "rederives": True}],
+             "G3": [{"milestone_id": "BE-G3-1", "evidence": "PR z", "rederives": True}]}
+    rec = {"state": "active", "activated_by": "operator", "certified_main_sha": sha,
+           "dod_version": "1.4.4", "kronos_done_sha256": SHA_DONE, "milestones": cites}
+    rec["evidence_digest"] = _evidence_digest(_citations(rec))
+    rec.update(over)
+    return rec
+
+
+def _s13_2():
+    return _section("### §13.2", "### §13.4")
+
+
+def _s13_4():
+    return _section("### §13.4", "### §13.3")
+
+
+def test_contract_is_v1_4_4():
+    text = CONTRACT.read_text()
+    lines = text.splitlines()
+    assert lines[2] == "Version: 1.4.4"
+    assert "Contract-Version: 1.4.4" in lines[228:233]
+    manifest = json.loads(MANIFEST.read_text())
+    assert manifest["contract_version"] == "1.4.4"
+    assert DONE.is_file()
+    names = {Path(f["path"]).name for f in manifest["files"]}
+    assert {CONTRACT.name, SCHEMA.name, DONE.name} == names
+    for f in manifest["files"]:
+        assert hash_matches(ROOT / f["path"], f["sha256"]), f["path"]
+
+
+def test_allowed_versions_include_1_4_4():
+    assert "1.4.4" in STRICT_CONTRACT_VERSIONS
+    assert "1.4.4" in ALLOWED_CONTRACT_VERSIONS
+    assert _validate_discriminated(_report_v140(contract_version="1.4.4"))
+    validator = _real_validator()
+    assert validator.is_valid(_strict_report("1.4.4"))
+    assert not validator.is_valid(_strict_report("1.4.5"))
+    with pytest.raises(AssertionError):
+        _validate_discriminated(_report_v140(contract_version="1.4.5"))
+    assert list(_schema()["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
+
+
+def test_no_action_requires_completion_record():
+    # seq361: open_roadmap == 0 and eligible == 0 but NO Completion Record exists.
+    assert _no_action_ok(0, 0) is True  # v1.4.3 semantics: the defect (false NO-ACTION)
+    assert _completion_proven(None, 0, 0, SHA_A) is False  # v1.4.4: closed
+    stale = _good_record(sha=SHA_B)
+    assert _completion_proven(stale, 0, 0, SHA_A) is False
+    invalid = _good_record(evidence_digest="0" * 64)
+    assert _completion_proven(invalid, 0, 0, SHA_A) is False
+    assert _completion_proven(_good_record(), 1, 0, SHA_A) is False
+    assert _completion_proven(_good_record(), 0, 1, SHA_A) is False
+    assert _completion_proven(_good_record(), 0, 0, SHA_A) is True
+    s14 = _section("## §14", "## §15")
+    assert "An empty loop-eligible backlog alone is NOT completion" in s14
+    assert "never `NO-ACTION`" in s14
+
+
+def test_genuine_completion_allows_no_action():
+    rec = _good_record()
+    assert all(c["rederives"] for c in _citations(rec))
+    assert _completion_proven(rec, 0, 0, SHA_A) is True
+    s14 = _section("## §14", "## §15")
+    assert "`NO-ACTION` is permitted only when" in s14
+    assert "active, operator-activated Completion Record" in s14
+    broken = _good_record()
+    broken["milestones"]["G2"][0]["rederives"] = False
+    assert _completion_proven(broken, 0, 0, SHA_A) is False
+
+
+def test_missing_roadmap_holds():
+    assert _recovery_candidate({"pins_ok": False, "candidates": [{"id": "x"}]}) == HOLD_SIGNAL
+    res = _sources_ok({"docs/roadmap/__absent__.md": "0" * 64})
+    assert res["decision"] == "HOLD" and "docs/roadmap/__absent__.md" in res["remediation"]
+    s = _s13_2()
+    assert "MUST NOT emit `NO-ACTION`" in s
+    assert "any pinned source is missing" in s
+    assert "forms no candidate" in s
+
+
+def test_empty_reconciliation_no_fabrication():
+    sources = {"pins_ok": True, "candidates": []}
+    assert _recovery_candidate(sources) is None  # no fabricated candidate
+    assert _completion_proven(None, 0, 0, SHA_A) is False  # not NO-ACTION
+    s = _s13_2()
+    assert "falls through to the §13.1 idle (`no-pending-action`) stop-report" in s
+    assert _is_actionable(FALLBACK)
+
+
+def test_governance_only_backlog_not_complete():
+    backlog = [_mk("g", 1, ["docs/governance/KRONOS_RND_CONTRACT.md"]) for _ in range(2)]
+    assert _select(backlog) is None
+    assert _completion_proven(None, 0, 0, SHA_A) is False
+    gov = {"id": "gov-1", "governance": True}
+    gated = {"id": "gate-1", "maintainer_gated": True}
+    real = {"id": "real-1", "governance": False}
+    assert _recovery_candidate({"pins_ok": True, "candidates": [gov, gated]}) is None
+    assert _recovery_candidate({"pins_ok": True, "candidates": [gov, real]}) == real
+    assert _recovery_candidate({"pins_ok": False, "candidates": [gov]}) == HOLD_SIGNAL
+    assert "exactly one scoped candidate at GATE-1" in _s13_2()
+
+
+def test_done_artifact_shape():
+    text = DONE.read_text()
+    assert re.search(r"^DoD-Version: 1\.4\.4$", text, re.M)
+    for g in ("G1", "G2", "G3"):
+        m = re.search(rf"^### {g} .*?(?=^### G|^## )", text, re.M | re.S)
+        assert m, g
+        rows = re.findall(rf"^\| (BE-{g}-\d+) \|(.*)\|(.*)\|\s*$", m.group(0), re.M)
+        assert rows, g
+        assert all(r[2].strip() for r in rows), g  # non-empty done-predicate
+    crit = text[text.index("## Completion-Criteria"):]
+    assert "Completion Record" in crit
+    assert "COMPLETION-GATE" in crit
+
+
+def test_preserved_invariants_v1_4_4():
+    text = CONTRACT.read_text()
+    assert "at most 200 Unicode code points" in _next_prompt_block()
+    assert FALLBACK in text
+    assert "`gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`" in text
+    assert "HOLD remains fail-closed throughout" in text
+    assert "§5 `.claude/**` hard-deny" in text
+    assert "GATE-1 and GATE-2 are the maintainer's. The loop neither produces nor unlocks them." in text
+
+
+def test_self_authorization_rejected():
+    loop_drafted = _good_record(activated_by="loop")
+    assert _completion_proven(loop_drafted, 0, 0, SHA_A) is False
+    for k in ("certified_main_sha", "dod_version", "kronos_done_sha256", "evidence_digest"):
+        bad = _good_record()
+        bad[k] = ""
+        assert _completion_proven(bad, 0, 0, SHA_A) is False, k
+    assert _completion_proven(_good_record(), 0, 0, SHA_A) is True
+    s = _s13_4()
+    assert "agents MUST NOT self-certify completion" in s
+    assert "inert until activated by an explicit operator COMPLETION-GATE" in s
+
+
+def test_main_sha_drift_invalidates():
+    rec = _good_record(sha=SHA_A)
+    assert _completion_proven(rec, 0, 0, SHA_B) is False  # drift -> incomplete-idle
+    assert _completion_proven(rec, 0, 0, SHA_A) is True
+    s = _s13_4()
+    assert "any main advancement invalidates the record" in s
+    assert "incomplete-idle (§13.2)" in s
+
+
+def test_explicit_reopen_transition():
+    for state in ("reopened", "cleared"):
+        assert _completion_proven(_good_record(state=state), 0, 0, SHA_A) is False, state
+    assert _completion_proven(_good_record(state="active"), 0, 0, SHA_A) is True
+    s = _s13_4()
+    assert "`active | reopened | cleared`" in s
+    assert "only a fresh operator COMPLETION-GATE returns it to `active`" in s
+    assert "never licenses `NO-ACTION`" in s
+
+
+def test_source_mismatch_holds(tmp_path):
+    f = tmp_path / "src.md"
+    f.write_text("pinned content")
+    good = sha256_file(f)
+    assert _sources_ok({"src.md": good}, root=tmp_path) == {"decision": "OK"}
+    bad = _sources_ok({"src.md": "0" * 64}, root=tmp_path)
+    assert bad["decision"] == "HOLD" and "src.md" in bad["remediation"]
+    missing = _sources_ok({"src.md": good, "gone.md": good}, root=tmp_path)
+    assert missing["decision"] == "HOLD" and "gone.md" in missing["remediation"]
+    assert _recovery_candidate({"pins_ok": False, "candidates": [{"id": "x"}]}) == HOLD_SIGNAL
+    s = _s13_2()
+    assert "mismatches the pin" in s and "forms no candidate" in s
+    assert "MUST NOT emit `NO-ACTION`" in s
+    pins = re.findall(r"^(SRC-\w+) (\S+) ([0-9a-f]{64})$", DONE.read_text(), re.M)
+    assert len(pins) == 4
+
+
+def test_evidence_digest_non_circular():
+    rec = _good_record()
+    cites = _citations(rec)
+    assert rec["evidence_digest"] == _evidence_digest(cites)
+    assert _evidence_digest(list(reversed(cites))) == rec["evidence_digest"]  # canonical order
+    # activation fields never feed the digest
+    for k in ACTIVATION_FIELDS:
+        mutated = _good_record(**{k: "z"})
+        assert _evidence_digest(_citations(mutated)) == rec["evidence_digest"], k
+    # a digest computed over the record's own activation fields is rejected
+    circular_input = cites + [{k: rec[k] for k in ACTIVATION_FIELDS if k != "evidence_digest"}]
+    circular = _good_record(evidence_digest=_evidence_digest(circular_input))
+    assert circular["evidence_digest"] != _evidence_digest(_citations(circular))
+    assert _completion_proven(circular, 0, 0, SHA_A) is False
+
+
+# ---- B54 repair guard: active version/range phrases must reach 1.4.4; historical 1.4.3 allowed ----
+def test_active_version_phrases_reach_1_4_4():
+    """Every ACTIVE version/range enumeration in the contract must include 1.4.4.
+    Historical/in-range 1.4.3 mentions are allowed (1.4.3 stays valid); only the
+    truncated-at-1.4.3 ACTIVE forms are forbidden."""
+    text = CONTRACT.read_text()
+    # bumped active forms must be present
+    for phrase in (
+        "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`",
+        "v1.4.0, v1.4.1, v1.4.2, v1.4.3, and v1.4.4",
+        "v1.4.0/v1.4.1/v1.4.2/v1.4.3/v1.4.4",
+    ):
+        assert phrase in text, f"missing active phrase: {phrase}"
+    # truncated-at-1.4.3 active forms must be gone
+    for stale in (
+        "or exactly `1.4.3`",            # enum ending at 1.4.3
+        "v1.4.2, and v1.4.3",            # comma-list ending at 1.4.3
+        "v1.4.2/v1.4.3 ",                # slash-set ending at 1.4.3 (space-delimited)
+    ):
+        assert stale not in text, f"stale active phrase still present: {stale}"
+    # active single-version refs (footer, §16) must be 1.4.4
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.4"
+    s16 = text[text.index("## §16"):]
+    assert "`contract_version` (1.4.4)" in s16
+    assert "`contract_version` (1.4.3)" not in s16
+    # historical 1.4.3 is still allowed to appear (inside the 5-version ranges)
+    assert "1.4.3" in text
