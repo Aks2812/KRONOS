@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 377
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
+pending_action: NONE
+pending_action_outcome: DONE-BLOCKED (seq376 build done + reviewer FAIL; HOLD)
+report_type: HOLD
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: R7 built (13/13 new tests pass) but full canonical suite 1 failed on seal-tax test_commit_authority.py::test_B31_Q_scope_audit; fix needs that governance test edited, outside R7 approved scope; maintainer GATE-1 brief amendment required.
+base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+feature_branch: kronos/r7-cloud-ingestion
+feature_head: 568df13e73849b18f5b2a36800b377fed138606e
+brief: SPEC_BRIEF_R7_cloud_ingestion.md sha256 9fef570f38113a8192a77676fd75755c2f7396b2624ffbbdb3949789bb5d84b9
+pr: none (NOT opened; review FAIL)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 377): GATE-1-approved R7 built on kronos/r7-cloud-ingestion @ 568df13 (pushed, no PR).
+Files: src/kronos/ingest/cloud/{__init__.py,parser.py} + tests/test_cloud_ingest.py (+ brief). Scope
+audit GREEN (only permitted files + brief). Hermetic GREEN (no boto3/network/live). New tests 13 passed.
+Brief conformance GREEN. BLOCKER: full canonical suite 1 failed / 4117 passed / 1 skipped @ 568df13 ---
+tests/test_commit_authority.py::test_B31_Q_scope_audit: AB_BASE(3f6dbc3)..HEAD changed-file set not
+subset of AB_SECTION_10 allowlist (R7 4 paths unlisted). This is the whole-window seal tax: each brief
+must pre-seal prior brief window to its merge SHA and/or list new files in AB_SECTION_10
+(tests/test_commit_authority.py:94,306). R7 brief omitted the seal. Fix requires editing
+tests/test_commit_authority.py = governance scope-audit test, OUTSIDE R7 permitted files (brief §2),
+human-gated. NO repair attempted (scope boundary). NEXT: maintainer GATE-1 amend R7 brief to add
+tests/test_commit_authority.py to permitted scope with seal (seal AB window @ 6604e32 and add the 4 R7
+paths to AB_SECTION_10), then re-build/re-review. loop-state identity kronos-loop
+kronos-loop@users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 376
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
