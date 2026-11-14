@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 366
+derived_at: 2026-11-13T12:05:00Z
+contract_version: 1.4.3
+contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+pending_action: REGEN_B54_MAINTAINER_PATCH_BETA_ENTRY_DOD_V1
+report_type: HOLD
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: Operator-directed multi-artifact regeneration (packet update + in-repo source snapshots refresh + patch regen + re-sign + apply-check); governance still maintainer-hand-apply (Option B), nothing lands on main.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING
+patch_artifact: /home/void/Void-Projects/KRONOS_PC/B54_MAINTAINER.patch
+patch_sha256: PENDING_REGEN
+CONTEXT (seq 366): WRITE-AHEAD. Operator (context.md) issued decisions D1-D9 on
+B54_COMPLETION_DECISION_PACKET (Beta-Entry DoD v1 APPROVED with clarifications) and directed:
+update packet; refresh+stage in-repo source snapshots (docs/research/ + docs/roadmap/KRONOS_ROADMAP.md);
+regenerate B54_MAINTAINER.patch to fill KRONOS_DONE.md with BE-G1/G2/G3 milestone predicates +
+repo-relative Reconciliation-Sources pins; re-sign contract_manifest.json; git apply --check vs main
+78dcb76; write checkpoint; report new patch sha + file list. Explicit FORBID: apply, commit, push,
+merge, product implementation. Loop DRAFTS patch artifact only (Option B); governance/.claude/contract/
+manifest/schema remain loop-hard-deny and land only by maintainer hand-apply. D5 refresh interpreted
+surgically: correct stale re-derivable facts (3d89223 baseline, coverage, 140-test count) to live main
+78dcb76 + provenance header naming prior baseline; research prose preserved verbatim. Full suite NOT
+re-run this turn (D8 defers to pre-activation builder verification pass). HOLD unchanged.
+NEXT: regenerate artifacts, apply-check, write seq 367 outcome. loop-state identity
+kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 365
 derived_at: 2026-11-13T11:20:00Z
 contract_version: 1.4.3
