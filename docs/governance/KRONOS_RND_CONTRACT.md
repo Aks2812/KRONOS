@@ -1,10 +1,10 @@
 # KRONOS R&D Contract
 
-Version: 1.4.3
+Version: 1.4.4
 
 ## §0 Status & authority
 
-This file is the sole binding R&D governance for KRONOS as of version 1.4.3.
+This file is the sole binding R&D governance for KRONOS as of version 1.4.4.
 
 - `docs/loop/KRONOS_LOOP_ARCHITECTURE_v7.md` (v7) and `docs/loop/CE.md` (CE) are retained UNCHANGED as historical provenance. They are NO LONGER independently co-binding; where they overlap this contract, this contract supersedes them. (Transition recorded: previously v7 + CE on `origin/kronos/loop-state` were the binding contract.)
 - `.claude/RAILS.md`, `.claude/agents/*` and `.claude/commands/kronos-continue.md` are enforcement/operational implementations of this contract, not independent authorities.
@@ -161,7 +161,11 @@ AUTO-BRIEF preserves Thin-Orchestrator delegation (§1), the gates (§3), the ME
 
 ### §13.2 Incomplete-idle recovery
 
-When `pending_action` is NONE and R&D is incomplete — an open objective or roadmap item remains — but no eligible recorded backlog item is immediately selectable, the loop MUST NOT emit `NO-ACTION`. It enters incomplete-idle recovery: it dispatches a read-only roadmap reconciliation to the `kronos-researcher` role (`claude-sonnet-5`, read-only tools only), which reconciles the authoritative roadmap and backlog against live main and returns cited candidate items. The researcher decides nothing, writes nothing, and crosses no gate. The orchestrator then presents exactly one scoped candidate at GATE-1 as a `REVIEW-REQUIRED` report whose `[NEXT PROMPT]` is the operator decision to approve or reject that candidate's brief; GATE-1 approval remains the maintainer's and no product work auto-starts. If reconciliation surfaces no candidate at all, the loop falls through to the §13.1 idle (`no-pending-action`) stop-report.
+When `pending_action` is NONE and R&D is incomplete — an open objective or roadmap item remains, OR no active Completion Record (§13.4) exists — but no eligible recorded backlog item is immediately selectable, the loop MUST NOT emit `NO-ACTION`. It enters incomplete-idle recovery: it first verifies the pinned reconciliation sources (§13.4: the authoritative roadmap, the KRONOS research record, and the goal-gap ledger, each pinned by identifier/path plus sha256 in `docs/governance/KRONOS_DONE.md`); if any pinned source is missing or its on-disk sha256 mismatches the pin, the turn `HOLD`s with exact remediation and forms no candidate. Otherwise it dispatches a read-only roadmap reconciliation to the `kronos-researcher` role (`claude-sonnet-5`, read-only tools only), which reconciles the pinned sources against live main and returns cited candidate items. The researcher decides nothing, writes nothing, and crosses no gate. The orchestrator then presents exactly one scoped candidate at GATE-1 as a `REVIEW-REQUIRED` report whose `[NEXT PROMPT]` is the operator decision to approve or reject that candidate's brief; GATE-1 approval remains the maintainer's and no product work auto-starts. If reconciliation surfaces no candidate at all, the loop falls through to the §13.1 idle (`no-pending-action`) stop-report.
+
+### §13.4 Completion Record & operator COMPLETION-GATE
+
+`NO-ACTION`/`COMPLETE` is legal only against a durable, integrity-verified Completion Record proving the locked Definition of Done (`docs/governance/KRONOS_DONE.md`, which joins the `contract_manifest.json` hashed set) and the G1/G2/G3 milestone set. A Completion Record MAY be drafted by the loop (it assembles the per-milestone evidence citations) but is inert until activated by an explicit operator COMPLETION-GATE; agents MUST NOT self-certify completion. The COMPLETION-GATE names, verbatim: the full 40-hex main SHA certified against; the DoD-Version and the `KRONOS_DONE.md` sha256 proved against; and an evidence digest (sha256 over the canonicalized per-milestone evidence citation set only, never over the record's own activation fields — non-circular). An active record is bound to that exact main SHA and is valid for `NO-ACTION` only while live `origin/main` HEAD equals it; any main advancement invalidates the record, which explicitly transitions to incomplete-idle (§13.2) until a fresh COMPLETION-GATE recertifies it against the new SHA. A record carries a state `active | reopened | cleared`; an operator `REOPEN` directive or a detected main-SHA drift sets `reopened`, and only a fresh operator COMPLETION-GATE returns it to `active`. A `reopened` or `cleared` record never licenses `NO-ACTION`. The pinned reconciliation sources of §13.2 are maintained in `KRONOS_DONE.md` and updated only by maintainer patch (governance). A record failing any re-derivation (milestone evidence, SHA binding, digest recompute, source pins) is invalid → not `NO-ACTION` → incomplete-idle.
 
 ### §13.3 Detour restoration
 
@@ -175,7 +179,7 @@ Every terminal evaluation carries exactly one decision class. This contract is t
 - `SAFE-TO-APPROVE` — a routine protected-branch merge with exact-head independent review, complete green gates, zero failures, and no unresolved purpose-critical or Medium/Critical finding.
 - `REVIEW-REQUIRED` — governance, `.claude/**`, security, privacy, authorization, destructive/history-rewriting action, §6/§8 live execution, ambiguous scope, or a purpose-critical residual finding.
 - `HOLD` — red, incomplete, or conflicting evidence; an unavailable required environment; a dirty working tree; or an exhausted circuit breaker.
-- `NO-ACTION` — a genuinely complete state. `NO-ACTION` is permitted only when KRONOS R&D completion criteria are genuinely satisfied: no open R&D objective and no eligible recorded backlog item remain. An incomplete-but-idle state is never `NO-ACTION`; it routes to §13.2 incomplete-idle recovery.
+- `NO-ACTION` — a genuinely complete state. `NO-ACTION` is permitted only when the KRONOS Definition of Done (`docs/governance/KRONOS_DONE.md`) is satisfied by an active, operator-activated Completion Record (§13.4) that is bound to live `origin/main` HEAD and integrity-verifies — every G1/G2/G3 milestone done-predicate met by cited evidence that re-derives live, no open R&D objective and no eligible recorded backlog item remaining. An empty loop-eligible backlog alone is NOT completion. Any incomplete-but-idle state — including a missing, stale, reopened, cleared, or SHA-drifted Completion Record — is never `NO-ACTION`; it routes to §13.2 incomplete-idle recovery.
 
 A finding that weakens the brief's primary acceptance objective is blocking regardless of its nominal severity.
 
