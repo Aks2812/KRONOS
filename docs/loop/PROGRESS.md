@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 380
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
+pending_action: MERGE_PR60_SQUASH_AT_721263e
+pending_action_outcome: PENDING
+report_type: SAFE-TO-APPROVE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-2 authorized squash-merge PR60 at head 721263e. Same-turn 10-item re-measure incl full suite; mark-ready; squash-merge --match-head-commit (never --admin/--auto). FAIL-CLOSED on any gate regress or head drift.
+base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+pr: 60
+pr_head: 721263e1538f25c19e01a50ab85486b388bb06d2
+operator_authorized_head: 721263e1538f25c19e01a50ab85486b388bb06d2
+pr_state: OPEN, draft, MERGEABLE/CLEAN
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+ci: none
+CONTEXT (seq 380): WRITE-AHEAD. Operator GATE-2 authorized merge PR60 @ 721263e. Live re-derive AGREES:
+main 6604e32; PR60 head 721263e == authorized; OPEN draft MERGEABLE; protection active. Plan same-turn:
+re-run full canonical suite @ 721263e (item7); if 0-failed, gh pr ready 60, re-confirm 10 items, gh pr
+merge 60 --squash --match-head-commit 721263e1538f25c19e01a50ab85486b388bb06d2 (never --admin, never
+--auto). FAIL-CLOSED: suite not 0-failed, head drifts off 721263e, or any gate regresses -> ABORT merge,
+HOLD. loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 379
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
