@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 378
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
+pending_action: APPLY_R7_SEAL_AND_REREVIEW
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-1-approved R7 brief amendment permitting tests/test_commit_authority.py seal-tax. Builder applies §4b seal; reviewer re-runs full suite; if 0-failed open draft PR then STOP for GATE-2. No merge. No governance/.claude/.github/cybergym beyond the authorized seal test.
+base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
+feature_branch: kronos/r7-cloud-ingestion
+feature_head: 1d08dd539913bdeb73f9b8fb75b19da193ecca33
+brief: SPEC_BRIEF_R7_cloud_ingestion.md sha256 9169574165e96245904e68e795092405bdcd9afa546f3ba62814b77a0239601e (amended)
+pr: none yet
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 378): WRITE-AHEAD. GATE-1 amendment approved: R7 brief §2 now permits
+tests/test_commit_authority.py for seal-tax only (§4b). Seal plan: change last assertion
+AB_BASE(3f6dbc3)..HEAD -> AB_BASE..AB_MERGE with AB_MERGE="6604e32" (already subset AB_SECTION_10); add
+R7_BASE="6604e32", R7_SECTION_10={SPEC_BRIEF_R7_cloud_ingestion.md, src/kronos/ingest/cloud/__init__.py,
+src/kronos/ingest/cloud/parser.py, tests/test_cloud_ingest.py}, new assert R7_BASE..HEAD <= R7_SECTION_10.
+No other logic changes; no existing assertion weakened. NEXT: builder applies seal; reviewer re-runs
+full canonical suite + scope audit (now 4 permitted files + brief); if 0-failed, open DRAFT PR to main
+and STOP for operator GATE-2. loop-state identity kronos-loop kronos-loop@users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 377
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
