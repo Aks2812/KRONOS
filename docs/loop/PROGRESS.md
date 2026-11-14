@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 368
+derived_at: 2026-11-13T12:55:00Z
+contract_version_main: 1.4.3
+contract_version_build_base: 1.4.4
+contract_sha256_contract_main: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38ec13528664b
+contract_sha256_schema_main: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
+integrity_main: PASS (manifest v1.4.3 2-file == recomputed @ 78dcb76)
+integrity_build_base: PASS (manifest v1.4.4 3-file == recomputed @ eadf80f; contract c9e68e86, schema 14574702, KRONOS_DONE b7a1338d)
+pending_action: BUILD_B54_S6_TESTS
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Operator-directed loop build of §6 deterministic regression tests atop governance branch; build->suite->independent review->draft PR->pause GATE-2. No governance edits, no merge.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+build_base: eadf80f567de28be0d0f11fd5417d99596262820
+build_base_branch: kronos/b54-v144-completion-proof
+feature_branch: kronos/b54-s6-tests (to be created from eadf80f)
+pr_base_intended: kronos/b54-v144-completion-proof (tests-only diff; governance NOT re-included)
+brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF54_PROPOSED.md
+brief_sha256: 97596bec1f2bb470e50a7ee8e9cd03ee12f5d8218ca4093954054f8939cccd70
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+pending_action_outcome: PENDING
+CONTEXT (seq 368): WRITE-AHEAD. Maintainer hand-applied v1.4.4 governance as commit eadf80f on branch
+kronos/b54-v144-completion-proof (NOT on main; main still 78dcb76 v1.4.3; eadf80f NOT ancestor of
+origin/main -> reported as mismatch, LIVE WINS). Operator (context.md) directs: build ONLY §6 tests
+(tests/test_rnd_contract.py §6.1-§6.15 + predicate helpers _completion_proven/_recovery_candidate/
+_sources_ok/_evidence_digest), verify DoD refs/pins/hashes (DONE: eadf80f integrity PASS, KRONOS_DONE
+b7a1338d == loop regen, all 4 pins present+matching), run suite+independent review, open draft PR,
+checkpoint, pause GATE-2. FORBID: governance edits, merge. test_rnd_contract.py exists on main; builder
+EXTENDS it; scope = that one file ONLY. Governance/.claude/manifest/schema remain loop-hard-deny.
+NEXT: create kronos/b54-s6-tests from eadf80f; dispatch kronos-builder (one file); orchestrator runs
+canonical suite; dispatch kronos-reviewer (brief+diff only, never builder report); draft PR base
+kronos/b54-v144-completion-proof; seq369 outcome; pause GATE-2 REVIEW-REQUIRED. loop-state identity
+kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 367
 derived_at: 2026-11-13T12:35:00Z
 contract_version: 1.4.3
