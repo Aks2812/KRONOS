@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 371
+derived_at: 2026-11-14T09:55:00Z
+contract_version_main: 1.4.3
+contract_version_pr59: 1.4.4
+pending_action: RETARGET_PR59_BASE_MAIN_AND_GATE2_MEASURE
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Operator F1(A) authorized .claude/** mirrors on PR59 @ c326e5c; retarget base to main + 10-item GATE-2 measurement; pause before merge. No merge, no other scope change, no §6/§8 lift.
+base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
+pr: 59
+pr_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+operator_authorized_head: c326e5c6806efe5627901f87f3c0ce923ff245c7
+pr_base_before: kronos/b54-v144-completion-proof
+pr_base_after_intended: main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+ci: none (no checks reported on kronos/b54-s6-tests)
+pending_action_outcome: PENDING
+CONTEXT (seq 371): WRITE-AHEAD. Operator authorized F1(A): keep both v1.4.4 .claude mirrors
+(.claude/RAILS.md, .claude/commands/kronos-continue.md) in PR59 @ c326e5c. Directed: retarget PR59 base
+to main, run 10-item GATE-2, pause before merge; no other scope change, no §6/§8 lift, no merge. Live
+re-derive AGREES: main 78dcb76; PR59 head c326e5c == operator-authorized SHA; OPEN draft; CI none.
+NEXT: gh pr edit 59 --base main; measure MERGE-GATE 10 items; seq372 outcome; pause REVIEW-REQUIRED
+(governance + .claude/** merge) with squash command naming PR 59 + head c326e5c. Merge NOT performed;
+PR remains draft (marking ready + merge authorization are operator's). loop-state identity
+kronos-loop kronos-loop@users.noreply.github.com.
+
+# KRONOS loop-state checkpoint
 seq: 370
 derived_at: 2026-11-14T09:30:00Z
 contract_version_main: 1.4.3
