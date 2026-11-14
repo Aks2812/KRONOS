@@ -1439,3 +1439,32 @@ def test_evidence_digest_non_circular():
     circular = _good_record(evidence_digest=_evidence_digest(circular_input))
     assert circular["evidence_digest"] != _evidence_digest(_citations(circular))
     assert _completion_proven(circular, 0, 0, SHA_A) is False
+
+
+# ---- B54 repair guard: active version/range phrases must reach 1.4.4; historical 1.4.3 allowed ----
+def test_active_version_phrases_reach_1_4_4():
+    """Every ACTIVE version/range enumeration in the contract must include 1.4.4.
+    Historical/in-range 1.4.3 mentions are allowed (1.4.3 stays valid); only the
+    truncated-at-1.4.3 ACTIVE forms are forbidden."""
+    text = CONTRACT.read_text()
+    # bumped active forms must be present
+    for phrase in (
+        "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`",
+        "v1.4.0, v1.4.1, v1.4.2, v1.4.3, and v1.4.4",
+        "v1.4.0/v1.4.1/v1.4.2/v1.4.3/v1.4.4",
+    ):
+        assert phrase in text, f"missing active phrase: {phrase}"
+    # truncated-at-1.4.3 active forms must be gone
+    for stale in (
+        "or exactly `1.4.3`",            # enum ending at 1.4.3
+        "v1.4.2, and v1.4.3",            # comma-list ending at 1.4.3
+        "v1.4.2/v1.4.3 ",                # slash-set ending at 1.4.3 (space-delimited)
+    ):
+        assert stale not in text, f"stale active phrase still present: {stale}"
+    # active single-version refs (footer, §16) must be 1.4.4
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.4"
+    s16 = text[text.index("## §16"):]
+    assert "`contract_version` (1.4.4)" in s16
+    assert "`contract_version` (1.4.3)" not in s16
+    # historical 1.4.3 is still allowed to appear (inside the 5-version ranges)
+    assert "1.4.3" in text
