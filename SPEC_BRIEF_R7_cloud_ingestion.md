@@ -96,7 +96,8 @@ window must be sealed. Surgical edit only:
 2. Open a fresh R7 window: add `R7_BASE = "6604e32"` and
    `R7_SECTION_10 = {"SPEC_BRIEF_R7_cloud_ingestion.md",
    "src/kronos/ingest/cloud/__init__.py", "src/kronos/ingest/cloud/parser.py",
-   "tests/test_cloud_ingest.py"}`, and a new assertion
+   "tests/test_cloud_ingest.py", "tests/test_commit_authority.py"}` (the seal edit
+   is itself in the R7 window, so the file lists itself), and a new assertion
    `set(names(f"{R7_BASE}..HEAD")) <= R7_SECTION_10`.
 
 No other logic in that file may change. Do not weaken any existing assertion.

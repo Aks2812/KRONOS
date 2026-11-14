@@ -105,6 +105,7 @@ R7_SECTION_10 = {
     "src/kronos/ingest/cloud/__init__.py",
     "src/kronos/ingest/cloud/parser.py",
     "tests/test_cloud_ingest.py",
+    "tests/test_commit_authority.py",  # this seal edit is itself in the R7 window
 }
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
