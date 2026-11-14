@@ -6,8 +6,8 @@ contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f86321
 contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
 contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
 integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
-pending_action: OPEN_DRAFT_PR_R8
-pending_action_outcome: PENDING
+pending_action: NONE
+pending_action_outcome: DONE (seq384 draft PR #61 opened @ cf9460f; OPEN, draft, MERGEABLE)
 report_type: SAFE-TO-APPROVE
 decision_class: SAFE-TO-APPROVE
 opus_effort: LOW
@@ -16,7 +16,7 @@ base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
 feature_branch: kronos/r8-api-ingestion
 feature_head: cf9460ff37187b2d08eb20d4ec4971df18f64a42
 brief: SPEC_BRIEF_R8_api_ingestion.md sha256 4722ca4d1b7cbf795331eac75b58fff8f9b03ace674ab72db1a7e5f2432e310f
-pr: DRAFT to be opened (base main, head cf9460f)
+pr: 61 OPEN draft MERGEABLE base main head cf9460ff37187b2d08eb20d4ec4971df18f64a42
 main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
 CONTEXT (seq 384): WRITE-AHEAD. R8 build+seal complete @ cf9460f. Reviewer independent re-review PASS:
 scope audit 5 permitted files only (brief + api __init__/parser + test_api_ingest + seal in
