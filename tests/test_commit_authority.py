@@ -100,12 +100,21 @@ AB_SECTION_10 = RND_SECTION_10 | {"pyproject.toml", "requirements.txt"} | {
 }  # SPEC_BRIEF50 (F1) dep-pin files; + B54 v1.4.4 governance/research/roadmap (eadf80f), AB_BASE unchanged
 AB_MERGE = "6604e32"  # merge SHA of PR #59 (B54); AB window seals here, not HEAD
 R7_BASE = "6604e32"   # base of the R7 cloud-ingestion brief
+R7_MERGE = "84434eb"  # merge SHA of PR #60 (R7); R7 window seals here, not HEAD
 R7_SECTION_10 = {
     "SPEC_BRIEF_R7_cloud_ingestion.md",
     "src/kronos/ingest/cloud/__init__.py",
     "src/kronos/ingest/cloud/parser.py",
     "tests/test_cloud_ingest.py",
     "tests/test_commit_authority.py",  # this seal edit is itself in the R7 window
+}
+R8_BASE = "84434eb"   # base of the R8 api-ingestion brief
+R8_SECTION_10 = {
+    "SPEC_BRIEF_R8_api_ingestion.md",
+    "src/kronos/ingest/api/__init__.py",
+    "src/kronos/ingest/api/parser.py",
+    "tests/test_api_ingest.py",
+    "tests/test_commit_authority.py",  # this seal edit is itself in the R8 window
 }
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
@@ -313,7 +322,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{RND_BASE}..{AN_BASE}")) <= RND_SECTION_10, set(names(f"{RND_BASE}..{AN_BASE}")) - RND_SECTION_10
     assert set(names(f"{AN_BASE}..{AN_MERGE}")) <= AN_SECTION_10, set(names(f"{AN_BASE}..{AN_MERGE}")) - AN_SECTION_10
     assert set(names(f"{AB_BASE}..{AB_MERGE}")) <= AB_SECTION_10, set(names(f"{AB_BASE}..{AB_MERGE}")) - AB_SECTION_10
-    assert set(names(f"{R7_BASE}..HEAD")) <= R7_SECTION_10, set(names(f"{R7_BASE}..HEAD")) - R7_SECTION_10
+    assert set(names(f"{R7_BASE}..{R7_MERGE}")) <= R7_SECTION_10, set(names(f"{R7_BASE}..{R7_MERGE}")) - R7_SECTION_10
+    assert set(names(f"{R8_BASE}..HEAD")) <= R8_SECTION_10, set(names(f"{R8_BASE}..HEAD")) - R8_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
