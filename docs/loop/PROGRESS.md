@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 383
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
+pending_action: AUTHOR_R8_BRIEF_AND_BUILD_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-1 approved R8 SPEC_BRIEF this turn. Brief authored and committed; research done last turn; next build->review->draft PR within scope api module + test + R7-window seal. Hermetic (stdlib json only, no network, no SDK, no live). No merge (GATE-2 separate). No governance/.claude/.github/cybergym touch beyond authorized seal test.
+base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
+feature_branch: kronos/r8-api-ingestion
+feature_head: 4fc377e6cdec288589a7eb1d11bb7633037f61ec
+brief: SPEC_BRIEF_R8_api_ingestion.md sha256 4722ca4d1b7cbf795331eac75b58fff8f9b03ace674ab72db1a7e5f2432e310f
+pr: none yet (draft PR to be opened)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 383): WRITE-AHEAD. GATE-1 operator-approved R8 (BE-G1-5 standalone API ingestion). Scope
+strictly src/kronos/ingest/api/{__init__.py,parser.py} + tests/test_api_ingest.py + seal-tax in
+tests/test_commit_authority.py (section-4b). Provider-neutral hermetic JSON endpoints list -> API_ENDPOINT
+NodeUpsert(url, method, source=api-inventory), mirror infra/cloud two-face pattern, decline malformed with
+reasons (never raw input), stdlib json only. API_ENDPOINT table exists (schema.py:50-53); no schema change.
+Distinct from mobile-sourced (mobile/parser.py:276) and web OpenAPI (web/parser.py). NOT wiring ingest()
+dispatcher (__init__.py out of scope). SEAL section-4b: seal R7 window R7_BASE=6604e32..R7_MERGE=84434eb;
+open R8 window R8_BASE=84434eb..HEAD <= R8_SECTION_10 (5 names incl test_commit_authority.py self). DoD
+BE-G1-5 (KRONOS_DONE:60): module + tests/test_api_ingest.py present. NEXT: build, review (full suite),
+repair if red, draft PR to main; then STOP for GATE-2. loop-state identity kronos-loop kronos-loop at
+users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 382
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
