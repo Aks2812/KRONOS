@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 382
+derived_at: 2026-11-14T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
+pending_action: NONE
+pending_action_outcome: DONE (seq381 verified; section-13.2 recovery performed this turn; R8 candidate presented)
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: section-13.2 incomplete-idle recovery on main 84434eb; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R8 (BE-G1-5) presented; maintainer GATE-1 required, no product work auto-started.
+base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
+prev_base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+RECONCILIATION (seq 382): section-13.2 incomplete-idle recovery. Pinned sources verified on-disk sha256 == pin:
+SRC-RESEARCH 7b003476; SRC-LEDGER 6f2e0c6d; SRC-GAPMAP a7602d33; SRC-ROADMAP ad4256de. No mismatch, no HOLD.
+Read-only kronos-researcher (claude-sonnet-5) reconciled sources vs live main 84434eb. R7 (BE-G1-6) now
+live on main (src/kronos/ingest/cloud/, tests/test_cloud_ingest.py). CANDIDATE = R8 (BE-G1-5 standalone
+API ingestion, roadmap line 26; DoD KRONOS_DONE line 60). DoD predicate: TEST tests/test_api_ingest.py AND
+source module src/kronos/ingest/api/ present; both ABSENT on disk; OPEN. Mobile-sourced evidence
+insufficient (roadmap D4 line 43). R8 recorded, no stated blocker, D9 order places it next after R7 (now
+merged). Maps G1/G3. Roadmap doc status column still reads MISSING for R7/R8 (pinned to 78dcb76; doc lags
+live code until maintainer patch). GATE-1 approval belongs to maintainer; NO product work auto-started. On
+approval, R8 brief MUST seal the R7 window (R7_BASE=6604e32..HEAD) at R7 merge SHA 84434eb and open its own
+window, else test_B31_Q_scope_audit reds (seal-tax). Hermetic input source for R8 undetermined (no
+R7-style no-creds/no-SDK statement in sources); brief must define a hermetic fixture, no live network.
+NEXT: operator approve or reject R8 SPEC_BRIEF. loop-state identity kronos-loop kronos-loop at
+users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 381
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
