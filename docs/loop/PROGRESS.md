@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 390
+derived_at: 2026-11-15T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: APPLY_R9_PATH_A_AND_REREVIEW
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: Operator chose path A. R9 brief amended to persist verdict_tier + control_disposition onto the FINDING via minimal src/kronos change (schema.py + invalidation.py + runner.py), test asserts persisted props, extend seal. Schema change has regression surface across suite; MEDIUM. No merge (GATE-2 separate).
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+feature_branch: kronos/r9-five-domain-engagement
+feature_head: 459039d4dee94d000502c015cba3da06d7dcac78
+brief: SPEC_BRIEF_R9_five_domain_engagement.md sha256 6bfaf5f5b9307d88e79c6d4ea7db0b8d5c5aa895a6ad93563cdaa2559bb4d809 (amended path A)
+pr: none yet (draft PR after review)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 390): WRITE-AHEAD. Operator chose A. Brief amended. Permitted files: src/kronos/schema.py
+(FINDING table +verdict_tier/+control_disposition STRING cols; NODE_COLUMNS[FINDING] +2;
+NODE_PROPS_ALWAYS[FINDING] +2 = optional-settable since create_or_update_node permits always-union-create_only
+and requires none), src/kronos/validate/invalidation.py (record_secret_finding +kw verdict_tier=""/
+control_disposition="", add to props only when non-empty -> test_invalidation callers unchanged),
+src/kronos/validate/runner.py (call site ~234 pass verdict_tier=outcome.classification,
+control_disposition=outcome.control_outcome), tests/test_five_domain_engagement.py (assertions 3-4 read
+FINDING node from graph not patched return), tests/test_schema_graph.py (only if +2 cols break it),
+tests/test_commit_authority.py (seal: seal R8 window at R8_MERGE=89c4df7, open R9 window
+R9_BASE=89c4df7..HEAD <= R9_SECTION_10 = 7 names). TRIPWIRE section-7: any file outside this set (other
+src/kronos, other test, governance) breaking = STOP, no edit, back to GATE-1. Prior test-only commit
+c3730e27 on branch to be superseded. NEXT: build, review (full suite), repair if red, draft PR to main;
+then STOP for GATE-2. loop-state identity kronos-loop kronos-loop at users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 389
 derived_at: 2026-11-15T00:00:00Z
 contract_version: 1.4.4
