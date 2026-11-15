@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 388
+derived_at: 2026-11-15T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: AUTHOR_R9_BRIEF_AND_BUILD_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: Operator GATE-1 approved R9 and delegated helper-scope decision. Determination test-only (hermetic five-domain integration test, patched validators + fixtures, no src/kronos change) with tripwire. R9 test is intricate (five ingestion fixtures + validation patching + finding-property assertions) hence MEDIUM. No merge (GATE-2 separate).
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+feature_branch: kronos/r9-five-domain-engagement
+pr: none yet (draft PR to be opened)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 388): WRITE-AHEAD. GATE-1 operator-approved R9 (BE-G1-7). Operator delegated helper-scope;
+orchestrator determination = TEST-ONLY. Grounding: run_validation_pass does LIVE auth (boto3/http); existing
+tests make it hermetic by PATCHING validators (test_validate_runner.py:154-158 patch
+kronos.validate.http_validator.validate_api_token) + fixtures. FINDING node has NO verdict_tier/
+control_disposition columns and no synthesis fn; the three DoD properties map to existing structures
+(EVIDENCE edges = two-armed proof bytes; ValidationOutcome.classification/discriminated = verdict tier;
+control_outcome = control disposition). Scope strictly tests/test_five_domain_engagement.py + seal-tax in
+tests/test_commit_authority.py (section-4b, seal R8 window R8_BASE=84434eb..R8_MERGE=89c4df7, open R9 window
+R9_BASE=89c4df7..HEAD). NO src/kronos change. Five domains = infra/web/mobile/API/cloud (dns excluded).
+Entrypoints: ingest_infra_nmap, ingest_web_openapi, ingest_reference_mobile_secret, ingest_api_inventory,
+ingest_cloud_inventory; apply_upserts/apply_plan; run_validation_pass (validators patched). TRIPWIRE
+(brief section-7): if the three finding-properties cannot be asserted without new src/kronos code, builder
+STOPS and reports -> loop returns to GATE-1 for scope amendment (no silent scope creep). DoD BE-G1-7
+(KRONOS_DONE:62): tests/test_five_domain_engagement.py present + assertions. NEXT: build, review (full suite),
+repair if red, draft PR to main; then STOP for GATE-2. loop-state identity kronos-loop kronos-loop at
+users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 387
 derived_at: 2026-11-15T00:00:00Z
 contract_version: 1.4.4
