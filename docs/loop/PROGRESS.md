@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 387
+derived_at: 2026-11-15T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: NONE
+pending_action_outcome: DONE (seq386 verified; section-13.2 recovery performed this turn; R9 candidate presented)
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: section-13.2 incomplete-idle recovery on main 89c4df7; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R9 (BE-G1-7) presented with material-ambiguity flags; maintainer GATE-1 required, no product work auto-started.
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+prev_base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+RECONCILIATION (seq 387): section-13.2 incomplete-idle recovery. Pinned sources on-disk sha256 == pin:
+SRC-RESEARCH 7b003476; SRC-LEDGER 6f2e0c6d; SRC-GAPMAP a7602d33; SRC-ROADMAP ad4256de. No mismatch, no HOLD.
+Read-only kronos-researcher (claude-sonnet-5) reconciled vs live main 89c4df7. R7+R8 now live on main.
+CANDIDATE = R9 (BE-G1-7 five-domain integrated engagement run, roadmap :27). DoD KRONOS_DONE:62: TEST
+tests/test_five_domain_engagement.py (to be created) asserting all five domains ingest into one graph and
+every FINDING carries a two-armed proof + verdict tier + control disposition; OPEN. Names a TEST only, NO
+source module path, and NO live/network/authorization wording -> specified HERMETIC (roadmap :14-15: COMPLETE
+hermetic = tested without any live/manifest-bounded run). Contrast R10 (BE-G3-5) and R12 (BE-G2-6) which
+DO require one authorized manifest-bounded run (KRONOS_DONE:50,:76). Five domains = infra, web, mobile, API,
+cloud (RR:1327-1328); dns is a sixth ingest module NOT counted. test_five_domain_engagement.py absent on
+disk. MATERIAL AMBIGUITIES for GATE-1/brief to resolve: (a) five domains infra/web/mobile/API/cloud,
+dns excluded; (b) fixtures-only hermetic input (no live); (c) whether existing FINDING/validation machinery
+(two-armed proof / verdict tier / control disposition) can be asserted hermetically or the brief must add a
+minimal in-scope integration helper -> possible scope beyond a single test file. ELIGIBILITY section-13.1:
+recorded yes; non-live per predicate; unblocked/precise/branch-local UNDETERMINED pending the ambiguities ->
+present at GATE-1, do not auto-build. On approval, R9 brief MUST seal the R8 window
+(R8_BASE=84434eb..HEAD) at R8 merge SHA 89c4df7 and open its own window, else test_B31_Q_scope_audit reds.
+GATE-1 approval belongs to maintainer; NO product work auto-started. NEXT: operator approve or reject R9
+SPEC_BRIEF (confirming hermetic scope + five-domain set). loop-state identity kronos-loop kronos-loop at
+users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 386
 derived_at: 2026-11-15T00:00:00Z
 contract_version: 1.4.4
