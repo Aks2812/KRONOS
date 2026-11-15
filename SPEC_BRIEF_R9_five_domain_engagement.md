@@ -14,8 +14,9 @@ verdict tier, and a control disposition.
 A single **hermetic** integration test that wires the five ingestion domains —
 infra, web, mobile, API, cloud — over fixtures into one `EngagementGraph`, runs
 one validation pass with validators patched (no live/network/SDK), and asserts
-that the resulting FINDING(s) carry the three required properties. No live
-targets, no network, no `src/kronos/` source change. This is a hermetic
+that the resulting FINDING(s) carry the three required properties — now read
+back from the persisted graph (path A, §4c), not from the validator return. No
+live targets, no network. This is a hermetic
 milestone per roadmap `:14-15` ("COMPLETE (hermetic) = tested without any
 live/manifest-bounded run"); contrast R10 (BE-G3-5) and R12 (BE-G2-6), which
 require an authorized manifest-bounded run and are NOT in this brief.
@@ -23,16 +24,25 @@ require an authorized manifest-bounded run and are NOT in this brief.
 `dns` is a sixth ingest module and is deliberately **not** one of the five
 domains (the five are fixed by `KRONOS_RESEARCH_RECORD.md:1327-1328`).
 
-## §2 Permitted files (hard scope)
+## §2 Permitted files (hard scope) — GATE-1 amendment (path A, 2026-11-15)
 
-The builder may create/edit ONLY:
+The maintainer chose **path A**: persist the verdict tier and control
+disposition onto the FINDING via a minimal `src/kronos/` change, so §4
+assertions 3–4 rest on real persisted state, not the patched validator's
+return. The builder may create/edit ONLY:
 
+- `src/kronos/schema.py` (add two FINDING columns + make them settable — §4c)
+- `src/kronos/validate/invalidation.py` (`record_secret_finding`: optional
+  persistence kwargs — §4c)
+- `src/kronos/validate/runner.py` (pass the outcome's values at the one call
+  site — §4c)
 - `tests/test_five_domain_engagement.py`
+- `tests/test_schema_graph.py` (only if the two new columns require it)
 - `tests/test_commit_authority.py` (seal-tax only — see §4b)
 
-MUST NOT be touched: anything under `src/kronos/**` (this is test-only — see the
-§7 tripwire), `docs/`, `.claude/`, `.github/`, `cybergym/`, and any other test
-file.
+MUST NOT be touched: any OTHER `src/kronos/**` file, any OTHER test file,
+`docs/`, `.claude/`, `.github/`, `cybergym/`. If the schema change breaks any
+test outside this permitted set, STOP per the §7 tripwire — do not edit it.
 
 ## §3 Fixtures and wiring (all hermetic, in-test)
 
@@ -72,16 +82,39 @@ Assert, over the resulting FINDING(s):
 2. **Two-armed proof:** each anchored FINDING has linked `EVIDENCE` (the
    `evidences`/`FINDING->EVIDENCE` relation, `schema.py:115,134`) carrying the
    request/response proof bytes written by the validation pass.
-3. **Verdict tier:** the driving `ValidationOutcome` is `discriminated=True` with
-   `classification == "live_discriminated"` (the runner's structural invariant,
-   `validate/types.py`), i.e. the finding rests on a discriminated verdict, not a
-   single undiscriminated arm.
-4. **Control disposition:** the outcome's `control_outcome` is recorded
-   (non-empty), i.e. the control arm's disposition is captured.
+3. **Verdict tier (persisted):** the anchored FINDING node has
+   `verdict_tier == "live_discriminated"`, read back from the graph (NOT from the
+   `ValidationOutcome` object), proving the runner persisted the discriminated
+   verdict onto the finding.
+4. **Control disposition (persisted):** the anchored FINDING node has a non-empty
+   `control_disposition`, read back from the graph, proving the control arm's
+   disposition was persisted onto the finding.
 
-Map the three DoD properties onto these existing structures; introduce no new
-schema column or source function. Assert via the public read API / graph
-queries as the other validate tests do.
+Assertions 3–4 MUST query the FINDING node via the graph read API, never the
+patched validator's return value — the point of path A is that these rest on
+persisted state.
+
+## §4c Persistence design (minimal, path A)
+
+1. `src/kronos/schema.py`:
+   - Add two columns to the `FINDING` node table DDL: `verdict_tier STRING` and
+     `control_disposition STRING`.
+   - Add both to `NODE_COLUMNS["FINDING"]`.
+   - Add both to `NODE_PROPS_ALWAYS["FINDING"]` so they are settable (and
+     optional — `create_or_update_node` permits `always ∪ create_only` and
+     requires none of them; existing FINDING creators that omit them are
+     unaffected). Do NOT add them to `NODE_PROPS_FORBIDDEN`.
+2. `src/kronos/validate/invalidation.py` — `record_secret_finding`: add two
+   keyword-only params `verdict_tier: str = ""` and `control_disposition: str =
+   ""`, and include each in the FINDING `props` dict ONLY when non-empty (so the
+   existing `test_invalidation.py` callers that pass neither are unchanged).
+3. `src/kronos/validate/runner.py` — at the single `record_secret_finding(...)`
+   call site (~line 234): pass `verdict_tier=outcome.classification` and
+   `control_disposition=outcome.control_outcome`.
+
+No other `src/kronos/` behavior changes. `test_schema_graph.py` may be edited
+only if the two new columns make an existing assertion there fail; no other test
+file may change.
 
 ## §4b Seal-tax (`tests/test_commit_authority.py`)
 
@@ -94,18 +127,22 @@ weakening no other assertion:
    `R8_MERGE = "89c4df7"` (that window already ⊆ `R8_SECTION_10`).
 2. Open a fresh R9 window: add `R9_BASE = "89c4df7"` and
    `R9_SECTION_10 = {"SPEC_BRIEF_R9_five_domain_engagement.md",
-   "tests/test_five_domain_engagement.py", "tests/test_commit_authority.py"}`
-   (the seal edit is itself in the R9 window, so the file lists itself), and a
-   new assertion `set(names(f"{R9_BASE}..HEAD")) <= R9_SECTION_10`.
+   "tests/test_five_domain_engagement.py", "tests/test_commit_authority.py",
+   "src/kronos/schema.py", "src/kronos/validate/invalidation.py",
+   "src/kronos/validate/runner.py", "tests/test_schema_graph.py"}` (every file in
+   the R9 window, including the seal file itself; include
+   `tests/test_schema_graph.py` only if it is actually changed), and a new
+   assertion `set(names(f"{R9_BASE}..HEAD")) <= R9_SECTION_10`.
 
 No other logic in that file may change.
 
 ## §5 Acceptance (reviewer, §8)
 
-- Only the two permitted files changed (plus this brief); scope audit on the PR
+- Only the §2 permitted files changed (plus this brief); scope audit on the PR
   diff range.
 - `tests/test_five_domain_engagement.py` passes and genuinely asserts §4 items
-  1–4 (not a vacuous/trivially-passing test).
+  1–4, with 3–4 read back from the persisted FINDING node (not a
+  vacuous/trivially-passing test, not asserting the patched return).
 - The test is hermetic: no real network/SDK call; validators patched.
 - The §4b seal is present and weakens no existing assertion.
 - Full canonical suite 0 failed via
@@ -116,14 +153,16 @@ No other logic in that file may change.
 
 Live runs, CyberGym/lab runs, committed evaluation evidence (R10/BE-G3-5), the
 live driver/executor (R12/BE-G2-6), dispatcher wiring, and any `src/kronos/`
-change are out of scope.
+change beyond the three files named in §2/§4c are out of scope. The persistence
+change is deliberately confined to the secret-validation finding path; making
+every other finding producer carry the two columns is a later follow-up.
 
 ## §7 Tripwire (mandatory STOP, not scope creep)
 
-This brief is **test-only**. If, during implementation, any of the §4 FINDING
-properties (two-armed proof / verdict tier / control disposition) cannot be
-asserted hermetically **without** adding or changing code under `src/kronos/`,
-the builder MUST STOP and report exactly which assertion is blocked and why —
-it must NOT edit any `src/kronos/` file. The loop then returns to GATE-1 for a
-scope amendment (as with the R7 seal amendment). Silent scope expansion into
-`src/kronos/` is a hard-boundary violation.
+The §2 permitted set (path A) is exhaustive. If implementing §4c or the §4
+assertions requires editing ANY file outside that set — any other `src/kronos/`
+file, any other test, or governance — the builder MUST STOP and report exactly
+which file and why; it must NOT edit it. In particular, if the two new FINDING
+columns break a test other than `tests/test_schema_graph.py`, STOP and report
+rather than widening scope. The loop then returns to GATE-1 for a further
+amendment. Silent scope expansion is a hard-boundary violation.
