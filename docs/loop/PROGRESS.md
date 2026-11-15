@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 386
+derived_at: 2026-11-15T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: NONE
+pending_action_outcome: DONE (seq385 MERGE PR61 completed and verified)
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: R8 (BE-G1-5 standalone API ingestion) merged main per operator GATE-2; post-merge integrity + presence verified; loop incomplete-idle, next roadmap item R9 (BE-G1-7 five-domain run) requires maintainer GATE-1 (no auto-start).
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+prev_base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
+merge_commit: 89c4df754848e803e9bc429ce42f3293af205d90
+pr: 61
+pr_state: MERGED (squash) 2026-11-15T00:36:37Z; merged head cf9460ff37187b2d08eb20d4ec4971df18f64a42
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 386): Operator GATE-2 authorized; same-turn full suite re-measured 4131 passed/1 skip/0
+failed @ cf9460f; 10/10 MERGE-GATE; gh pr ready 61 then gh pr merge 61 --squash --match-head-commit
+cf9460f (no --admin, no --auto). POST-MERGE main HEAD 89c4df7. VERIFIED: integrity 3-file PASS
+(a725ce4a/14574702/b7a13384 == manifest); R8 live (src/kronos/ingest/api/{__init__,parser}.py,
+tests/test_api_ingest.py); seal live (R7_MERGE + R8_SECTION_10 in tests/test_commit_authority.py).
+SEAL-TAX for NEXT brief: the R8 window (R8_BASE=84434eb..HEAD) must be sealed to merge SHA 89c4df7 and the
+next brief opens its own window, else test_B31_Q_scope_audit reds. STATE: incomplete-idle. Progress: R7
+(BE-G1-6 cloud) and R8 (BE-G1-5 API) now both on main. Open roadmap: R9 (BE-G1-7 five-domain integrated
+run) next per order, then R10 (BE-G3-5 eval evidence), R12 (BE-G2-6 live, BLOCKED until R9+R10). No
+GATE-1-approved SPEC_BRIEF pending. NO product work auto-started. NOTE R9/R10 may be non-hermetic
+(five-domain run / committed evaluation evidence) and may require section-6/section-8 live-execution
+authorization -> likely NOT loop-eligible; present as GATE-1 candidate with that caveat. NEXT: section-13.2
+incomplete-idle recovery -> present R9 as next scoped GATE-1 candidate (maintainer-gated). loop-state
+identity kronos-loop kronos-loop at users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 385
 derived_at: 2026-11-14T00:00:00Z
 contract_version: 1.4.4
