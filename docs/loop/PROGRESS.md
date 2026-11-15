@@ -1,4 +1,44 @@
 # KRONOS loop-state checkpoint
+seq: 389
+derived_at: 2026-11-15T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: NONE
+pending_action_outcome: DONE-HOLD (seq388 build done; Gate-2 semantic HOLD before review)
+report_type: HOLD
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: R9 hermetic test passes 1/1, tripwire not self-fired, but Gate-2 semantic review finds BE-G1-7 properties 3 (verdict tier) and 4 (control disposition) are asserted off the PATCHED validator return, not system-persisted state; control_outcome/classification are not stored on FINDING/EVIDENCE. Cannot faithfully prove BE-G1-7 test-only; maintainer scope/interpretation decision required.
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+feature_branch: kronos/r9-five-domain-engagement
+feature_head: c3730e27df01d5e79558eaead820cfc26fd64921
+brief: SPEC_BRIEF_R9_five_domain_engagement.md sha256 6098799a0c671f41d0d4ed9fb0b18afeb630837dbf3e1f339e5a430ca7d2e1de
+pr: none (NOT opened; Gate-2 semantic HOLD)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 389): GATE-1-approved R9 built test-only on kronos/r9-five-domain-engagement @ c3730e27
+(pushed, no PR). Test passes 1/1; no src/kronos touched; seal present. FINDING FROM GATE-2 SEMANTIC REVIEW:
+BE-G1-7 (KRONOS_DONE:62) asserts every FINDING carries two-armed proof + verdict tier + control disposition.
+Persisted verification only possible for: (1) five domains ingested into one graph (real), (2) FINDING+
+EVIDENCE two-armed proof (EVIDENCE persisted, real). NOT persisted: verdict tier (ValidationOutcome.
+classification/discriminated) and control disposition (control_outcome) are ephemeral pass outputs, stored
+on NO FINDING/EVIDENCE column (confirmed: grep src/kronos finds no upsert of control_outcome/classification;
+findings created by infra/web validators + invalidation.py with only EVIDENCE + status/confidence). Under
+hermetic patching the validators are stubbed, so properties 3-4 assert the fixture return, not system
+behavior = effectively vacuous for BE-G1-7 intent. This is the brief section-7 tripwire for props 3-4;
+builder did not fire it because brief section-4.4 mapped property 4 to control_outcome-non-empty, satisfiable
+against the outcome object. ROOT CAUSE: orchestrator brief mis-mapped verdict-tier/control-disposition to
+ephemeral outcome fields. OPTIONS for maintainer: (A) permit a minimal src/kronos change to PERSIST verdict
+tier + control disposition onto the FINDING/EVIDENCE so the test asserts real persisted properties (widens
+scope beyond test-only -> GATE-1 amendment); (B) reinterpret BE-G1-7 so verdict-tier/control-disposition are
+pass-level not finding-persisted, and accept EVIDENCE-only on the FINDING (governance clarification to
+KRONOS_DONE:62 via maintainer patch); (C) scope R9 down now to props 1-2 (five domains + EVIDENCE two-armed
+proof), defer verdict-tier/control-disposition-on-finding to a follow-up paired with R10 (governance patch).
+All need maintainer decision (scope/governance). NO PR opened; branch durable for inspection. NEXT: operator
+chooses A/B/C (or rejects). loop-state identity kronos-loop kronos-loop at users.noreply.github.com.
+# KRONOS loop-state checkpoint
 seq: 388
 derived_at: 2026-11-15T00:00:00Z
 contract_version: 1.4.4
