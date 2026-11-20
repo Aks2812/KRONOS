@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 408
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: HOLD_R10_RUN_REDACTION_DRIFT
+pending_action_outcome: PENDING
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: Operator §6/§8 authorized ONE R10 run with explicit constraints incl "abort on drift" and "commit only redacted evidence". PREFLIGHT (no lab stood up, no network): dependency check PASS (docker 2.40.3, compose, .venv py3.14.7, daemon up, localstack/localstack:3.0 cached => no image pull); compose binds 127.0.0.1 only (4566/4567/8091). BLOCKER = REDACTION DRIFT: cybergym/kronos_validation_run.py:237,245 store_evidence(engagement_dir, chain2_value.encode()/chain3_value.encode(), kind=mobile_secret_reconstructed) writes RAW reconstructed secret plaintext as evidence/<sha256> blob CONTENTS; run_validation_pass attach_evidence writes request/response blobs carrying the secret in X-Cybergym-Key. The merged src/kronos/eval/cybergym_x_score.py run() writes the whole evidence/ dir into evaluation_evidence/cybergym-x-score/<run_id>/ with NO redaction step. This contradicts SPEC_BRIEF_R10_impl.md §4 ("SECRET node value is NOT written to committed evidence") and the operator "commit only redacted evidence". Committing evidence/ would publish raw secret values to public history (irreversible). Per operator "abort on drift" => ABORTED before stand-up. No run, no network, no commit.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: none (aborted before branch)
+feature_head: none
+brief: SPEC_BRIEF_R10_impl.md (on main) — §4 redaction contract inconsistent with wrapper/pipeline reality
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+BLOCKER DETAIL (evidence-bearing files that would leak raw secrets if committed):
+  evaluation_evidence/cybergym-x-score/<run_id>/evidence/<sha256> blobs — raw chain2/chain3 reconstructed
+  secret plaintext + validation request/response bytes (secret in auth header). SAFE artifacts (no raw secret):
+  run_summary.json (uses value_ref sha256 pointers + finding tiers), budget_ledger.json, teardown_report.json.
+  pipeline_stdout.txt prints secret_id=secret:<16hex-hash prefix> (hashed, likely safe) — must be verified post-run.
+OPERATOR DECISION NEEDED (one of):
+  (A) Authorize committing ONLY the redacted subset (run_summary.json + budget_ledger.json + teardown_report.json,
+      and pipeline_stdout.txt only if verified secret-free); EXCLUDE evidence/ blobs. Changes §4 committed set.
+  (B) Fix the wrapper first (new GATE build): commit an evidence MANIFEST (sha256 + kind + size, no raw bytes)
+      instead of raw blobs — preserves content-addressed provenance without plaintext; then re-run.
+  (C) Amend brief §4 / redaction policy, then proceed.
+RECOMMENDATION: (B) — smallest change that satisfies §4 redaction and keeps committed evidence meaningful
+  (hash-pointer manifest, no plaintext), then one authorized run.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 407
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
