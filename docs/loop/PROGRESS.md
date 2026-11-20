@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 410
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: GATE2_AUTHORIZE_R10_REDACTION_MERGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: seq 409 pending_action BUILD_R10_REDACTION outcome=DONE (incl one repair cycle). kronos-builder implemented Option B on 3 permitted files; reviewer round 1 PASS with MEDIUM (committed_dir persisted on gate failure) + LOW (fabricated test needles); repaired: run() wraps validate+export+assert_redacted in try/except BaseException -> shutil.rmtree(committed_dir, ignore_errors=True); re-raise (fail-closed); negative tests now use the three REAL fixture secrets (chain-1 CYBERGYM_FIXTURE_CHAIN1_API_KEY_4d2f8a91, chain-2 general, chain-3 admin = cfg.dat+strings.xml:17) with a positive control per chain + X-Cybergym-Key. Reviewer round 2 (head c76415b) PASS: scope exactly 3 files, no cybergym edit, fail-closed verified, committed set = run_summary.json+budget_ledger.json+teardown_report.json+evidence_manifest.json (NO raw evidence/, NO pipeline_stdout.txt), seal R10B->7093099 + R10RB opened, FULL suite 4148 passed 1 skipped 0 failed (SUMMARY line), import side-effect-free (IMPORT_OK exit 0). Orchestrator Gate-2 semantic PASS — redaction drift (seq 408) RESOLVED. Non-blocking residuals: empty committed_dir left if _run_pipeline/assemble raises before the try (no files); import-side-effect unit test weak (IMPORT_OK is real evidence); chain-3 test literal not linked to live _fixture_needles. HOLD GATE-2. No run, no §6/§8.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: kronos/r10-redaction
+feature_head: c76415b7945fbdae7f8e3bc40bc1242f0d14b78c
+brief: SPEC_BRIEF_R10_impl.md (§4 committed-set superseded by Option B redaction policy: manifest, not raw blobs)
+pr: 66 OPEN draft, base main, head c76415b7945fbdae7f8e3bc40bc1242f0d14b78c
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HOLD GATE-2: on operator authorization of PR #66 at head c76415b, re-measure full ten-item MERGE-GATE same
+  turn, then `gh pr merge 66 --squash --match-head-commit c76415b7945fbdae7f8e3bc40bc1242f0d14b78c`. PR draft;
+  operator authorizes readying. NO --admin, NO --auto.
+NEXT after merge: RE-AUTHORIZE the bounded §6/§8 eval RUN (drift now fixed; run() commits only the redacted
+  manifest set). Separate explicit authorization ("stop before running"). R12 (BE-G2-6) BLOCKED until R10 passes.
+R10RB_WINDOW_SEAL_FORWARD: next R-brief seals R10RB_BASE=7093099..R10RB_MERGE=<PR66 merge SHA>.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 409
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
