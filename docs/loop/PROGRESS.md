@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 405
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ d8607ad)
+pending_action: GATE2_AUTHORIZE_R10_BUILD_MERGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: seq 404 pending_action BUILD_R10_WRAPPER_AND_SCHEMA outcome=DONE. kronos-builder implemented 5 permitted files, no STOP-to-GATE-1, no cybergym edit. Pushed branch kronos/r10-build; draft PR #65 head f15ae4d. INDEPENDENT REVIEWER PASS: scope exactly 5 files (src/kronos/eval/__init__.py, src/kronos/eval/cybergym_x_score.py, evaluation_evidence/cybergym-x-score/run_summary.schema.json, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py), no cybergym/.claude/.github/docs-governance; seal R10I->d8607ad + R10B window opened, no other assertion weakened; FULL suite 4141 passed 1 skipped 0 failed (SUMMARY line); module import side-effect-free (subprocess exit 0); run() reuse-by-import only, _assert_enrichment_did_not_shortcut_anyone unchanged; schema draft 2020-12 additionalProperties false, all 13 §2 fields; hermetic tests never call run()/_run_pipeline. Orchestrator Gate-2 semantic PASS. Non-blocking live-only-unverified (deferred to §6/§8 run review): _collect_chains_and_manifest_id FINDING-row Cypher + graph reopen; hardcoded LEDGER_FILENAME/TEARDOWN_FILENAME (match today); parse_x_score 4/3 validated only in run() not assemble; incomplete-run path unexercised. HOLD GATE-2. No run, no §6/§8.
+base_main: d8607ad13e06e23bdec795fb8ec5313975971235
+feature_branch: kronos/r10-build
+feature_head: f15ae4d5a6213016e919266d4a87795c41d4f933
+brief: SPEC_BRIEF_R10_impl.md (on main) — build of §1/§2
+pr: 65 OPEN draft, base main, head f15ae4d5a6213016e919266d4a87795c41d4f933
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HOLD GATE-2: on operator authorization of PR #65 at head f15ae4d, re-measure full ten-item MERGE-GATE same
+  turn, then `gh pr merge 65 --squash --match-head-commit f15ae4d5a6213016e919266d4a87795c41d4f933`. PR draft;
+  operator authorizes readying (loop does not mark ready without asking). NO --admin, NO --auto.
+NEXT after merge: the bounded §6/§8 eval RUN (produces committed evidence under evaluation_evidence/
+  cybergym-x-score/<run_id>/ via run()); SEPARATE explicit maintainer authorization ("stop before running");
+  that run review confirms the live-only-unverified items above. R12 (BE-G2-6) BLOCKED until R10 passes.
+R10B_WINDOW_SEAL_FORWARD: next R-brief seals R10B_BASE=d8607ad..R10B_MERGE=<PR65 merge SHA>.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 404
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
