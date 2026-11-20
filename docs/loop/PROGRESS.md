@@ -1,4 +1,28 @@
 # KRONOS loop-state checkpoint
+seq: 421
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: MERGE_R10_EGRESS_CONTAINMENT_PR67
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-2 authorized 2026-11-20 — ready and squash-merge PR #67 at head b5eb8c811f53a1d5b24eee24aef0386600dba774, re-measure ten-item MERGE-GATE same turn, --match-head-commit, no --admin/--auto. Write-ahead before merge. Readying draft operator-authorized. Integrity PASS @ 6c2fcd0; items 1,3-6,8-10 re-verified live (MERGEABLE/CLEAN, head==authorized, scope exactly 4 files, ruleset active, reviewer PASS, ci:none, semantic PASS, no boundary); suite re-measured same turn.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: kronos/r10-egress-containment
+feature_head: b5eb8c811f53a1d5b24eee24aef0386600dba774
+brief: SPEC_BRIEF_R10_impl.md + rank-1 containment directive
+pr: 67 OPEN (readying authorized), base main, head b5eb8c811f53a1d5b24eee24aef0386600dba774
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+MERGE: gh pr merge 67 --squash --match-head-commit b5eb8c811f53a1d5b24eee24aef0386600dba774. NO --admin NO --auto.
+  Operator SHA == PR head == reviewed SHA. Outcome recorded next (seq 422).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 420
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
