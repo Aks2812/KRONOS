@@ -1,4 +1,44 @@
 # KRONOS loop-state checkpoint
+seq: 395
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 44d0771)
+pending_action: OPEN_R10_PREFLIGHT_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: GATE-1 maintainer: prepare R10 preflight ONLY (define manifest/target/evidence-path/schema/limits/rollback; no execution/network/credentials/§8). Brief authored + seal-tax applied, suite green. Write-ahead to push branch + open draft PR, then STOP for approval. No live run.
+base_main: 44d0771a9b6507a3523a8cc530dbe567b917dd33
+feature_branch: kronos/r10-preflight
+feature_head: 4059b6b1bc0fe13f84d4020dbd5cad3791932722
+brief: SPEC_BRIEF_R10_preflight.md (PREFLIGHT DEFINITION ONLY; not yet GATE-1-accepted; authored this turn)
+pr: none yet (draft PR to be opened this turn)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 395): Operator GATE-1 "prepare R10 preflight only" after seq 394 STOP-AND-ASK. Researcher mapped
+CyberGym surface (read-only). Authored SPEC_BRIEF_R10_preflight.md: PREFLIGHT DEFINITION ONLY, authorizes NO
+live run/network/credentials/§8. Defines (1) authorized local target = fully-local CyberGym 3-tier lab
+(docker-compose localstack:4566 + sigv4-proxy:4567 + api:8091, all 127.0.0.1, LocalStack-mocked, K=3 chains,
+entrypoint cybergym/kronos_validation_run.py self up/down); (2) manifest = existing Ed25519-signed
+cybergym/scope_manifest.yaml (cybergym-x-instrument-v1; no new key; private key stays gitignored); (3) proposed
+committed-evidence path evaluation_evidence/cybergym-x-score/<run_id>/; (4) proposed schema run_summary.json
+(x_score 0..3, per-chain discovered/validated + persisted-FINDING verdict_tier/control_disposition, budget+
+teardown to_dict, manifest_id, kronos_commit) + content-addressed evidence/ + redaction invariant; (5) safety
+limits (locality 127.0.0.1, scope-gate before any net/boto3 runner.py:168-174, budget ledger, non-destructive,
+manifest window/signature, no secret egress); (6) rollback (docker compose down -v, branch-only until GATE-2,
+additive evidence git-revertible). Seal-tax: R9 window sealed R9_BASE..R9_MERGE(44d0771); R10 window opened
+R10_BASE=44d0771 R10_SECTION_10={SPEC_BRIEF_R10_preflight.md, tests/test_commit_authority.py}. Builder applied
+seal only (brief untouched); full suite 4132 passed 1 skipped 0 failed. Committed 2 files one commit 4059b6b.
+RISKS flagged for maintainer: (a) implementation (redirect kronos_validation_run.py output to committed path)
+needs editing cybergym/ = loop NEVER-edit set -> maintainer hand-apply or scoped exception; (b) §3 path/§4
+schema PROPOSED, BE-G3-5 says maintainer-defined -> confirm/override; (c) roadmap "§7.2" = research record,
+not contract. NEXT: push branch, open draft PR, STOP for approval (brief acceptance + path/schema confirm +
+cybergym boundary ruling). NO RUN, NO §8. loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 394
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
