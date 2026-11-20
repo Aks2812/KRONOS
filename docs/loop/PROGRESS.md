@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 423
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: EXECUTE_R10_BOUNDED_RUN
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator §6/§8 authorized EXACTLY ONE bounded R10 CyberGym run on main be30b9e via run(): signed manifest, 127.0.0.1/LocalStack, internal:true zero-egress, no real credentials, enforce budget+teardown, abort on drift/missing deps, commit ONLY the 4 redacted artifacts, independently review, draft PR, STOP at GATE-2. FINAL PREFLIGHT PASS: integrity @ be30b9e; daemon up; all 5 images cached (python:3.12-slim digest sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b UNCHANGED); lab stopped; egress config internal=True re-verified on main; --build cache-only. Write-ahead BEFORE the live run (first live execution). Run: TMPDIR=disk PYTHONPATH=src .venv/bin/python run(Path("evaluation_evidence/cybergym-x-score")); raw evidence in transient TMPDIR tempdir (discarded); committed_dir = evaluation_evidence/cybergym-x-score/<run_id>/ gets ONLY run_summary.json+budget_ledger.json+teardown_report.json+evidence_manifest.json (assert_redacted fail-closed inside run()). Exactly ONE run. Outcome (run_id, x_score, teardown all_ok, redaction re-scan, committed files) recorded at seq 424.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-run (to be created from be30b9e)
+feature_head: PENDING
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: to-be-opened draft AFTER run + review, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. EXACTLY ONE run. No
+  real credentials. internal:true => no container external egress. Commit ONLY the 4 redacted artifacts +
+  seal-tax. Post-run: verify teardown all_ok + lab down + manual redaction re-scan of the 4 committed files.
+  NEXT after review PASS = HOLD GATE-2.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 422
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
