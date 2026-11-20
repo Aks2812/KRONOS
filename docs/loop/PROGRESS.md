@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 420
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: GATE2_AUTHORIZE_R10_EGRESS_CONTAINMENT_MERGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: seq 419 pending_action BUILD_R10_EGRESS_CONTAINMENT outcome=DONE. kronos-builder added KRONOS-owned compose override (networks.default.internal:true) outside cybergym/** + run() -f injection (both up and teardown) on 4 permitted files; no STOP-to-GATE-1, no cybergym edit. Draft PR #67 head b5eb8c81. INDEPENDENT REVIEWER PASS: scope exactly 4 files; reviewer INDEPENDENTLY rendered `docker compose config` (read-only, no containers) and observed networks.default.internal==True WITH override and absent WITHOUT; services/images/build/env/depends_on/healthcheck/ports IDENTICAL between the two renders (only networks differs) => capability/pipeline/X-SCORE/evidence neutral; all four services on default; 127.0.0.1 ports preserved; no network_mode host; run() otherwise unchanged; import side-effect-free; config tests ran (not skipped); FULL suite 4159 passed 1 skipped 0 failed (SUMMARY line); seal R10RB->6c2fcd0 + R10NET opened, no assertion weakened. Orchestrator Gate-2 semantic PASS. Non-blocking residuals: LIVE runtime egress + host-port-under-internal unproven (deferred to the §6/§8 run, as designed); 1 pre-existing unidentified skip (not a new test); relative -f works via selftest.compose cwd=HERE=cybergym (confirmed). HOLD GATE-2. No run, no §6/§8.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: kronos/r10-egress-containment
+feature_head: b5eb8c811f53a1d5b24eee24aef0386600dba774
+brief: SPEC_BRIEF_R10_impl.md + operator rank-1 containment directive
+pr: 67 OPEN draft, base main, head b5eb8c811f53a1d5b24eee24aef0386600dba774
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HOLD GATE-2: on operator authorization of PR #67 at head b5eb8c81, re-measure full ten-item MERGE-GATE same
+  turn, then `gh pr merge 67 --squash --match-head-commit b5eb8c811f53a1d5b24eee24aef0386600dba774`. PR draft;
+  operator authorizes readying. NO --admin, NO --auto.
+NEXT after merge: (1) RE-VERIFY zero egress on main (read-only compose config render shows internal:true);
+  (2) RE-REQUEST §6/§8 bounded eval RUN authorization. The live run itself proves runtime egress blocked +
+  127.0.0.1 publishing still works under internal. R12 (BE-G2-6) BLOCKED until R10 passes.
+R10NET_WINDOW_SEAL_FORWARD: next R-brief seals R10NET_BASE=6c2fcd0..R10NET_MERGE=<PR67 merge SHA>.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 419
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
