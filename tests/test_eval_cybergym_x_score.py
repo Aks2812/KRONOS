@@ -1,4 +1,5 @@
 """Hermetic tests for kronos.eval.cybergym_x_score (SPEC_BRIEF_R10_impl.md). No run()."""
+import hashlib
 import json
 from datetime import datetime, timezone
 
@@ -74,3 +75,68 @@ def test_validate_rejects_teardown_not_ok(tmp_path):
 
 def test_import_has_no_side_effects():
     assert callable(m.run) and m.SCHEMA_PATH.is_file()
+
+
+SECRET = "CYBERGYMGENERALUSER0001:cybergym-fixture-general-secret-7f3a9c1e"
+NEEDLES = [SECRET, "cybergym-fixture-other-secret", "chain3-fixture-secret"]
+
+
+def test_build_evidence_manifest(tmp_path):
+    ev = tmp_path / "evidence"
+    ev.mkdir()
+    blobs = [b"alpha-bytes", b"beta-longer-bytes"]
+    shas = [hashlib.sha256(b).hexdigest() for b in blobs]
+    for sha, b in zip(shas, blobs):
+        (ev / sha).write_bytes(b)
+    out = m.build_evidence_manifest(ev, {shas[0]: "secret_reveal"})
+    expected = sorted(
+        [
+            {"sha256": shas[0], "kind": "secret_reveal", "size": len(blobs[0])},
+            {"sha256": shas[1], "kind": "unreferenced", "size": len(blobs[1])},
+        ],
+        key=lambda e: e["sha256"],
+    )
+    assert out == expected
+    assert all(set(e) == {"sha256", "kind", "size"} for e in out)
+
+
+def test_build_evidence_manifest_missing_dir(tmp_path):
+    assert m.build_evidence_manifest(tmp_path / "nope", {}) == []
+
+
+def test_assert_redacted_positive_control_secret(tmp_path):
+    (tmp_path / "leak.txt").write_text(f"blob: {SECRET}\n")
+    with pytest.raises(ValueError, match="redaction violation"):
+        m.assert_redacted(tmp_path, [SECRET])
+
+
+def test_assert_redacted_positive_control_header(tmp_path):
+    (tmp_path / "leak.txt").write_text("X-Cybergym-Key: abc\n")
+    with pytest.raises(ValueError, match="redaction violation"):
+        m.assert_redacted(tmp_path, NEEDLES)
+
+
+def _fixture_export(tmp_path):
+    work = tmp_path / "work"
+    (work / "evidence").mkdir(parents=True)
+    raw = f"GET / HTTP/1.1\nX-Cybergym-Key: {SECRET}\n".encode()
+    sha = hashlib.sha256(raw).hexdigest()
+    (work / "evidence" / sha).write_bytes(raw)
+    (work / "pipeline_stdout.txt").write_text(f"leak {SECRET}\n")
+    s = _summary(work)
+    s["chains"] = [dict(c, finding_id=f"f{i}", verdict_tier="confirmed") for i, c in enumerate(CHAINS)]
+    manifest = m.build_evidence_manifest(work / "evidence", {sha: "validation_request"})
+    committed = tmp_path / "committed"
+    committed.mkdir()
+    m.export_redacted(work, committed, s, manifest)
+    return committed
+
+
+def test_redacted_export_passes_gate_and_excludes_raw(tmp_path):
+    committed = _fixture_export(tmp_path)
+    m.assert_redacted(committed, NEEDLES)
+    assert sorted(p.name for p in committed.iterdir()) == [
+        "budget_ledger.json", "evidence_manifest.json", "run_summary.json", "teardown_report.json",
+    ]
+    assert not (committed / "evidence").exists()
+    assert not (committed / "pipeline_stdout.txt").exists()
