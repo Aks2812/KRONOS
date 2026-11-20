@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 407
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: NONE
+pending_action_outcome: R10_BUILD_MERGED
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: seq 406 pending_action MERGE_R10_BUILD_PR65 outcome=DONE. GATE-2 maintainer-authorized PR #65 at head f15ae4d. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) PR readied (operator-authorized); (3) OPEN+unmerged+MERGEABLE/CLEAN; (4) head==authorized f15ae4d5a6213016e919266d4a87795c41d4f933; (5) reviewer PASS; (6) ci:none; (7) full suite re-measured 4141 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope-audit green, scope exactly 5 files; (9) Gate-2 semantic PASS; (10) no boundary/out-of-scope file. Squashed --match-head-commit, no --admin/--auto. New main 7093099; 3-file integrity re-verified PASS. src/kronos/eval/cybergym_x_score.py + run_summary.schema.json now on main. Wrapper EXECUTED nowhere; no live run; no §6/§8.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: kronos/r10-build (merged; squashed; local deleted)
+feature_head: merged
+brief: SPEC_BRIEF_R10_impl.md (on main) — §1/§2 BUILT
+pr: 65 MERGED 2026-11-20T11:44:10Z squash commit 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+R10B_WINDOW_SEAL_FORWARD: next R-brief MUST seal R10B_BASE=d8607ad..R10B_MERGE=7093099 in tests/test_commit_authority.py §seal, else suite reds.
+STOP NEXT — MANDATORY PAUSE (NOT loop-eligible; §6/§8 live + security/eval boundary; "stop before running"):
+  BE-G3-5 bounded eval RUN: execute src/kronos/eval/cybergym_x_score.py run() to stand up the LOCAL CyberGym
+  lab (compose, 127.0.0.1 only), run the real pipeline, and commit one run_summary.json + evidence/ +
+  budget_ledger.json + teardown_report.json under evaluation_evidence/cybergym-x-score/<run_id>/. Requires
+  explicit maintainer §6/§8 authorization; this is the first live execution in the loop. Its review confirms
+  the live-only-unverified items (FINDING-row Cypher, graph reopen, filename drift, incomplete-run path).
+STATE-OF-GOALS: R10 (BE-G3-5) brief+schema+wrapper DONE; only the authorized RUN + committed evidence remain
+  to close BE-G3-5. BE-G2-6 (R12) BLOCKED until R10 fully passes. No active Completion Record.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 406
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
