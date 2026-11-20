@@ -256,7 +256,11 @@ def run(output_root: Path) -> Path:
             ended_at=datetime.now(timezone.utc).isoformat(),
             kronos_commit=commit,
         )
-        validate_run_summary(summary)
-        export_redacted(work_dir, committed_dir, summary, evidence_manifest)
-        assert_redacted(committed_dir, _fixture_needles())
+        try:
+            validate_run_summary(summary)
+            export_redacted(work_dir, committed_dir, summary, evidence_manifest)
+            assert_redacted(committed_dir, _fixture_needles())
+        except BaseException:
+            shutil.rmtree(committed_dir, ignore_errors=True)
+            raise
     return committed_dir / "run_summary.json"

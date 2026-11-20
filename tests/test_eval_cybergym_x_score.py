@@ -77,8 +77,10 @@ def test_import_has_no_side_effects():
     assert callable(m.run) and m.SCHEMA_PATH.is_file()
 
 
-SECRET = "CYBERGYMGENERALUSER0001:cybergym-fixture-general-secret-7f3a9c1e"
-NEEDLES = [SECRET, "cybergym-fixture-other-secret", "chain3-fixture-secret"]
+CHAIN1 = "CYBERGYM_FIXTURE_CHAIN1_API_KEY_4d2f8a91"
+SECRET = CHAIN2 = "CYBERGYMGENERALUSER0001:cybergym-fixture-general-secret-7f3a9c1e"
+CHAIN3 = "CYBERGYMADMINUSER0001:cybergym-fixture-admin-secret-b82d4f60"
+NEEDLES = [CHAIN1, CHAIN2, CHAIN3]
 
 
 def test_build_evidence_manifest(tmp_path):
@@ -104,10 +106,11 @@ def test_build_evidence_manifest_missing_dir(tmp_path):
     assert m.build_evidence_manifest(tmp_path / "nope", {}) == []
 
 
-def test_assert_redacted_positive_control_secret(tmp_path):
-    (tmp_path / "leak.txt").write_text(f"blob: {SECRET}\n")
+@pytest.mark.parametrize("value", NEEDLES)
+def test_assert_redacted_positive_control_secret(tmp_path, value):
+    (tmp_path / "leak.txt").write_text(f"blob: {value}\n")
     with pytest.raises(ValueError, match="redaction violation"):
-        m.assert_redacted(tmp_path, [SECRET])
+        m.assert_redacted(tmp_path, NEEDLES)
 
 
 def test_assert_redacted_positive_control_header(tmp_path):
