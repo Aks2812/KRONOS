@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 416
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: PULL_PYTHON_BASE_IMAGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator chose Option 1 (2026-11-20): authorize ONE infrastructure-only pull of official python:3.12-slim from Docker Hub (docker.io/library/python:3.12-slim). Do NOT start containers or run R10. Record repo digest + image ID + size + timestamp here; abort if source ambiguous or additional egress required. Then reconfirm all required images cached + lab stopped, and request SEPARATE §6/§8 authorization for the run. Write-ahead before the pull (one authorized bounded network action). This checkpoint is the pre-pull write-ahead; outcome (digest/id/size/timestamp) recorded at seq 417.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: none (infra preflight only; no branch, no run)
+feature_head: none
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PLANNED ACTION: docker pull docker.io/library/python:3.12-slim (official library image, explicit registry path to
+  avoid source ambiguity). ONLY this one pull. NO compose up, NO container start, NO R10 run.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No credentials. The only
+  authorized egress this turn is this single base-image pull.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 415
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
