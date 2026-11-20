@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 393
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 44d0771)
+pending_action: NONE
+pending_action_outcome: R9_MERGED
+report_type: AUTO-CONTINUE
+decision_class: NO-ACTION
+opus_effort: LOW
+opus_effort_reason: R9 (BE-G1-7) merged to main via GATE-2. Ten-item MERGE-GATE re-measured PASS same turn; squash --match-head-commit at authorized SHA. No pending brief; next turn auto-selects next eligible roadmap item.
+base_main: 44d0771a9b6507a3523a8cc530dbe567b917dd33
+feature_branch: kronos/r9-five-domain-engagement (merged; squashed)
+feature_head: merged
+brief: SPEC_BRIEF_R9_five_domain_engagement.md sha256 6bfaf5f5b9307d88e79c6d4ea7db0b8d5c5aa895a6ad93563cdaa2559bb4d809 (COMPLETE)
+pr: 62 MERGED 2026-11-20T07:36:25Z squash commit 44d0771a9b6507a3523a8cc530dbe567b917dd33
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+R9_WINDOW_SEAL_FORWARD: next brief MUST seal R9 window R9_BASE=89c4df7..R9_MERGE=44d0771 in scope-audit
+(mirror R8 pattern), else suite reds on open R9_BASE..HEAD assertion.
+CONTEXT (seq 393): GATE-2 maintainer-authorized merge of PR #62 (named PR + full head SHA
+2589015b5407d6edad36cd93cbe0bddc48ca8bea). Ten-item MERGE-GATE re-measured same turn, all PASS:
+(1) main protected ruleset 25333712; (2) PR marked ready (non-draft); (3) OPEN+unmerged+MERGEABLE;
+(4) head==authorized 2589015; (5) independent reviewer PASS on §8 by evidence (same head);
+(6) CI ci:none (no checks); (7) local suite re-measured 4132 passed 1 skipped 0 failed via canonical
+runner SUMMARY; (8) scope-guard seal-tax PASS (scope-audit test green in suite); (9) no hard-boundary/
+out-of-scope; (10) squash --match-head-commit 2589015, no --admin/--auto. main advanced 89c4df7->44d0771.
+Integrity re-verified at 44d0771: 3 governance hashes == manifest v1.4.4. R9 path A delivered: FINDING now
+persists verdict_tier + control_disposition; five-domain hermetic test asserts from persisted graph.
+Out-of-scope follow-ups recorded (need GATE-1 if pursued): stale citation test_finding_evidence_gate.py:74;
+KRONOS_DONE.md:62 still OPEN. Feature branch not deleted (deletion not authorized). loop-state committer
+kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 392
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
