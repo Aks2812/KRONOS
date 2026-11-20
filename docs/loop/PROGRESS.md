@@ -1,4 +1,45 @@
 # KRONOS loop-state checkpoint
+seq: 418
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: HOLD_R10_RUN_ZERO_EGRESS_NOT_STRUCTURAL
+pending_action_outcome: PENDING
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: Operator required a read-only zero-egress verification before §6/§8 run authorization. Performed (no compose up/build/pull/run/edits): docker compose config (read-only render) + image digest check. FINDINGS -> zero egress is NOT structurally guaranteed. Evidence: (a) python:3.12-slim digest UNCHANGED = python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b; (b) resolved compose has a SINGLE network `default` (name cybergym_default) with NO `internal: true` => standard bridge w/ gateway+NAT => containers hold an EXTERNAL DEFAULT ROUTE and can egress; (c) no `network_mode: host` on any service (good); (d) all published ports bound 127.0.0.1 (inbound-only; does not constrain container OUTBOUND); (e) service env shows only intra-network targets (AWS_ENDPOINT_URL/LOCALSTACK_URL = http://localstack:4566) => no service NEEDS external egress; (f) build is cache-only now (all images cached) so no registry/build dependency access at run. The structural gap is (b): the bridge is not internal. Per operator "if zero egress is not structurally guaranteed, propose smallest capability-neutral containment fix" => HOLD, propose, STOP. cybergym/** is NEVER-edit so the fix must NOT edit the compose file.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: none
+feature_head: none
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+ZERO-EGRESS EVIDENCE (read-only):
+  network: single `default` name=cybergym_default, internal=ABSENT (=> external default route via NAT).
+  network_mode host: NONE. ports: 127.0.0.1:4566/4567/8091 ingress-only. host networking: none.
+  intra-network only service deps: init-buckets+sigv4-proxy -> localstack:4566 (no external target).
+  build: cache-only (python:3.12-slim + localstack:3.0 + cybergym-api/sigv4-proxy/init-buckets all cached).
+  python digest: python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b (UNCHANGED).
+PROPOSED SMALLEST CAPABILITY-NEUTRAL CONTAINMENT FIX (propose only; not applied):
+  PRIMARY: a KRONOS-owned compose OVERRIDE file located OUTSIDE cybergym/ (e.g. src/kronos/eval/
+  cybergym_internal_net.override.yml) setting `networks.default.internal: true`, injected via an added
+  `-f` in a small wrapper change to run() (new bounded GATE build + review). internal:true removes the
+  container external default route (no gateway to the host/internet) while preserving intra-network DNS/traffic
+  (localstack:4566) and host-published 127.0.0.1 ports (docker-proxy publishes regardless). Capability-neutral:
+  the engagement uses only intra-network + 127.0.0.1 + LocalStack-mocked AWS; none require external egress.
+  ALTERNATIVE (no code/compose change, host-level, reversible): a host DOCKER-USER iptables DROP for the
+  cybergym bridge subnet's outbound to non-local destinations, applied around the run and removed after
+  (needs root; more robust vs DNS/raw-socket egress but a host mutation).
+  RECOMMENDATION: PRIMARY (compose override internal:true) — structural, declarative, no cybergym edit, no host
+  firewall state; then re-verify egress and request §6/§8 run authorization.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No further egress/run.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 417
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
