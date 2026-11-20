@@ -128,7 +128,10 @@ R9_SECTION_10 = {
     "src/kronos/validate/runner.py",
 }
 R10_BASE = "44d0771"
+R10_MERGE = "391c938"  # merge SHA of PR #63 (R10 preflight); R10 window seals here, not HEAD
 R10_SECTION_10 = {"SPEC_BRIEF_R10_preflight.md", "tests/test_commit_authority.py"}
+R10I_BASE = "391c938"
+R10I_SECTION_10 = {"SPEC_BRIEF_R10_impl.md", "tests/test_commit_authority.py"}
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -338,7 +341,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{R7_BASE}..{R7_MERGE}")) <= R7_SECTION_10, set(names(f"{R7_BASE}..{R7_MERGE}")) - R7_SECTION_10
     assert set(names(f"{R8_BASE}..{R8_MERGE}")) <= R8_SECTION_10, set(names(f"{R8_BASE}..{R8_MERGE}")) - R8_SECTION_10
     assert set(names(f"{R9_BASE}..{R9_MERGE}")) <= R9_SECTION_10, set(names(f"{R9_BASE}..{R9_MERGE}")) - R9_SECTION_10
-    assert set(names(f"{R10_BASE}..HEAD")) <= R10_SECTION_10, set(names(f"{R10_BASE}..HEAD")) - R10_SECTION_10
+    assert set(names(f"{R10_BASE}..{R10_MERGE}")) <= R10_SECTION_10, set(names(f"{R10_BASE}..{R10_MERGE}")) - R10_SECTION_10
+    assert set(names(f"{R10I_BASE}..HEAD")) <= R10I_SECTION_10, set(names(f"{R10I_BASE}..HEAD")) - R10I_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
