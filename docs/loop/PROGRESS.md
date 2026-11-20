@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 419
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: BUILD_R10_EGRESS_CONTAINMENT
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator chose rank 1 (2026-11-20): GATE-1 bounded containment build — KRONOS-owned compose OVERRIDE outside cybergym/** setting networks.default.internal:true, injected via run() -f; preserve 127.0.0.1 ports, intra-network DNS/LocalStack, pipeline/X-SCORE/evidence semantics; hermetic tests proving the RESOLVED config is internal, no host/external network, required services still connected; independent review; draft PR; STOP at GATE-2. NO compose up, live run, pull, firewall mutation, §6/§8. Write-ahead before branch/build/PR. Design: new src/kronos/eval/cybergym_internal_net.override.yml = {networks:{default:{internal:true}}}; run() adds OVERRIDE_PATH const + _compose_file_args()=[-f docker-compose.yml -f <abs override>], uses it for BOTH up and compose_down (lambda *a: compose(*cfg,*a)); proof tests shell to read-only `docker compose config` (no containers/network), skip if docker CLI absent, plus a pure-YAML always-run test.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: kronos/r10-egress-containment (to be created from 6c2fcd0)
+feature_head: PENDING
+brief: SPEC_BRIEF_R10_impl.md (on main) + operator rank-1 containment directive
+pr: to-be-opened draft, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED BUILD FILES (hard scope): src/kronos/eval/cybergym_internal_net.override.yml (NEW),
+  src/kronos/eval/cybergym_x_score.py, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py
+  (seal only). NOTHING else — NO cybergym/** edit (STOP-to-GATE-1 if the fix would need it).
+SEAL-TAX PLAN: seal R10RB add R10RB_MERGE="6c2fcd0" assertion ..HEAD->..{R10RB_MERGE}; open R10NET window
+  R10NET_BASE="6c2fcd0" R10NET_SECTION_10={the 4 build files}, assertion ..HEAD.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO compose up / live run /
+  pull / firewall / §6/§8. NEXT after review PASS = HOLD GATE-2; then re-verify egress; then request §6/§8 run.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 418
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
