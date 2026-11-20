@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 400
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
+pending_action: AUTHOR_R10_IMPL_BRIEF_AND_OPEN_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Maintainer GATE-1 (2026-11-20) authorized authoring the R10 IMPLEMENTATION brief, brief only, no build/run/§6/§8. Read-only kronos-researcher feasibility PASS: reuse-by-import is FEASIBLE WITHOUT editing cybergym/** — a KRONOS-owned wrapper imports cybergym.kronos_validation_run (module-level _run_pipeline:201, _assert_enrichment_did_not_shortcut_anyone:168, main:354, TemporaryDirectory:366; import pulls cybergym/selftest.py whose only import-time side effect is a filesystem read at :44, no network/docker/credentials, public key only), owns its own engagement_dir instead of the ephemeral TemporaryDirectory, calls _run_pipeline, and captures exit code + stdout X-SCORE + pipeline side-effect evidence into the committed path. No cybergym edit required => STOP-to-GATE-1 clause NOT triggered. Deliverable this turn = brief doc + seal-tax only (no wrapper, no run_summary.schema.json file), mirroring the R10 preflight PR #63 pattern.
+base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
+feature_branch: kronos/r10-impl-brief (to be created from 391c938)
+feature_head: PENDING (push outcome recorded next)
+brief: SPEC_BRIEF_R10_impl.md (IMPLEMENTATION brief — DEFINITION of KRONOS-owned eval wrapper + run_summary.schema.json; no code built here)
+pr: to-be-opened draft, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+SEAL-TAX PLAN (tests/test_commit_authority.py): (1) seal R10 preflight window: add R10_MERGE="391c938",
+  change line 341 assertion from {R10_BASE}..HEAD to {R10_BASE}..{R10_MERGE}; (2) open new window:
+  R10I_BASE="391c938", R10I_SECTION_10={"SPEC_BRIEF_R10_impl.md","tests/test_commit_authority.py"},
+  assertion set(names(f"{R10I_BASE}..HEAD")) <= R10I_SECTION_10. Exactly 2 files on branch.
+HARD BOUNDARY REAFFIRMED: no edit to cybergym/**, .claude/**, .github/**, docs/governance/**, manifest.
+  No network, no credentials, no §6/§8 run. Next step after review PASS = HOLD GATE-2 (merge authorization).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 399
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
