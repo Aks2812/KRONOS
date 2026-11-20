@@ -1,4 +1,28 @@
 # KRONOS loop-state checkpoint
+seq: 406
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ d8607ad)
+pending_action: MERGE_R10_BUILD_PR65
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: Operator GATE-2 authorized 2026-11-20 — ready and squash-merge PR #65 at head f15ae4d5a6213016e919266d4a87795c41d4f933, re-measure ten-item MERGE-GATE same turn, --match-head-commit, no --admin/--auto. Write-ahead before merge. Readying draft operator-authorized. Integrity PASS @ d8607ad; items 1-6,8-10 re-verified live; suite re-measured same turn before merge.
+base_main: d8607ad13e06e23bdec795fb8ec5313975971235
+feature_branch: kronos/r10-build
+feature_head: f15ae4d5a6213016e919266d4a87795c41d4f933
+brief: SPEC_BRIEF_R10_impl.md
+pr: 65 OPEN (readying authorized), base main, head f15ae4d5a6213016e919266d4a87795c41d4f933
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+MERGE: gh pr merge 65 --squash --match-head-commit f15ae4d5a6213016e919266d4a87795c41d4f933. NO --admin NO --auto.
+  Operator SHA == PR head == reviewed SHA. Outcome recorded next (seq 407).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 405
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
