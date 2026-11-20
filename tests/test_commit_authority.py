@@ -138,6 +138,9 @@ R10B_SECTION_10 = {"src/kronos/eval/__init__.py", "src/kronos/eval/cybergym_x_sc
 R10B_MERGE = "7093099"  # merge SHA of PR #65 (R10 build); R10B window seals here, not HEAD
 R10RB_BASE = "7093099"
 R10RB_SECTION_10 = {"src/kronos/eval/cybergym_x_score.py", "tests/test_eval_cybergym_x_score.py", "tests/test_commit_authority.py"}
+R10RB_MERGE = "6c2fcd0"  # merge SHA of PR #66 (R10 redaction); R10RB window seals here, not HEAD
+R10NET_BASE = "6c2fcd0"
+R10NET_SECTION_10 = {"src/kronos/eval/cybergym_internal_net.override.yml", "src/kronos/eval/cybergym_x_score.py", "tests/test_eval_cybergym_x_score.py", "tests/test_commit_authority.py"}
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -350,7 +353,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{R10_BASE}..{R10_MERGE}")) <= R10_SECTION_10, set(names(f"{R10_BASE}..{R10_MERGE}")) - R10_SECTION_10
     assert set(names(f"{R10I_BASE}..{R10I_MERGE}")) <= R10I_SECTION_10, set(names(f"{R10I_BASE}..{R10I_MERGE}")) - R10I_SECTION_10
     assert set(names(f"{R10B_BASE}..{R10B_MERGE}")) <= R10B_SECTION_10, set(names(f"{R10B_BASE}..{R10B_MERGE}")) - R10B_SECTION_10
-    assert set(names(f"{R10RB_BASE}..HEAD")) <= R10RB_SECTION_10, set(names(f"{R10RB_BASE}..HEAD")) - R10RB_SECTION_10
+    assert set(names(f"{R10RB_BASE}..{R10RB_MERGE}")) <= R10RB_SECTION_10, set(names(f"{R10RB_BASE}..{R10RB_MERGE}")) - R10RB_SECTION_10
+    assert set(names(f"{R10NET_BASE}..HEAD")) <= R10NET_SECTION_10, set(names(f"{R10NET_BASE}..HEAD")) - R10NET_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet

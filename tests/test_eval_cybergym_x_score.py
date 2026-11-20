@@ -296,3 +296,68 @@ def test_needles_bound_to_live_fixtures():
         "CYBERGYMGENERALUSER0001:cybergym-fixture-general-secret-7f3a9c1e",
         "CYBERGYMADMINUSER0001:cybergym-fixture-admin-secret-b82d4f60",
     ]
+
+
+# ---- egress containment (override file) ----
+import shutil  # noqa: E402
+import subprocess  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+import yaml  # noqa: E402
+
+_ROOT = Path(__file__).resolve().parents[1]
+_NEEDS_DOCKER = pytest.mark.skipif(shutil.which("docker") is None, reason="docker CLI absent")
+
+
+def test_override_file_is_internal_only():
+    p = _ROOT / "src/kronos/eval/cybergym_internal_net.override.yml"
+    assert yaml.safe_load(p.read_text()) == {"networks": {"default": {"internal": True}}}
+    assert "/cybergym/" not in str(p)
+
+
+def test_compose_file_args():
+    assert m._compose_file_args() == ["-f", "docker-compose.yml", "-f", str(m.OVERRIDE_PATH)]
+    assert str(m.OVERRIDE_PATH).endswith("src/kronos/eval/cybergym_internal_net.override.yml")
+    assert m.OVERRIDE_PATH.exists()
+    assert "/cybergym/" not in str(m.OVERRIDE_PATH)
+    src = inspect.getsource(m.run)
+    assert "_compose_file_args(" in src
+    assert 'compose(*cfg, "up"' in src
+    assert "compose(*cfg" in src.split("compose_down(", 1)[1]
+
+
+def _render(*files):
+    cmd = ["docker", "compose"]
+    for f in files:
+        cmd += ["-f", f]
+    out = subprocess.run(cmd + ["config"], cwd=_ROOT, capture_output=True, text=True, check=True).stdout
+    return yaml.safe_load(out)
+
+
+_BASE = "cybergym/docker-compose.yml"
+_OVR = "src/kronos/eval/cybergym_internal_net.override.yml"
+
+
+@_NEEDS_DOCKER
+def test_resolved_config_is_internal_isolated():
+    cfg = _render(_BASE, _OVR)
+    assert cfg["networks"]["default"]["internal"] is True
+    svcs = cfg["services"]
+    assert {"api", "init-buckets", "localstack", "sigv4-proxy"} <= set(svcs)
+    for name, svc in svcs.items():
+        assert "network_mode" not in svc, name
+        nets = svc.get("networks")
+        if nets is not None:
+            assert set(nets) <= {"default"}, name
+        for port in svc.get("ports", []):
+            assert port["host_ip"] == "127.0.0.1", (name, port)
+    assert set(cfg["networks"]) == {"default"}
+
+
+@_NEEDS_DOCKER
+def test_override_adds_only_internal_key():
+    base = _render(_BASE)
+    over = _render(_BASE, _OVR)
+    assert base["services"] == over["services"]
+    expected = dict(base["networks"]["default"], internal=True)
+    assert over["networks"]["default"] == expected
