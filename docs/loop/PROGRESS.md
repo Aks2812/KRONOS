@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 415
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: HOLD_R10_RUN_MISSING_BASE_IMAGE
+pending_action_outcome: PENDING
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: Operator §6/§8 authorized ONE R10 run on main 6c2fcd0 via run(), constraints incl "no external egress or real credentials" and "abort on drift or missing dependencies". PREFLIGHT (no lab stood up, no network — docker image inspect is local): DAEMON_UP; .venv py3.14.7; manifest scope_manifest.yaml + pubkey + docker-compose.yml present; compose binds 127.0.0.1 only (4566/4567/8091); no cybergym containers running; localstack/localstack:3.0 + cybergym-api/cybergym-sigv4-proxy/cybergym-init-buckets images cached. BLOCKER = MISSING DEPENDENCY: base image python:3.12-slim is ABSENT (docker image inspect python:3.12-slim => ABSENT; no python image at any tag). run() hardcodes compose("up","-d","--build") at src/kronos/eval/cybergym_x_score.py:227; a --build with the base absent will PULL python:3.12-slim from Docker Hub => external egress. Both operator constraints ("abort on missing dependencies", "no external egress") => ABORTED before stand-up. No docker compose up, no pull, no network, no commit.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: none (aborted before branch)
+feature_head: none
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+OPERATOR DECISION NEEDED (one of):
+  (1) RECOMMENDED: authorize a one-time bounded local `docker pull python:3.12-slim` as an explicit preflight
+      infrastructure fetch (permitted egress), then re-authorize the run; afterwards run() --build is cache-only
+      and the engagement itself makes no external egress (localstack+services cached, 127.0.0.1 only).
+  (2) Authorize a small GATE build changing run() to `compose up -d` without --build (or --pull never) when
+      service images already exist; then re-run. (Wrapper code change; new review.)
+  (3) Rule that a build-time base-image pull is acceptable INFRASTRUCTURE egress (distinct from engagement
+      egress, which stays blocked by 127.0.0.1 + LocalStack) and re-authorize to proceed as-is.
+RECOMMENDATION: (1) — one bounded, explicit infra pull you authorize; wrapper unchanged; engagement egress stays
+  zero. The run then proceeds cache-only.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 414
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
