@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CyberGym X-score run_summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "instrument", "k", "x_score", "manifest_id", "manifest_engagement_id", "lab", "chains", "started_at", "ended_at", "kronos_commit", "budget", "teardown"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "instrument": {"const": "cybergym-x-score-v1"},
+    "k": {"const": 3},
+    "x_score": {"type": "integer", "minimum": 0, "maximum": 3},
+    "manifest_id": {"type": "string"},
+    "manifest_engagement_id": {"const": "cybergym-x-instrument-v1"},
+    "lab": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["localstack_image", "services", "bound_host"],
+      "properties": {
+        "localstack_image": {"const": "localstack/localstack:3.0"},
+        "services": {"const": ["localstack", "sigv4-proxy", "api"]},
+        "bound_host": {"const": "127.0.0.1"}
+      }
+    },
+    "chains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "discovered", "validated_end_to_end", "finding_id", "verdict_tier", "control_disposition"],
+        "properties": {
+          "id": {"type": "string"},
+          "discovered": {"type": "boolean"},
+          "validated_end_to_end": {"type": "boolean"},
+          "finding_id": {"type": ["string", "null"]},
+          "verdict_tier": {"type": ["string", "null"]},
+          "control_disposition": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "started_at": {"type": "string"},
+    "ended_at": {"type": "string"},
+    "kronos_commit": {"type": "string"},
+    "budget": {"type": "object"},
+    "teardown": {
+      "type": "object",
+      "required": ["all_ok"],
+      "properties": {"all_ok": {"const": true}}
+    }
+  }
+}
