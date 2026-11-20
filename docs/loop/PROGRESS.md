@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 414
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: NONE
+pending_action_outcome: R10_REDACTION_MERGED
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 413 pending_action MERGE_R10_REDACTION_PR66 outcome=DONE. GATE-2 maintainer-authorized PR #66 at head 8b8cb16. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) PR readied (operator-authorized); (3) OPEN+unmerged, mergeable resolved UNKNOWN->MERGEABLE/CLEAN; (4) head==authorized 8b8cb16c190384c2561ba8a975a15a943ca4f7eb; (5) reviewer PASS (2 build rounds + capability-neutrality round, mutation-tested); (6) ci:none; (7) full suite re-measured 4155 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope green, scope exactly 3 files; (9) Gate-2 semantic PASS; (10) no boundary/out-of-scope file. Squashed --match-head-commit, no --admin/--auto. New main 6c2fcd0; 3-file integrity re-verified PASS. Redaction (manifest-only committed set, fail-closed assert_redacted) + capability-neutrality proof now on main. No live run; no §6/§8 executed.
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: kronos/r10-redaction (merged; squashed; local deleted)
+feature_head: merged
+brief: SPEC_BRIEF_R10_impl.md (on main) — Option B redaction applied
+pr: 66 MERGED 2026-11-20T12:57:30Z squash commit 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+R10RB_WINDOW_SEAL_FORWARD: next R-brief MUST seal R10RB_BASE=7093099..R10RB_MERGE=6c2fcd0 in tests/test_commit_authority.py §seal, else suite reds.
+STOP NEXT — MANDATORY PAUSE (NOT loop-eligible; §6/§8 live + security/eval boundary; "stop before running"):
+  BE-G3-5 bounded eval RUN: execute src/kronos/eval/cybergym_x_score.py run() — LOCAL CyberGym lab (compose,
+  127.0.0.1 only), signed manifest, budget+teardown enforced, commit ONLY the redacted set (run_summary.json,
+  budget_ledger.json, teardown_report.json, evidence_manifest.json) under evaluation_evidence/cybergym-x-score/
+  <run_id>/. Drift fixed; redaction fail-closed; capability-neutrality proven. Requires explicit maintainer §6/§8
+  authorization. PREFLIGHT (done seq 408, still valid @ 6c2fcd0): deps PASS (docker 2.40.3, compose, .venv
+  py3.14.7, daemon up, localstack/localstack:3.0 cached => no image pull); compose binds 127.0.0.1 only.
+STATE-OF-GOALS: R10 (BE-G3-5) brief+schema+wrapper+redaction+neutrality DONE; only the authorized RUN + committed
+  redacted evidence remain to close BE-G3-5. BE-G2-6 (R12) BLOCKED until R10 fully passes. No active Completion Record.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 413
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
