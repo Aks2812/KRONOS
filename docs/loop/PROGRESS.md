@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 394
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 44d0771)
+pending_action: STOP_ASK_R10_AUTHORIZATION_OR_LOW_CLEANUP
+pending_action_outcome: PENDING
+report_type: REVIEW-REQUIRED
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: AUTO-BRIEF ran. R1-R9 all merged; hermetic G1/G3 breadth complete. Remaining roadmap R10 (BE-G3-5) and R12 (BE-G2-6) both require authorized manifest-bounded CyberGym/lab LIVE run with committed evidence (Beta-Entry, D3); R12 BLOCKED until R10. Both live/§8/human-gated => NOT AUTO-BRIEF-eligible. No eligible roadmap item. STOP AND ASK.
+base_main: 44d0771a9b6507a3523a8cc530dbe567b917dd33
+feature_branch: none
+feature_head: none
+brief: none
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+AUTO_BRIEF_RESULT: no ELIGIBLE roadmap item. Confirmed R7 #60, R8 #61, R9 #62 merged (roadmap status
+column stale vs old main 78dcb76; src/kronos/ingest/cloud + /api modules and tests present). Open items:
+R10 BE-G3-5 (committed evaluation evidence: one authorized manifest-bounded CyberGym/lab run output in-repo,
+maintainer-defined path/schema, does not exist yet) and R12 BE-G2-6 (live LLM-backed driver/executor;
+BLOCKED until BE-G1-7 + BE-G3-5). BE-G1-7 now satisfied by R9. Both remaining need §8 live execution +
+maintainer authorization not yet given => ineligible for AUTO-BRIEF per contract §13.1.
+ONLY auto-eligible residue: LOW cleanup R9 reviewer follow-up (stale line citations in comment at
+tests/test_finding_evidence_gate.py:74 -> invalidation advance now line 54, attach lines 42-50; test only
+checks truthiness so currently green). Branch-local, reversible, non-live, no governance/.claude/secrets.
+NOT_ELIGIBLE auto: KRONOS_DONE.md:62 R9 OPEN->satisfied update (governance docs, human-gated).
+RECOMMENDATION: operator either (a) authorize R10 (BE-G3-5) manifest-bounded run scope -> GATE-1 brief for
+the committed-evidence path/schema (§8 live, needs explicit authorization + maintainer-defined artifact
+location); or (b) authorize the LOW test-citation cleanup as a standalone test-only brief; or (c) direct
+other work. R9 window seal-forward still pending for whichever next brief touches scope-audit.
+loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 393
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
