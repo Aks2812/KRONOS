@@ -13,6 +13,12 @@ limits, and the rollback. It authorizes **no** live execution, **no** network
 action, **no** credentials, and **no** §6/§8 activation. The run itself is a
 separate, later GATE-step requiring explicit maintainer authorization.
 
+**Maintainer decisions (2026-11-20), binding on the implementation brief:**
+1. The §3 evidence path and §4 schema are **ACCEPTED** as proposed.
+2. `cybergym/**` **stays NEVER-edit**. Output redirection (§4a) MUST be done
+   by a **KRONOS-owned wrapper** outside `cybergym/`; the lab target is never
+   modified.
+
 ## §0 Preflight scope boundary (hard)
 
 - This brief delivers exactly two files on branch `kronos/r10-preflight`:
@@ -21,10 +27,11 @@ separate, later GATE-step requiring explicit maintainer authorization.
 - NO run of `cybergym/kronos_validation_run.py`, NO `docker compose up`, NO
   `.venv/bin/python cybergym/...`, NO network, NO boto3/requests call, NO
   reading or use of `cybergym/.keys/` private key.
-- The implementation that makes a run's output committable (§4) is NOT built
-  here. It is scoped in §4/§6 for a subsequent GATE-1-approved brief, because
-  it requires editing `cybergym/kronos_validation_run.py`, which is in the
-  loop's NEVER-edit set — see §8 risk.
+- The implementation that makes a run's output committable (§4/§4a) is NOT
+  built here. It is scoped for a subsequent GATE-1-approved brief and MUST be
+  a KRONOS-owned wrapper (§4a); `cybergym/kronos_validation_run.py` and all of
+  `cybergym/**` stay unmodified (loop NEVER-edit set, reaffirmed by maintainer
+  2026-11-20).
 
 ## §1 Authorized local target (manifest-bounded)
 
@@ -68,9 +75,9 @@ Ed25519-signed scope manifest `cybergym/scope_manifest.yaml`:
   candidate on the pre-computed `in_scope` flag BEFORE any network/boto3 call
   (`src/kronos/validate/runner.py:168-174`).
 
-## §3 Committed-evidence location (maintainer-defined — proposed)
+## §3 Committed-evidence location (maintainer-ACCEPTED 2026-11-20)
 
-Proposed in-repo path (operator to confirm or override at approval):
+In-repo path (ACCEPTED):
 
 ```
 evaluation_evidence/cybergym-x-score/<run_id>/
@@ -82,12 +89,12 @@ runs are additive and never overwritten. Rationale: a new top-level
 `evaluation_evidence/` tree keeps committed run evidence out of `docs/`,
 `src/kronos/`, and `cybergym/` (the lab target), and is plainly revertible.
 
-## §4 Committed-evidence schema (maintainer-defined — proposed)
+## §4 Committed-evidence schema (maintainer-ACCEPTED 2026-11-20)
 
 Each `<run_id>/` directory holds exactly these artifacts. All are derived from
-structures that ALREADY exist; none requires new evidence machinery, only
-redirecting output from the current ephemeral `TemporaryDirectory`
-(`cybergym/kronos_validation_run.py:366-367`) to the committed path.
+structures that ALREADY exist; none requires new evidence machinery. The
+output is placed at the committed path by the KRONOS-owned wrapper (§4a), NOT
+by editing `cybergym/`.
 
 1. `run_summary.json` — the authoritative result record. Schema (new JSON
    Schema file `evaluation_evidence/cybergym-x-score/run_summary.schema.json`,
@@ -123,6 +130,36 @@ Evidence blobs are the lab's own mocked request/response bytes against
 (only its presence/finding is). This mirrors the §8 checkpoint rule "no
 credentials, targets, client identifiers, or manifest contents"
 (`KRONOS_RND_CONTRACT.md:101-103`).
+
+## §4a KRONOS-owned evidence wrapper (maintainer decision 2026-11-20)
+
+`cybergym/**` is NEVER-edit. The run's output is committed by a new
+**KRONOS-owned** wrapper, to be built in the subsequent IMPLEMENTATION brief,
+not here. Design constraints the implementation brief MUST satisfy:
+
+- **Location:** KRONOS-owned code only — a new module under `src/kronos/`
+  (e.g. `src/kronos/eval/cybergym_x_score.py`) and/or a repo-root entry script
+  outside `cybergym/`. No file under `cybergym/**` is created, edited, moved,
+  or deleted.
+- **Mechanism:** the wrapper owns the `engagement_dir` and sets it to a path
+  under `evaluation_evidence/cybergym-x-score/<run_id>/` (§3) instead of the
+  ephemeral `TemporaryDirectory` that `cybergym/kronos_validation_run.py`
+  currently uses. It then captures the `run_summary.json` (§4.1), the
+  content-addressed `evidence/` blobs, the budget ledger snapshot, and the
+  teardown report into that committed directory.
+- **Reuse, not fork:** the wrapper reuses `cybergym`'s importable primitives
+  by import only — `cybergym.selftest.compose` / `wait_for_services` for
+  stand-up/tear-down, and whatever ingestion/enrichment/validation entry
+  points `cybergym/kronos_validation_run.py` already exposes as importable
+  callables — plus the generic `kronos.validate.run_validation_pass` and
+  `kronos.evidence` / `kronos.budget` / `kronos.cleanup` writers. If a needed
+  step is NOT importable without editing `cybergym/`, the implementation brief
+  STOPS and returns to GATE-1 rather than editing `cybergym/` or silently
+  forking the lab logic. It must NOT weaken the CYBERGYM-ONLY enrichment
+  no-shortcut assertion (`cybergym/kronos_validation_run.py:10-25`).
+- **Fidelity:** the wrapper changes only WHERE output lands, never WHAT is
+  validated; it hands the same completed graph to the same generic
+  `run_validation_pass` any engagement uses.
 
 ## §5 Safety limits (enforced by existing machinery)
 
@@ -175,15 +212,13 @@ Acceptance of THIS preflight brief:
   decided on the runner SUMMARY line, never `$?`.
 - No live run performed, no network, no credentials.
 
-Risks / open items for maintainer at approval:
-- **cybergym/ edit boundary:** the IMPLEMENTATION brief must redirect
-  `kronos_validation_run.py` output to the committed path, but `cybergym/` is
-  in the loop's NEVER-edit set. That change needs either maintainer
-  hand-application or an explicit, scoped boundary exception. Flagged, not
-  assumed.
-- **Path/schema confirmation:** §3 path and §4 schema are PROPOSED; BE-G3-5
-  says they are maintainer-defined. Operator confirms or overrides before the
-  implementation brief.
+Resolved maintainer decisions (2026-11-20):
+- **cybergym/ edit boundary:** RESOLVED — `cybergym/**` stays NEVER-edit.
+  Output redirection is done by a KRONOS-owned wrapper (§4a); no hand-apply,
+  no boundary exception.
+- **Path/schema:** RESOLVED — §3 path and §4 schema ACCEPTED as proposed.
+
+Remaining note (not blocking):
 - **No contract §7.2:** the roadmap's "S1/§7.2 CyberGym" cite refers to
   `docs/research/KRONOS_RESEARCH_RECORD.md §7.2`, not the contract (the
   contract has no §7.2). Noted to avoid a dangling governance reference.
