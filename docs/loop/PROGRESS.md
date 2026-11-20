@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 391
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: OPEN_R9_DRAFT_PR
+pending_action_outcome: PENDING
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: R9 path A built+independently reviewed PASS. Committed 5 files one commit (2589015). Write-ahead to push feature branch + open draft PR. Branch-local/reversible, non-live. No merge (GATE-2 separate maintainer authorization).
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+feature_branch: kronos/r9-five-domain-engagement
+feature_head: 2589015b5407d6edad36cd93cbe0bddc48ca8bea
+brief: SPEC_BRIEF_R9_five_domain_engagement.md sha256 6bfaf5f5b9307d88e79c6d4ea7db0b8d5c5aa895a6ad93563cdaa2559bb4d809 (amended path A)
+pr: none yet (draft PR to be opened this turn)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 391): seq 390 applied R9 path A. Builder: schema.py FINDING +verdict_tier/control_disposition
+(DDL + NODE_COLUMNS + NODE_PROPS_ALWAYS, not FORBIDDEN); invalidation.py record_secret_finding keyword-only
+verdict_tier=""/control_disposition="" written only when non-empty; runner.py ~234 passes
+outcome.classification/outcome.control_outcome. test_five_domain_engagement.py props 3-4 read persisted
+FINDING via g.get_node (verdict_tier=="live_discriminated", control_disposition non-empty); hermetic
+(nonet socket patch, both validators patched). Seal: R8 window R8_BASE..R8_MERGE(89c4df7); R9_BASE=89c4df7,
+R9_SECTION_10 += three src/kronos files; R9_BASE..HEAD asserted. test_schema_graph.py untouched. INDEPENDENT
+REVIEWER PASS: scope (5 files, all §2 permitted), §4c correct, assertions non-vacuous, seal weakens nothing,
+full suite 4132 passed 1 skipped 0 failed. Reviewer notes (out-of-scope follow-ups, NOT blocking): stale
+prose citation test_finding_evidence_gate.py:74; docs KRONOS_DONE.md:62 still "OPEN". Committed one commit
+2589015 (src+seal together, else R9_BASE..HEAD reds). NEXT: push feature branch, open draft PR. STOP at GATE-2
+(no merge; maintainer names PR + head SHA). loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 390
 derived_at: 2026-11-15T00:00:00Z
 contract_version: 1.4.4
