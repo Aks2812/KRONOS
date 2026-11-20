@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 399
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
+pending_action: PRESENT_GATE1_R10_IMPLEMENTATION_CANDIDATE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Seq 398 top pending_action NONE, outcome R10_PREFLIGHT_MERGED; live-confirmed (main 391c938 == PR #63 squash merge; no contradiction). AUTO-BRIEF scan: single highest-priority next product step is R10 (BE-G3-5) IMPLEMENTATION (KRONOS-owned eval wrapper + run_summary.schema.json). Checkpoint 398 recorded it requires GATE-1; reviewer flagged reuse-by-import premise weak with a §4a STOP-to-GATE-1 clause. Security/evaluation-boundary + material architecture ambiguity = mandatory pause; NOT AUTO-BRIEF-eligible. No other eligible unblocked branch-local item exists. Presenting one scoped GATE-1 candidate; await maintainer. No build, no run, no §6/§8, no network.
+base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
+feature_branch: none (no branch opened this turn)
+feature_head: none
+brief: none yet (R10 IMPLEMENTATION brief to be authored only upon GATE-1)
+pr: none opened this turn; PR #63 MERGED (R10 preflight DEFINITION). Open PRs #13 #14 are stale pre-existing drafts, out of scope.
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+GATE-1 CANDIDATE (the single scoped ask):
+  id: BE-G3-5 R10 IMPLEMENTATION
+  scope: author SPEC_BRIEF for KRONOS-owned CyberGym eval-evidence wrapper located OUTSIDE cybergym/
+    (under src/kronos/eval/... or a repo-root script), reusing cybergym primitives by import only, plus
+    evaluation_evidence/cybergym-x-score/run_summary.schema.json; branch-local, non-live, reversible.
+  gate rationale: amends/exercises the CyberGym evaluation boundary; reviewer-flagged reuse-by-import
+    feasibility is unresolved (if a step is not importable without editing cybergym/ or forking, §4a requires
+    STOP->GATE-1). Separate from it, the bounded eval RUN remains a distinct §6/§8 live step needing its own
+    authorization ("stop before running").
+  LOW follow-ups to fold into that brief (non-blocking): (1) §4a cite both :10-25 and :168 no-shortcut
+    reuse-by-import anchors; (2) resolve reuse-by-import premise (kronos_validation_run.py _run_pipeline:201
+    _assert_...:168 main():354 TemporaryDirectory:366).
+R10_WINDOW_SEAL_FORWARD (unchanged, applies to any future R-brief): R10_BASE=44d0771 .. R10_MERGE=391c938.
+INELIGIBLE/out-of-scope (unchanged, human-gated): cybergym/** NEVER-edit; .claude/**; governance;
+  §6/§8 live run; protected-branch writes.
+STATE-OF-GOALS: R10 (BE-G3-5) OPEN; BE-G2-6 BLOCKED on BE-G1-7/BE-G3-5. No active Completion Record ->
+  NO-ACTION not justified; this is incomplete-idle presenting exactly one GATE-1 candidate.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 398
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
