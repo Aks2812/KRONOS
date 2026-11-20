@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 412
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: GATE2_AUTHORIZE_R10_REDACTION_MERGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: seq 411 pending_action PROVE_R10_REDACTION_CAPABILITY_NEUTRAL outcome=DONE. kronos-builder added 7 hermetic differential tests (test-file only; no production/seal change) + bound leak-test needles to m._fixture_needles(). INDEPENDENT REVIEWER PASS at head 8b8cb16: newest commit c76415b..8b8cb16 touches ONLY tests/test_eval_cybergym_x_score.py; tests NON-VACUOUS (reviewer mutation test broke status==reachable + dropped chain-3 needle + altered a literal => 3 tests failed, proving they bite); capability-neutrality proven across X-SCORE (0/1/2/3+incomplete), assemble_run_summary semantics golden (budget+teardown passthrough verbatim), FINDING graph-persistence read via fake-graph stub on the REAL _collect_state, evidence_manifest lossless provenance (manifest sha set == evidence/ file set), committed-set = exactly the 4 redacted files with byte-identical ledger/teardown copies and NO evidence/ or pipeline_stdout.txt, pipeline-reuse neutrality (no shadow of _assert_enrichment_did_not_shortcut_anyone; run() imports+calls real _run_pipeline); needle binding test asserts _fixture_needles()==the three real values. FULL suite 4155 passed 1 skipped 0 failed (SUMMARY line). import side-effect-free (IMPORT_OK). Orchestrator Gate-2 semantic PASS. Non-blocking naming nit: test_committed_set_differential is an export-set check (not vs live pipeline). HOLD GATE-2 at the NEW head 8b8cb16 (prior c76415b authorization stale). No run, no §6/§8.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: kronos/r10-redaction
+feature_head: 8b8cb16c190384c2561ba8a975a15a943ca4f7eb
+brief: SPEC_BRIEF_R10_impl.md (Option B redaction + capability-neutrality proof)
+pr: 66 OPEN draft, base main, head 8b8cb16c190384c2561ba8a975a15a943ca4f7eb
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HOLD GATE-2: on operator authorization of PR #66 at head 8b8cb16, re-measure full ten-item MERGE-GATE same
+  turn, then `gh pr merge 66 --squash --match-head-commit 8b8cb16c190384c2561ba8a975a15a943ca4f7eb`. PR draft;
+  operator authorizes readying. NO --admin, NO --auto. PRIOR c76415b AUTHORIZATION STALE — head advanced.
+NEXT after merge: RE-AUTHORIZE the bounded §6/§8 eval RUN (drift fixed + capability-neutral proven; run()
+  commits only the redacted manifest set). Separate explicit authorization ("stop before running").
+R10RB_WINDOW_SEAL_FORWARD: next R-brief seals R10RB_BASE=7093099..R10RB_MERGE=<PR66 merge SHA>.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 411
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
