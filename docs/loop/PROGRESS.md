@@ -1,4 +1,45 @@
 # KRONOS loop-state checkpoint
+seq: 424
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: HOLD_R10_RUN_FAILED_INTERNAL_NET_BREAKS_PUBLISHING
+pending_action_outcome: PENDING
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: seq 423 pending_action EXECUTE_R10_BOUNDED_RUN outcome=FAILED. Exactly ONE §6/§8-authorized run executed via run() on main be30b9e and FAILED: TimeoutError "lab services did not become ready in time" at cybergym/selftest.py:278 wait_for_services() (host health probes to 127.0.0.1:8091 api /health==200 and 127.0.0.1:4567 proxy /nonexistent-probe==403 never connected). Containers DID start (localstack/init-buckets/sigv4-proxy/api all created) and TEARDOWN ran cleanly via CleanupRegistry (all containers removed, network cybergym_default removed); LAB_DOWN, NO_CONTAINERS, NO_NET confirmed. committed_dir cybergym-x-score-v1_20261120T162448Z was created empty before the failure (run() mkdir precedes the guarded block; reviewer-flagged residual) => NO files, NO leak; removed via rmdir. Transient run TMPDIR auto-cleaned. git status clean. ROOT CAUSE (high confidence): the sole runtime change vs the pre-containment wrapper is networks.default.internal:true (PR #67); an internal Docker network has no gateway and on this Docker (2.40.3) severs host->container published-port reachability, so the host health probes time out. internal:true is config-neutral (ports still declared 127.0.0.1) but NOT runtime-capability-neutral: it breaks the lab's host-probe/validation architecture (validation pass also hits 127.0.0.1:8091/4567). ZERO EGRESS did hold (containers had no external route; --build cache-only). The one authorized run is CONSUMED; re-running needs NEW §6/§8 authorization. No evidence committed; BE-G3-5 NOT achieved this run.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-run (no commits; nothing to PR; being deleted)
+feature_head: none committed
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+OPERATOR DECISION NEEDED (one of):
+  (1) RECOMMENDED: replace the compose-level internal:true containment (which breaks host publishing) with a
+      HOST-level egress control that preserves host<->container publishing: a DOCKER-USER iptables DROP of the
+      cybergym bridge subnet's OUTBOUND to non-local destinations, applied around the run and removed after
+      (needs root; host mutation; capability-neutral at runtime since the engagement needs only intra-network +
+      127.0.0.1). Requires: a GATE build to REVERT the internal:true override injection in run(), then a NEW
+      §6/§8 run authorization that also authorizes the bounded host-firewall apply/remove.
+  (2) DIAGNOSE: authorize ONE additional bounded lab stand-up to confirm internal:true (not a 90s-too-short
+      readiness window) is the cause — distinguishes "internal blocks publishing" vs "wait_for_services timeout=90
+      too short" (selftest.py:266 timeout is in cybergym/** NEVER-edit, so a timeout bump would need a wrapper
+      path, not a cybergym edit).
+  (3) Revert PR #67 entirely and accept egress is enforced only by the host firewall at run time (no compose
+      network change), then re-run.
+  RECOMMENDATION: (1) — host-level egress filter preserves the lab's host-probe capability that internal:true
+  broke, while still delivering structural zero container egress.
+STATE-OF-GOALS: R10 (BE-G3-5) all sub-parts merged EXCEPT the committed evidence from a successful run; the run
+  failed on the egress-containment mechanism. BE-G2-6 (R12) BLOCKED until R10 passes. No active Completion Record.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. One run consumed; no
+  re-run, no firewall mutation, no further stand-up without new authorization.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 423
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
