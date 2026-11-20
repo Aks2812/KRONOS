@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 392
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
+pending_action: GATE2_AUTHORIZE_R9_MERGE
+pending_action_outcome: PENDING
+report_type: REVIEW-REQUIRED
+decision_class: HOLD
+opus_effort: MEDIUM
+opus_effort_reason: R9 path A complete through draft PR. seq 391 OPEN_R9_DRAFT_PR outcome=DONE. Awaiting GATE-2 maintainer merge authorization (names PR + full head SHA). Loop cannot self-authorize merge.
+base_main: 89c4df754848e803e9bc429ce42f3293af205d90
+feature_branch: kronos/r9-five-domain-engagement
+feature_head: 2589015b5407d6edad36cd93cbe0bddc48ca8bea
+brief: SPEC_BRIEF_R9_five_domain_engagement.md sha256 6bfaf5f5b9307d88e79c6d4ea7db0b8d5c5aa895a6ad93563cdaa2559bb4d809 (amended path A)
+pr: 62 OPEN draft, base main, head 2589015b5407d6edad36cd93cbe0bddc48ca8bea
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 392): seq 391 write-ahead OPEN_R9_DRAFT_PR DONE. Pushed feature branch c3730e2..2589015; opened
+draft PR #62 (base main, head 2589015). Independent reviewer PASS (full suite 4132 passed 1 skipped 0 failed;
+scope 5 files all §2; §4c correct; assertions non-vacuous; seal weakens nothing). HOLD at GATE-2: merge needs
+maintainer authorization naming PR #62 + full head SHA 2589015b5407d6edad36cd93cbe0bddc48ca8bea. Before any
+merge, re-measure full ten-item MERGE-GATE same turn (main protected; PR not draft; open+unmerged; head==authorized
+SHA; independent reviewer PASS by evidence; CI green or ci:none; local suite 0 failed re-measured; scope-guard
+seal Gate-2 PASS; no hard-boundary/out-of-scope). PR is DRAFT — mark ready-for-review requires maintainer intent.
+Out-of-scope follow-ups (not blocking): stale citation test_finding_evidence_gate.py:74; KRONOS_DONE.md:62 OPEN.
+loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 391
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
