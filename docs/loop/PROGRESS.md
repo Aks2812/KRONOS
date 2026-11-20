@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 398
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
+pending_action: NONE
+pending_action_outcome: R10_PREFLIGHT_MERGED
+report_type: AUTO-CONTINUE
+decision_class: NO-ACTION
+opus_effort: LOW
+opus_effort_reason: R10 preflight DEFINITION merged to main via GATE-2. Ten-item MERGE-GATE re-measured PASS same turn; squash --match-head-commit at authorized SHA. R10 (BE-G3-5) itself still OPEN: needs IMPLEMENTATION brief (KRONOS-owned wrapper + run_summary.schema.json) then a separately authorized bounded run. No run performed; no §8.
+base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
+feature_branch: kronos/r10-preflight (merged; squashed)
+feature_head: merged
+brief: SPEC_BRIEF_R10_preflight.md (PREFLIGHT DEFINITION — merged, in-repo on main)
+pr: 63 MERGED 2026-11-20T09:06:24Z squash commit 391c938b9e12535a00c562c243d34b6bd48e3cae
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+R10_WINDOW_SEAL_FORWARD: next brief MUST seal R10 window R10_BASE=44d0771..R10_MERGE=391c938 in scope-audit
+(mirror R7/R8/R9 pattern), else suite reds on open R10_BASE..HEAD assertion.
+CONTEXT (seq 398): GATE-2 maintainer-authorized merge of PR #63 (named PR + full head SHA
+1497afaedef483fdcf7ac6ee40b373f8af5608f6). Ten-item MERGE-GATE re-measured same turn, all PASS:
+(1) main protected 25333712; (2) PR marked ready; (3) OPEN+unmerged+MERGEABLE/CLEAN; (4) head==authorized
+1497afa; (5) independent reviewer PASS §8 same head; (6) ci:none; (7) local suite re-measured by orchestrator
+at 1497afa: 4132 passed 1 skipped 0 failed via canonical runner SUMMARY; (8) scope-audit seal green;
+(9) scope exactly 2 files (SPEC_BRIEF_R10_preflight.md + tests/test_commit_authority.py), no cybergym/src/
+docs/.claude/.github; (10) squash --match-head-commit 1497afa, no --admin/--auto. main 44d0771->391c938.
+Integrity re-verified at 391c938: 3 governance hashes == manifest v1.4.4. DELIVERED: committed preflight
+DEFINITION only (manifest, authorized local CyberGym target, accepted evidence path/schema, KRONOS-owned
+wrapper requirement, safety limits, rollback). NO live run; BE-G3-5 remains OPEN. Deferred LOW follow-ups
+(from reviewer, need GATE-1 if pursued in impl brief): §4a cite :10-25 + :168; reuse-by-import premise weak
+(private _run_pipeline:201/_assert:168, main():354 owns TempDir:366) -- §4a STOP clause covers. NEXT eligible
+product step (requires GATE-1): R10 IMPLEMENTATION brief = build KRONOS-owned wrapper (src/kronos/eval/...
+outside cybergym/) + evaluation_evidence/cybergym-x-score/run_summary.schema.json; the authorized bounded run
+that writes committed evidence is a SEPARATE §6/§8 live step needing explicit maintainer authorization. R12
+(BE-G2-6) BLOCKED until BE-G1-7 (done) + BE-G3-5 pass. loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 397
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
