@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 411
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: PROVE_R10_REDACTION_CAPABILITY_NEUTRAL
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator (pre-GATE-2) requires a capability-neutrality proof of Option B at PR #66 head c76415b, with leak-test needles bound to the live fixtures; add ONLY scoped differential tests, independently review, return the new exact head; NO merge, NO live run. Proof is fully hermetic in tests/test_eval_cybergym_x_score.py (the single permitted file this turn): (1) _collect_state FINDING-graph-persistence read semantics via a fake-graph stub (monkeypatch kvr._load_manifest_and_graph -> stub; kvr._survivor_of -> identity; stub get_node/execute return canned SECRET/FINDING/EVIDENCE rows); (2) X-SCORE neutrality (0/1/2/3 + incomplete); (3) assemble_run_summary semantics golden (full-dict equality, budget+teardown passthrough verbatim); (4) evidence_manifest LOSSLESS provenance (manifest sha256 set == evidence/ filename set, sizes, kinds); (5) committed-set differential (export_redacted = exactly the 4 redacted files; ledger/teardown byte-identical copies via filecmp; no evidence/ or pipeline_stdout.txt) => only packaging differs; (6) no-shortcut/budget/teardown reuse neutrality structurally (module does NOT shadow _assert_enrichment_did_not_shortcut_anyone; inspect.getsource(run) imports+calls the real cybergym _run_pipeline); (7) needle binding: assert _fixture_needles() == the three real values and source positive/negative controls from _fixture_needles(). No cybergym_x_score.py change, no seal change (file already in R10RB_SECTION_10), no new window.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: kronos/r10-redaction
+feature_head: c76415b7945fbdae7f8e3bc40bc1242f0d14b78c (will advance; new head returned after review)
+brief: SPEC_BRIEF_R10_impl.md (Option B)
+pr: 66 OPEN draft, base main, head c76415b (pre-proof); head advances this turn
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED FILE (hard scope): tests/test_eval_cybergym_x_score.py ONLY. NOTHING else — no production code, no seal,
+  no cybergym/**, no governance. If proof needs a production refactor, STOP and report (do not touch prod code).
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO live run, NO docker,
+  NO network. After review PASS: return new exact head; HOLD GATE-2 at that head (prior c76415b authorization stale).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 410
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
