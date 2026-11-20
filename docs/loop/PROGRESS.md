@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 417
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
+pending_action: NONE
+pending_action_outcome: PYTHON_BASE_PULLED
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 416 pending_action PULL_PYTHON_BASE_IMAGE outcome=DONE. One authorized infrastructure-only pull of official docker.io/library/python:3.12-slim completed; source unambiguous (official library image, explicit registry path); no container started, no R10 run, no additional egress. Reconfirmed all 5 required images cached and lab stopped. Next step = the bounded §6/§8 eval RUN, which needs SEPARATE explicit maintainer authorization (operator directive). Not loop-eligible.
+PULL EVIDENCE (python:3.12-slim):
+  repo_digest: python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+  image_id: sha256:78976a69c067520ef8be34cde307ef9f6fea6dcefa50edb57039773d241ca0db
+  size_bytes: 119488169 (119MB)
+  image_created: 2026-11-05T08:00:30.329058258Z
+  source: docker.io/library/python:3.12-slim (official; unambiguous)
+IMAGES CACHED (reconfirmed): python:3.12-slim, localstack/localstack:3.0, cybergym-api:latest,
+  cybergym-sigv4-proxy:latest, cybergym-init-buckets:latest. LAB_STOPPED (no cybergym/localstack/sigv4 containers).
+base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
+feature_branch: none
+feature_head: none
+brief: SPEC_BRIEF_R10_impl.md (on main)
+pr: none
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+STOP NEXT — MANDATORY PAUSE (needs SEPARATE §6/§8 authorization; "stop before running"):
+  BE-G3-5 bounded eval RUN on main 6c2fcd0 via src/kronos/eval/cybergym_x_score.py run(): signed manifest,
+  127.0.0.1/LocalStack only, no external egress (all images now cached => run() --build is cache-only), no real
+  credentials, enforce budget+teardown, abort on drift/missing deps, commit ONLY run_summary.json +
+  budget_ledger.json + teardown_report.json + evidence_manifest.json under evaluation_evidence/cybergym-x-score/
+  <run_id>/; independently review, draft PR, STOP at GATE-2.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No further egress without
+  authorization; the one authorized base-image pull is complete.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 416
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
