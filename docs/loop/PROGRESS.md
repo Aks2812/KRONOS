@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 397
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 44d0771)
+pending_action: GATE2_AUTHORIZE_R10_PREFLIGHT_MERGE
+pending_action_outcome: PENDING
+report_type: REVIEW-REQUIRED
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: R10 preflight amended per maintainer decisions (accept path/schema; cybergym NEVER-edit; KRONOS-owned wrapper). Independent reviewer PASS; suite green. Pushed; PR #63 head 1497afa == reviewed SHA. HOLD at GATE-2 merge authorization. No run; no §8.
+base_main: 44d0771a9b6507a3523a8cc530dbe567b917dd33
+feature_branch: kronos/r10-preflight
+feature_head: 1497afaedef483fdcf7ac6ee40b373f8af5608f6
+brief: SPEC_BRIEF_R10_preflight.md (PREFLIGHT DEFINITION ONLY; amended 2026-11-20)
+pr: 63 OPEN draft, base main, head 1497afaedef483fdcf7ac6ee40b373f8af5608f6
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 397): seq 396 HOLD -> maintainer accepted path/schema, reaffirmed cybergym/** NEVER-edit,
+required KRONOS-owned wrapper for output redirection. Amended SPEC_BRIEF_R10_preflight.md: added binding
+maintainer decisions block; §3/§4 marked ACCEPTED; new §4a KRONOS-owned evidence wrapper (located under
+src/kronos/ or repo-root script OUTSIDE cybergym/; reuse cybergym primitives by import only; STOP+return to
+GATE-1 if a step is not importable rather than edit cybergym/ or fork; no weakening of enrichment no-shortcut
+assertion; fidelity preserved); §8 risks (a)(b) resolved. Committed brief-only 1497afa (within R10_SECTION_10,
+seal green). INDEPENDENT REVIEWER PASS: branch scope exactly 2 files (SPEC_BRIEF_R10_preflight.md +
+tests/test_commit_authority.py), NO cybergym/src/docs/.claude/.github change; decisions encoded; no stale
+"proposed/pending"; seal R9->44d0771 + R10 window intact; full suite 4132 passed 1 skipped 0 failed. Pushed
+4059b6b..1497afa; PR #63 head == reviewed SHA 1497afa. Reviewer LOW follow-ups (non-blocking, deferred):
+(i) §4a cite both :10-25 docstring and :168 mechanical no-shortcut check; (ii) §4a reuse-by-import premise
+weak (kronos_validation_run.py _run_pipeline:201 / _assert_...:168 private, main():354 owns TemporaryDirectory
+:366) -- §4a STOP clause already covers, expect GATE-1 return at implementation. HOLD at GATE-2: maintainer
+names PR #63 + full head SHA to merge; ten-item MERGE-GATE re-measured same turn. NO run, NO §8. After merge,
+next step = IMPLEMENTATION brief (wrapper + run_summary.schema.json), then separately the authorized bounded
+run. loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 396
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
