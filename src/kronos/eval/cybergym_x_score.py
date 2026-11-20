@@ -14,8 +14,10 @@ import contextlib
 import io
 import json
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,6 +36,8 @@ LAB = {
 }
 LEDGER_FILENAME = "budget_ledger.json"  # kronos.budget.ledger.LEDGER_FILENAME
 TEARDOWN_FILENAME = "teardown_report.json"  # kronos.cleanup.registry.TEARDOWN_REPORT_FILENAME
+
+SECRET_NEEDLE_HEADER = "X-Cybergym-Key"
 
 _X_SCORE_RE = re.compile(r"^X-SCORE: (\d+)/3\b", re.M)
 _CHAIN_KEYS = {"id", "discovered", "validated_end_to_end", "finding_id", "verdict_tier", "control_disposition"}
@@ -99,8 +103,61 @@ def validate_run_summary(summary: dict) -> None:
     jsonschema.validate(summary, schema)
 
 
+def build_evidence_manifest(evidence_dir: Path, kinds_by_sha: dict[str, str]) -> list[dict]:
+    """PURE: sha256/kind/size per blob file. Never reads blob bytes."""
+    evidence_dir = Path(evidence_dir)
+    if not evidence_dir.is_dir():
+        return []
+    entries = [
+        {
+            "sha256": p.name,
+            "kind": kinds_by_sha.get(p.name, "unreferenced"),
+            "size": p.stat().st_size,
+        }
+        for p in evidence_dir.iterdir()
+        if p.is_file()
+    ]
+    return sorted(entries, key=lambda e: e["sha256"])
+
+
+def assert_redacted(committed_dir: Path, needles: list[str]) -> None:
+    """PURE fail-closed gate: no needle and no secret header name in any committed file."""
+    for path in sorted(Path(committed_dir).iterdir()):
+        if not path.is_file():
+            continue
+        text = path.read_bytes().decode("latin-1")
+        for needle in [*needles, SECRET_NEEDLE_HEADER]:
+            if needle in text:
+                raise ValueError(f"redaction violation: {needle!r} found in {path.name}")
+
+
+def export_redacted(work_dir: Path, committed_dir: Path, summary: dict, evidence_manifest: list[dict]) -> None:
+    """Write ONLY redacted artifacts into committed_dir (never evidence/ or pipeline_stdout.txt)."""
+    work_dir, committed_dir = Path(work_dir), Path(committed_dir)
+    (committed_dir / "run_summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True))
+    shutil.copyfile(work_dir / LEDGER_FILENAME, committed_dir / LEDGER_FILENAME)
+    shutil.copyfile(work_dir / TEARDOWN_FILENAME, committed_dir / TEARDOWN_FILENAME)
+    (committed_dir / "evidence_manifest.json").write_text(json.dumps(evidence_manifest, indent=2, sort_keys=True))
+
+
+def _fixture_needles() -> list[str]:
+    """LIVE-only: the known fixture secret plaintexts."""
+    from cybergym import kronos_validation_run as kvr
+
+    strings_xml = (kvr.HERE / "mobile" / "apk_src" / "res" / "values" / "strings.xml").read_text()
+    chain3_value = (kvr.HERE / "mobile" / "apk_src" / "assets" / "cfg.dat").read_text() + kvr._extract_resource(
+        strings_xml, "kronos_chain3_secret_part2"
+    )
+    return [kvr.CHAIN1_SECRET_VALUE, kvr.CHAIN2_SECRET_VALUE, chain3_value]
+
+
 def _collect_chains_and_manifest_id(engagement_dir: Path) -> tuple[list[dict], str]:
-    """LIVE-only: read persisted chain/finding state from the engagement graph."""
+    chains, manifest_id, _ = _collect_state(engagement_dir)
+    return chains, manifest_id
+
+
+def _collect_state(engagement_dir: Path) -> tuple[list[dict], str, dict[str, str]]:
+    """LIVE-only: read persisted chain/finding state and evidence kinds from the engagement graph."""
     from cybergym import kronos_validation_run as kvr
     from kronos.manifest import compute_manifest_id, load_and_verify
     from cryptography.hazmat.primitives import serialization
@@ -138,7 +195,12 @@ def _collect_chains_and_manifest_id(engagement_dir: Path) -> tuple[list[dict], s
                 "control_disposition": finding[2] if finding else None,
             }
         )
-    return chains, manifest_id
+    kinds_by_sha: dict[str, str] = {}
+    ev_rows = graph.execute("MATCH (e:EVIDENCE) RETURN e.sha256, e.kind")
+    while ev_rows.has_next():
+        sha, kind = ev_rows.get_next()
+        kinds_by_sha[sha] = kind
+    return chains, manifest_id, kinds_by_sha
 
 
 def run(output_root: Path) -> Path:
@@ -152,46 +214,53 @@ def run(output_root: Path) -> Path:
 
     started = datetime.now(timezone.utc)
     run_id = run_id_for(started)
-    engagement_dir = Path(output_root) / run_id
-    engagement_dir.mkdir(parents=True, exist_ok=False)
+    committed_dir = Path(output_root) / run_id
+    committed_dir.mkdir(parents=True, exist_ok=False)
 
-    buf = io.StringIO()
-    registry = CleanupRegistry()
-    try:
-        with registry:
-            print("standing up the lab (docker compose up -d --build)...")
-            compose("up", "-d", "--build")
-            registry.register(
-                "docker",
-                "cybergym-range-stack",
-                compose_down(compose),
-                detail="docker compose down -v (CyberGym range)",
-            )
-            wait_for_services()
-            with contextlib.redirect_stdout(buf):
-                exit_code = _run_pipeline(engagement_dir)
-    finally:
-        if registry.last_report is not None:
-            write_teardown_report(engagement_dir, registry.last_report)
-    stdout_text = buf.getvalue()
-    (engagement_dir / "pipeline_stdout.txt").write_text(stdout_text)
+    with tempfile.TemporaryDirectory(prefix="kronos-r10-run-") as work_str:
+        work_dir = Path(work_str)
+        buf = io.StringIO()
+        registry = CleanupRegistry()
+        try:
+            with registry:
+                print("standing up the lab (docker compose up -d --build)...")
+                compose("up", "-d", "--build")
+                registry.register(
+                    "docker",
+                    "cybergym-range-stack",
+                    compose_down(compose),
+                    detail="docker compose down -v (CyberGym range)",
+                )
+                wait_for_services()
+                with contextlib.redirect_stdout(buf):
+                    exit_code = _run_pipeline(work_dir)
+        finally:
+            if registry.last_report is not None:
+                write_teardown_report(work_dir, registry.last_report)
+        stdout_text = buf.getvalue()
+        (work_dir / "pipeline_stdout.txt").write_text(stdout_text)
 
-    chains, manifest_id = _collect_chains_and_manifest_id(engagement_dir)
-    commit = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
-    ).stdout.strip()
-    summary = assemble_run_summary(
-        run_id=run_id,
-        engagement_dir=engagement_dir,
-        exit_code=exit_code,
-        stdout_text=stdout_text,
-        chains=chains,
-        manifest_id=manifest_id,
-        started_at=started.isoformat(),
-        ended_at=datetime.now(timezone.utc).isoformat(),
-        kronos_commit=commit,
-    )
-    validate_run_summary(summary)
-    out = engagement_dir / "run_summary.json"
-    out.write_text(json.dumps(summary, indent=2, sort_keys=True))
-    return out
+        chains, manifest_id, kinds_by_sha = _collect_state(work_dir)
+        evidence_manifest = build_evidence_manifest(work_dir / "evidence", kinds_by_sha)
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
+        ).stdout.strip()
+        summary = assemble_run_summary(
+            run_id=run_id,
+            engagement_dir=work_dir,
+            exit_code=exit_code,
+            stdout_text=stdout_text,
+            chains=chains,
+            manifest_id=manifest_id,
+            started_at=started.isoformat(),
+            ended_at=datetime.now(timezone.utc).isoformat(),
+            kronos_commit=commit,
+        )
+        try:
+            validate_run_summary(summary)
+            export_redacted(work_dir, committed_dir, summary, evidence_manifest)
+            assert_redacted(committed_dir, _fixture_needles())
+        except BaseException:
+            shutil.rmtree(committed_dir, ignore_errors=True)
+            raise
+    return committed_dir / "run_summary.json"
