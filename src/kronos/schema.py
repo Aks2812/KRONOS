@@ -86,7 +86,7 @@ CREATE NODE TABLE IF NOT EXISTS TECHNOLOGY(
 CREATE NODE TABLE IF NOT EXISTS FINDING(
     id STRING, in_scope BOOLEAN, created_at STRING, source STRING,
     title STRING, severity STRING, status STRING, confidence INT64,
-    merged_into STRING,
+    merged_into STRING, verdict_tier STRING, control_disposition STRING,
     PRIMARY KEY(id)
 );
 CREATE NODE TABLE IF NOT EXISTS EVIDENCE(
@@ -173,7 +173,7 @@ NODE_PROPS_ALWAYS: dict[str, set[str]] = {
     "IDENTITY": {"source", "name", "provider"},
     "CLOUD_RESOURCE": {"source", "resource_type", "provider"},
     "TECHNOLOGY": {"source", "name", "version"},
-    "FINDING": {"source", "title", "severity"},
+    "FINDING": {"source", "title", "severity", "verdict_tier", "control_disposition"},
     "EVIDENCE": {"sha256", "blob_path", "kind"},
 }
 
@@ -231,7 +231,7 @@ NODE_COLUMNS: dict[str, set[str]] = {
     "IDENTITY": {"id", "in_scope", "created_at", "source", "name", "provider"},
     "CLOUD_RESOURCE": {"id", "in_scope", "created_at", "source", "resource_type", "provider"},
     "TECHNOLOGY": {"id", "in_scope", "created_at", "source", "name", "version"},
-    "FINDING": {"id", "in_scope", "created_at", "source", "title", "severity", "status", "confidence", "merged_into"},
+    "FINDING": {"id", "in_scope", "created_at", "source", "title", "severity", "status", "confidence", "merged_into", "verdict_tier", "control_disposition"},
     "EVIDENCE": {"id", "created_at", "sha256", "blob_path", "kind"},
 }
 

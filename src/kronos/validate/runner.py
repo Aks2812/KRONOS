@@ -232,7 +232,8 @@ def run_validation_pass(
                 graph.upsert_edge("authenticates_to", secret_id, "SECRET", candidate.id, candidate.type, source=MutationSource.VALIDATION)
                 _advance_through(graph, secret_id)
                 record_secret_finding(
-                    graph, secret_id, candidate, evidence=outcome.evidence, engagement_dir=engagement_dir
+                    graph, secret_id, candidate, evidence=outcome.evidence, engagement_dir=engagement_dir,
+                    verdict_tier=outcome.classification, control_disposition=outcome.control_outcome,
                 )
             elif outcome.classification == "authenticated_not_authorized":
                 attach_evidence(

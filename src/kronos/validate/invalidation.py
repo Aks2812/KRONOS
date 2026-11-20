@@ -16,18 +16,24 @@ _INVALIDATABLE = ("reachable", "exploited", "reported")
 
 
 def record_secret_finding(
-    engagement, secret_id: str, candidate, *, evidence: bytes | None = None, engagement_dir=None
+    engagement, secret_id: str, candidate, *, evidence: bytes | None = None, engagement_dir=None,
+    verdict_tier: str = "", control_disposition: str = "",
 ) -> str:
     finding_id = f"finding:secret-access:{secret_id}:{candidate.id}"
+    props = {
+        "source": "secret_validator",
+        "title": f"Secret {secret_id} grants access to {candidate.id} (validated)",
+        "severity": "info",
+        "status": "hypothesis",
+    }
+    if verdict_tier:
+        props["verdict_tier"] = verdict_tier
+    if control_disposition:
+        props["control_disposition"] = control_disposition
     engagement.upsert_node(
         "FINDING",
         finding_id,
-        {
-            "source": "secret_validator",
-            "title": f"Secret {secret_id} grants access to {candidate.id} (validated)",
-            "severity": "info",
-            "status": "hypothesis",
-        },
+        props,
         source=MutationSource.VALIDATION,
     )
     engagement.upsert_edge("derived_from", finding_id, "FINDING", secret_id, "SECRET", source=MutationSource.VALIDATION)
