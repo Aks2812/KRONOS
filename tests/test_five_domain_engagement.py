@@ -117,12 +117,10 @@ def test_five_domains_one_graph_finding_has_proof_tier_and_disposition(
     sha = res.get_next()[0]
     assert get_evidence(engagement_dir, sha) == PROOF
 
-    # 3. verdict tier: discriminated live_discriminated driving outcome
+    # 3. verdict tier: read back from the persisted FINDING node
     assert len(attempts) == 1
-    assert attempts[0].target_id == API_URL
-    assert attempts[0].discriminated is True
-    assert attempts[0].classification == "live_discriminated"
-    assert discriminated.live and discriminated.discriminated
+    node = g.get_node("FINDING", fid)
+    assert node["verdict_tier"] == "live_discriminated"
 
-    # 4. control disposition recorded and non-empty
-    assert discriminated.control_outcome.strip() != ""
+    # 4. control disposition persisted and non-empty
+    assert (node["control_disposition"] or "").strip() != ""

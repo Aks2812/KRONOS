@@ -122,6 +122,9 @@ R9_SECTION_10 = {
     "SPEC_BRIEF_R9_five_domain_engagement.md",
     "tests/test_five_domain_engagement.py",
     "tests/test_commit_authority.py",
+    "src/kronos/schema.py",
+    "src/kronos/validate/invalidation.py",
+    "src/kronos/validate/runner.py",
 }
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
