@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 404
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ d8607ad)
+pending_action: BUILD_R10_WRAPPER_AND_SCHEMA
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Operator authorized BUILD step on main d8607ad — implement KRONOS-owned eval wrapper under src/kronos/eval/ + evaluation_evidence/cybergym-x-score/run_summary.schema.json per SPEC_BRIEF_R10_impl.md §1/§2; hermetic tests only, NO live run; STOP-to-GATE-1 if any step needs editing cybergym/**. Write-ahead before branch/build/PR. Dispatch kronos-builder (foreground) on permitted files only; then independent reviewer; then HOLD GATE-2.
+base_main: d8607ad13e06e23bdec795fb8ec5313975971235
+feature_branch: kronos/r10-build (to be created from d8607ad)
+feature_head: PENDING
+brief: SPEC_BRIEF_R10_impl.md (on main) — build targets §1/§2
+pr: to-be-opened draft, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED BUILD FILES (hard scope): src/kronos/eval/__init__.py, src/kronos/eval/cybergym_x_score.py,
+  evaluation_evidence/cybergym-x-score/run_summary.schema.json, tests/test_eval_cybergym_x_score.py,
+  tests/test_commit_authority.py (seal-tax only). NOTHING else.
+SEAL-TAX PLAN: seal R10I window add R10I_MERGE="d8607ad" assertion ..HEAD->..{R10I_MERGE}; open R10B window
+  R10B_BASE="d8607ad" R10B_SECTION_10={the 5 permitted files}, assertion ..HEAD.
+HARD BOUNDARY: cybergym/** NEVER-edit (STOP-to-GATE-1 if build needs it); .claude/** .github/** docs/governance/**
+  manifest NEVER-edit. NO live run, NO docker compose up, NO network, NO credentials, NO §6/§8.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 403
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
