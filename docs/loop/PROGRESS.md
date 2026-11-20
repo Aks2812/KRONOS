@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 396
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 44d0771)
+pending_action: APPROVE_R10_PREFLIGHT_AND_DEFINE_RUN
+pending_action_outcome: PENDING
+report_type: REVIEW-REQUIRED
+decision_class: HOLD
+opus_effort: LOW
+opus_effort_reason: R10 preflight definition complete through draft PR #63. seq 395 OPEN_R10_PREFLIGHT_DRAFT_PR outcome=DONE. Awaiting maintainer: accept preflight brief, confirm/override evidence path+schema, rule on cybergym/ edit boundary. No run authorized; no §8. Loop stops here per operator "stop for approval before running".
+base_main: 44d0771a9b6507a3523a8cc530dbe567b917dd33
+feature_branch: kronos/r10-preflight
+feature_head: 4059b6b1bc0fe13f84d4020dbd5cad3791932722
+brief: SPEC_BRIEF_R10_preflight.md (PREFLIGHT DEFINITION ONLY)
+pr: 63 OPEN draft, base main, head 4059b6b1bc0fe13f84d4020dbd5cad3791932722
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+CONTEXT (seq 396): seq 395 write-ahead DONE. Pushed branch kronos/r10-preflight; opened draft PR #63
+(2 files: SPEC_BRIEF_R10_preflight.md + tests/test_commit_authority.py seal). Suite green 4132 passed 1
+skipped. HOLD for maintainer. DECISIONS NEEDED before any implementation or run: (1) accept the preflight
+brief; (2) confirm or override evidence path evaluation_evidence/cybergym-x-score/<run_id>/ and run_summary
+schema (BE-G3-5 maintainer-defined); (3) rule on cybergym/ edit boundary for output-redirection (loop
+NEVER-edit set) -> hand-apply or scoped exception. NO run performed; no network/credentials/§8. Next product
+step after approval = IMPLEMENTATION brief (output-redirect + run_summary.schema.json) then, separately, the
+authorized manifest-bounded run that produces committed evidence. R12 (BE-G2-6) remains BLOCKED until R10 +
+BE-G3-5 pass. loop-state committer kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 395
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
