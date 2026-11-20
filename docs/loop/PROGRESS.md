@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 409
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
+pending_action: BUILD_R10_REDACTION
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator chose Option B (2026-11-20): GATE-1 bounded redaction build only — replace committed raw evidence blobs with evidence_manifest.json entries (sha256, kind, size; NEVER raw bytes); add negative tests proving secret plaintext and X-Cybergym-Key absent from every committable artifact; independent review; draft PR; STOP at GATE-2. NO lab, run, network, or §6/§8. Write-ahead before branch/build/PR. Design: run() runs pipeline in a transient work dir (NOT under evaluation_evidence/); committed dir output_root/<run_id>/ gets ONLY redacted artifacts (run_summary.json, budget_ledger.json, teardown_report.json, evidence_manifest.json); raw evidence/ blobs + pipeline_stdout.txt stay in transient dir, never committed. build_evidence_manifest scans evidence/ files (sha256=name, size=stat), kind from EVIDENCE graph nodes else "unreferenced". assert_redacted fail-closed gate scans every committed file for needles before return.
+base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
+feature_branch: kronos/r10-redaction (to be created from 7093099)
+feature_head: PENDING
+brief: SPEC_BRIEF_R10_impl.md (§4 committed-set now superseded by Option B redaction policy)
+pr: to-be-opened draft, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED BUILD FILES (hard scope): src/kronos/eval/cybergym_x_score.py, tests/test_eval_cybergym_x_score.py,
+  tests/test_commit_authority.py (seal-tax only). NOTHING else. run_summary.schema.json unchanged (run_summary
+  shape unchanged); may add optional evidence_manifest field only if needed — prefer standalone evidence_manifest.json.
+SEAL-TAX PLAN: seal R10B add R10B_MERGE="7093099" assertion ..HEAD->..{R10B_MERGE}; open R10RB window
+  R10RB_BASE="7093099" R10RB_SECTION_10={the 3 permitted files}, assertion ..HEAD.
+HARD BOUNDARY: cybergym/** NEVER-edit (STOP-to-GATE-1 if needed); .claude/** .github/** docs/governance/** manifest
+  NEVER-edit. NO lab stand-up, NO docker, NO network, NO §6/§8. NEXT after review PASS = HOLD GATE-2.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 408
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
