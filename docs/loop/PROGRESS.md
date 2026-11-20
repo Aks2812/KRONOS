@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 403
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ d8607ad)
+pending_action: NONE
+pending_action_outcome: R10_IMPL_BRIEF_MERGED
+report_type: AUTO-CONTINUE
+decision_class: NO-ACTION
+opus_effort: LOW
+opus_effort_reason: seq 402 pending_action MERGE_R10_IMPL_BRIEF_PR64 outcome=DONE. GATE-2 maintainer-authorized PR #64 at head ba7a161. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) PR readied (operator-authorized); (3) OPEN+unmerged+MERGEABLE/CLEAN; (4) head==authorized ba7a16103ab41c4cb761484f7518ee60414d98a1; (5) reviewer PASS §8; (6) ci:none; (7) suite re-measured 4132 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope-audit green, scope exactly 2 files; (9) Gate-2 semantic PASS (definition-only, feasibility sound, no boundary); (10) no hard-boundary/out-of-scope file. Squashed via --match-head-commit ba7a161, no --admin/--auto. New main d8607ad; 3-file integrity re-verified PASS at d8607ad. R10 (BE-G3-5) IMPLEMENTATION brief now in-repo on main; wrapper NOT built, no run, no §8.
+base_main: d8607ad13e06e23bdec795fb8ec5313975971235
+feature_branch: kronos/r10-impl-brief (merged; squashed; local deleted)
+feature_head: merged
+brief: SPEC_BRIEF_R10_impl.md (DEFINITION — merged, in-repo on main)
+pr: 64 MERGED 2026-11-20T10:12:57Z squash commit d8607ad13e06e23bdec795fb8ec5313975971235
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+R10I_WINDOW_SEAL_FORWARD: next R-brief MUST seal R10I_BASE=391c938..R10I_MERGE=d8607ad in tests/test_commit_authority.py §seal, else suite reds.
+STOP NEXT (both separately maintainer-gated, NOT loop-eligible — GATE-1/security-eval-boundary):
+  (A) GATE-approved BUILD step: build KRONOS-owned eval wrapper (src/kronos/eval/cybergym_x_score.py or
+      repo-root script, OUTSIDE cybergym/**) + evaluation_evidence/cybergym-x-score/run_summary.schema.json,
+      per SPEC_BRIEF_R10_impl.md §1/§2; STOP-to-GATE-1 if any step needs editing cybergym/**.
+  (B) SEPARATE §6/§8 bounded eval RUN producing committed evidence; own explicit authorization ("stop before running").
+STATE-OF-GOALS: R10 (BE-G3-5) brief+schema DEFINED, wrapper+run still OPEN; BE-G2-6 (R12) BLOCKED on R10.
+  No active Completion Record -> NO-ACTION here is on merge-outcome record, not R&D completion.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 402
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
