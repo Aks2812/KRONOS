@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 401
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
+pending_action: GATE2_AUTHORIZE_R10_IMPL_BRIEF_MERGE
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: LOW
+opus_effort_reason: seq 400 pending_action AUTHOR_R10_IMPL_BRIEF_AND_OPEN_DRAFT_PR outcome=DONE. Brief authored; branch kronos/r10-impl-brief pushed; draft PR #64 opened (head ba7a161). INDEPENDENT REVIEWER PASS: scope exactly 2 files (SPEC_BRIEF_R10_impl.md, tests/test_commit_authority.py), no cybergym/src/kronos/.claude/.github/docs-governance touched; seal-tax correct (R10 window sealed to merge 391c938; R10I window opened base 391c938); no other assertion weakened; suite 4132 passed 1 skipped 0 failed (SUMMARY line, not $?); §0 reuse-by-import FEASIBLE-without-editing-cybergym recorded, STOP-to-GATE-1 clause present and not triggered; all line anchors verified. Cosmetic non-blocking nit: brief §2 cites ledger.py:73-95 for BudgetSnapshot.to_dict (def at :87) — accurate but loose. HOLD GATE-2 merge authorization. No run, no §6/§8.
+base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
+feature_branch: kronos/r10-impl-brief
+feature_head: ba7a16103ab41c4cb761484f7518ee60414d98a1
+brief: SPEC_BRIEF_R10_impl.md (IMPLEMENTATION brief — DEFINITION ONLY; no wrapper code, no schema file)
+pr: 64 OPEN draft, base main, head ba7a16103ab41c4cb761484f7518ee60414d98a1
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HOLD GATE-2: on operator authorization of PR #64 at head ba7a161, re-measure full ten-item MERGE-GATE same
+  turn, then `gh pr merge 64 --squash --match-head-commit ba7a16103ab41c4cb761484f7518ee60414d98a1`. PR is
+  draft; operator must authorize readying it (loop does not mark ready without asking). NO --admin, NO --auto.
+NEXT after merge: (1) GATE-approved BUILD step for the wrapper + run_summary.schema.json (src/kronos/eval/,
+  outside cybergym/**); (2) separately, the bounded §6/§8 eval RUN. Both separately authorized.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. No network/credentials.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 400
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
