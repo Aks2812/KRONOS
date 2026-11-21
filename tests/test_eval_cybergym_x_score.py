@@ -319,9 +319,13 @@ def test_run_uses_direct_compose_and_egress_guard():
     assert "egress_guard_teardown" in src
     assert 'registry.register(\n                    "firewall"' in src or 'registry.register("firewall"' in src
     assert 'discover_subnet("cybergym_default")' in src
+    assert 'assert_ipv4_only("cybergym_default")' in src
+    assert 'discover_gateway("cybergym_default")' in src
+    assert src.index('assert_ipv4_only("cybergym_default")') < src.index('discover_subnet("cybergym_default")')
+    assert src.index('discover_gateway("cybergym_default")') < src.index("apply_egress_guard(subnet, gateway)")
 
 
 def test_run_registers_firewall_before_apply_and_before_wait():
     src = inspect.getsource(m.run)
-    assert src.index('"firewall"') < src.index("apply_egress_guard(subnet)") < src.index("wait_for_services()")
+    assert src.index('"firewall"') < src.index("apply_egress_guard(subnet, gateway)") < src.index("wait_for_services()")
     assert src.index("compose_down(compose)") < src.index('"firewall"')

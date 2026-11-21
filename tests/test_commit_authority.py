@@ -143,6 +143,7 @@ R10NET_BASE = "6c2fcd0"
 R10NET_MERGE = "be30b9e"
 R10NET_SECTION_10 = {"src/kronos/eval/cybergym_internal_net.override.yml", "src/kronos/eval/cybergym_x_score.py", "tests/test_eval_cybergym_x_score.py", "tests/test_commit_authority.py"}
 R10EG_BASE = "be30b9e"
+R10EG_MERGE = "454c179"
 R10EG_SECTION_10 = {
     "SPEC_BRIEF_R10_egress_guard.md",
     "src/kronos/eval/cybergym_x_score.py",
@@ -150,6 +151,15 @@ R10EG_SECTION_10 = {
     "src/kronos/eval/egress_guard.py",
     "tests/test_eval_cybergym_x_score.py",
     "tests/test_egress_guard.py",
+    "tests/test_commit_authority.py",
+}
+R10EGH_BASE = "454c179"
+R10EGH_SECTION_10 = {
+    "SPEC_BRIEF_R10_egress_guard_hardening.md",
+    "src/kronos/eval/egress_guard.py",
+    "src/kronos/eval/cybergym_x_score.py",
+    "tests/test_egress_guard.py",
+    "tests/test_eval_cybergym_x_score.py",
     "tests/test_commit_authority.py",
 }
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
@@ -366,7 +376,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{R10B_BASE}..{R10B_MERGE}")) <= R10B_SECTION_10, set(names(f"{R10B_BASE}..{R10B_MERGE}")) - R10B_SECTION_10
     assert set(names(f"{R10RB_BASE}..{R10RB_MERGE}")) <= R10RB_SECTION_10, set(names(f"{R10RB_BASE}..{R10RB_MERGE}")) - R10RB_SECTION_10
     assert set(names(f"{R10NET_BASE}..{R10NET_MERGE}")) <= R10NET_SECTION_10, set(names(f"{R10NET_BASE}..{R10NET_MERGE}")) - R10NET_SECTION_10
-    assert set(names(f"{R10EG_BASE}..HEAD")) <= R10EG_SECTION_10, set(names(f"{R10EG_BASE}..HEAD")) - R10EG_SECTION_10
+    assert set(names(f"{R10EG_BASE}..{R10EG_MERGE}")) <= R10EG_SECTION_10, set(names(f"{R10EG_BASE}..{R10EG_MERGE}")) - R10EG_SECTION_10
+    assert set(names(f"{R10EGH_BASE}..HEAD")) <= R10EGH_SECTION_10, set(names(f"{R10EGH_BASE}..HEAD")) - R10EGH_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
