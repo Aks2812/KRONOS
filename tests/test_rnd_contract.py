@@ -1195,7 +1195,8 @@ def test_rails_and_command_mirror_v1_4_4():
         t = p.read_text()
         assert "Actionable Continuation Invariant" in t, p
         assert "incomplete-idle recovery" in t, p
-        assert "contract v1.4.4" in t, p
+        assert "contract v1.4.5" in t, p
+        assert "PHASE READINESS" in t, p
         assert "NO-ACTION" in t, p
 
 
