@@ -69,11 +69,13 @@ Gate-2 semantic review PASS; no hard-boundary or out-of-scope file touched. Merg
 `gh pr merge <PR> --squash --match-head-commit <operator-authorized-SHA>`. Never `--admin`,
 never `--auto`. Do not mark a PR ready for review or close an issue without asking.
 
-DECISION CLASS + PRESENTATION (contract v1.4.4 §14–§16): every terminal report carries exactly one decision
+DECISION CLASS + PRESENTATION (contract v1.4.5 §14–§16): every terminal report carries exactly one decision
 class — AUTO-CONTINUE, SAFE-TO-APPROVE, REVIEW-REQUIRED, HOLD, or NO-ACTION — and renders as GitHub-flavored
 Markdown as an ordered sequence of bracket-labeled sections: [STATUS] first (Report Type + one valid Decision
 Class), then [WHY], [WHERE], [WHEN] (locked baseline, numerator, denominator, percentage-or-UNKNOWN, remaining
-gates, ETA assumptions, confidence), [WHAT] (with the conditional Goal-Framed Reference Knowledge Transfer
+gates, ETA assumptions, confidence), [PHASE READINESS] (current phase, weighted completed/remaining gates,
+percentage-or-UNKNOWN, critical path, min/expected/pessimistic remaining iterations, assumptions, confidence, exact
+next-phase trigger; Alpha/GA render UNDEFINED, never invented), [WHAT] (with the conditional Goal-Framed Reference Knowledge Transfer
 Ledger), [WHO], [HOW], [HOW TO DO FOR NEXT STEP BASED ON SEVERITY] (rank, severity, depends_on, decision_class,
 action), [MOST RECOMMENDED ACTION] (one recommendation, three sentences / 60 words), [OPERATOR ACTION], [NEXT PROMPT]
 (one fenced text block holding one single line of at most 200 Unicode code points, derived from decision_class/operator_action/recommendation/where.pr/where.head_sha, never truncated — if no safe prompt fits the bound, the verbatim fallback line `REVIEW-REQUIRED: discuss the decision above; do not act.` is emitted instead, fail-closed — or NONE with a reason; per the contract §15 decision-class matrix; never
@@ -81,7 +83,7 @@ broadens scope, infers §6/§8 authority, weakens a blocker, or emits an overrid
 final RECOMMENDED ORCHESTRATOR EFFORT: <LOW|MEDIUM|HIGH> — <justification> line; the [HOW TO DO FOR NEXT STEP
 BASED ON SEVERITY] section renders as readable bullets, never a wide or box-drawing table; no box-drawing
 characters; internal breaks with `<br>`; a pre-response self-check before emitting (sections in
-order, [STATUS] first with a valid Decision Class, [WHEN] fields or UNKNOWN, the conditional ledger or an
+order, [STATUS] first with a valid Decision Class, [WHEN] fields or UNKNOWN, [PHASE READINESS] present (UNKNOWN/UNDEFINED with reason where undefined), the conditional ledger or an
 explicit none line, the bounded recommendation, the [NEXT PROMPT] section present and not truncated/merged/malformed/incomplete, the
 effort line, no flat key/value, no box-drawing);
 Actionable Continuation Invariant (§15): a rendered [NEXT PROMPT] body must be exactly one of an exact copy-ready action, a remediation, an operator decision, or the AUTO-CONTINUE marker; a status echo or acknowledgement is a render failure. NO-ACTION (§14) is permitted only on genuine R&D completion proven by an active, operator-activated Completion Record (§13.4) bound to live main HEAD and satisfying the Definition of Done (docs/governance/KRONOS_DONE.md); agents never self-certify and an empty loop-eligible backlog alone is not completion. An incomplete-idle state — including a missing, stale, reopened, cleared, or SHA-drifted Completion Record — instead triggers incomplete-idle recovery (§13.2): verify the pinned reconciliation sources (HOLD on any missing/mismatched sha256), then dispatch a read-only kronos-researcher (claude-sonnet-5) roadmap reconciliation presenting exactly one scoped GATE-1 candidate — and a suspended in-scope product action is preserved and restored across a validation/governance detour (§13.3, detour restoration), with HOLD fail-closed.
