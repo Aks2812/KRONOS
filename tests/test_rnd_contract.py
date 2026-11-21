@@ -1287,7 +1287,7 @@ def test_contract_is_v1_4_5():
     text = CONTRACT.read_text()
     lines = text.splitlines()
     assert lines[2] == "Version: 1.4.5"
-    assert "Contract-Version: 1.4.5" in lines[229:234]
+    assert "Contract-Version: 1.4.5" in lines[230:235]
     manifest = json.loads(MANIFEST.read_text())
     assert manifest["contract_version"] == "1.4.5"
     assert DONE.is_file()
