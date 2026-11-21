@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 436
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: BOUNDED_REPAIR_R10EGH_CTSTATE_NORMALIZE_DOCSTRING_TESTS_REREVIEW_HOLD_GATE2
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator authorized (this turn, before GATE-2) a single bounded repair to PR #69 branch kronos/r10-egress-guard-hardening (current reviewed head eecd470), strictly within the two permitted R10EGH files src/kronos/eval/egress_guard.py + tests/test_egress_guard.py (still inside R10EGH_SECTION_10, six-file window). Resolves disclosed residual F2 + the LOW docstring/test-gap nits. SCOPE (exact): (1) In semantic reconcile (apply_egress_guard existing-chain compare, egress_guard.py:157 via _current_chain_rules vs _chain_rules), normalize ONLY the conntrack --ctstate member ordering before comparing -- split the value token after --ctstate on ",", sort members, rejoin -- applied to BOTH current (iptables -S) and expected sides; EVERYTHING ELSE stays strict: chain rule order positional, jump order, destinations, -j targets, and all other rule fields unchanged. So real iptables canonical RELATED,ESTABLISHED matches the sec1.4-mandated ESTABLISHED,RELATED, while extra rules / missing rules / wrong rule order still fail closed (raise). (2) Docstring egress_guard.py:18 change "(-L / -C)" -> "(-S)" to reflect the chain-content reconcile reads -S. (3) Non-vacuous tests in test_egress_guard.py: canonical ctstate reorder ACCEPTED (existing-correct-but-reordered chain -> no-op, no mutation/no re-append); extra rule -> raise; missing rule -> raise; wrong rule order -> raise; missing-chain rc 1 AND rc 2 -> treated absent -> fresh build; unexpected rc (e.g. 3/4) -> raise. NO change to chain order, jump order, destinations, apply/remove semantics, rc-in-{1,2}-absent logic, discover_*/assert_ipv4_only. Flow: builder implements (two files only, no commit, no PR touch) -> orchestrator scope+semantic verify -> commit -> fresh independent kronos-reviewer at new tip (brief + diff range only) -> on PASS push branch (updates PR #69) -> emit GATE-2 report with NEW exact head -> HOLD. No firewall apply, no containers, no sec6/sec8 run.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard-hardening
+feature_head_pre_repair: eecd4709c1bb79afc32b02934c50ba44cc3bf7ed
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md
+brief_sha256: 628fac6e89e3ed3267ac451c2b24241e4cbd26c4168e31d791f5b282312d540b
+pr: 69 (DRAFT, OPEN, base main, head eecd470 pre-repair)
+permitted_files_this_repair: src/kronos/eval/egress_guard.py, tests/test_egress_guard.py (subset of R10EGH_SECTION_10)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+NEXT: implement -> re-review PASS -> push -> new head recorded seq 437 -> GATE-2 stop-report naming PR #69 + new head SHA; merge still needs separate operator GATE-2 authorization. sec6/sec8 run stays HELD.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. STOP at GATE-2. NO merge, NO mark-ready, NO firewall apply, NO docker up, NO containers, NO sec6/sec8 run. Only the two permitted files touched.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 435
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
