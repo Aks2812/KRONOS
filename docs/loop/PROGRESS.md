@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 437
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: HOLD_GATE2_R10EGH_PR69_AWAIT_MERGE_AUTHORIZATION
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 436 BOUNDED_REPAIR_R10EGH_CTSTATE_NORMALIZE outcome=DONE. kronos-builder implemented within the two permitted files only (no commit, no PR touch); orchestrator scope+semantic verified; committed fe87f44; branch head advanced eecd470 -> fe87f44. Changes: (1) egress_guard.py adds module-level _normalize_rule that sorts ONLY the comma-separated members of the token after --ctstate; the existing-chain reconcile compare now normalizes BOTH current (iptables -S) and expected sides positionally ([_normalize_rule(r) for r in _current_chain_rules()] != [_normalize_rule(r) for r in expected]); rule list is NOT sorted/reordered; chain order, jump order, -d destinations, -j targets, _chain_rules, _current_chain_rules, fresh-build branch, jump install, _state, rc-in-{1,2}-absent all unchanged. (2) docstring "(-L / -C)" -> "(-S)". (3) non-vacuous tests: canonical ctstate reorder accepted as no-op (zero -N/-A/-F/-X/-I/-D on chain, -S actually ran); extra rule / missing rule / wrong rule order each raise with no mutation; normalization does not mask a changed -j target (still raises); missing-chain probe rc 1 AND rc 2 -> absent -> fresh build with exact [-N]+[-A per rule] order; unexpected probe rc 3 AND 4 -> raise with no mutation. Fresh independent kronos-reviewer measured origin/main..fe87f44 itself (brief + range only): canonical suite 4226 passed 1 skipped 0 failed via the canonical runner; A (ctstate-only normalization) / B (docstring -S) / C (non-vacuous tests) + all standing acceptance PASS; reviewer ran its own mutation checks (disable normalizer / ignore -j / sort rule list) each breaking exactly one test = non-vacuity proven. Branch pushed; DRAFT PR #69 now head fe87f44, base main, MERGEABLE, OPEN. Orchestrator Gate-2 semantic review PASS. This repair RESOLVES disclosed residual F2 (the --ctstate canonical-order reconcile refusal) plus the LOW docstring/test-gap nits. REMAINING residuals (hermetically UNVERIFIABLE, carried to the separate sec6/sec8 gated run, NOT merge blockers): real iptables -S exact rendering of the OTHER rule fields (e.g. -d <ip>/32 masks, -j target spelling) must still match _chain_rules; real rc-2 on a missing target chain on the host backend; real docker network inspect EnableIPv6/gateway output. STOP at GATE-2: merge needs separate operator authorization naming PR + full head SHA.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard-hardening
+feature_head: fe87f440542c73dc93476c385ac0f2cc0a9ef463
+reviewed_head: fe87f440542c73dc93476c385ac0f2cc0a9ef463 (fresh independent reviewer PASS)
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md
+brief_sha256: 628fac6e89e3ed3267ac451c2b24241e4cbd26c4168e31d791f5b282312d540b
+pr: 69 (DRAFT, OPEN, base main, head fe87f44, mergeable MERGEABLE)
+permitted_files (R10EGH_SECTION_10): SPEC_BRIEF_R10_egress_guard_hardening.md, src/kronos/eval/egress_guard.py, src/kronos/eval/cybergym_x_score.py, tests/test_egress_guard.py, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+OPERATOR DECISION NEEDED (GATE-2):
+  (A) RECOMMENDED: authorize MERGE of PR #69 at head fe87f440542c73dc93476c385ac0f2cc0a9ef463 (squash) for the
+      BUILD step; the sec6/sec8 run stays separately gated and must resolve/accept the remaining real-binary
+      residuals (real -S rendering of -d/-j fields; rc-2 on missing chain; docker inspect output) before any
+      live apply.
+  (B) further change / hold.
+AT MERGE TURN: re-measure the full ten-item MERGE-GATE incl. FULL canonical suite + a fresh independent reviewer
+  PASS at the operator-authorized SHA; merge ONLY via gh pr ready 69 then gh pr merge 69 --squash
+  --match-head-commit <authorized-SHA> (never --admin, never --auto). NEXT-BRIEF SEAL NOTE: a subsequent brief
+  must seal the R10EGH window to its merge SHA (R10EGH_MERGE) per the whole-window seal-tax, then open its own
+  window.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. STOP at GATE-2. NO merge,
+  NO mark-ready, NO firewall apply, NO docker up, NO containers, NO sec6/sec8 run without explicit operator
+  authorization.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 436
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
