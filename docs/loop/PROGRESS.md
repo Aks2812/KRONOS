@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 442
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c; amendment on feature branch only, main unchanged)
+pending_action: AWAIT_GATE2_PHASE_READINESS_PR70
+pending_action_outcome: PENDING
+prior_action_outcome: seq 441 OPEN_DRAFT_PR_PHASE_READINESS -> DONE. Draft PR #70 OPEN, isDraft=true, base main,
+  head 2695a0d9f9a64f913ba7f41b521b26e826c61386. No merge, no ready-for-review, no --admin/--auto.
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: GATE-1 reporting-only contract amendment v1.4.4->v1.4.5 ([PHASE READINESS] section) built,
+  independently reviewed (kronos-reviewer fresh PASS all 9 @2695a0d), repaired, draft PR #70 opened. Suite 4231
+  passed 1 skipped 0 failed (canonical runner). Scope = 7 permitted paths only. Non-retroactive schema versioning
+  (phase_readiness required only at 1.4.5). Milestone identity R10==BE-G3-5 / R12==BE-G2-6 (never conflated);
+  Alpha/GA UNDEFINED; no fabricated criteria. .claude/** NOT edited -> Option-B artifact for maintainer. Now HELD
+  at GATE-2: merge authorization is maintainer-only; loop cannot self-authorize.
+base_main: 911812ccf56514dc1f866fbf669ea081f5da7369
+feature_branch: kronos/phase-readiness-amendment
+feature_head: 2695a0d9f9a64f913ba7f41b521b26e826c61386
+reviewed_head: 2695a0d9f9a64f913ba7f41b521b26e826c61386 (fresh independent kronos-reviewer PASS)
+pr: 70 (DRAFT; OPEN; base main; head 2695a0d)
+brief: SPEC_BRIEF_PHASE_READINESS.md
+brief_sha256: 0c07aea48170ad48002e9daa92d206f0cf077b7a4ebc1206b00d72417ab30433
+manifest_v145: contract 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518; schema
+  bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c; DONE unchanged.
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+NEXT (HELD; GATE-2 cannot self-authorize): operator reviews PR #70. If approved, mark ready + squash-merge EXACT
+  head 2695a0d via gh pr merge 70 --squash --match-head-commit 2695a0d9f9a64f913ba7f41b521b26e826c61386 (never
+  --admin, never --auto), then hand-apply Option-B .claude/** patch docs/loop/phase_readiness_claude_maintainer_patch.diff.
+  Pre-merge the full ten-item MERGE-GATE re-measures in the merge turn. NEXT-BRIEF SEAL NOTE: subsequent brief seals
+  this window to PR #70 merge SHA (PHR_MERGE), opens its own window at that SHA.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit; loop cannot edit .claude/**. Separate
+  R10/BE-G3-5 + R12/BE-G2-6 §6/§8 CyberGym live runs remain HELD (unrelated; need own operator authorization).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 441
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
