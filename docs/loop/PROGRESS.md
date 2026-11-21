@@ -1,4 +1,29 @@
 # KRONOS loop-state checkpoint
+seq: 434
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: REPAIR_R10EGH_F1_REREVIEW_DRAFTPR_STOP_GATE2
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 433 BUILD executed. Branch kronos/r10-egress-guard-hardening @ d3e1a6c = exactly one commit atop main 454c179, touching exactly the six R10EGH files; not pushed, no PR. Independent kronos-reviewer measured the diff origin/main..d3e1a6c itself (brief + range only): canonical suite 4215 passed 1 skipped 0 failed via the canonical runner; criteria 1,2,4,5,6,7,8 PASS; criterion 3 FAIL = F1 (low): assert_ipv4_only used (result.stdout or "").strip().lower() then compared to "false", so uppercase "FALSE"/"False" wrongly PASSED, but brief sec1.3 requires the value be exactly "false" (fail-closed). F2 (medium, hermetically UNVERIFIABLE): real iptables canonicalizes --ctstate to RELATED,ESTABLISHED whereas the guard emits the brief sec1.4-mandated ESTABLISHED,RELATED, so a correctly-installed LIVE chain could be seen as mismatched and raise on reconcile (fail-closed, not unsafe; breaks existing-correct->no-op only on the real binary). F2 carried to the separate sec6/sec8 gated run as an explicit real-binary check; it is spec-mandated token text, not a build blocker. REPAIR (inside the approved brief research->build->review->REPAIR->draft-PR flow): drop .lower() at egress_guard.py:111 so comparison is to exact "false"; extend the parametrized raises test in tests/test_egress_guard.py to include "False" and "FALSE". Then fresh independent re-review at the repaired tip, push branch, open DRAFT PR, STOP at GATE-2. No firewall apply, no docker up, no containers, no sec6/sec8 run.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard-hardening
+feature_head_pre_repair: d3e1a6c2c711fca90249d3cd8a64ce730c2ee1c5
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md
+brief_sha256: 628fac6e89e3ed3267ac451c2b24241e4cbd26c4168e31d791f5b282312d540b
+permitted_files (R10EGH_SECTION_10): SPEC_BRIEF_R10_egress_guard_hardening.md, src/kronos/eval/egress_guard.py, src/kronos/eval/cybergym_x_score.py, tests/test_egress_guard.py, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+NEXT: apply F1 repair -> commit on feature branch -> fresh independent kronos-reviewer PASS at repaired tip -> push branch -> open DRAFT PR -> emit SAFE-TO-APPROVE/REVIEW-REQUIRED GATE-2 stop-report naming PR + full head SHA; merge needs separate operator GATE-2 authorization. The separate sec6/sec8 R10 CyberGym evidence run stays HELD (carries F2 real-binary ctstate-order + gateway-DROP + host-probe-preservation checks).
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO docker up, NO containers, NO sec6/sec8 run. Exactly the six R10EGH files may be touched. Stop at GATE-2 (draft PR).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 433
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
