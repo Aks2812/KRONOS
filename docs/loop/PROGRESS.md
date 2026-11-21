@@ -1,4 +1,33 @@
 # KRONOS loop-state checkpoint
+seq: 425
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: BUILD_R10_EGRESS_GUARD_GATE1
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-1 (2026-11-20, Option 1 BUILD PHASE ONLY) authorized at seq 424 HOLD. Scope: remove the internal:true injection (delete src/kronos/eval/cybergym_internal_net.override.yml + OVERRIDE_PATH/_compose_file_args, revert run() to direct cybergym.selftest.compose) and add a bounded host-egress guard src/kronos/eval/egress_guard.py — a dedicated idempotent DOCKER-USER chain KRONOS-CYBERGYM-EGRESS scoped ONLY by -s <cybergym_default subnet> (ESTABLISHED,RELATED RETURN; -d subnet RETURN; -d 127.0.0.0/8 RETURN; -j DROP), check-before-insert jump, never flushing DOCKER-USER or foreign chains. Guard teardown registered with CleanupRegistry BEFORE apply so rollback is guaranteed on normal/Exception/BaseException(timeout/interrupt) paths, LIFO = firewall removed before compose down. Hermetic mocked-subprocess lifecycle + capability-preservation + rollback-on-all-paths tests; NO live apply, NO docker up, NO container stand-up, NO §6/§8 R10 run. Flow: author brief (done) -> kronos-builder -> independent kronos-reviewer (brief+diff only) -> repair -> draft PR -> STOP at GATE-2. Seal-tax: seal R10NET window to R10NET_MERGE=be30b9e; open R10EG window base be30b9e over the 7 permitted files.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard (from be30b9e; brief committed)
+feature_head: PENDING (builder commits + draft PR)
+brief: SPEC_BRIEF_R10_egress_guard.md (on branch kronos/r10-egress-guard)
+brief_sha256: c7b0c1120596343814f5e17f57c1bcf18b9303c8613ffb8423a2cf4d609e80e6
+pr: to-be-opened draft AFTER build + review, base main
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED FILES (R10EG_SECTION_10, exactly 7): SPEC_BRIEF_R10_egress_guard.md, src/kronos/eval/cybergym_x_score.py,
+  src/kronos/eval/cybergym_internal_net.override.yml (deleted), src/kronos/eval/egress_guard.py,
+  tests/test_eval_cybergym_x_score.py, tests/test_egress_guard.py, tests/test_commit_authority.py.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO
+  docker up, NO container stand-up, NO §6/§8 run, NO real credentials, NO network. BUILD + review + draft PR only;
+  STOP at GATE-2 (merge + the eventual §6/§8 run both need separate operator authorization).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 424
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
