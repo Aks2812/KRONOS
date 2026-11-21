@@ -1,4 +1,39 @@
 # KRONOS loop-state checkpoint
+seq: 448
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b)
+pending_action: BUILD_TESTS_SEAL_PHR_PR71
+pending_action_outcome: PENDING
+prior_action_outcome: seq 447 HOLD_TEST_FAILURES_AT_HEAD -> operator GATE-1 authorized tests-only brief (Option A)
+  limited to tests/test_commit_authority.py + tests/test_rnd_contract.py on PR #71 branch
+  maint/phase-readiness-claude-patch (base main 5db0c44, prior head fafdae3). Approved allow-set = durable open
+  window 5db0c44..HEAD permitting EXACTLY {.claude/RAILS.md, .claude/commands/kronos-continue.md,
+  tests/test_commit_authority.py, tests/test_rnd_contract.py}.
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: WRITE-AHEAD for build+push to PR #71 branch. Brief (surgical, tests-only):
+  (1) tests/test_commit_authority.py: add PHR_MERGE="5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b"; seal PHR line to
+  `{PHR_BASE}..{PHR_MERGE}` (PHR_SECTION_10 unchanged = 7 PR#70 files); add RAILS_BASE=
+  "5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b" and RAILS_SECTION_10 = the 4 approved files; add assertion
+  `{RAILS_BASE}..HEAD <= RAILS_SECTION_10`. (2) tests/test_rnd_contract.py::test_rails_and_command_mirror_v1_4_4:
+  replace `assert "contract v1.4.4" in t` with `assert "contract v1.4.5" in t` and add `assert "PHASE READINESS" in t`
+  (both strings verified present in head .claude files: RAILS v1.4.5=1 PHASE READINESS=1; command v1.4.5=1
+  PHASE READINESS=2). Do NOT weaken/broaden other assertions; do NOT rename; no .claude/.github/cybergym/manifest
+  edits. Commit + push to maint/phase-readiness-claude-patch. THEN loop re-measures at new head: focused tests,
+  canonical suite, scope audit, fresh independent kronos-reviewer; present GATE-2. NO merge. R12/BE-G2-6 §6/§8
+  CyberGym HELD; R10==BE-G3-5 / R12==BE-G2-6 preserved.
+base_main: 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b
+pr: 71
+prior_head: fafdae3b08341442353b63f1c49f4dd21ab7e231
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 447
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
