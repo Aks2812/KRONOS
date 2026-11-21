@@ -7,12 +7,12 @@ A dedicated chain KRONOS-CYBERGYM-EGRESS is reached only through two scoped jump
 `DOCKER-USER -s <subnet>` (routed/FORWARD traffic leaving the containers) and
 `INPUT -s <subnet>` (traffic from the containers destined to the host itself).
 Its first rule returns ESTABLISHED,RELATED so host-initiated published-port probe
-responses (e.g. wait_for_services) are preserved; intra-network and loopback
-destinations return; everything else is dropped. Because the bridge gateway IP
-lies inside <subnet>, the intra-network RETURN also passes container->gateway
-traffic, so the INPUT jump narrows to container->non-subnet host addresses only;
-container->gateway (the usual host-local target) is intentionally allowed, per
-brief section 0. Never flushes DOCKER-USER, INPUT or any foreign chain. Code-only
+responses (e.g. wait_for_services) are preserved; the bridge gateway /32 is then
+dropped; intra-network and loopback destinations return; everything else is
+dropped. Because the bridge gateway IP lies inside <subnet>, the gateway DROP is
+placed before the intra-network RETURN so container->gateway traffic (the usual
+host-local target) is now dropped rather than passed by the subnet RETURN.
+Never flushes DOCKER-USER, INPUT or any foreign chain. Code-only
 here: applied by the later gated run.
 
 Idempotency is decided by iptables RETURN CODES and observed state (-L / -C),
@@ -23,14 +23,13 @@ guard on the real host is NOT proven hermetically; it must be confirmed at the
 gated section 6/8 run.
 """
 
-import re
+import ipaddress
 import subprocess
 from typing import Callable, Optional
 
 CHAIN = "KRONOS-CYBERGYM-EGRESS"
 PARENTS = ("DOCKER-USER", "INPUT")
 
-_CIDR_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}/\d{1,2}$")
 _MAX_JUMP_DELETES = 16
 
 
@@ -39,11 +38,13 @@ def _iptables(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def _state(args: list[str]) -> bool:
-    """Existence probe by return code: 0 -> True, 1 -> False, anything else raises."""
+    """Existence probe by return code: 0 -> True, 1 or 2 -> False, anything else raises."""
     result = _iptables(args)
     if result.returncode == 0:
         return True
-    if result.returncode == 1:
+    # real `iptables -C` on a missing target chain can return rc 2; rc 1 and rc 2 both mean
+    # "not present", so both are absent -> idempotent, fail-closed, no leftover rule on partial/interrupted apply.
+    if result.returncode in (1, 2):
         return False
     raise RuntimeError(f"iptables {' '.join(args)} failed (rc={result.returncode}): {(result.stderr or '').strip()}")
 
@@ -66,33 +67,95 @@ def discover_subnet(network_name: str) -> str:
     )
     if result.returncode != 0:
         raise RuntimeError(f"docker network inspect {network_name} failed: {(result.stderr or '').strip()}")
-    subnet = (result.stdout or "").strip()
-    if not _CIDR_RE.match(subnet):
-        raise RuntimeError(f"unparseable subnet for network {network_name}: {subnet!r}")
-    return subnet
+    return _validate_ipv4_subnet((result.stdout or "").strip(), network_name)
+
+
+def _validate_ipv4_subnet(value: str, network_name: str) -> str:
+    try:
+        net = ipaddress.ip_network(value, strict=False)
+    except ValueError:
+        raise RuntimeError(f"unparseable subnet for network {network_name}: {value!r}") from None
+    if not isinstance(net, ipaddress.IPv4Network):
+        raise RuntimeError(f"non-IPv4 subnet for network {network_name}: {value!r}")
+    return str(net)
+
+
+def discover_gateway(network_name: str) -> str:
+    result = subprocess.run(
+        ["docker", "network", "inspect", network_name, "--format", "{{(index .IPAM.Config 0).Gateway}}"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"docker network inspect {network_name} failed: {(result.stderr or '').strip()}")
+    value = (result.stdout or "").strip()
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        raise RuntimeError(f"unparseable gateway for network {network_name}: {value!r}") from None
+    if not isinstance(addr, ipaddress.IPv4Address):
+        raise RuntimeError(f"non-IPv4 gateway for network {network_name}: {value!r}")
+    return str(addr)
+
+
+def assert_ipv4_only(network_name: str) -> None:
+    # Fail-closed: STOP unless Docker reports IPv6 explicitly disabled (EnableIPv6 == false).
+    # true, empty, or any unexpected value raises RuntimeError.
+    result = subprocess.run(
+        ["docker", "network", "inspect", network_name, "--format", "{{.EnableIPv6}}"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"docker network inspect {network_name} failed: {(result.stderr or '').strip()}")
+    value = (result.stdout or "").strip().lower()
+    if value != "false":
+        raise RuntimeError(
+            f"network {network_name} EnableIPv6={value!r}, expected 'false'; the IPv4 guard would not contain it"
+        )
 
 
 def _jump(parent: str, subnet: str) -> list[str]:
     return [parent, "-s", subnet, "-j", CHAIN]
 
 
-def _chain_rules(subnet: str) -> list[list[str]]:
+def _chain_rules(subnet: str, gateway: str) -> list[list[str]]:
     return [
         ["-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED", "-j", "RETURN"],
+        ["-d", f"{gateway}/32", "-j", "DROP"],
         ["-d", subnet, "-j", "RETURN"],
         ["-d", "127.0.0.0/8", "-j", "RETURN"],
         ["-j", "DROP"],
     ]
 
 
-def apply_egress_guard(subnet: str) -> None:
-    """Idempotent, per-rule, no flush: create chain if absent, add each missing rule
-    in order (DROP last), then install the two scoped jumps only after the chain is complete."""
+def _current_chain_rules() -> list[list[str]]:
+    """Read the chain's rules in order via structured `iptables -S CHAIN` stdout (not stderr wording)."""
+    result = _iptables(["-S", CHAIN])
+    if result.returncode != 0:
+        raise RuntimeError(f"iptables -S {CHAIN} failed (rc={result.returncode}): {(result.stderr or '').strip()}")
+    rules = []
+    for line in (result.stdout or "").splitlines():
+        tokens = line.split()
+        if tokens[:2] == ["-A", CHAIN]:
+            rules.append(tokens[2:])
+    return rules
+
+
+def apply_egress_guard(subnet: str, gateway: str) -> None:
+    """Fail-closed reconcile, no flush. Fresh chain: create it and append every rule in
+    order (gateway /32 DROP before the subnet RETURN, final DROP last). Existing chain:
+    its rules must equal the expected rules exactly (same rules, same order, no extras,
+    no gaps) -> idempotent no-op; any mismatch raises RuntimeError (the teardown
+    registered before apply removes the chain on rollback). Then install the two scoped
+    jumps idempotently, only after the chain is complete."""
+    expected = _chain_rules(subnet, gateway)
     if not _chain_exists():
         _run(["-N", CHAIN])
-    for rule in _chain_rules(subnet):
-        if not _state(["-C", CHAIN, *rule]):
+        for rule in expected:
             _run(["-A", CHAIN, *rule])
+    elif _current_chain_rules() != expected:
+        raise RuntimeError(f"existing chain {CHAIN} does not match the expected rules; refusing to reconcile")
     for parent in PARENTS:
         jump = _jump(parent, subnet)
         if not _state(["-C", *jump]):
