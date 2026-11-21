@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 446
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b)
+pending_action: MAINTAINER_HANDAPPLY_CLAUDE_PATCH
+pending_action_outcome: HALT_SCOPE_BOUNDARY_CLAUDE_LOOP_EDIT_REFUSED
+prior_action_outcome: seq 445 GATE2_READY_AND_SQUASH_MERGE_PR70 DONE. This turn maintainer authorized the LOOP to
+  create a branch from 5db0c44 and apply docs/loop/phase_readiness_claude_maintainer_patch.diff into
+  .claude/commands/kronos-continue.md and .claude/RAILS.md, then test/review/open draft PR. REFUSED, fail-closed:
+  the .claude/** hard deny is structural and never weakened -- per .claude/commands/kronos-continue.md "NEVER edit
+  ... .claude/ ... no approval overrides it" and "operationalizing changes land only via external maintainer
+  patch, never loop edits". A conversational maintainer authorization does NOT unlock a loop edit of .claude/**;
+  that is exactly the self-modification the invariant refuses. NO .claude edit, NO branch commit touching .claude,
+  NO PR opened by the loop. Read-only verification only: git apply --check exit 0 against 5db0c44 .claude tree;
+  patch contains 0 milestone-label lines (no R10/R12 relabel; R10==BE-G3-5, R12==BE-G2-6 preserved). Main-protection
+  measurement is ruleset-aware: ruleset void-rule-kronos 25333712 active governs default branch; legacy
+  /branches/main/protection 404 is NOT unprotected.
+report_type: BLOCKED
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Hard scope boundary. Compliant path = HUMAN maintainer hand-applies the patch OUTSIDE the loop
+  on a branch off 5db0c44, commits under their own identity, pushes, opens the draft PR; THEN the loop may run
+  rails/contract tests + canonical suite and dispatch independent kronos-reviewer against that maintainer-authored
+  head, and present GATE-2. Loop stays out of .claude/** throughout. §6/§8 CyberGym (R12/BE-G2-6) remains HELD.
+base_main: 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b
+patch: docs/loop/phase_readiness_claude_maintainer_patch.diff (targets .claude/commands/kronos-continue.md, .claude/RAILS.md; apply --check exit 0)
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit by loop; no approval overrides.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 445
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
