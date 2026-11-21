@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 430
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: HOLD_GATE2_R10_EGRESS_GUARD_PR68_REPAIRED
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 429 PUSH_REPAIRED_TIP outcome=DONE. PR #68 draft OPEN base main, head advanced 7644fd6->283628771d3ffb4fb4a94fe3a73c5e81447f0141 (4 commits: brief c4f761f, build 7644fd6, F1-F6 repair a2828bf, F1 docstring 2836287), mergeable MERGEABLE. Option-B repair COMPLETE + independently reviewed PASS at a2828bf (full suite 4190 passed 1 skipped 0 failed; reviewer recommended merge after one doc-only F1 wording fix). Orchestrator applied the reviewer-pre-blessed behavior-neutral docstring fix (2836287); focused suite on the 3 touched test files 97 passed 0 failed. All F1-F6 RESOLVED: F1 two scoped jumps DOCKER-USER+INPUT, conntrack ESTABLISHED,RELATED RETURN preserves host-initiated probe responses, docstring+brief accurate incl. disclosed gateway pass-through; F2 behavioral register-before-apply rollback proven across normal/Exception/TimeoutError/KeyboardInterrupt/SystemExit with LIFO firewall-before-compose_down; F3/F4 rc/state idempotency (-L/-C), no stderr parsing, no live-chain flush (no re-apply fail-open window); F5 foreign-chain negative proof (-R/-E/-N/-P/-F/-X/-Z); F6 -w on every iptables call. Residuals DISCLOSED (not blockers): container->gateway intentionally allowed (in-subnet) so host-local containment is non-gateway-only; IPv4-only guard; loose _CIDR_RE; host-probe preservation on real host provable only at the gated §6/§8 run. Scope EXACT 7 R10EG files; seal-tax correct (R10NET->be30b9e, R10EG base be30b9e ..HEAD). AT GATE-2: merge needs operator authorization naming PR #68 + head 2836287. At the merge turn re-measure the full ten-item MERGE-GATE incl. FULL canonical suite + fresh independent reviewer PASS at the authorized SHA.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard
+feature_head: 283628771d3ffb4fb4a94fe3a73c5e81447f0141
+prior_reviewed_head: a2828bff49060aa8f42523fd7e0ae85d384399d8 (independent reviewer PASS; delta to tip = doc-only comment)
+brief: SPEC_BRIEF_R10_egress_guard.md
+pr: 68 (draft, OPEN, base main, head 2836287, mergeable MERGEABLE)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+OPERATOR DECISION NEEDED (GATE-2):
+  (A) RECOMMENDED: authorize MERGE of PR #68 at head 283628771d3ffb4fb4a94fe3a73c5e81447f0141 (squash) for the
+      build step; the §6/§8 run stays separately gated and must resolve/accept the disclosed residuals
+      (gateway-allowed host-local scope; IPv4-only; real-host probe + iptables-wording verification).
+  (B) further change / hold.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. STOP at GATE-2. NO
+  merge, NO mark-ready, NO firewall apply, NO docker up, NO §6/§8 run without explicit operator authorization.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 429
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
