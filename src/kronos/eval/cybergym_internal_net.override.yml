@@ -1,7 +1,0 @@
-# KRONOS-owned Compose override (SPEC_BRIEF_R10_impl.md egress containment).
-# Makes the CyberGym range network internal: no gateway/NAT to the host or
-# internet. Intra-network DNS (localstack:4566) and 127.0.0.1 published ports
-# are preserved. Never edits cybergym/**.
-networks:
-  default:
-    internal: true

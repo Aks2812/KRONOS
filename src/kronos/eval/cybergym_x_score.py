@@ -24,7 +24,6 @@ from pathlib import Path
 import jsonschema
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-OVERRIDE_PATH = REPO_ROOT / "src" / "kronos" / "eval" / "cybergym_internal_net.override.yml"
 SCHEMA_PATH = REPO_ROOT / "evaluation_evidence" / "cybergym-x-score" / "run_summary.schema.json"
 
 INSTRUMENT = "cybergym-x-score-v1"
@@ -204,10 +203,6 @@ def _collect_state(engagement_dir: Path) -> tuple[list[dict], str, dict[str, str
     return chains, manifest_id, kinds_by_sha
 
 
-def _compose_file_args() -> list[str]:
-    return ["-f", "docker-compose.yml", "-f", str(OVERRIDE_PATH)]
-
-
 def run(output_root: Path) -> Path:
     """LIVE entrypoint (docker compose + live pipeline). Not exercised by tests."""
     sys.path.insert(0, str(REPO_ROOT))
@@ -216,6 +211,7 @@ def run(output_root: Path) -> Path:
     from cybergym.selftest import compose, wait_for_services
 
     from kronos.cleanup import CleanupRegistry, compose_down, write_teardown_report
+    from kronos.eval.egress_guard import apply_egress_guard, discover_subnet, egress_guard_teardown
 
     started = datetime.now(timezone.utc)
     run_id = run_id_for(started)
@@ -229,14 +225,22 @@ def run(output_root: Path) -> Path:
         try:
             with registry:
                 print("standing up the lab (docker compose up -d --build)...")
-                cfg = _compose_file_args()
-                compose(*cfg, "up", "-d", "--build")
+                compose("up", "-d", "--build")
                 registry.register(
                     "docker",
                     "cybergym-range-stack",
-                    compose_down(lambda *a: compose(*cfg, *a)),
+                    compose_down(compose),
                     detail="docker compose down -v (CyberGym range)",
                 )
+                subnet = discover_subnet("cybergym_default")
+                # register BEFORE apply so a partial apply is still rolled back (LIFO: firewall first)
+                registry.register(
+                    "firewall",
+                    "cybergym-egress",
+                    egress_guard_teardown(subnet),
+                    detail=f"remove KRONOS-CYBERGYM-EGRESS guard for {subnet}",
+                )
+                apply_egress_guard(subnet)
                 wait_for_services()
                 with contextlib.redirect_stdout(buf):
                     exit_code = _run_pipeline(work_dir)
