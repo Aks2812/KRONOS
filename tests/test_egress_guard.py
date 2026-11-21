@@ -398,7 +398,7 @@ def test_assert_ipv4_only_pass(monkeypatch):
     assert seen == [DOCKER_V6]
 
 
-@pytest.mark.parametrize("out", ["true\n", "", "<no value>", "TRUE", "maybe"])
+@pytest.mark.parametrize("out", ["true\n", "", "<no value>", "TRUE", "maybe", "False", "FALSE"])
 def test_assert_ipv4_only_raises_unless_false(monkeypatch, out):
     _docker(monkeypatch, out=out)
     with pytest.raises(RuntimeError):

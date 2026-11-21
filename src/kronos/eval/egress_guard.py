@@ -108,7 +108,7 @@ def assert_ipv4_only(network_name: str) -> None:
     )
     if result.returncode != 0:
         raise RuntimeError(f"docker network inspect {network_name} failed: {(result.stderr or '').strip()}")
-    value = (result.stdout or "").strip().lower()
+    value = (result.stdout or "").strip()
     if value != "false":
         raise RuntimeError(
             f"network {network_name} EnableIPv6={value!r}, expected 'false'; the IPv4 guard would not contain it"
