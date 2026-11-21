@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 441
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c; amendment lives on feature branch, main unchanged)
+pending_action: OPEN_DRAFT_PR_PHASE_READINESS
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 440 BUILD_PHASE_READINESS_V145_AMENDMENT built + independently reviewed + repaired.
+  kronos-builder (claude-sonnet-5-5) implemented SPEC_BRIEF_PHASE_READINESS.md on kronos/phase-readiness-amendment
+  (base 911812c). kronos-reviewer (claude-haiku-5-5) FIRST pass FAIL (2 in-scope deviations: contract §9 missing
+  non-retroactivity sentence; 4 §5-named tests folded into 1). Repair (commit 4d623aa) fixed both. kronos-reviewer
+  FRESH re-review @ 2695a0d: PASS on all 9 criteria. Suite 4231 passed 1 skipped 0 failed via canonical runner
+  (.venv/bin/python + TMPDIR). Scope clean = exactly 7 permitted paths (no .claude/** .github/** cybergym/**
+  manifest.py product-code). .claude/** NOT edited; command-path change ships as Option-B artifact
+  docs/loop/phase_readiness_claude_maintainer_patch.diff (git apply --check exit 0, targets .claude only).
+  Schema: 1.4.5 in contract_version.enum + if-enum; phase_readiness object 10 required fields +
+  remaining_iterations{min,exp,pess}, additionalProperties false, UNKNOWN admitted; new allOf conditional requires
+  phase_readiness ONLY at 1.4.5 (non-retroactive: 1.4.4 w/o it validates, 1.4.5 w/o it rejected). Contract v1.4.5;
+  §15 [PHASE READINESS] item 5 after [WHEN]; "one iteration = one durable checkpointed loop turn"; never-fabricate;
+  Alpha/GA UNDEFINED; R&D-COMPLETE->§13.4; §9 non-retroactivity sentence present; historical 1.4.0-1.4.4 enums
+  preserved + 1.4.5 appended; no decision class changed. Milestone identity (proven from pinned SRC-ROADMAP sha256
+  OK): R10==BE-G3-5, R12==BE-G2-6, NEVER conflated. Manifest v1.4.5; contract sha
+  60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518, schema sha
+  bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c, DONE sha unchanged; all match disk. Seal-tax:
+  R10EGH sealed 454c179..911812c; this window PHR_BASE 911812c..HEAD == 7 paths. Gate-2 orchestrator semantic PASS.
+base_main: 911812ccf56514dc1f866fbf669ea081f5da7369
+feature_branch: kronos/phase-readiness-amendment
+feature_head: 2695a0d9f9a64f913ba7f41b521b26e826c61386
+reviewed_head: 2695a0d9f9a64f913ba7f41b521b26e826c61386 (fresh independent kronos-reviewer PASS, all 9 criteria)
+brief: SPEC_BRIEF_PHASE_READINESS.md
+brief_sha256: 0c07aea48170ad48002e9daa92d206f0cf077b7a4ebc1206b00d72417ab30433
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PENDING_ACTION PLAN: push feature branch; create DRAFT PR base main head 2695a0d; record PR number + GATE-2 HOLD in
+  seq 442. NO merge, NO ready-for-review, NO --admin, NO --auto. GATE-2 (merge authorization) stays maintainer's;
+  loop cannot self-authorize. Separate R12/BE-G2-6 + R10/BE-G3-5 §6/§8 CyberGym live runs remain HELD (unrelated).
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit; loop cannot edit .claude/**.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 440
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
