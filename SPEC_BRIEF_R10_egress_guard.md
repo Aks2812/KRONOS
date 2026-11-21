@@ -28,15 +28,24 @@ authorization.
 `internal:true` is config-neutral (ports stay bound `127.0.0.1`) but NOT
 runtime-capability-neutral: an internal Docker network has no gateway, which blocks
 host↔container published-port traffic — the exact capability the lab's host-probe
-readiness check and validation pass depend on. The fix must deliver **structural
-zero container egress** WITHOUT removing host→container `127.0.0.1` publishing.
+readiness check and validation pass depend on. The fix must deliver **routed external (FORWARD) + container→host-local (INPUT)
+container-initiated egress containment, conntrack-preserving for host-initiated
+published-port probes**, WITHOUT removing host→container `127.0.0.1` publishing.
 
-A host-level `DOCKER-USER` filter achieves this: `DOCKER-USER` is consulted in the
-`FORWARD` path (container-routed traffic). A DROP scoped by `-s <container_subnet>`
-matches only packets *sourced from* the CyberGym containers. Host→container
-published-port traffic (DNAT + loopback, host-sourced) never carries the container
-subnet as source, so it never enters the guard and is never dropped — the
-capability `internal:true` broke is preserved by construction.
+Two scoped jumps reach one dedicated chain, `KRONOS-CYBERGYM-EGRESS`:
+`DOCKER-USER -s <subnet>` (routed/FORWARD traffic leaving the containers to
+non-local destinations) and `INPUT -s <subnet>` (traffic from the container subnet
+destined to the host itself). The chain's FIRST rule is
+`-m conntrack --ctstate ESTABLISHED,RELATED -j RETURN`, so the responses to
+host-initiated published-port probes (ESTABLISHED from the container's return
+direction) are preserved — this is what keeps `wait_for_services()` working.
+Host-initiated traffic never carries the container subnet as a NEW-connection
+source, so it is not dropped.
+
+**Residual (not provable hermetically):** that host→container published-port probe
+success is preserved on the real host must be confirmed at the gated `§6/§8` run.
+Container→host-gateway traffic inside the subnet (`-d <subnet> -j RETURN`) is
+intentionally allowed.
 
 ## §1 Deliverables of THIS build step
 
@@ -53,26 +62,31 @@ capability `internal:true` broke is preserved by construction.
      --format '{{(index .IPAM.Config 0).Subnet}}'`; raises on missing network or
      unparseable output. (Network name for the CyberGym stack is `cybergym_default`
      — Compose project = `cybergym/` dir basename, `cwd=cybergym`.)
-   - `apply_egress_guard(subnet: str) -> None`: idempotent. Creates the dedicated
-     chain `KRONOS-CYBERGYM-EGRESS` if absent, flushes it to a known state, and
-     populates it IN ORDER: `-m conntrack --ctstate ESTABLISHED,RELATED -j RETURN`;
+   - `apply_egress_guard(subnet: str) -> None`: idempotent per rule, with NO flush
+     of a live chain. Existence/presence is decided by `iptables` RETURN CODE
+     (never stderr text): chain via `iptables -w -n -L KRONOS-CYBERGYM-EGRESS`
+     (rc 0 = exists), created with `-N` only when absent; each rule via
+     `iptables -w -C <chain> <rule>`, added with `-A` only when `-C` reports it
+     absent, IN ORDER: `-m conntrack --ctstate ESTABLISHED,RELATED -j RETURN`;
      `-d <subnet> -j RETURN` (intra-network); `-d 127.0.0.0/8 -j RETURN`
-     (host/loopback); `-j DROP` (all other egress). Then installs a single jump
-     `DOCKER-USER -s <subnet> -j KRONOS-CYBERGYM-EGRESS`, check-before-insert
-     (`iptables -C ... || iptables -I ...`) so a re-apply never duplicates it.
-     NEVER flushes `DOCKER-USER` or any chain but `KRONOS-CYBERGYM-EGRESS`; NEVER
-     touches a rule it did not create.
+     (host/loopback); `-j DROP` (all other egress). Then installs two scoped
+     jumps, each check-before-insert (`-C`, then `-I` only if absent):
+     `DOCKER-USER -s <subnet> -j KRONOS-CYBERGYM-EGRESS` and
+     `INPUT -s <subnet> -j KRONOS-CYBERGYM-EGRESS`. NEVER flushes `DOCKER-USER`,
+     `INPUT`, or any chain but `KRONOS-CYBERGYM-EGRESS`; NEVER touches a rule it
+     did not create.
    - `remove_egress_guard(subnet: str) -> str | None`: idempotent rollback. Deletes
-     the scoped `DOCKER-USER` jump if present, then flushes and deletes the
-     `KRONOS-CYBERGYM-EGRESS` chain. Treats an already-absent jump/chain as success
-     (returns `"already_gone"` when nothing was present, `None` otherwise); raises
-     only on a genuine, unexpected `iptables` failure.
+     each scoped jump (`DOCKER-USER` and `INPUT`) while its `-C` check says
+     present, then, only if the chain exists (`-L` rc), flushes and `-X`-deletes
+     `KRONOS-CYBERGYM-EGRESS`. Returns `"already_gone"` when nothing was present,
+     `None` otherwise; raises only on a genuine unexpected failure (a rc that is
+     neither a clean success nor the "absent" rc 1).
    - `egress_guard_teardown(subnet: str) -> Callable[[], str | None]`: returns the
      zero-arg teardown callable (`lambda: remove_egress_guard(subnet)`) in the
      `kronos.cleanup` kind contract, for `CleanupRegistry.register("firewall", …)`.
-   - Every live op shells `iptables` through one small private runner that maps
-     already-exists / no-such-chain / no-such-rule stderr to the idempotent
-     outcome, mirroring `kronos/cleanup/kinds.py:_run_docker`.
+   - Every live op shells `iptables -w ...` (lock wait) through one small private
+     runner; outcomes are decided by return code / observed state, never by
+     matching stderr wording.
 3. **Wire the guard into `run()`** so rollback is guaranteed on all paths: after
    `compose(... up ...)` and after registering `compose_down`, register the egress
    guard teardown (`registry.register("firewall", …, egress_guard_teardown(subnet),
@@ -92,24 +106,29 @@ capability `internal:true` broke is preserved by construction.
 New `tests/test_egress_guard.py` and edits to `tests/test_eval_cybergym_x_score.py`:
 
 - **Lifecycle (apply):** mocked `subprocess` captures the exact `iptables` call
-  sequence; assert chain create → flush → the four rules in the specified order →
-  scoped jump installed check-before-insert.
+  sequence; assert `-L` existence check → `-N` only when absent → per rule `-C`
+  then `-A` only when absent, in the specified order → both scoped jumps
+  (`DOCKER-USER`, `INPUT`) installed check-before-insert. Every call carries `-w`.
 - **Idempotent apply:** two consecutive `apply_egress_guard` calls produce no
-  duplicate jump (the `-C` check suppresses the second `-I`) and a re-flushed chain
-  (no duplicate rules).
-- **Lifecycle (remove) + idempotence:** `remove_egress_guard` deletes the jump,
-  flushes and deletes the chain; a second call (nothing present) returns
+  duplicate jump or rule (every `-C` check succeeds, so no `-N`/`-A`/`-I`/`-F` is
+  issued): the live chain is never flushed on re-apply.
+- **Lifecycle (remove) + idempotence:** `remove_egress_guard` deletes both scoped jumps,
+  flushes and deletes the chain; removal succeeds with empty/arbitrary stderr; a second call (nothing present) returns
   `"already_gone"` and raises nothing.
-- **Rollback on all paths:** via a real `CleanupRegistry` with a mocked guard,
-  assert removal runs (a) on normal exit, (b) when the `with` body raises a normal
-  `Exception`, and (c) when it raises a `BaseException` (timeout/interrupt proxy);
-  assert LIFO places firewall-removal before `compose down`.
+- **Rollback on all paths (behavioral register-before-apply):** with a real
+  `CleanupRegistry`, register the guard teardown FIRST, then call
+  `apply_egress_guard` with a failure injected part-way (jump-install step, after
+  chain + rules exist); assert teardown still runs on `__exit__` and leaves nothing
+  behind. Also assert cleanup on normal exit, `Exception`, `TimeoutError`,
+  `KeyboardInterrupt` and `SystemExit`, and LIFO firewall-removal before
+  `compose down`.
 - **Capability preservation (construction proof):** assert every DROP/filter rule
   in the guard is reachable only via the `-s <subnet>` jump (so host-sourced
   `127.0.0.1` traffic is never matched); assert `-d 127.0.0.0/8 -j RETURN` and
-  `-d <subnet> -j RETURN` precede the final `-j DROP`; assert no command flushes or
-  deletes `DOCKER-USER` or any non-`KRONOS-CYBERGYM-EGRESS` chain (existing firewall
-  rules preserved).
+  `-d <subnet> -j RETURN` precede the final `-j DROP`; assert no command mutates
+  (`-R -E -N -P -F -X -Z`, or `-A/-I/-D` other than the two scoped jumps) any chain
+  other than `KRONOS-CYBERGYM-EGRESS`, `DOCKER-USER`, `INPUT`; assert no jump into
+  `KRONOS-CYBERGYM-EGRESS` exists except the two `-s <subnet>` jumps.
 - **Subnet discovery:** mocked `docker network inspect` output yields the CIDR;
   missing-network / unparseable output raises.
 - **Injection removed:** `OVERRIDE_PATH`, `_compose_file_args`, and
@@ -178,12 +197,12 @@ Whole-window seal tax, surgical, weakening no other assertion:
   at runtime; hermetic tests mock discovery. RESOLVED-by-design: `discover_subnet`
   is a thin, tested shell around `docker network inspect`; the live value flows into
   apply/remove only when `run()` is later executed under `§6/§8`.
-- (b) A `DOCKER-USER` jump must be scoped by `-s <subnet>` or it would also filter
+- (b) Each scoped jump (`DOCKER-USER`, `INPUT`) must be scoped by `-s <subnet>` or it would also filter
   host-sourced traffic. The capability-preservation tests fail-close on any rule not
-  so scoped, and on any flush/delete of `DOCKER-USER` or a foreign chain.
-- (c) Re-apply must not duplicate the jump. Check-before-insert (`-C || -I`) plus a
-  per-apply chain flush make `apply_egress_guard` idempotent; a dedicated test
-  proves it.
+  so scoped, and on any flush/delete of `DOCKER-USER`, `INPUT` or a foreign chain.
+- (c) Re-apply must not duplicate the jump. Check-before-insert (`-C || -I`) and
+  per-rule `-C || -A` (no flush of the live chain, so no fail-open window) make
+  `apply_egress_guard` idempotent; dedicated tests prove it.
 - (d) Removal must survive timeout/interruption. The guard teardown is registered
   with `CleanupRegistry`, whose `__exit__` runs teardown on normal return and on any
   propagating `Exception`/`BaseException`; a test proves removal under each.
