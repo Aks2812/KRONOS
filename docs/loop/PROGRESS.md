@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 428
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: REPAIR_R10_EGRESS_GUARD_OPTION_B_PR68
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator chose Option B at seq 427 GATE-2: bounded in-scope repair of PR #68 before merge, SAME 7 R10EG files, NO firewall apply/containers/run/§6-8. Repair mandate -> dispatch kronos-builder then independent kronos-reviewer, return new exact head, re-propose GATE-2. Design: (F1) explicit container-to-host-local POLICY = DROP it — guard now contains container-initiated egress on BOTH routed/FORWARD (DOCKER-USER, non-local dest) AND container->host-local (a second scoped INPUT jump), each gated -s <subnet> with conntrack ESTABLISHED,RELATED -j RETURN FIRST so host->container published-port probe RESPONSES survive (host-initiated); intra-subnet + 127.0.0.0/8 RETURN preserved; makes "structural zero container-INITIATED egress" accurate; module docstring/brief reworded to routed-external+host-local, residual = verify host probes at the gated run. (F2) behaviorally prove register-BEFORE-apply + cleanup: flip rollback test to register-then-apply with an injected mid-apply failure asserting partial cleanup, and cover success/Exception/TimeoutError/KeyboardInterrupt/SystemExit via real CleanupRegistry. (F3+F4) remove teardown dependence on iptables stderr wording: idempotency by return-code/state (chain exists via -L rc, rule via -C rc), per-rule check-before-add (NO -F of a live chain => closes F4 fail-open window), create-if-absent. (F5) strengthen foreign-chain negative check (-R/-E/-N too). (F6) add -w lock-wait to every iptables call. Brief (permitted file) amended to encode the accurate definition + policy. Seal-tax UNCHANGED (same R10EG_SECTION_10 set, base be30b9e, ..HEAD). Enumerate+disposition F1-F6 in terminal report. STOP at GATE-2.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard
+feature_head: 7644fd60103289da06da888eececbaa0798e881d (pre-repair; builder will add commit(s))
+brief: SPEC_BRIEF_R10_egress_guard.md
+brief_sha256: c7b0c1120596343814f5e17f57c1bcf18b9303c8613ffb8423a2cf4d609e80e6 (pre-repair; brief to be amended)
+pr: 68 (draft, OPEN, base main; head advances with repair commit)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+PERMITTED FILES (unchanged, exactly 7): SPEC_BRIEF_R10_egress_guard.md, src/kronos/eval/cybergym_x_score.py,
+  src/kronos/eval/cybergym_internal_net.override.yml (stays deleted), src/kronos/eval/egress_guard.py,
+  tests/test_eval_cybergym_x_score.py, tests/test_egress_guard.py, tests/test_commit_authority.py.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO
+  docker up, NO containers, NO §6/§8 run, NO real credentials, NO network. Repair + review only; STOP at GATE-2.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 427
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
