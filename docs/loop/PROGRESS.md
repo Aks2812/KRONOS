@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 450
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b)
+pending_action: GATE2_READY_AND_SQUASH_MERGE_PR71
+pending_action_outcome: PENDING
+prior_action_outcome: seq 449 AWAIT_GATE2_MERGE_AUTH_PR71 -> operator GATE-2 AUTHORIZED squash-merge of PR #71 ONLY at
+  exact head b282d3b57d14a1b2ce340169e217505a1b7cc370. Pre-write-ahead live re-derive: origin/main 5db0c44; PR #71
+  head == b282d3b (NO drift), isDraft=true, MERGEABLE, OPEN, unmerged; ruleset void-rule-kronos 25333712 active.
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: WRITE-AHEAD for consequential protected-branch squash-merge of PR #71. Plan: (a) gh pr ready 71;
+  (b) fetch + reconfirm head still b282d3b (HOLD on any drift); (c) re-measure FULL ten-item MERGE-GATE at b282d3b --
+  (1) main protected via active ruleset 25333712, (2) PR not draft after ready, (3) open & unmerged, (4) head==
+  operator-authorized SHA b282d3b, (5) independent kronos-reviewer PASS 7/7 evidence @b282d3b (reviewed_head==head,
+  unchanged), (6) ci:none (ruleset no required checks), (7) RE-MEASURE canonical suite at head via .venv/bin/python +
+  disk TMPDIR expect 0 failed, (8) scope audit: PHR window sealed 911812c..5db0c44 (7 files) + PHRC window 5db0c44..
+  b282d3b == exactly 4 approved files, (9) orchestrator Gate-2 semantic PASS, (10) no hard-boundary/out-of-scope file;
+  (d) if ALL pass: gh pr merge 71 --squash --match-head-commit b282d3b (NO --admin, NO --auto). HOLD on SHA drift or any
+  failed/incomplete item. Post-merge: verify main integrity, record merge SHA + checkpoint, report fresh-session
+  validation procedure. R12/BE-G2-6 §6/§8 CyberGym remains HELD; R10==BE-G3-5/R12==BE-G2-6 preserved.
+base_main: 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b
+pr: 71
+authorized_merge_sha: b282d3b57d14a1b2ce340169e217505a1b7cc370
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 449
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
