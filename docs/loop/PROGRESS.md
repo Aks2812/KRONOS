@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 444
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c)
+pending_action: GATE2_READY_AND_SQUASH_MERGE_PR70
+pending_action_outcome: PENDING
+prior_action_outcome: seq 443 GATE2_SQUASH_MERGE_PR70 -> BLOCKED_PR_DRAFT (PR #70 isDraft=true). Operator this
+  turn authorized orchestrator to run `gh pr ready 70`, then re-run the FULL ten-item MERGE-GATE at exact head
+  2695a0d9f9a64f913ba7f41b521b26e826c61386, and ONLY IF ALL ITEMS PASS squash-merge with --match-head-commit.
+  No --admin, no --auto, no .claude patch application, no product work, no live execution. Stop after post-merge
+  checkpoint.
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: WRITE-AHEAD for consequential protected-branch merge. Plan: (a) gh pr ready 70; (b) re-measure
+  ten-item gate at 2695a0d -- (1) main protected via active ruleset void-rule-kronos 25333712, (2) PR not draft
+  after ready, (3) open & unmerged, (4) head==authorized SHA 2695a0d, (5) independent kronos-reviewer PASS 9/9
+  evidence @2695a0d (reviewed_head==head, unchanged), (6) ci:none (ruleset no required checks), (7) RE-MEASURE
+  canonical suite at head via .venv/bin/python + disk TMPDIR expect 0 failed, (8) scope/seal-tax audit
+  911812c..2695a0d == exactly 7 permitted paths, (9) orchestrator Gate-2 semantic PASS, (10) no hard-boundary /
+  out-of-scope file; (c) if ALL pass: gh pr merge 70 --squash --match-head-commit 2695a0d. Fail closed on any item.
+  Milestone identity R10==BE-G3-5 / R12==BE-G2-6 never conflated; R12 §6/§8 CyberGym HELD; .claude Option-B patch
+  = separate maintainer PR after merge.
+base_main: 911812ccf56514dc1f866fbf669ea081f5da7369
+feature_head: 2695a0d9f9a64f913ba7f41b521b26e826c61386
+pr: 70
+brief_sha256: 0c07aea48170ad48002e9daa92d206f0cf077b7a4ebc1206b00d72417ab30433
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit; loop cannot edit .claude/**.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 443
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
