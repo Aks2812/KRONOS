@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 431
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: MERGE_PR68_SQUASH_AT_2836287
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-2 authorized squash-merge of PR #68 at EXACT head 283628771d3ffb4fb4a94fe3a73c5e81447f0141, requiring full ten-item MERGE-GATE re-measure + a fresh independent reviewer PASS at this exact head before merge; no firewall/containers/§6-8; carry gateway+IPv4+real-binary residuals as mandatory pre-run conditions. Fresh independent kronos-reviewer PASS AT 2836287: canonical runner 4190 passed 1 skipped 0 failed; all §5/§8 acceptance PASS; scope exactly 7 R10EG files; seal-tax PASS (R10NET->be30b9e, R10EG be30b9e..HEAD); injection removed; two-jump DOCKER-USER+INPUT conntrack-preserving guard; rc/state idempotency no stderr parsing no live-chain flush; behavioral register-before-apply rollback across normal/Exception/TimeoutError/KeyboardInterrupt/SystemExit. Reviewer new finding 1 (MEDIUM, hermetically UNVERIFIABLE): real iptables may return rc 2 (not 1) for -C on a missing target chain -> second remove would not report already_gone / teardown-after-failed-N recorded failed; NO leftover rule possible; folds into the real-binary pre-run condition. TEN-ITEM GATE all green: (1) main protected void-rule-kronos active; (2) PR draft -> mark-ready as mechanical prerequisite of the authorized merge immediately pre-merge; (3) OPEN unmerged mergedAt null; (4) head==2836287; (5) reviewer PASS at 2836287; (6) ci:none (no checks); (7) canonical suite 0 failed re-measured at 2836287; (8) seal/scope audit green; (9) orchestrator Gate-2 semantic PASS; (10) no hard-boundary/out-of-scope file. ACTION: gh pr ready 68 then gh pr merge 68 --squash --match-head-commit 283628771d3ffb4fb4a94fe3a73c5e81447f0141 (never --admin, never --auto). Outcome (merge SHA, new main HEAD, branch state) at seq 432.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard
+feature_head: 283628771d3ffb4fb4a94fe3a73c5e81447f0141
+brief: SPEC_BRIEF_R10_egress_guard.md
+pr: 68 (draft->ready at merge; OPEN; base main; head 2836287)
+authorized_merge_sha: 283628771d3ffb4fb4a94fe3a73c5e81447f0141
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+MANDATORY PRE-RUN CONDITIONS (carry to the SEPARATE §6/§8 run authorization; NOT satisfied by this merge):
+  (1) gateway host-local scope: container->gateway intentionally allowed (gateway IP in-subnet); decide whether a
+      -d <gateway> DROP is required before the gated run;
+  (2) IPv4-only guard (no ip6tables) + loose _CIDR_RE; confirm/accept for the lab network;
+  (3) real-binary verification: iptables/iptables-nft -C rc semantics (reviewer finding 1) + host->container
+      127.0.0.1 probe preservation on the real host.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO
+  docker up, NO containers, NO §6/§8 run. Merge ONLY PR #68 at the authorized SHA; nothing else.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 430
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
