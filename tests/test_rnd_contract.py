@@ -63,7 +63,7 @@ def test_next_item_requires_severity_depends_on_rank():
 
 def test_manifest_hashes_match_disk():
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.4"
+    assert manifest["contract_version"] == "1.4.5"
     files = manifest["files"]
     listed = {Path(f["path"]).name for f in files}
     assert {CONTRACT.name, SCHEMA.name, "KRONOS_DONE.md"} <= listed
@@ -170,10 +170,10 @@ def test_report_missing_required_field_fails():
     raise AssertionError("report missing operator_action validated")
 
 
-def test_contract_is_v1_4_4_with_auto_brief():
+def test_contract_is_v1_4_5_with_auto_brief():
     text = CONTRACT.read_text()
-    assert "Version: 1.4.4" in text
-    assert "Contract-Version: 1.4.4" in text
+    assert "Version: 1.4.5" in text
+    assert "Contract-Version: 1.4.5" in text
     assert "AUTO-NEXT" in text
     assert "AUTO-BRIEF" in text
 
@@ -287,7 +287,7 @@ def test_contract_defines_five_decision_classes():
 
 
 LABELED_SECTIONS = [
-    "[STATUS]", "[WHY]", "[WHERE]", "[WHEN]", "[WHAT]", "[WHO]", "[HOW]",
+    "[STATUS]", "[WHY]", "[WHERE]", "[WHEN]", "[PHASE READINESS]", "[WHAT]", "[WHO]", "[HOW]",
     "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]",
     "[MOST RECOMMENDED ACTION]", "[OPERATOR ACTION]", "[NEXT PROMPT]",
 ]
@@ -503,7 +503,7 @@ def test_schema_v140_structure():
     s = _schema()
     assert s["properties"]["contract_version"]["type"] == "string"
     assert s["properties"]["effort_justification"]["type"] == "string"
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"]
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -558,6 +558,8 @@ def _validate_v140(report):
     _validate_report(report)  # base object still validates
     assert report.get("contract_version") in STRICT_CONTRACT_VERSIONS
     assert isinstance(report.get("effort_justification"), str) and report["effort_justification"]
+    if report["contract_version"] == "1.4.5":
+        assert "phase_readiness" in report, "1.4.5 requires phase_readiness"
     milestone = report["when"]["milestone"]
     for k in V140_MILESTONE_KEYS:
         assert k in milestone, f"milestone missing: {k}"
@@ -634,7 +636,7 @@ def test_v140_invalid_decision_class_fails():
 # v1.3.0 (schema commit 6a8d1d9 / PR #50). So only 1.3.0/1.3.1/1.3.2 are base-compatible legacy
 # versions; 1.0.0/1.1.0/1.2.0 predate decision_class and cannot validate against the current base.
 LEGACY_CONTRACT_VERSIONS = ["1.3.0", "1.3.1", "1.3.2"]
-STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
+STRICT_CONTRACT_VERSIONS = ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"]
 ALLOWED_CONTRACT_VERSIONS = LEGACY_CONTRACT_VERSIONS + STRICT_CONTRACT_VERSIONS
 _MISSING = object()
 
@@ -739,6 +741,7 @@ def _positive_vectors():
     vectors.append(("exact 1.4.2", _report_v140(contract_version="1.4.2")))
     vectors.append(("exact 1.4.3", _report_v140(contract_version="1.4.3")))
     vectors.append(("exact 1.4.4", _report_v140(contract_version="1.4.4")))
+    vectors.append(("exact 1.4.5", _strict_report("1.4.5")))
     vectors.append(("1.4.0 with ledger entry", _ledger_report_v140()))
     return vectors
 
@@ -752,7 +755,7 @@ def _negative_vectors():
     nonstr["contract_version"] = 140
     vectors.append(("non-string contract_version", nonstr))
     for bad in ("1.4.0 ", " 1.4.0", "v1.4.0", "1.4", "1.4.0.0", "9.9.9", "1.2.0", "1.0.0", "",
-                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.5", "1.4.4 ", " 1.4.4"):
+                "1.4.10", "1.5.0", "1.4.1 ", " 1.4.1", "1.4.2 ", " 1.4.2", "1.4.6", "1.4.5 ", " 1.4.5", "1.4.4 ", " 1.4.4"):
         r = _report_v140()
         r["contract_version"] = bad
         vectors.append((f"version {bad!r}", r))
@@ -863,7 +866,7 @@ def test_schema_v141_minimal_widen():
     s = _schema()
     assert s["properties"]["contract_version"]["enum"] == [
         "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
-    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
+    assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"]
     assert "const" not in s["if"]["properties"]["contract_version"]
     assert s["if"]["required"] == ["contract_version"]
     assert set(s["required"]) == REQUIRED_KEYS
@@ -881,13 +884,26 @@ def test_schema_v141_minimal_widen():
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
 
 
+def _phase_readiness():
+    return {
+        "current_phase": "pre-Beta-Entry", "gates_completed": ["BE-G1-7"], "gates_remaining": ["BE-G3-5", "BE-G2-6"],
+        "percentage": "UNKNOWN", "percentage_basis": "no defensible weighted baseline", "critical_path": ["R10", "R12"],
+        "remaining_iterations": {"minimum": 2, "expected": "UNKNOWN", "pessimistic": "UNKNOWN"},
+        "assumptions": ["none"], "confidence": "low",
+        "next_phase_trigger": "R10 (BE-G3-5) AND R12 (BE-G2-6) satisfied by one authorized manifest-bounded run",
+    }
+
+
 def _strict_report(version):
-    return _report_v140(contract_version=version)
+    r = _report_v140(contract_version=version)
+    if version == "1.4.5":
+        r["phase_readiness"] = _phase_readiness()
+    return r
 
 
 def test_real_schema_validates_exact_1_4_0_1_4_1_1_4_2_strict():
     validator = _real_validator()
-    for v in ("1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"):
+    for v in ("1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"):
         r = _strict_report(v)
         assert r["contract_version"] == v
         assert validator.is_valid(r), v
@@ -1013,10 +1029,10 @@ def test_next_prompt_self_check():
 def test_version_discrimination_prose_covers_1_4_0_1_4_1_1_4_2():
     text = CONTRACT.read_text()
     s9 = text[text.index("## §9"):text.index("## §10")]
-    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`" in s9
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, exactly `1.4.4`, or exactly `1.4.5`" in s9
     assert "never loosened" in s9
     s15 = _s15()
-    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`" in s15
+    assert "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, exactly `1.4.4`, or exactly `1.4.5`" in s15
     assert "never loosened" in s15
     s14 = text[text.index("## §14"):text.index("## §15")]
     assert "`[NEXT PROMPT]`" in s14
@@ -1069,10 +1085,10 @@ def test_contract_version_1_4_2_strict_branch():
 def test_manifest_and_contract_version_consistent():
     manifest = json.loads(MANIFEST.read_text())
     text = CONTRACT.read_text()
-    assert manifest["contract_version"] == "1.4.4"
-    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.4"
+    assert manifest["contract_version"] == "1.4.5"
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.5"
     s16 = text[text.index("## §16"):]
-    assert "`contract_version` (1.4.4)" in s16
+    assert "`contract_version` (1.4.5)" in s16
 
 
 # ---- SPEC_BRIEF53 / contract v1.4.3: Actionable Continuation Invariant ----
@@ -1093,7 +1109,7 @@ def test_schema_accepts_1_4_3_strict():
         drop(bad)
         assert not validator.is_valid(bad)
     # unknown-future version fails closed
-    assert not validator.is_valid(_strict_report("1.4.5"))
+    assert not validator.is_valid(_strict_report("1.4.6"))
 
 
 _ECHO_DENY = ("validation pass", "holding", "acknowledged", "no action pending",
@@ -1266,18 +1282,60 @@ def _s13_4():
     return _section("### §13.4", "### §13.3")
 
 
-def test_contract_is_v1_4_4():
+def test_contract_is_v1_4_5():
     text = CONTRACT.read_text()
     lines = text.splitlines()
-    assert lines[2] == "Version: 1.4.4"
-    assert "Contract-Version: 1.4.4" in lines[228:233]
+    assert lines[2] == "Version: 1.4.5"
+    assert "Contract-Version: 1.4.5" in lines[228:233]
     manifest = json.loads(MANIFEST.read_text())
-    assert manifest["contract_version"] == "1.4.4"
+    assert manifest["contract_version"] == "1.4.5"
     assert DONE.is_file()
     names = {Path(f["path"]).name for f in manifest["files"]}
     assert {CONTRACT.name, SCHEMA.name, DONE.name} == names
     for f in manifest["files"]:
         assert hash_matches(ROOT / f["path"], f["sha256"]), f["path"]
+
+
+def test_phase_readiness_contract_schema_non_retroactive():
+    text = CONTRACT.read_text()
+    s15 = _s15()
+    assert "5. `[PHASE READINESS]`" in s15
+    assert "6. `[WHAT]`" in s15 and "13. The final line `RECOMMENDED ORCHESTRATOR EFFORT" in s15
+    item = s15[s15.index("5. `[PHASE READINESS]`"):s15.index("6. `[WHAT]`")]
+    for frag in ("current phase", "weighted", "`UNKNOWN`", "critical path", "minimum / expected / pessimistic",
+                 "one durable checkpointed loop turn", "assumptions", "confidence", "next-phase",
+                 "Beta-Entry", "`UNDEFINED`", "R&D-COMPLETE", "MUST NOT fabricate"):
+        assert frag in item, frag
+    assert "`[PHASE READINESS]` present" in s15
+    assert "`1.4.5`" in text
+    s = _schema()
+    assert s["properties"]["contract_version"]["enum"][-1] == "1.4.5"
+    assert s["if"]["properties"]["contract_version"]["enum"][-1] == "1.4.5"
+    pr = s["properties"]["phase_readiness"]
+    assert pr["additionalProperties"] is False
+    assert set(pr["required"]) == {"current_phase", "gates_completed", "gates_remaining", "percentage",
+        "percentage_basis", "critical_path", "remaining_iterations", "assumptions", "confidence", "next_phase_trigger"}
+    ri = pr["properties"]["remaining_iterations"]
+    assert ri["additionalProperties"] is False and set(ri["required"]) == {"minimum", "expected", "pessimistic"}
+    assert {"const": "UNKNOWN"} in pr["properties"]["percentage"]["anyOf"]
+    assert {"if": {"properties": {"contract_version": {"const": "1.4.5"}}, "required": ["contract_version"]},
+            "then": {"required": ["phase_readiness"]}} in s["allOf"]
+    assert "phase_readiness" not in s["required"] and "phase_readiness" not in s["then"]["required"]
+    validator = _real_validator()
+    # non-retroactive: 1.4.4 without phase_readiness validates; 1.4.5 without it is rejected
+    assert validator.is_valid(_strict_report("1.4.4"))
+    assert "phase_readiness" not in _strict_report("1.4.4")
+    good = _strict_report("1.4.5")
+    assert validator.is_valid(good)
+    missing = _strict_report("1.4.5")
+    missing.pop("phase_readiness")
+    assert not validator.is_valid(missing)
+    bad = _strict_report("1.4.5")
+    bad["phase_readiness"]["remaining_iterations"]["minimum"] = "soon"
+    assert not validator.is_valid(bad)
+    bad = _strict_report("1.4.5")
+    bad["phase_readiness"].pop("confidence")
+    assert not validator.is_valid(bad)
 
 
 def test_allowed_versions_include_1_4_4():
@@ -1286,9 +1344,9 @@ def test_allowed_versions_include_1_4_4():
     assert _validate_discriminated(_report_v140(contract_version="1.4.4"))
     validator = _real_validator()
     assert validator.is_valid(_strict_report("1.4.4"))
-    assert not validator.is_valid(_strict_report("1.4.5"))
+    assert not validator.is_valid(_strict_report("1.4.6"))
     with pytest.raises(AssertionError):
-        _validate_discriminated(_report_v140(contract_version="1.4.5"))
+        _validate_discriminated(_report_v140(contract_version="1.4.6"))
     assert list(_schema()["properties"]["contract_version"]["enum"]) == ALLOWED_CONTRACT_VERSIONS
 
 
@@ -1449,9 +1507,9 @@ def test_active_version_phrases_reach_1_4_4():
     text = CONTRACT.read_text()
     # bumped active forms must be present
     for phrase in (
-        "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, or exactly `1.4.4`",
-        "v1.4.0, v1.4.1, v1.4.2, v1.4.3, and v1.4.4",
-        "v1.4.0/v1.4.1/v1.4.2/v1.4.3/v1.4.4",
+        "exactly `1.4.0`, exactly `1.4.1`, exactly `1.4.2`, exactly `1.4.3`, exactly `1.4.4`, or exactly `1.4.5`",
+        "v1.4.0, v1.4.1, v1.4.2, v1.4.3, v1.4.4, and v1.4.5",
+        "v1.4.0/v1.4.1/v1.4.2/v1.4.3/v1.4.4/v1.4.5",
     ):
         assert phrase in text, f"missing active phrase: {phrase}"
     # truncated-at-1.4.3 active forms must be gone
@@ -1462,9 +1520,9 @@ def test_active_version_phrases_reach_1_4_4():
     ):
         assert stale not in text, f"stale active phrase still present: {stale}"
     # active single-version refs (footer, §16) must be 1.4.4
-    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.4"
+    assert text.rstrip().splitlines()[-1] == "Contract-Version: 1.4.5"
     s16 = text[text.index("## §16"):]
-    assert "`contract_version` (1.4.4)" in s16
+    assert "`contract_version` (1.4.5)" in s16
     assert "`contract_version` (1.4.3)" not in s16
     # historical 1.4.3 is still allowed to appear (inside the 5-version ranges)
     assert "1.4.3" in text

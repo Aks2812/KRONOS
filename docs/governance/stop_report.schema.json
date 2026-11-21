@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "KRONOS stop-report (5W+1H)",
-  "$comment": "Fail-closed version discrimination. contract_version is REQUIRED (via allOf) and MUST be one of the recognized schema-bound versions in its enum. A missing, non-string, or unrecognized/malformed value (e.g. '1.4.0 ', ' 1.4.0', 'v1.4.0', '1.4', unknown future versions) is REJECTED, never silently validated as legacy. The recognized legacy versions 1.3.0/1.3.1/1.3.2 are exactly the shipped versions that share the current eleven-required-key, five-decision-class object introduced at contract v1.3.0; they validate against the permissive base. Exact 1.4.0, 1.4.1, 1.4.2, and 1.4.3 each additionally satisfy the strict then-branch (when.milestone, how.reference_ledger, effort_justification; when/how closed). Historical unversioned terminal reports remain historical evidence and are not schema-valid v1.4.0/v1.4.1/v1.4.2 report objects; no historical record is rewritten or migrated. v1.4.0/v1.4.1/v1.4.2/v1.4.3 validation is never loosened.",
+  "$comment": "Fail-closed version discrimination. contract_version is REQUIRED (via allOf) and MUST be one of the recognized schema-bound versions in its enum. A missing, non-string, or unrecognized/malformed value (e.g. '1.4.0 ', ' 1.4.0', 'v1.4.0', '1.4', unknown future versions) is REJECTED, never silently validated as legacy. The recognized legacy versions 1.3.0/1.3.1/1.3.2 are exactly the shipped versions that share the current eleven-required-key, five-decision-class object introduced at contract v1.3.0; they validate against the permissive base. Exact 1.4.0, 1.4.1, 1.4.2, and 1.4.3 each additionally satisfy the strict then-branch (when.milestone, how.reference_ledger, effort_justification; when/how closed). Historical unversioned terminal reports remain historical evidence and are not schema-valid v1.4.0/v1.4.1/v1.4.2 report objects; no historical record is rewritten or migrated. v1.4.0/v1.4.1/v1.4.2/v1.4.3 validation is never loosened. v1.4.5 additionally carries the top-level phase_readiness object, REQUIRED only when contract_version is exactly 1.4.5 (non-retroactive: 1.4.0-1.4.4 reports are not required to carry phase_readiness and validate unchanged; a 1.4.5 report without it is rejected). Exact 1.4.4 and 1.4.5 additionally satisfy the strict then-branch. v1.4.0-v1.4.4 strict validation is never loosened.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -37,7 +37,8 @@
         "1.4.1",
         "1.4.2",
         "1.4.3",
-        "1.4.4"
+        "1.4.4",
+        "1.4.5"
       ]
     },
     "decision_class": {
@@ -396,6 +397,99 @@
     },
     "operator_action": {
       "type": "string"
+    },
+    "phase_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_phase",
+        "gates_completed",
+        "gates_remaining",
+        "percentage",
+        "percentage_basis",
+        "critical_path",
+        "remaining_iterations",
+        "assumptions",
+        "confidence",
+        "next_phase_trigger"
+      ],
+      "properties": {
+        "current_phase": {
+          "type": "string"
+        },
+        "gates_completed": {
+          "type": "array"
+        },
+        "gates_remaining": {
+          "type": "array"
+        },
+        "percentage": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "UNKNOWN"
+            }
+          ]
+        },
+        "percentage_basis": {
+          "type": "string"
+        },
+        "critical_path": {
+          "type": "array"
+        },
+        "remaining_iterations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimum",
+            "expected",
+            "pessimistic"
+          ],
+          "properties": {
+            "minimum": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "const": "UNKNOWN"
+                }
+              ]
+            },
+            "expected": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "const": "UNKNOWN"
+                }
+              ]
+            },
+            "pessimistic": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "const": "UNKNOWN"
+                }
+              ]
+            }
+          }
+        },
+        "assumptions": {
+          "type": "array"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "next_phase_trigger": {
+          "type": "string"
+        }
+      }
     }
   },
   "if": {
@@ -406,7 +500,8 @@
           "1.4.1",
           "1.4.2",
           "1.4.3",
-          "1.4.4"
+          "1.4.4",
+          "1.4.5"
         ]
       }
     },
@@ -453,6 +548,23 @@
       "required": [
         "contract_version"
       ]
+    },
+    {
+      "if": {
+        "properties": {
+          "contract_version": {
+            "const": "1.4.5"
+          }
+        },
+        "required": [
+          "contract_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "phase_readiness"
+        ]
+      }
     }
   ]
 }
