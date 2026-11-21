@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 427
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: HOLD_GATE2_R10_EGRESS_GUARD_PR68
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 426 PUSH_BRANCH_AND_OPEN_DRAFT_PR outcome=DONE. Draft PR #68 OPEN, base main, head 7644fd6 (==origin/kronos/r10-egress-guard), isDraft true, mergeable MERGEABLE. Branch pushed. GATE-1 Option-1 build COMPLETE + independently reviewed PASS (build step). Suite 4175 passed 1 skipped 0 failed (builder + reviewer, independent). Scope EXACT 7 R10EG files; seal-tax correct (R10NET->be30b9e, R10EG base be30b9e); internal:true injection removed; egress_guard.py register-before-apply rollback on all paths; host 127.0.0.1 publishing preserved by -s subnet scoping. NOW AT GATE-2: merge needs operator authorization (naming PR #68 + head SHA 7644fd6). 8 reviewer findings carried, NONE a build-acceptance failure: F1(med) "zero container egress" overstates (DOCKER-USER=FORWARD only; container->host-local INPUT unfiltered; external/routed egress IS dropped); F2(low-med) register-before-apply proven by run() source-string not behavior; F3(med, UNVERIFIABLE hermetically) iptables already-absent stderr wording vs fake strings, verify vs real iptables/iptables-nft at gated step (apply fails-closed); F4(low) re-apply -F empties live chain fail-open window (single-apply run() unaffected); F5(low) foreign-chain check omits -R/-E/-N; F6(low) no iptables -w; F7/F8 info. F1/F3/F4/F6 are CONDITIONS on the SEPARATE §6/§8 run, not the build/merge. NO merge, NO mark-ready, NO firewall apply, NO docker up, NO §6/§8 run without explicit operator authorization.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard
+feature_head: 7644fd60103289da06da888eececbaa0798e881d
+brief: SPEC_BRIEF_R10_egress_guard.md
+brief_sha256: c7b0c1120596343814f5e17f57c1bcf18b9303c8613ffb8423a2cf4d609e80e6
+pr: 68 (draft, OPEN, base main, head 7644fd6, mergeable MERGEABLE)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+OPERATOR DECISION NEEDED (GATE-2):
+  (A) RECOMMENDED: authorize MERGE of PR #68 at head 7644fd6 (squash) for the build step; track F1/F3/F4/F6 as
+      explicit CONDITIONS to resolve or accept before the eventual §6/§8 run authorization.
+  (B) request a bounded in-scope repair first (F2 behavioral rollback test + F1 docstring accuracy + optional
+      F5/F6), then re-review and re-propose GATE-2.
+  (C) hold / redirect.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. STOP at GATE-2.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 426
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
