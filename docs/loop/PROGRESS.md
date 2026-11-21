@@ -1,4 +1,41 @@
 # KRONOS loop-state checkpoint
+seq: 443
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c)
+pending_action: GATE2_SQUASH_MERGE_PR70
+pending_action_outcome: BLOCKED_PR_DRAFT
+prior_action_outcome: seq 442 AWAIT_GATE2_PHASE_READINESS_PR70 -> operator lifted HOLD and authorized GATE-2
+  squash-merge of PR #70 at head 2695a0d9f9a64f913ba7f41b521b26e826c61386. Pre-merge ten-item MERGE-GATE
+  re-measured LIVE at exact head: (1) main protected via ACTIVE ruleset void-rule-kronos 25333712
+  (legacy /branches/main/protection 404 is expected; rulesets govern default branch) PASS; (3) open and
+  unmerged, mergedAt null PASS; (4) head == operator-authorized SHA 2695a0d PASS; (6) ci:none (ruleset
+  requires no status checks) PASS; head attribution author=Aks2812 committer=Aks2812 GitHub-attributed,
+  require_extra_approval_for_unattributed_changes NOT triggered. BLOCKER item (2) "PR not draft":
+  PR #70 isDraft=true. gh pr merge --squash mechanically rejects a draft ("not mergeable: draft state");
+  marking a PR ready requires operator authorization NOT given this turn. FAIL CLOSED: NO merge, NO
+  ready-for-review, NO --admin, NO --auto, NO .claude patch applied, NO mutation to PR #70.
+report_type: BLOCKED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: GATE-2 authorized by operator but merge blocked by draft state; needs operator to mark
+  PR #70 ready (or explicitly authorize orchestrator to) before the ten-item gate can complete. Remaining
+  unmeasured gate items deferred until not-draft: (5) reviewer PASS re-confirm, (7) canonical suite rerun,
+  (8) scope-guard/seal-tax audit, (9) Gate-2 semantic, (10) no hard-boundary file. PR #70 head
+  2695a0d9f9a64f913ba7f41b521b26e826c61386. Milestone identity R10==BE-G3-5 / R12==BE-G2-6 never conflated;
+  Alpha/GA UNDEFINED; R12 §6/§8 CyberGym live run HELD.
+NEXT: operator marks PR #70 ready-for-review (or authorizes orchestrator to mark ready), then re-run the
+  FULL ten-item MERGE-GATE at 2695a0d (incl. canonical runner suite + scope/seal-tax + Gate-2 semantic) and
+  squash with --match-head-commit 2695a0d9f9a64f913ba7f41b521b26e826c61386. Never --admin, never --auto.
+  .claude Option-B patch (phase_readiness_claude_maintainer_patch.diff, apply --check exit 0) = SEPARATE
+  reviewed maintainer PR AFTER PR #70 merges, never a loop edit.
+HARD BOUNDARY: manifest.py NEVER-edit; .claude/** loop cannot edit; cybergym/** .github/** out of scope.
+loop-state kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 442
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
