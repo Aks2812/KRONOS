@@ -822,6 +822,7 @@ def test_terminal_report_structure_validator():
         "[WHY] blocker",
         "[WHERE] branch b, head abc, no PR, main def",
         "[WHEN] seq 1; baseline bb00179 3/11; remaining review,gate2; ETA UNKNOWN; confidence medium",
+        "[PHASE READINESS] phase pre-Beta-Entry; percentage UNKNOWN; Alpha/GA UNDEFINED; trigger R10 AND R12",
         "[WHAT] thing; ledger: none materially influenced this iteration",
         "[WHO] builder; sonnet",
         "[HOW] tests EV-1; gates ok",
@@ -858,14 +859,14 @@ FALLBACK = "REVIEW-REQUIRED: discuss the decision above; do not act."
 def _next_prompt_block():
     s15 = _s15()
     start = s15.index("`[NEXT PROMPT]` —")
-    end = s15.index("12. The final line")
+    end = s15.index("13. The final line")
     return s15[start:end]
 
 
 def test_schema_v141_minimal_widen():
     s = _schema()
     assert s["properties"]["contract_version"]["enum"] == [
-        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4"]
+        "1.3.0", "1.3.1", "1.3.2", "1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"]
     assert s["if"]["properties"]["contract_version"]["enum"] == ["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.4.4", "1.4.5"]
     assert "const" not in s["if"]["properties"]["contract_version"]
     assert s["if"]["required"] == ["contract_version"]
@@ -874,11 +875,11 @@ def test_schema_v141_minimal_widen():
     assert set(s["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
     assert set(s["properties"]["next"]["items"]["properties"]["decision_class"]["enum"]) == DECISION_CLASSES
     assert s["additionalProperties"] is False
-    # only new top-level key: optional completion_record (v1.4.4); [NEXT PROMPT] is presentation-only
+    # new top-level keys: optional completion_record (v1.4.4), phase_readiness (v1.4.5); [NEXT PROMPT] is presentation-only
     assert set(s["properties"]) == {
         "report_type", "contract_version", "decision_class", "opus_effort",
         "effort_justification", "what", "why", "who", "when", "where", "how",
-        "next", "recommendation", "operator_action", "completion_record"}
+        "next", "recommendation", "operator_action", "completion_record", "phase_readiness"}
     assert {"contract_version", "effort_justification"} <= set(s["then"]["required"])
     assert "milestone" in s["then"]["properties"]["when"]["required"]
     assert "reference_ledger" in s["then"]["properties"]["how"]["required"]
@@ -1004,7 +1005,7 @@ def test_next_prompt_boundary_constraints_and_none_fallback():
 def test_severity_section_is_readable_bullets_not_table():
     s15 = _s15()
     line = [l for l in s15.splitlines() if "[HOW TO DO FOR NEXT STEP BASED ON SEVERITY]" in l
-            and l.startswith("8.")][0]
+            and l.startswith("9.")][0]
     assert "readable bullets" in line
     assert "one bullet per `next` entry" in line
     assert "`rank · severity · decision_class · depends_on · action`" in line
@@ -1286,7 +1287,7 @@ def test_contract_is_v1_4_5():
     text = CONTRACT.read_text()
     lines = text.splitlines()
     assert lines[2] == "Version: 1.4.5"
-    assert "Contract-Version: 1.4.5" in lines[228:233]
+    assert "Contract-Version: 1.4.5" in lines[229:234]
     manifest = json.loads(MANIFEST.read_text())
     assert manifest["contract_version"] == "1.4.5"
     assert DONE.is_file()
