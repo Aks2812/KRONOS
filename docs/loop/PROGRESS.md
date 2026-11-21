@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 438
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: MERGE_PR69_SQUASH_AT_fe87f44
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: SAFE-TO-APPROVE
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-2 authorized (this turn) the squash-merge of PR #69 at EXACT head fe87f440542c73dc93476c385ac0f2cc0a9ef463, instructing re-measure of the full ten-item MERGE-GATE + a fresh independent reviewer PASS at this exact head before merge; no firewall apply, no container stand-up, no sec6/sec8 run. Live re-derived: origin/main HEAD 454c179 (protected, ruleset void-rule-kronos id 25333712 active); PR #69 OPEN, isDraft true, mergedAt null, base main, head fe87f44 == authorized SHA; no CI checks (ci:none); contract 3-file integrity PASS (hashes == manifest v1.4.4). Fresh independent kronos-reviewer measured origin/main..fe87f44 itself (brief + range only): canonical suite 4226 passed 1 skipped 0 failed via the canonical runner; all nine criteria PASS (six-file scope exact; _CIDR_RE removed + ipaddress IPv4-only; discover_gateway + case-sensitive assert_ipv4_only exact-false; chain order ESTABLISHED,RELATED RETURN -> gateway/32 DROP -> subnet RETURN -> 127.0.0.0/8 RETURN -> DROP; _state rc in {1,2} absent + rollback; ctstate-only normalization with strict everything-else + docstring -S; wrapper wiring; seal-tax R10EG sealed to 454c179 + R10EGH window; hermetic non-vacuous tests). TEN-ITEM MERGE-GATE re-measured ALL PASS: (1) main protected; (2) draft -> gh pr ready 69 mechanical prerequisite authorized by the merge authorization, performed immediately pre-merge; (3) OPEN unmerged mergedAt null; (4) head==fe87f44==authorized SHA; (5) fresh reviewer PASS at fe87f44; (6) ci:none no checks; (7) canonical suite 0 failed re-measured, decided on SUMMARY line; (8) seal/scope audit green exactly six files; (9) orchestrator Gate-2 semantic PASS; (10) no hard-boundary/out-of-scope file. ACTION: gh pr ready 69 then gh pr merge 69 --squash --match-head-commit fe87f440542c73dc93476c385ac0f2cc0a9ef463 (never --admin, never --auto). Record merge SHA + new main HEAD + branch state in seq 439.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard-hardening
+feature_head: fe87f440542c73dc93476c385ac0f2cc0a9ef463
+authorized_merge_sha: fe87f440542c73dc93476c385ac0f2cc0a9ef463
+reviewed_head: fe87f440542c73dc93476c385ac0f2cc0a9ef463 (fresh independent reviewer PASS)
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md
+brief_sha256: 628fac6e89e3ed3267ac451c2b24241e4cbd26c4168e31d791f5b282312d540b
+pr: 69 (DRAFT->ready then squash-merge; OPEN; base main; head fe87f44)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+POST-MERGE (seq 439): confirm PR #69 MERGED + new main HEAD + branch state; re-verify contract 3-file integrity on new main; then HOLD_R10EGH_MERGED_AWAIT_SECTION6_8_RUN. The separate sec6/sec8 R10 CyberGym evidence run stays HELD (needs its own explicit operator authorization; loop cannot self-authorize live execution) and must resolve/accept the remaining real-binary residuals: real iptables -S exact rendering of -d/-j fields; real rc-2 on a missing target chain on the host backend; real docker network inspect EnableIPv6/gateway output. NEXT-BRIEF SEAL NOTE: a subsequent brief must seal the R10EGH window to its merge SHA (R10EGH_MERGE) per the whole-window seal-tax, then open its own window base = R10EGH merge SHA.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. ONLY PR #69 at fe87f44 merged this turn. NO firewall apply, NO docker up, NO containers, NO sec6/sec8 run. NO --admin, NO --auto.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 437
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
