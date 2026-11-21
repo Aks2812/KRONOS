@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 439
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ new main 911812c)
+pending_action: HOLD_R10EGH_MERGED_AWAIT_SECTION6_8_RUN
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: seq 438 MERGE_PR69_SQUASH_AT_fe87f44 outcome=MERGED. PR #69 squash-merged at the operator-authorized exact head fe87f440542c73dc93476c385ac0f2cc0a9ef463 via gh pr ready 69 then gh pr merge 69 --squash --match-head-commit fe87f44 (never --admin, never --auto). Merge commit 911812ccf56514dc1f866fbf669ea081f5da7369; PR state MERGED, mergedAt 2026-11-21T07:32:52Z; new main HEAD 911812c. Pre-merge ten-item MERGE-GATE re-measured ALL PASS at fe87f44 (main protected void-rule-kronos; draft->ready mechanical; OPEN unmerged; head==authorized SHA; fresh independent kronos-reviewer PASS 4226 passed 1 skipped 0 failed via canonical runner on origin/main..fe87f44; ci:none; canonical suite 0 failed re-measured on SUMMARY line; seal/scope audit green exactly six files; orchestrator Gate-2 semantic PASS; no hard-boundary/out-of-scope file). Post-merge re-verified on new main 911812c: contract 3-file integrity PASS (contract/schema/done hashes == manifest v1.4.4); squash scope 454c179..911812c = exactly the six R10EGH files (SPEC_BRIEF_R10_egress_guard_hardening.md, src/kronos/eval/egress_guard.py, src/kronos/eval/cybergym_x_score.py, tests/test_egress_guard.py, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py); no cybergym/** .claude/** .github/** docs/governance/** manifest touched. The R10 egress-guard hardening (gateway /32 DROP + strict ipaddress IPv4-only validation + IPv6 STOP + rc-in-{1,2} fail-closed + ctstate-only reconcile normalization) is BUILD-LANDED code-only; it was NEVER applied/run. A successful R10 CyberGym evidence run remains OUTSTANDING and is the SEPARATE sec6/sec8 (BE-G2-6) step, still BLOCKED on explicit operator authorization.
+base_main_now: 911812ccf56514dc1f866fbf669ea081f5da7369
+merged_pr: 69 (MERGED, squash commit 911812c)
+feature_branch: kronos/r10-egress-guard-hardening (still present on origin; head fe87f44; not deleted pending operator call)
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+NEXT (HELD; needs explicit operator sec6/sec8 authorization -- loop cannot self-authorize live execution):
+  the bounded R10 CyberGym run that applies the egress guard for real and produces committed evidence. Before
+  any live apply it must resolve/accept the remaining hermetically-UNVERIFIABLE real-binary residuals:
+  (1) real iptables -S exact rendering of the non-ctstate fields (-d <ip>/32 masks, -j target spelling) must
+      still match _chain_rules (ctstate member order is now normalized; everything else stays strict);
+  (2) real rc-2 on a missing target chain on the host iptables backend (legacy vs nft);
+  (3) real docker network inspect EnableIPv6 + gateway output;
+  (4) host->container 127.0.0.1 published-port probe preservation on a real Docker host.
+NEXT-BRIEF SEAL NOTE: a subsequent brief must seal the R10EGH window to its merge SHA (R10EGH_MERGE = "911812c")
+  per the whole-window seal-tax (change R10EGH_BASE..HEAD -> R10EGH_BASE..R10EGH_MERGE), then open its own
+  window with base = 911812c.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO
+  docker up, NO containers, NO sec6/sec8 run without explicit operator authorization.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 438
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
