@@ -1,4 +1,44 @@
 # KRONOS loop-state checkpoint
+seq: 447
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b)
+pending_action: REVIEW_MAINTAINER_PR71_CLAUDE_PATCH
+pending_action_outcome: HOLD_TEST_FAILURES_AT_HEAD
+prior_action_outcome: seq 446 MAINTAINER_HANDAPPLY_CLAUDE_PATCH -> maintainer opened PR #71 (hand-applied patch)
+  at head fafdae3b08341442353b63f1c49f4dd21ab7e231. Loop verified (review-only, no edits): origin/main 5db0c44;
+  PR #71 OPEN draft, base main baseRefOid 5db0c44 == origin/main (NO base drift; origin/main is ancestor of head);
+  diff origin/main..fafdae3 == EXACTLY 2 files .claude/RAILS.md + .claude/commands/kronos-continue.md; applied
+  diff == patch numstat; PHASE READINESS present (RAILS 1, command 2); milestone labels untouched (R10==BE-G3-5,
+  R12==BE-G2-6 preserved). RAILS/contract test subset at head: 2 FAILED, 138 passed.
+  F1 tests/test_rnd_contract.py::test_rails_and_command_mirror_v1_4_4 -- patch bumps "contract v1.4.4"->"contract
+  v1.4.5" in both .claude files; test literal `assert "contract v1.4.4" in t` now reds (pre-patch main had v1.4.4=1
+  so it passed; version-pinned test not bumped). F2 tests/test_commit_authority.py::test_B31_Q_scope_audit --
+  open window `PHR_BASE(911812c)..HEAD` now captures the 2 new .claude files not in PHR_SECTION_10; PHR window never
+  sealed (no PHR_MERGE constant) and no new allow-set window registered for the .claude PR. HOLD per operator (failures).
+  No full canonical suite, NO independent reviewer dispatched (moot on red gate), NO edits, NO merge.
+report_type: BLOCKED
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: Both failures are tests/ updates the .claude-only Option-B patch structurally cannot carry
+  (whole-window seal tax + version-pin bump). REMEDIATION (tests/ only; loop-editable but SCOPE-SENSITIVE enforcement
+  tests -> operator authorization required, NOT done this turn): (1) test_rnd_contract.py: bump mirror test v1.4.4->
+  v1.4.5 pin (assert "contract v1.4.5"; add PHASE READINESS assertion; optional rename _v1_4_4->_v1_4_5). (2)
+  test_commit_authority.py: add PHR_MERGE="5db0c44", change line 392 to `{PHR_BASE}..{PHR_MERGE}` (seal PHR window),
+  add new window RAILS2_BASE="5db0c44" with allow-set {.claude/RAILS.md, .claude/commands/kronos-continue.md} asserted
+  `{RAILS2_BASE}..HEAD` <= that set. Then re-run RAILS/contract + canonical suite + fresh independent kronos-reviewer
+  at the resulting head, present GATE-2. Options: (A) fold the tests/ fix onto PR #71 branch via scoped loop brief, or
+  (B) companion tests/-only PR. §6/§8 CyberGym (R12/BE-G2-6) remains HELD.
+base_main: 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b
+pr: 71
+feature_head: fafdae3b08341442353b63f1c49f4dd21ab7e231
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit by loop; no approval overrides.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 446
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
