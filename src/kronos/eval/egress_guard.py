@@ -8,8 +8,12 @@ A dedicated chain KRONOS-CYBERGYM-EGRESS is reached only through two scoped jump
 `INPUT -s <subnet>` (traffic from the containers destined to the host itself).
 Its first rule returns ESTABLISHED,RELATED so host-initiated published-port probe
 responses (e.g. wait_for_services) are preserved; intra-network and loopback
-destinations return; everything else is dropped. Never flushes DOCKER-USER, INPUT
-or any foreign chain. Code-only here: applied by the later gated run.
+destinations return; everything else is dropped. Because the bridge gateway IP
+lies inside <subnet>, the intra-network RETURN also passes container->gateway
+traffic, so the INPUT jump narrows to container->non-subnet host addresses only;
+container->gateway (the usual host-local target) is intentionally allowed, per
+brief section 0. Never flushes DOCKER-USER, INPUT or any foreign chain. Code-only
+here: applied by the later gated run.
 
 Idempotency is decided by iptables RETURN CODES and observed state (-L / -C),
 never by stderr wording. Every invocation carries `-w` (xtables lock wait).
