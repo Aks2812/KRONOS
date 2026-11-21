@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 432
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: HOLD_R10_EGRESS_GUARD_MERGED_AWAIT_SECTION6_8_RUN
+pending_action_outcome: MERGED
+report_type: PAUSE
+decision_class: HOLD
+opus_effort: HIGH
+opus_effort_reason: seq 431 MERGE_PR68_SQUASH_AT_2836287 outcome=MERGED. PR #68 squash-merged at operator-authorized head 283628771d3ffb4fb4a94fe3a73c5e81447f0141 via gh pr merge 68 --squash --match-head-commit (no --admin, no --auto); merge commit + new main HEAD = 454c179dc3e93b4906b7e4e32f006899d5d0f142, PR state MERGED mergedAt 2026-11-21T03:44:36Z. PR marked ready immediately pre-merge as the mechanical prerequisite of the authorized merge. Ten-item MERGE-GATE re-measured green with a fresh independent reviewer PASS AT 2836287 (canonical suite 4190 passed 1 skipped 0 failed; §5/§8 acceptance PASS; scope exactly 7 R10EG files; seal PASS). Post-merge: main worktree fast-forwarded to 454c179; contract integrity re-verified PASS @ 454c179 (contract/schema/done sha256 unchanged == manifest; governance untouched by the 7-file diff). Merged feature branch kronos/r10-egress-guard NOT deleted (remote delete denied by permission; harmless, fully merged). internal:true containment REPLACED by the host DOCKER-USER+INPUT egress guard (apply code-only; NEVER applied/run this track). R10 (BE-G3-5) build remediation LANDED; the committed successful-run EVIDENCE is still OUTSTANDING and requires the SEPARATE §6/§8 bounded run. R12 (BE-G2-6) stays BLOCKED until R10 evidence lands.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard (MERGED into main; remote branch still present)
+merged_pr: 68 (MERGED, squash 454c179, head was 2836287)
+brief: SPEC_BRIEF_R10_egress_guard.md (merged to main)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+NEXT (HELD; needs explicit operator §6/§8 authorization — loop cannot self-authorize live execution):
+  the bounded R10 CyberGym run that produces the committed evidence, applying the egress guard for real.
+MANDATORY PRE-RUN CONDITIONS (operator to resolve OR accept at the §6/§8 authorization; carried from review):
+  (1) gateway host-local scope: container->gateway intentionally allowed (gateway IP in-subnet) — decide whether
+      a -d <gateway> DROP is required;
+  (2) IPv4-only guard (no ip6tables) + loose _CIDR_RE — confirm/accept for the lab network;
+  (3) real-binary verification: iptables/iptables-nft -C rc semantics on a missing target chain (reviewer
+      finding 1: real rc may be 2 not 1 -> remove idempotence / teardown-after-failed-N; NO leftover rule
+      possible) + host->container 127.0.0.1 probe preservation on the real Docker host.
+NEXT-BRIEF SEAL NOTE: a subsequent brief must seal the R10EG window to its merge SHA 454c179 (R10EG_MERGE) per
+  the whole-window seal-tax, then open its own window base 454c179.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO
+  docker up, NO containers, NO §6/§8 run without explicit operator authorization.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 431
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
