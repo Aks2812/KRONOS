@@ -15,7 +15,7 @@ host-local target) is now dropped rather than passed by the subnet RETURN.
 Never flushes DOCKER-USER, INPUT or any foreign chain. Code-only
 here: applied by the later gated run.
 
-Idempotency is decided by iptables RETURN CODES and observed state (-L / -C),
+Idempotency is decided by iptables RETURN CODES and observed state (-S),
 never by stderr wording. Every invocation carries `-w` (xtables lock wait).
 
 Residual: that host->container published-port probes still succeed under this
@@ -142,6 +142,16 @@ def _current_chain_rules() -> list[list[str]]:
     return rules
 
 
+def _normalize_rule(rule: list[str]) -> list[str]:
+    """Canonicalize only the conntrack --ctstate member order (iptables -S renders it
+    in its own order, e.g. RELATED,ESTABLISHED); every other token stays exactly as-is."""
+    out = list(rule)
+    for i, tok in enumerate(out):
+        if tok == "--ctstate" and i + 1 < len(out):
+            out[i + 1] = ",".join(sorted(out[i + 1].split(",")))
+    return out
+
+
 def apply_egress_guard(subnet: str, gateway: str) -> None:
     """Fail-closed reconcile, no flush. Fresh chain: create it and append every rule in
     order (gateway /32 DROP before the subnet RETURN, final DROP last). Existing chain:
@@ -154,7 +164,7 @@ def apply_egress_guard(subnet: str, gateway: str) -> None:
         _run(["-N", CHAIN])
         for rule in expected:
             _run(["-A", CHAIN, *rule])
-    elif _current_chain_rules() != expected:
+    elif [_normalize_rule(r) for r in _current_chain_rules()] != [_normalize_rule(r) for r in expected]:
         raise RuntimeError(f"existing chain {CHAIN} does not match the expected rules; refusing to reconcile")
     for parent in PARENTS:
         jump = _jump(parent, subnet)

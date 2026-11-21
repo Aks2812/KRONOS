@@ -24,8 +24,9 @@ class FakeIptables:
     """Stateful iptables simulator. rc derives from chain/rule STATE only; stderr is
     deliberately arbitrary/empty. Records every argv (without the leading `-w`)."""
 
-    def __init__(self, stderr="", fail_on=None, missing_chain_rc=1):
+    def __init__(self, stderr="", fail_on=None, missing_chain_rc=1, probe_rc=None):
         self.calls = []
+        self.probe_rc = probe_rc  # if set, every `-n -L` existence probe returns this rc
         self.stderr = stderr
         self.missing_chain_rc = missing_chain_rc  # rc for -C/-D/-A/-I on a missing target chain (real iptables: 1 or 2)
         self.fail_on = fail_on  # predicate(args) -> True means raise RuntimeError-worthy failure (rc 4)
@@ -47,6 +48,8 @@ class FakeIptables:
         if self.fail_on and self.fail_on(args):
             return res(4)
         if args[:2] == ["-n", "-L"]:
+            if self.probe_rc is not None:
+                return res(self.probe_rc)
             return res(0 if args[2] in self.chains else 1)
         op, chain = args[0], args[1]
         rule = args[2:]
@@ -446,3 +449,76 @@ def test_state_other_nonzero_still_raises(monkeypatch):
     monkeypatch.setattr(g.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 3, "", ""))
     with pytest.raises(RuntimeError):
         g._state(["-C", CHAIN])
+
+
+# ---- semantic reconcile: only --ctstate member order is normalized ----
+
+MUTATING = ("-N", "-A", "-F", "-X", "-I", "-D")
+
+
+def _existing(monkeypatch, rules, **kw):
+    f = FakeIptables(**kw)
+    f.chains[CHAIN] = [list(r) for r in rules]
+    monkeypatch.setattr(g.subprocess, "run", f)
+    return f
+
+
+def test_canonical_ctstate_reorder_accepted(monkeypatch):
+    canonical = [list(r) for r in RULES]
+    canonical[0] = ["-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "RETURN"]
+    f = _existing(monkeypatch, canonical)
+    g.apply_egress_guard(SUBNET, GATEWAY)  # must not raise
+    chain_calls = [c for c in f.calls if c[0] in MUTATING and c[1] == CHAIN]
+    assert chain_calls == []
+    assert f.chains[CHAIN] == canonical  # untouched, not rebuilt
+    assert ["-S", CHAIN] in f.calls  # the reconcile compare really ran
+
+
+def test_extra_rule_raises(monkeypatch):
+    f = _existing(monkeypatch, RULES + [["-d", "10.0.0.0/8", "-j", "RETURN"]])
+    with pytest.raises(RuntimeError):
+        g.apply_egress_guard(SUBNET, GATEWAY)
+    assert not [c for c in f.calls if c[0] in MUTATING and c[1] == CHAIN]
+
+
+def test_missing_rule_raises(monkeypatch):
+    f = _existing(monkeypatch, RULES[:-1])
+    with pytest.raises(RuntimeError):
+        g.apply_egress_guard(SUBNET, GATEWAY)
+    assert not [c for c in f.calls if c[0] in MUTATING and c[1] == CHAIN]
+
+
+def test_wrong_rule_order_raises(monkeypatch):
+    swapped = [list(r) for r in RULES]
+    swapped[1], swapped[2] = swapped[2], swapped[1]  # subnet RETURN before gateway DROP
+    f = _existing(monkeypatch, swapped)
+    with pytest.raises(RuntimeError):
+        g.apply_egress_guard(SUBNET, GATEWAY)
+    assert not [c for c in f.calls if c[0] in MUTATING and c[1] == CHAIN]
+
+
+def test_ctstate_normalization_does_not_mask_other_fields(monkeypatch):
+    changed = [list(r) for r in RULES]
+    changed[0] = ["-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "DROP"]
+    _existing(monkeypatch, changed)
+    with pytest.raises(RuntimeError):
+        g.apply_egress_guard(SUBNET, GATEWAY)
+
+
+@pytest.mark.parametrize("rc", [1, 2])
+def test_missing_chain_probe_rc_means_absent_fresh_build(monkeypatch, rc):
+    f = FakeIptables(probe_rc=rc)
+    monkeypatch.setattr(g.subprocess, "run", f)
+    g.apply_egress_guard(SUBNET, GATEWAY)
+    chain_calls = [c for c in f.calls if c[0] in MUTATING and c[1] == CHAIN]
+    assert chain_calls == [["-N", CHAIN]] + [["-A", CHAIN, *r] for r in RULES]
+    assert f.chains[CHAIN] == RULES
+
+
+@pytest.mark.parametrize("rc", [3, 4])
+def test_unexpected_probe_rc_raises(monkeypatch, rc):
+    f = FakeIptables(probe_rc=rc)
+    monkeypatch.setattr(g.subprocess, "run", f)
+    with pytest.raises(RuntimeError):
+        g.apply_egress_guard(SUBNET, GATEWAY)
+    assert not [c for c in f.calls if c[0] in MUTATING]
