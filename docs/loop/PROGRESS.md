@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 440
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c)
+pending_action: BUILD_PHASE_READINESS_V145_AMENDMENT
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-1 (this turn, /home/void/context.md) authorized a reporting-only
+  contract amendment adding mandatory [PHASE READINESS] to every terminal report; persist in contract,
+  stop-report schema, integrity manifest, report-producing command paths, and tests; independently
+  review; open DRAFT PR; stop at GATE-2. No product work / firewall / containers / live execution.
+  Pinned-source reconciliation (all 4 SRC pins sha256 OK on disk this turn): per pinned SRC-ROADMAP
+  (docs/roadmap/KRONOS_ROADMAP.md) R10==BE-G3-5, R12==BE-G2-6, NEVER conflated (prior-turn apparent
+  R10/BE-G2-6 relabel REJECTED; CyberGym sec6/sec8 live run is R12/BE-G2-6, distinct from R10/BE-G3-5).
+  Phases DEFINED in records: only Beta-Entry (KRONOS_DONE DoD v1; trigger D3 = R10 AND R12 satisfied by
+  one authorized manifest-bounded run w/ committed evidence). Alpha and GA NOT DEFINED -> render
+  UNDEFINED, never fabricated. R&D-COMPLETE -> §13.4 Completion Record/DoD. No named "locked milestone
+  baseline" artifact (schema field only) -> baseline = pinned SRC-ROADMAP + KRONOS_DONE. Amendment bumps
+  contract 1.4.4->1.4.5; phase_readiness required at 1.4.5 ONLY (non-retroactive; 1.4.0-1.4.4 unchanged).
+base_main: 911812ccf56514dc1f866fbf669ea081f5da7369
+feature_branch: kronos/phase-readiness-amendment (to be created at main 911812c)
+brief: SPEC_BRIEF_PHASE_READINESS.md
+brief_sha256: 0c07aea48170ad48002e9daa92d206f0cf077b7a4ebc1206b00d72417ab30433
+permitted_files: SPEC_BRIEF_PHASE_READINESS.md; docs/governance/KRONOS_RND_CONTRACT.md;
+  docs/governance/stop_report.schema.json; docs/governance/contract_manifest.json;
+  tests/test_rnd_contract.py; tests/test_commit_authority.py;
+  docs/loop/phase_readiness_claude_maintainer_patch.diff (Option-B artifact for .claude/**).
+SEAL (this brief, §11): R10EGH window base 454c179 seals to R10EGH_MERGE = 911812c (change
+  R10EGH_BASE..HEAD -> R10EGH_BASE..R10EGH_MERGE in tests/test_commit_authority.py); this brief opens its
+  own window PHR_BASE = 911812c ..HEAD.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py (signed scope) NEVER-edit; the loop cannot
+  edit .claude/** -> command-path change ships as Option-B maintainer patch artifact, never a loop edit.
+  No merge, no ready-for-review, no non-draft PR, no firewall/containers/§6/§8.
+PENDING_ACTION PLAN: create branch @ 911812c; dispatch kronos-builder (claude-sonnet-5-5) on brief;
+  dispatch independent kronos-reviewer (claude-haiku-5-5) on brief + diff only (never the builder report);
+  repair within scope; open DRAFT PR; GATE-2 stop-report. Record outcome in seq 441.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 439
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
