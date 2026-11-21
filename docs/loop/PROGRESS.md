@@ -1,4 +1,28 @@
 # KRONOS loop-state checkpoint
+seq: 433
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
+pending_action: BUILD_R10_EGRESS_GUARD_HARDENING_RESEARCH_BUILD_REVIEW_DRAFTPR_STOP_AT_GATE2
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: Operator GATE-1 (seq 432 -> this turn) authorized a BOUNDED pre-run hardening BUILD on main 454c179, stop at GATE-2 draft PR, NO firewall apply / NO container stand-up / NO section 6/8 run. Scope = five hardenings folding the three mandatory R10 pre-run conditions into code + hermetic tests, then independent review + draft PR. (1) Block container->gateway host-local traffic while preserving ESTABLISHED,RELATED host-probe responses: add discover_gateway(network) + a `-d <gateway>/32 -j DROP` rule placed AFTER the conntrack ESTABLISHED,RELATED RETURN and BEFORE the `-d <subnet> RETURN` (so host-initiated published-port probe responses survive, only container-initiated NEW ->gateway is dropped), reversing the seq 432 "gateway intentionally allowed" stance per operator. (2) Replace loose _CIDR_RE regex with strict stdlib ipaddress validation (IPv4Network only; reject IPv6 / malformed). (3) Require Docker IPv6 disabled or STOP: add assert_ipv4_only(network) raising on network EnableIPv6 true or any IPv6 IPAM config (guard is IPv4-only, no ip6tables). (4) Make real iptables rc handling idempotent + fail-closed: existence probe (_state) treats rc in {1,2} as absent (reviewer finding 1: real `-C` on a missing target chain may return rc 2 not 1) and raises on other non-zero; keep register-before-apply rollback so interrupted/partial application fully tears down; mutating _run still raises on any non-zero. (5) Hermetic capability + rollback tests for all of the above (gateway DROP ordering, strict validation incl IPv6 reject, ipv6-stop, rc=2 idempotence, partial-apply teardown). Wrapper cybergym_x_score.run() wires assert_ipv4_only + discover_gateway and calls apply_egress_guard(subnet, gateway) (build-only; NEVER run this track). Thin-Orchestrator: author brief, dispatch kronos-builder (permitted files only) then independent kronos-reviewer (brief + diff range only), repair, draft PR, STOP at GATE-2. HIGH effort: security-boundary firewall semantics + fail-closed rc logic + whole-window seal-tax, all requiring careful Gate-2 semantic verification.
+base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
+feature_branch: kronos/r10-egress-guard-hardening (to be created from 454c179)
+brief: SPEC_BRIEF_R10_egress_guard_hardening.md (to be authored on the feature branch)
+permitted_files (R10EGH_SECTION_10): SPEC_BRIEF_R10_egress_guard_hardening.md, src/kronos/eval/egress_guard.py, src/kronos/eval/cybergym_x_score.py, tests/test_egress_guard.py, tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+SEAL-TAX (tests/test_commit_authority.py, surgical): seal the R10EG window (PR #68) to its merge SHA -> add R10EG_MERGE = "454c179" and change assertion R10EG_BASE..HEAD -> R10EG_BASE..R10EG_MERGE; open the R10EGH window -> add R10EGH_BASE = "454c179" + R10EGH_SECTION_10 (the six permitted files) + assertion R10EGH_BASE..HEAD <= R10EGH_SECTION_10.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. NO firewall apply, NO docker up, NO containers, NO section 6/8 run. Exactly the six R10EGH files may be touched. Stop at GATE-2 (draft PR); merge needs separate operator authorization.
+NEXT: after draft PR open + independent reviewer PASS + orchestrator Gate-2 semantic PASS -> emit SAFE-TO-APPROVE/REVIEW-REQUIRED stop-report naming the PR + head SHA; await operator GATE-2 merge authorization. The separate section 6/8 R10 CyberGym evidence run stays HELD.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 432
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.4
