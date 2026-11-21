@@ -1,4 +1,29 @@
 # KRONOS loop-state checkpoint
+seq: 429
+derived_at: 2026-11-20T00:00:00Z
+contract_version: 1.4.4
+contract_sha256_contract: a725ce4a53cf9a16b02235b87092781496ea57c1c3e0a9e0f863215a5902af30
+contract_sha256_schema: 145747029a69b70207ffb670b8bd3c52fe622b6eeeeee8cfe9697f08e1de6606
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
+pending_action: PUSH_REPAIRED_TIP_PR68_REPROPOSE_GATE2
+pending_action_outcome: PENDING
+report_type: PAUSE
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+opus_effort_reason: seq 428 Option-B repair DONE + independently reviewed PASS. Builder repair commit a2828bf (F1-F6). Independent reviewer PASS at a2828bf (full suite 4190 passed 1 skipped 0 failed; focused 97 passed), recommend MERGE after ONE doc-only F1 wording fix. Orchestrator applied that reviewer-pre-blessed behavior-neutral docstring fix (egress_guard.py :3-10 now names the gateway pass-through: bridge gateway IP in-subnet so -d <subnet> RETURN passes container->gateway; INPUT jump narrows to container->non-subnet host addresses; brief §0 already disclosed it) as commit 2836287; focused suite on the 3 touched test files = 97 passed 0 failed. Scope UNCHANGED exactly 7 R10EG files. F1-F6 all RESOLVED; residuals disclosed (gateway allowed by design; IPv4-only; loose CIDR regex; host-probe preservation provable only at gated run). Next: push feature branch (PR #68 head advances 7644fd6->2836287), re-propose GATE-2. FULL canonical suite re-measured at the actual merge turn per the ten-item MERGE-GATE. NO merge/mark-ready/firewall-apply/containers/run without separate operator authorization.
+base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
+feature_branch: kronos/r10-egress-guard
+feature_head: 283628771d3ffb4fb4a94fe3a73c5e81447f0141 (local; to be pushed)
+prior_reviewed_head: a2828bff49060aa8f42523fd7e0ae85d384399d8 (independent reviewer PASS)
+brief: SPEC_BRIEF_R10_egress_guard.md
+pr: 68 (draft, OPEN, base main; head to advance to 2836287)
+main_protected: active ruleset void-rule-kronos (id 25333712). LIVE.
+HARD BOUNDARY: cybergym/** .claude/** .github/** docs/governance/** manifest NEVER-edit. Draft PR update only. NO
+  merge, NO firewall apply, NO docker up, NO §6/§8 run without separate operator authorization. STOP at GATE-2.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 428
 derived_at: 2026-11-20T00:00:00Z
 contract_version: 1.4.4
