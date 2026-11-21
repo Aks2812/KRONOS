@@ -1,4 +1,44 @@
 # KRONOS loop-state checkpoint
+seq: 449
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b)
+pending_action: AWAIT_GATE2_MERGE_AUTH_PR71
+pending_action_outcome: PENDING
+prior_action_outcome: seq 448 BUILD_TESTS_SEAL_PHR_PR71 -> DONE. kronos-builder (claude-sonnet-5-5) caught a NAME
+  COLLISION (dispatched RAILS_BASE/RAILS_SECTION_10 already exist line 25/69) and STOPPED without guessing; resumed
+  with corrected non-colliding names PHRC_BASE/PHRC_SECTION_10 (PHR_MERGE kept). Commit b282d3b57d14a1b2ce340169e217505a1b7cc370
+  pushed to maint/phase-readiness-claude-patch (PR #71 head). Build commit fafdae3..b282d3b touches EXACTLY
+  tests/test_commit_authority.py + tests/test_rnd_contract.py. Edits: (1) seal PHR window
+  `{PHR_BASE}..{PHR_MERGE}` with PHR_MERGE=5db0c44, PHR_SECTION_10 unchanged (7 files, block sha256 identical to main);
+  add PHRC_BASE=5db0c44 + PHRC_SECTION_10 = {.claude/RAILS.md, .claude/commands/kronos-continue.md,
+  tests/test_commit_authority.py, tests/test_rnd_contract.py}; assert `{PHRC_BASE}..HEAD <= PHRC_SECTION_10`. (2) mirror
+  test pin v1.4.4->v1.4.5 + add assert "PHASE READINESS"; other asserts + skip guard + name unchanged.
+  INDEPENDENT VERIFICATION (orchestrator re-measured, builder report NOT used): origin/main 5db0c44; PR #71 OPEN draft,
+  mergeable MERGEABLE, base 5db0c44 == origin/main, NO base drift; 5db0c44..b282d3b = EXACTLY 4 approved files;
+  911812c..5db0c44 = 7 PHR files. Orchestrator canonical suite @b282d3b: 4231 passed 1 skipped 0 failed (SUMMARY line).
+  Fresh independent kronos-reviewer (claude-haiku-5-5) @b282d3b: PASS 7/7 criteria, own full suite 4231 passed 1 skipped
+  0 failed, focused 140 passed. Milestone identity grep clean (R10==BE-G3-5, R12==BE-G2-6; no relabel). Orchestrator
+  Gate-2 semantic: PASS. GATE-2 presented; HELD for maintainer merge authorization (no merge this turn per operator).
+report_type: SAFE-TO-APPROVE
+decision_class: SAFE-TO-APPROVE
+opus_effort: MEDIUM
+opus_effort_reason: PR #71 tests-seal built+reviewed, both suites green, Gate-2 PASS. PR still isDraft=true. MERGE TURN
+  (needs operator authorization) must: mark ready (gh pr ready 71) then re-measure FULL ten-item MERGE-GATE at
+  b282d3b57d14a1b2ce340169e217505a1b7cc370 and squash --match-head-commit (never --admin/--auto). Forward seal-tax
+  (LOW, non-blocking now): the NEXT brief after PR #71 merges must seal PHRC_BASE..HEAD to PR #71's merge SHA.
+  R12/BE-G2-6 §6/§8 CyberGym remains HELD.
+base_main: 5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b
+pr: 71
+feature_head: b282d3b57d14a1b2ce340169e217505a1b7cc370
+authorized_merge_sha: NONE (maintainer GATE-2 not yet given this turn)
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 448
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
