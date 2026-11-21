@@ -1339,6 +1339,39 @@ def test_phase_readiness_contract_schema_non_retroactive():
     assert not validator.is_valid(bad)
 
 
+def test_schema_v145_in_version_enum():
+    assert "1.4.5" in _schema()["properties"]["contract_version"]["enum"]
+
+
+def test_phase_readiness_property_structure():
+    pr = _schema()["properties"]["phase_readiness"]
+    assert pr["additionalProperties"] is False
+    assert set(pr["required"]) == {"current_phase", "gates_completed", "gates_remaining", "percentage",
+        "percentage_basis", "critical_path", "remaining_iterations", "assumptions", "confidence", "next_phase_trigger"}
+    ri = pr["properties"]["remaining_iterations"]
+    assert set(ri["required"]) == {"minimum", "expected", "pessimistic"}
+    assert {"const": "UNKNOWN"} in pr["properties"]["percentage"]["anyOf"]
+    for k in ("minimum", "expected", "pessimistic"):
+        assert {"const": "UNKNOWN"} in ri["properties"][k]["anyOf"], k
+
+
+def test_phase_readiness_required_only_at_v145():
+    s = _schema()
+    conds = [c for c in s["allOf"]
+             if c.get("if", {}).get("properties", {}).get("contract_version", {}).get("const") == "1.4.5"]
+    assert len(conds) == 1
+    assert conds[0]["then"]["required"] == ["phase_readiness"]
+    assert "phase_readiness" not in s["required"]
+    assert "phase_readiness" not in s["then"]["required"]
+
+
+def test_section15_has_phase_readiness():
+    s15 = _s15()
+    for frag in ("[PHASE READINESS]", "one iteration = one durable checkpointed loop turn",
+                 "UNDEFINED", "next-phase trigger"):
+        assert frag in s15, frag
+
+
 def test_allowed_versions_include_1_4_4():
     assert "1.4.4" in STRICT_CONTRACT_VERSIONS
     assert "1.4.4" in ALLOWED_CONTRACT_VERSIONS
