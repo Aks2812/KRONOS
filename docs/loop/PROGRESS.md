@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 478
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 8c88fb1cb404ceec5574118937e2cbbb38fdee268c5d489b758466041f928d2c (SPEC_BRIEF_R10 section-10 amended @ fb8d44c)
+pending_action: PUSH_SECTION_10_PR74_AND_THIRD_SECURITY_REVIEW -> push branch eval/r10-leastpriv-egress-executor to
+  new head 8a0e3b8 (update draft PR #74), dispatch a 3rd fresh independent security kronos-reviewer at 8a0e3b8,
+  present GATE-2. NO merge/install/sudoers-firewall-network mutation/container/target/section-6/section-8 run.
+pending_action_outcome: PENDING (push + 3rd review not yet done at this checkpoint)
+prior_action_outcome: seq 477 BUILD_R10_SECTION_10_SUDOERS_DOCS_AND_TESTS -> DONE. Orchestrator committed brief
+  section-10 amendment (fb8d44c). kronos-builder commit 8a0e3b8 implemented section-10.1-10.3 in the 3 permitted
+  files only. Orchestrator INDEPENDENT verification:
+  - diff fb8d44c..8a0e3b8 == exactly deploy/sudoers.d/kronos-cybergym-egress (COMMENT-ONLY), docs/ops/
+    R10_EGRESS_HELPER_INSTALL.md, tests/test_egress_helper.py.
+  - functional sudoers RUNUSER line byte-IDENTICAL to fbdcf87 (three verb entries, no empty-string/wildcard form).
+  - full window 9152f15..8a0e3b8 == 11 files, all LPEG_SECTION_10 members; no hard-boundary path touched.
+  - Suites (canonical runner, disk TMPDIR, decided from SUMMARY): scope_audit test_B31_Q_scope_audit 1 passed, 38
+    deselected; test_egress_helper 140 passed (builder); CANONICAL 4377 passed, 1 skipped, 0 failed in 347.84s.
+  New tests added: test_sudoers_template_parses_with_visudo (skips if visudo unusable; ran green on /usr/sbin/visudo
+  scratch copy), test_sudoers_has_no_argument_wildcard_or_empty_arg_form, test_sudoers_exactly_three_verb_entries_
+  on_fixed_helper, test_helper_rejects_non_bare_verb_forms_without_mutation (20 parametrized cases), test_helper_
+  accepts_exactly_one_bare_verb. Runbook adds exact-per-verb-match wording + mandatory human-gate sudo -l -U probe.
+re-derived_live (seq 478): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=fbdcf87 base=main
+  (push to 8a0e3b8 is this checkpoint's action); contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 477
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
