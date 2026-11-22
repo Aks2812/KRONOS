@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 482
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 1f689603dd1829b26fc875470b485ac8945b38b3 main HEAD)
+pending_action: NONE (read-only R10 pre-install audit presented; next is the human-gated install + live sudo verify,
+  then human-gated section-6/section-8 run -- neither loop-eligible)
+pending_action_outcome: N/A
+prior_action_outcome: seq 481 (post-merge) -> operator requested a READ-ONLY R10 helper pre-install audit at main
+  1f68960 + an exact human install procedure. Orchestrator performed it read-only (no sudo, no writes). FINDINGS:
+  - Authoritative-file hashes @ main (git blob sha256): cybergym/scope_manifest.yaml=3961c433..., cybergym/
+    docker-compose.yml=f902808c..., cybergym/scope_manifest_pubkey.pem=769416bc..., scripts/kronos-cybergym-egress
+    (install source)=1d67d866..., deploy/sudoers.d/kronos-cybergym-egress (install source)=628bb8c9....
+  - Manifest Ed25519 signature VERIFIED via kronos.manifest.load_and_verify against the committed pubkey;
+    engagement_id=cybergym-x-instrument-v1; scope all private/local (localhost/127.0.0.1/com.kronos.cybergym.*/
+    kronos-cybergym-*); destructive_allowed=false. Consistent + private: PASS.
+  - Network name: cybergym_default (compose project dir=cybergym, no .env/COMPOSE_PROJECT_NAME override; matches the
+    hardcoded assert_ipv4_only/discover_subnet/discover_gateway("cybergym_default") in cybergym_x_score.py). CONSISTENT.
+  - MATERIAL: subnet + gateway are NOT statically present in the manifest or compose (compose has no networks:/ipam:
+    block). They are DISCOVERED at run time from the live `docker network inspect cybergym_default`
+    (IPAM.Config[0].Subnet/Gateway), IPv4-only enforced (EnableIPv6 must be 'false'), private enforced by helper/
+    executor is_private. So the pinned egress.conf subnet/gateway cannot be pre-derived from repo; they are obtained
+    read-only after `docker compose up` and before the run.
+  - MATERIAL: RUNUSER is NOT in any authoritative file (only a placeholder in the sudoers template + runbook); it is
+    the operator's chosen unprivileged evaluation account. Cannot be re-derived from repo.
+  - Install destinations on this host: /usr/local/sbin/kronos-cybergym-egress ABSENT; /etc/kronos-cybergym ABSENT;
+    /etc/kronos-cybergym/egress.conf ABSENT; /etc/sudoers.d/kronos-cybergym-egress ABSENT. Clean host, no pre-existing
+    files to back up (procedure still handles the existing-file case per operator request).
+  Presented one exact human install/verify/uninstall procedure (two non-static inputs flagged: RUNUSER operator-
+  supplied; subnet/gateway read-only-discovered via docker network inspect cybergym_default). No sudo run, no write,
+  no install, no sudoers/firewall/network mutation, no container, no target, no section-6/section-8 action performed.
+re-derived_live (seq 482): main=1f6896 protected=true; PR#74 MERGED; contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop (reads only; this
+  audit read cybergym/ but wrote nothing).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 481
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
