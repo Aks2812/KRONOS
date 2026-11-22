@@ -1,4 +1,52 @@
 # KRONOS loop-state checkpoint
+seq: 476
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 942769227d449148e90c27a971c6ccaa413437946ba59fde64a48a93030ddc2c (SPEC_BRIEF_R10_least_privilege_egress_executor.md)
+pending_action: AWAIT_OPERATOR_CONFIRM_R10_SUDOERS_FALSE_POSITIVE -> operator GATE-1 (context.md) authorized a
+  section-10 BUILD-only repair at head fbdcf87 to tighten the sudoers template to "permit exactly zero arguments
+  using sudoers-supported empty-argument matching", AND explicitly required "verify the installed sudo/visudo
+  semantics rather than assuming them". Orchestrator did that verification BEFORE editing and found the 2nd-review
+  blocker is a FALSE POSITIVE and the literal empty-string tightening would REGRESS the helper. Paused per
+  material-ambiguity + security-boundary fail-closed; NO edit made. Awaiting operator confirm of corrected plan.
+pending_action_outcome: PENDING (await operator confirm; zero files edited)
+empirical_finding (installed sudo 1.9.17p2, sudoers(5) man on this host; no passwordless root so no live end-to-end
+  match test here -- that is gated install-time on the lab host):
+  - sudoers(5): a Cmnd WITH specified args requires the user's args to MATCH (shell-wildcards unless regex); the
+    special "no arguments" rule fires only when the arg spec consists solely of the empty-string token.
+  - Current template line (deploy/sudoers.d/kronos-cybergym-egress:16) is
+    /usr/local/sbin/kronos-cybergym-egress apply (+ remove/status): arg-spec == [apply]. Executor invokes
+    sudo -n HELPER verb with argv exactly [verb] (egress_executor.py:168). So sudo -n HELPER apply 1.1.1.1 has
+    args [apply,1.1.1.1] != arg-spec [apply] -> DENIED by SUDO. The current template ALREADY denies extra args;
+    the template comment (:9-11) "any extra argument is denied" is TRUE. The 2nd reviewer misread apply as part of
+    the command path ("no args specified -> any args allowed"); it is a specified argument. => blocker false positive.
+  - Regression of the literal instruction: ...egress apply "" sets arg-spec [apply, emptystring] (two tokens; NOT
+    the solitary empty-string no-arg case), requiring the user to pass a literal empty 2nd arg; the real call
+    sudo -n HELPER apply (one arg) would then be DENIED -> breaks executor non-root path
+    (egress_executor.py:122-126,163-171). ...egress "" denies the verb entirely. No empty-string-only form fits a
+    verbed command. Defense-in-depth: helper main also rejects len(argv)!=1 (scripts:293-304), so no live bypass.
+recommended_corrected_plan (safe, non-regressing, meets operator goal; within existing GATE-1 scope,
+  <= LPEG_SECTION_10, no new file, no seal change): KEEP the functional sudoers line egress apply|remove|status
+  (exact-match already denies extras); sharpen the template comment + runbook to state the accurate mechanism (exact
+  per-verb argument match with no trailing wildcard, verified against sudo 1.9.17p2), removing any phrasing implying
+  a different mechanism; add hermetic tests proving (a) visudo -cf parses the template, (b) each entry is an exact
+  verb with no trailing wildcard, (c) helper rejects every extra arg/option/shell-token/path/env with no iptables
+  call and accepts the zero-extra-arg verb; record a documented residual that the definitive live sudo -l / match
+  check runs at gated install on the lab host. Then focused+canonical suites, push, 3rd fresh independent security
+  review, GATE-2.
+prior_action_outcome: seq 475 AWAIT_OPERATOR_DECISION_R10_SUDOERS_PREMISE -> RESOLVED. Operator replied via
+  /home/void/context.md: GATE-1 authorized section-10 BUILD-only repair at fbdcf87 (tighten sudoers zero-arg, fix
+  false claims, add hermetic tests, <= LPEG_SECTION_10, no new file/seal, run suites, push, 3rd review, present
+  GATE-2; NO merge/install/firewall/network/container/target/section-6/section-8 run).
+re-derived_live (seq 476): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=fbdcf87 base=main;
+  origin branch==fbdcf87; contract 3-file hashes==on-disk; brief on-disk sha=9427692. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 475
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
