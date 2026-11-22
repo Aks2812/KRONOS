@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 466
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: BUILD_R10_LEASTPRIV_EGRESS_EXECUTOR
+pending_action_outcome: PENDING
+prior_action_outcome: seq 465 HOLD (R10 run preflight HARD STOP, non-root iptables, no mutation). DONE.
+authorization: Operator GATE-1 (context.md /home/void/context.md) for a remediation brief + bounded implementation
+  of a LEAST-PRIVILEGE R10 egress-guard executor. Root-owned installed helper + narrowly scoped sudoers; permit ONLY
+  validated apply/remove/status for the fixed KRONOS-CYBERGYM-EGRESS boundary (absolute binaries, manifest-derived
+  IPv4 subnet/gateway, locking, idempotency, fail-closed, guaranteed teardown). NEVER authorize the repo's writable
+  script, arbitrary iptables args, foreign chains, flushes, user-supplied executables, or shell eval. Direct exec
+  when already privileged, else sudo -n ONLY through the fixed helper. Human install/verify/rollback/uninstall docs;
+  tests prove arg rejection, foreign-chain protection, no capability expansion, apply/remove idempotency, failure
+  cleanup. Carry R10EVAL seal at merge 93e1743. Build, run focused+canonical suites, independent review, draft PR,
+  STOP at GATE-2. NO helper install, NO sudoers mod, NO container, NO firewall mutation, NO target, NO §6/§8 run,
+  NO R10 rerun.
+planned_action: feature branch eval/r10-leastpriv-egress-executor off main 93e1743; kronos-builder writes EXACTLY
+  eight permitted files (branch-local, reversible, non-live, none a hard boundary):
+    scripts/kronos-cybergym-egress (new, root-owned install source, self-contained stdlib helper)
+    src/kronos/eval/egress_executor.py (new, privilege router)
+    src/kronos/eval/egress_guard.py (ADD status_egress_guard() only)
+    src/kronos/eval/cybergym_x_score.py (rewire egress steps to executor only)
+    deploy/sudoers.d/kronos-cybergym-egress (new sudoers template, NOT installed)
+    docs/ops/R10_EGRESS_HELPER_INSTALL.md (new human runbook)
+    tests/test_egress_helper.py (new hermetic tests)
+    tests/test_commit_authority.py (seal-tax: seal R10EVAL dab9b24..HEAD -> R10EVAL_MERGE=93e1743; open NEW LPEG
+      window from 93e1743 permitting the eight files)
+  Authored content staged in session scratchpad; builder copies verbatim + applies the two existing-file edits + seal.
+brief: SPEC_BRIEF_R10_least_privilege_egress_executor.md (new, repo root; the above is its §1 deliverable set).
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+decision_class (pre-build write-ahead): AUTO-CONTINUE within GATE-1 build authorization; no gate crossed, no run.
+opus_effort: HIGH
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 465
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
