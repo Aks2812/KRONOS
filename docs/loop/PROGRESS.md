@@ -1,4 +1,42 @@
 # KRONOS loop-state checkpoint
+seq: 453
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 14c567f35e62290263b30f7b383771a59f94b91a)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 452 GATE-1 candidate -> operator APPROVED candidate scope (prepare, DO NOT apply, the DoD
+  reconciliation maintainer patch). Orchestrator prepared the patch artifact entirely OUTSIDE the repo (scratchpad);
+  governance files on main NOT touched (KRONOS_DONE.md sha still b7a1338d..; main HEAD still 14c567f, git status clean).
+  Independent verification: PR #60 merge SHA 84434ebaacfde880e45febbbc18991f214d62c0b (BE-G1-6), PR #61 merge SHA
+  89c4df754848e803e9bc429ce42f3293af205d90 (BE-G1-5), PR #62 merge SHA 44d0771a9b6507a3523a8cc530dbe567b917dd33
+  (BE-G1-7) -- all MERGED and all ancestor-of-main (git merge-base --is-ancestor exit 0). Focused tests re-run via
+  canonical runner: tests/test_api_ingest.py + test_cloud_ingest.py + test_five_domain_engagement.py = 27 passed.
+  Patch content: KRONOS_DONE.md 3 rows BE-G1-5/6/7 flipped OPEN->DONE with PR-ancestry predicate added; DoD-Version
+  KEPT 1.4.4 (test_rnd_contract.py::test_done_artifact_shape line 1450 pins ^DoD-Version: 1.4.4$; bump is out-of-scope
+  as it would require a tests/ edit). contract_manifest.json KRONOS_DONE.md sha256 refreshed
+  b7a1338d..->37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f (compact 1-line + no-trailing-newline
+  format preserved). VERIFIED in ephemeral worktree@14c567f (discarded, nothing committed/pushed): git apply --check
+  OK, applied, all 3 manifest hashes MATCH disk, focused+integrity suite 186 passed (incl test_rnd_contract.py,
+  test_manifest.py). Patch artifact: scratchpad KRONOS_DONE_reconcile_BE-G1-5-6-7.patch, 3880 bytes,
+  sha256 d5c51705b8b6a5f1bdc03d0756a2d8863fad10a0883f6e077724f63e23e28fab. Loop did NOT apply (governance,
+  maintainer-patch-only, manifest hash set NEVER-edit by loop); hand-apply instructions handed to operator.
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Governance-reconciliation patch prep requiring independent SHA/ancestry verification, test-pin
+  analysis (DoD-Version kept 1.4.4), and sandboxed apply+integrity+suite verification before handoff.
+forward_followups: (A) maintainer hand-applies the patch externally (loop cannot). After apply + push: KRONOS_DONE.md
+  sha becomes 37fe31ed.. and contract_manifest_done pin updates; next loop start-of-turn integrity recomputes against
+  new DoD. (B) BE-G3-5/BE-G2-6 remain §6/§8 HELD, need maintainer GATE. Milestone identity R10==BE-G3-5 /
+  R12==BE-G2-6 preserved; Alpha/GA UNDEFINED. Whole-window seal-tax still carried by the next PRODUCT brief (none yet).
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 452
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
