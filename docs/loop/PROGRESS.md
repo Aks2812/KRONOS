@@ -1,4 +1,58 @@
 # KRONOS loop-state checkpoint
+seq: 459
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed on-disk; contract 60dd0fef.., schema bd56747b..,
+  KRONOS_DONE.md 37fe31ed.. all MATCH @ live main dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 458 post-merge seal/verify of PR#72 -> confirmed live. Re-derive @turn-start: live main
+  == dab9b24 (== base_main, NO drift); PR #72 state=MERGED mergeCommit=dab9b24 headRefOid=7943159 (all == checkpoint);
+  main protected ruleset void-rule-kronos 25333712 active; DoD on-disk sha256 37fe31ed.. == manifest pin. No
+  pending_action without outcome; no live-vs-checkpoint contradiction. NOT fail-closed.
+turn_459_action: INCOMPLETE-IDLE RECOVERY (contract §13.2). pending_action NONE + PRODUCT build backlog EXHAUSTED +
+  NO active Completion Record => MUST NOT NO-ACTION; routed §13.2.
+  STEP 1 (pinned-source verify, §13.4): recomputed on-disk sha256 of all four pinned reconciliation sources vs the
+  pins in docs/governance/KRONOS_DONE.md lines 87-90 -> ALL FOUR MATCH, no HOLD:
+    SRC-RESEARCH docs/research/KRONOS_RESEARCH_RECORD.md 7b00347661..  MATCH
+    SRC-LEDGER   docs/research/KRONOS_GOAL_FRAMED_REFERENCE_LEDGER_v1.md 6f2e0c6d5b..  MATCH
+    SRC-GAPMAP   docs/research/sequence8-goal-gap-map.md a7602d33c1..  MATCH
+    SRC-ROADMAP  docs/roadmap/KRONOS_ROADMAP.md ad4256de54..  MATCH
+  STEP 2 (read-only reconciliation): dispatched kronos-researcher (read-only) to reconcile pinned sources vs live
+  main dab9b24. Cited findings:
+    - OPEN R&D milestones (DoD KRONOS_DONE.md): BE-G3-5 (line 50; R10; one authorized manifest-bounded CyberGym/lab
+      run output committed in-repo; §6/§8 live-run gated) and BE-G2-6 (line 76; R12; live run; BLOCKED until
+      BE-G1-7+BE-G3-5 per line 67). BE-G1-7 now DONE -> BE-G2-6 sole remaining blocker = BE-G3-5.
+    - All other BE-G1/G2/G3 ids carry met PR+TEST predicates (no OPEN marker). BE-G1-5/6/7 DONE (#61/#60/#62).
+    - No loop-eligible (branch-local, reversible, non-live, non-governance) product build item exists.
+    - DISCREPANCY (not a HOLD; pins match): SRC-ROADMAP still stamped old main 78dcb76 (roadmap line 13) and marks
+      R7/R8/R9 == BE-G1-6/5/7 MISSING (lines 25-27,47); SRC-RESEARCH (line 13) also stamped 78dcb76 and predates
+      these ids. DoD (sole §13.4 predicate authority) marks the same milestones DONE. Reconciling the pinned-source
+      CONTENT would change their sha256 and require updating the pins in docs/governance/KRONOS_DONE.md ->
+      governance / hard-boundary -> MAINTAINER PATCH ONLY; loop cannot and did not touch it.
+  STEP 3 (present exactly one scoped GATE-1 candidate): candidate = BE-G3-5 (R10) authorized, manifest-bounded
+  CyberGym/lab run, output committed in-repo. Smallest + highest-priority + critical-path (unblocks BE-G2-6) +
+  unblocked-except-for-GATE-1 authorization. §6/§8 live-execution => GATE-1 maintainer authorization REQUIRED;
+  loop cannot self-authorize; NO product work auto-started. Presented as REVIEW-REQUIRED.
+report_type: INCOMPLETE-IDLE-RECOVERY (§13.2)
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+opus_effort_reason: Read-only reconciliation + single-candidate presentation; no repo mutation, no gate crossed.
+awaiting_operator: GATE-1 decision (approve or reject) on a BE-G3-5 (R10) scoped SPEC_BRIEF authorizing one
+  manifest-bounded CyberGym/lab run (§6/§8). Separately: optional maintainer governance patch to reconcile stale
+  SRC-ROADMAP / SRC-RESEARCH content + pins to live main. Neither is loop-startable without GATE-1 / maintainer.
+forward_followups: (A) STANDING SEAL-TAX still OPEN: the NEXT product brief must seal the open PRG window
+  PRG_BASE(14c567f)..HEAD to PR#72 squash SHA dab9b24 in tests/test_commit_authority.py (add PRG_MERGE=dab9b24,
+  change {PRG_BASE}..HEAD -> {PRG_BASE}..{PRG_MERGE}, open NEW window from dab9b24) else test_B31_Q_scope_audit reds.
+  (B) No loop-eligible product item until a GATE-1 brief is authorized. BE-G3-5 (R10) and BE-G2-6 (R12) both §6/§8 ->
+  mandatory pause. No active Completion Record -> NO-ACTION remains illegal; each idle turn re-routes §13.2.
+  R10==BE-G3-5 / R12==BE-G2-6; Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 458
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
