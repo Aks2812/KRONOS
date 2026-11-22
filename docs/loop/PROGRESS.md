@@ -1,4 +1,49 @@
 # KRONOS loop-state checkpoint
+seq: 458
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ NEW main dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb;
+  KRONOS_DONE.md pin now 37fe31ed.., contract 60dd0fef.., schema bd56747b.. unchanged)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 457 GATE2_READY_AND_SQUASH_MERGE_PR72 -> DONE. (a) gh pr ready 72 => isDraft=false, head
+  unchanged 7943159be75f79413afaed864e400c20540bfa8a. (b) fetch + reconfirm: head==7943159 (NO drift),
+  mergeable=MERGEABLE, OPEN, unmerged. (c) FULL ten-item MERGE-GATE re-measured LIVE @7943159, ALL PASS:
+  (1) main protected ruleset void-rule-kronos 25333712 active; (2) PR not draft (ready); (3) open & unmerged;
+  (4) head==operator-authorized 7943159; (5) independent kronos-reviewer PASS 7/7 @7943159; (6) ci:none (ruleset
+  no required checks); (7) canonical suite RE-MEASURED THIS TURN: SUMMARY 4231 passed, 1 skipped, 0 failed (decided
+  from summary line, not $?); (8) scope/seal-tax audit green: git diff 14c567f..7943159 == EXACTLY 3 authorized files
+  {docs/governance/KRONOS_DONE.md, docs/governance/contract_manifest.json, tests/test_commit_authority.py},
+  test_B31_Q_scope_audit 1 passed, manifest 3 pins MATCH; (9) orchestrator Gate-2 semantic PASS; (10) loop commit
+  touched ONLY tests/test_commit_authority.py (governance files authored by maintainer commit f1744e4).
+  (d) gh pr merge 72 --squash --match-head-commit 7943159be75f79413afaed864e400c20540bfa8a (NO --admin, NO --auto).
+  PR #72 MERGED 2026-11-22T03:28:08Z, squash merge SHA dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb.
+post_merge_verify: NEW main dab9b24. Integrity PASS (3 pins == on-disk @dab9b24; contract_version 1.4.5). DoD rows
+  BE-G1-5/BE-G1-6/BE-G1-7 now read DONE with verified PR-ancestry SHAs (#60 84434eb, #61 89c4df7, #62 44d0771 all
+  ancestor-of-dab9b24). DoD-Version held 1.4.4. PR #71 seal base 14c567f ancestor-of-dab9b24.
+base_main: dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb
+prev_main: 14c567f35e62290263b30f7b383771a59f94b91a
+merged_pr: 72
+pr72_squash_merge: dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb
+report_type: SAFE-TO-APPROVE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: Post-merge seal/verify after protected-branch squash-merge; recorded merge SHA and integrity.
+forward_followups: (A) STANDING SEAL-TAX: the NEXT brief must seal the open PRG window PRG_BASE(14c567f)..HEAD to
+  PR #72 squash SHA dab9b24 in tests/test_commit_authority.py (add PRG_MERGE=dab9b24, change {PRG_BASE}..HEAD ->
+  {PRG_BASE}..{PRG_MERGE}, open a NEW window from dab9b24 permitting its own changed files) else test_B31_Q_scope_audit
+  reds. (B) DoD governance now reconciled; loop-eligible PRODUCT build backlog remains EXHAUSTED (R7/R8/R9 merged+green,
+  G1 breadth complete). Remaining OPEN milestones maintainer-gated: BE-G3-5 (R10, §6/§8 authorized manifest-bounded
+  CyberGym/lab run) and BE-G2-6 (R12, §6/§8 live LLM run, BLOCKED on BE-G1-7+BE-G3-5). Both §6/§8 -> mandatory pause.
+  No active Completion Record -> next idle turn routes §13.2 incomplete-idle recovery (not NO-ACTION). R10==BE-G3-5 /
+  R12==BE-G2-6; Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 457
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
