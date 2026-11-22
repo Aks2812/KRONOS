@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 479
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 8c88fb1cb404ceec5574118937e2cbbb38fdee268c5d489b758466041f928d2c (SPEC_BRIEF_R10 section-10)
+pending_action: AWAIT_OPERATOR_GATE2_MERGE_AUTH_PR74 -> 3rd independent security review PASS at head 8a0e3b8.
+  GATE-2 presented SAFE-TO-APPROVE. Awaiting maintainer GATE-2 merge authorization naming PR #74 + full head SHA
+  8a0e3b83dbc51778dfa01bed67f3d0df45c81856. On authorization: mark PR ready (operator-gated), then
+  gh pr merge 74 --squash --match-head-commit 8a0e3b83dbc51778dfa01bed67f3d0df45c81856 (never --admin/--auto).
+  NO merge/install/firewall/network/container/target/section-6/section-8 run until authorized.
+pending_action_outcome: PENDING (await operator GATE-2)
+MERGE_GATE_remeasured @8a0e3b8 (10 items): (1) main protected=PASS(true); (2) PR not draft=PENDING-OPERATOR
+  (isDraft=true, mark-ready needs operator); (3) open & unmerged=PASS(OPEN, mergedAt=null); (4) head==operator-auth
+  SHA=PENDING-OPERATOR; (5) independent reviewer PASS on section-8 acceptance by evidence=PASS (3rd review measured
+  itself); (6) CI green or ci:none=PASS (no checks reported -> ci:none); (7) brief local test evidence re-measured 0
+  failed=PASS (orchestrator ran canonical 4377 passed/1 skipped/0 failed 347.84s; scope_audit 1 passed); (8) scope-
+  guard/seal-tax audit green=PASS (test_B31_Q_scope_audit 1 passed; diff subset LPEG_SECTION_10); (9) orchestrator
+  Gate-2 semantic review=PASS (docs-accuracy + hermetic tests only; functional sudoers byte-identical to fbdcf87;
+  verified-false-positive; operator-confirmed corrected plan); (10) no hard-boundary/out-of-scope file=PASS (11
+  files all LPEG; grep for .claude/.github/cybergym/manifest.py/docs/governance/contract_manifest.json empty).
+  => 8 green, 2 operator-gated (draft + SHA auth) resolved by GATE-2 authorization.
+prior_action_outcome: seq 478 PUSH_SECTION_10_PR74_AND_THIRD_SECURITY_REVIEW -> DONE. Pushed branch to 8a0e3b8
+  (PR #74 head confirmed 8a0e3b8, draft/open). 3rd fresh independent security kronos-reviewer @8a0e3b8 VERDICT:
+  PASS, merge eligible subject to GATE-2 + operator live human-gate probe. It confirmed: 11 files all subset
+  LPEG_SECTION_10; no hard-boundary touched; functional sudoers RUNUSER line byte-identical to fbdcf87 (sha256
+  d086410648385069...075f9, only header comment changed); section-10.1/10.2/10.3 CLOSED with no-mutation (_fake.calls
+  ==[] & _docker.calls==[]) assertions on 20 parametrized rejection cases; section-8/section-9 not regressed. Suites:
+  test_egress_helper 140 passed; test_egress_guard 73 passed; scope_audit 1 passed/38 deselected; CANONICAL 4377
+  passed/1 skipped in 340.49s. New findings all LOW/INFO (unidentified 1 skip outside egress suites; stale commit-body
+  note; hermetic test loads repo helper not installed copy) - none blocks merge.
+residual_risks_for_GATE2: install-time live `sudo -l -U <runuser>` + real allow/deny probes on the real host are the
+  AUTHORITATIVE sudo-match confirmation (documented human-gate, not hermetic); carried F8/F9/F10; lstat-then-open race
+  (needs write to /etc/kronos-cybergym, runbook sets 0755 root); egress_guard PATH-lookup for iptables/docker
+  (in-process root path + run discovery only) - all confirm at the gated section-6/section-8 run.
+re-derived_live (seq 479): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=8a0e3b8 base=main
+  mergeable=UNKNOWN(not yet computed); origin branch==8a0e3b8; head NOT ancestor of main (unmerged, expected);
+  contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 478
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
