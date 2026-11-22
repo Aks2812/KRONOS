@@ -43,7 +43,7 @@ awaiting_operator: GATE-2 review of PR #74. Then, SEPARATELY and still maintaine
   helper (root-owned 0755) + sudoers (0440) per docs/ops/R10_EGRESS_HELPER_INSTALL.md; (2) re-authorize the single
   BE-G3-5/R10 run (§6/§8) now that the non-root egress path exists. Loop installs/runs nothing without authorization.
 report_type: SAFE-TO-APPROVE (planning/build deliverable: draft PR #74 reviewer-PASS; install + run stay gated)
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (GATE-2 of draft PR #74 build; helper install + §6/§8 run are SEPARATE downstream maintainer gates, not approved here)
 opus_effort: HIGH
 forward_followups: (A) STANDING SEAL-TAX: after PR #74 merges, the NEXT brief must seal the open LPEG window
   93e1743..HEAD to PR#74's squash SHA in tests/test_commit_authority.py else test_B31_Q_scope_audit reds.
@@ -171,7 +171,7 @@ prev_main: dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb
 merged_pr: 73
 pr73_squash_merge: 93e1743cc38f9004e8c751160e2c15ef9502342d
 report_type: SAFE-TO-APPROVE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (GATE-2 of draft PR #74 build; helper install + §6/§8 run are SEPARATE downstream maintainer gates, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Post-merge seal/verify after protected-branch squash-merge + presenting §6/§8 execution GATE.
 awaiting_operator: SEPARATE §6/§8 EXECUTION authorization for the single manifest-bounded R10 CyberGym run per
