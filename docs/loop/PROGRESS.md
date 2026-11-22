@@ -1,4 +1,30 @@
 # KRONOS loop-state checkpoint
+seq: 480
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 8c88fb1cb404ceec5574118937e2cbbb38fdee268c5d489b758466041f928d2c (SPEC_BRIEF_R10 section-10)
+pending_action: MERGE_PR74_SQUASH_AT_8a0e3b8 -> operator GATE-2 authorized (context.md) merge of PR #74 ONLY at
+  exact head 8a0e3b83dbc51778dfa01bed67f3d0df45c81856. Sequence: mark ready; fetch+reconfirm head unchanged &
+  MERGEABLE/CLEAN; re-measure all 10 MERGE-GATE items; squash-merge
+  `gh pr merge 74 --squash --match-head-commit 8a0e3b83dbc51778dfa01bed67f3d0df45c81856` (never --admin/--auto).
+  HOLD fail-closed on SHA drift or any failed/incomplete gate. After merge: verify main integrity, record squash SHA
+  + checkpoint, present human install + live sudo allow/deny verification procedure. NO helper/sudoers install,
+  firewall/network mutation, container, target, section-6/section-8 run.
+pending_action_outcome: PENDING (merge not yet executed at this checkpoint)
+prior_action_outcome: seq 479 AWAIT_OPERATOR_GATE2_MERGE_AUTH_PR74 -> RESOLVED. Operator authorized GATE-2 via
+  /home/void/context.md for PR #74 at exact head 8a0e3b8; instructed mark-ready, reconfirm head+mergeable, re-measure
+  ten gate, squash-merge --match-head-commit, HOLD on drift, no --admin/--auto, then post-merge integrity + install
+  procedure.
+re-derived_live (seq 480, pre-merge): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=8a0e3b8
+  base=main; origin branch==8a0e3b8; contract 3-file hashes==on-disk. Final mergeable/CLEAN + head reconfirm done
+  immediately before the merge call in the same turn.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 479
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
