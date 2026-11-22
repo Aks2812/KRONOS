@@ -1,4 +1,46 @@
 # KRONOS loop-state checkpoint
+seq: 456
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 14c567f35e62290263b30f7b383771a59f94b91a)
+pending_action: AWAIT_GATE2_MERGE_AUTH_PR72
+pending_action_outcome: PENDING
+prior_action_outcome: seq 455 APPLY_SEALTAX_AMEND_PR72 -> DONE. kronos-builder edited ONLY
+  tests/test_commit_authority.py (seal PHRC + open PRG), no other file; orchestrator verified diff + AST OK;
+  committed 7943159be75f79413afaed864e400c20540bfa8a (author/committer Aks2812, Co-Authored-By Claude Opus 4.8),
+  pushed to gov/dod-reconcile-be-g1-567. New PR #72 head 7943159 (2 commits). VALIDATION @7943159:
+  scope git diff 14c567f..7943159 = EXACTLY {docs/governance/KRONOS_DONE.md, docs/governance/contract_manifest.json,
+  tests/test_commit_authority.py} (3 files, +13/-5); manifest 3 pins MATCH on-disk (KRONOS_DONE.md 37fe31ed..,
+  contract/schema unchanged, contract_version 1.4.5); DoD-Version held 1.4.4; seal-tax amendment adds PHRC_MERGE +
+  PRG_BASE=14c567f + PRG_SECTION_10={3 files}, line 401 sealed {PHRC_BASE}..{PHRC_MERGE}, new {PRG_BASE}..HEAD
+  appended; NO existing assertion weakened/removed/reordered. Focused+scope-audit 225 passed; test_B31_Q_scope_audit
+  PASS. CANONICAL FULL SUITE GREEN: SUMMARY 4231 passed, 1 skipped, 0 failed (decided from summary line).
+  Fresh independent kronos-reviewer @7943159: PASS 7/7 criteria, own canonical 4231 passed/1 skipped/0 failed,
+  test_B31_Q_scope_audit PASS. Orchestrator Gate-2 semantic: PASS.
+gate2_measure: ten-item MERGE-GATE @7943159: (1) main protected ruleset void-rule-kronos 25333712 active; (2) PR
+  STILL DRAFT isDraft=true -> gating action gh pr ready 72 (operator-authorized at merge turn, loop never marks ready
+  unasked); (3) open & unmerged; (4) head 7943159 is result of operator-authorized GATE-1 amendment -> merge turn
+  must authorize head 7943159; (5) independent reviewer PASS 7/7 @7943159; (6) ci:none (ruleset no required checks);
+  (7) canonical 0 failed; (8) scope/seal-tax audit green, scope == 3 authorized files; (9) orchestrator Gate-2 PASS;
+  (10) loop commit touched ONLY tests/test_commit_authority.py (authorized); governance files authored by maintainer
+  commit f1744e4. mergeable=UNKNOWN (GitHub still computing) -> must be MERGEABLE at merge turn.
+report_type: SAFE-TO-APPROVE
+decision_class: SAFE-TO-APPROVE
+authorization_line: PR #72 head 7943159be75f79413afaed864e400c20540bfa8a
+opus_effort: MEDIUM
+opus_effort_reason: GATE-2 presentation after bounded authorized remediation; both suites green and independent
+  review PASS; merge is a mandatory human pause.
+forward_followups: MERGE TURN (needs operator authorization) must: gh pr ready 72, then re-measure FULL ten-item
+  MERGE-GATE @7943159 and squash --match-head-commit 7943159be75f79413afaed864e400c20540bfa8a (NEVER --admin/--auto).
+  Post-merge: loop-state seal tax for the NEXT brief must seal PRG_BASE(14c567f)..HEAD to PR #72 squash merge SHA.
+  BE-G3-5/BE-G2-6 remain §6/§8 HELD. R10==BE-G3-5 / R12==BE-G2-6; Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 455
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
