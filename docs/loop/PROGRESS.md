@@ -1,4 +1,25 @@
 # KRONOS loop-state checkpoint
+seq: 474
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 942769227d449148e90c27a971c6ccaa413437946ba59fde64a48a93030ddc2c (SPEC_BRIEF_R10_least_privilege_egress_executor.md)
+pending_action: DISPATCH_SECOND_SECURITY_REVIEW_PR74 -> at repaired head fbdcf87 dispatch a 2nd fresh independent
+  security kronos-reviewer measuring diff 9152f15..fbdcf87 against brief §8/§9 acceptance (hermetic suites + canonical
+  + scope audit, security semantics of F1-F10 repair); then present GATE-2. NO merge, install, sudoers/firewall/
+  network mutation, container, target, §6/§8 run.
+pending_action_outcome: PENDING (2nd review dispatch + GATE-2 not yet emitted at this checkpoint)
+prior_action_outcome: seq 473 PUSH_REPAIRED_PR74_AND_SECOND_SECURITY_REVIEW -> push portion DONE and CONFIRMED LIVE:
+  origin/eval/r10-leastpriv-egress-executor == fbdcf87; PR #74 OPEN, draft, unmerged, base main, head fbdcf87;
+  main == 93e1743 protected. No checkpoint/live contradiction. 2nd security review now dispatching this turn.
+re-derived_live (seq 474): main=93e1743 protected=true; PR#74 state=OPEN draft=true merged=null head=fbdcf87
+  base=main; brief on disk sha=9427692...3030ddc2c; contract 3-file manifest hashes == on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 473
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
