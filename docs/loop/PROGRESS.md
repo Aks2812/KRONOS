@@ -1,4 +1,32 @@
 # KRONOS loop-state checkpoint
+seq: 473
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: PUSH_REPAIRED_PR74_AND_SECOND_SECURITY_REVIEW -> push branch to new head fbdcf87 (update draft PR
+  #74), dispatch SECOND fresh independent security kronos-reviewer at the repaired head, present GATE-2. NO merge,
+  install, sudoers/firewall/network mutation, container, target, §6/§8 run.
+pending_action_outcome: PENDING (push + 2nd review not yet done at this checkpoint)
+prior_action_outcome: seq 472 REPAIR_R10_PIN_EGRESS_F1_F8 -> DONE. kronos-builder commit c7a47a9 fixed F1-F7 per
+  brief §9; orchestrator committed brief §9 amendment (fbdcf87). Builder suites @c7a47a9: test_egress_helper 116
+  passed; test_egress_guard 73 passed; test_eval_cybergym_x_score 27 passed; CANONICAL 4353 passed, 1 skipped, 0
+  failed (589s); test_B31_Q_scope_audit 1 passed. Orchestrator re-ran scope audit after brief commit: 1 passed.
+  Diff 9152f15..fbdcf87 == 11 files, all LPEG_SECTION_10 members; hard-boundary check empty.
+repair_summary (F1-F7 fixed; F8/F9/F10 documented residuals):
+  F1 egress_teardown registered BEFORE compose_down (LIFO: compose first, guard removed last) + teardown-order test.
+  F2/F3 egress_op always reads pinned config + requires caller subnet/gateway == pinned (fail closed) both paths;
+  root remove runs docker-inspect lab-live gate. F4 remove jump-deletion driven by `-D` rc (0 repeat/1 done/else
+  raise), -C removed from remove path; status strict, apply tolerant. F5 load_config lstat: regular file, uid 0, no
+  group/other write (tests override only _REQUIRED_CONFIG_UID, real default 0). F6/F7 runbook gated uninstall +
+  temp-validate-then-move sudoers. Builder note: discovery (assert_ipv4_only/discover_subnet/discover_gateway)
+  wrapped so compose_down is registered + re-raise on discovery failure; test_remove_and_idempotence rewritten to
+  the -D sequence.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 472
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
