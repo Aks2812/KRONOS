@@ -745,3 +745,83 @@ def test_helper_config_symlink_refused(monkeypatch, tmp_path):
 
 def test_helper_config_good_mode_accepted(helper, capsys):
     assert helper.main(["status"]) == 0
+
+
+# --- §10.3 sudoers policy + exact-one-bare-verb contract ----------------------
+
+SUDOERS_PATH = Path(__file__).resolve().parents[1] / "deploy" / "sudoers.d" / "kronos-cybergym-egress"
+INSTALLED_HELPER = "/usr/local/sbin/kronos-cybergym-egress"
+
+
+def _sudoers_command_entries():
+    entries = []
+    for line in SUDOERS_PATH.read_text().splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        assert "NOPASSWD:" in line, line
+        spec = line.split("NOPASSWD:", 1)[1]
+        entries.extend(e.strip() for e in spec.split(","))
+    return entries
+
+
+def test_sudoers_template_parses_with_visudo(tmp_path):
+    import shutil
+    visudo = shutil.which("visudo") or ("/usr/sbin/visudo" if os.path.exists("/usr/sbin/visudo") else None)
+    if not visudo:
+        pytest.skip("visudo unavailable")
+    scratch = tmp_path / "kronos-cybergym-egress"
+    scratch.write_text(SUDOERS_PATH.read_text().replace("RUNUSER", "kronosrun"))
+    r = subprocess.run([visudo, "-cf", str(scratch)], capture_output=True, text=True)
+    if r.returncode != 0 and "permission" in (r.stdout + r.stderr).lower():
+        pytest.skip("visudo not usable unprivileged here")
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_sudoers_has_no_argument_wildcard_or_empty_arg_form():
+    entries = _sudoers_command_entries()
+    assert entries
+    for e in entries:
+        assert "*" not in e and "?" not in e, e
+        assert '""' not in e and "''" not in e, e
+
+
+def test_sudoers_exactly_three_verb_entries_on_fixed_helper():
+    assert _sudoers_command_entries() == [
+        f"{INSTALLED_HELPER} apply",
+        f"{INSTALLED_HELPER} remove",
+        f"{INSTALLED_HELPER} status",
+    ]
+
+
+@pytest.mark.parametrize("argv", [
+    ["apply", "extra"],
+    ["remove", "extra"],
+    ["status", "extra"],
+    ["status", "--help"],
+    ["apply", "-x"],
+    ["--help"],
+    ["-x"],
+    ["apply", ";"],
+    ["status", "|"],
+    ["remove", "&"],
+    ["status", "`id`"],
+    ["status", "$(id)"],
+    ["apply;id"],
+    ["status|id"],
+    ["status", "/etc/passwd"],
+    ["apply", "/usr/local/sbin/kronos-cybergym-egress"],
+    ["status", "FOO=bar"],
+    ["FOO=bar"],
+    ["FOO=bar", "status"],
+    ["apply", "FOO=bar"],
+])
+def test_helper_rejects_non_bare_verb_forms_without_mutation(helper, argv):
+    assert helper.main(argv) != 0
+    _no_mutation(helper)
+    assert helper._fake.calls == []
+    assert helper._docker.calls == []
+
+
+def test_helper_accepts_exactly_one_bare_verb(helper):
+    assert helper.main(["status"]) == 0
+    _no_mutation(helper)

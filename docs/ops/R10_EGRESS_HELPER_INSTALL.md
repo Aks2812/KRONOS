@@ -64,13 +64,49 @@ sudo -n /usr/local/sbin/kronos-cybergym-egress status   # prints: absent   (befo
 ```
 
 A non-zero exit or a password prompt means the policy is not in force — STOP and fix the
-install before authorizing the run. The helper takes no arguments and rejects anything
+install before authorizing the run. The helper takes one bare verb and rejects anything
 outside its contract:
 
 ```
 sudo -n /usr/local/sbin/kronos-cybergym-egress bogus     # rc 1, no firewall change
-sudo -n /usr/local/sbin/kronos-cybergym-egress apply 1.1.1.1   # denied by sudoers (no wildcard); the helper also rejects any argument
+sudo -n /usr/local/sbin/kronos-cybergym-egress apply 1.1.1.1   # denied by sudoers (exact argument match); the helper also rejects any argument
 ```
+
+## Sudoers matching mechanism
+
+Each sudoers entry pins the helper path AND its single literal verb as a *specified argument*.
+Per sudoers(5), "If a Cmnd has associated command line arguments, the arguments in the Cmnd must
+match those given by the user on the command line", so sudo requires an exact per-verb argument
+match: one bare verb, no trailing argument, option, path or token. There is no argument wildcard
+(no `*`, no `?`) and no `""` form. Behaviour as documented for sudo 1.9.17p2. The helper
+independently rejects any argv that is not exactly one bare verb.
+
+## Mandatory post-install HUMAN-GATE verification (before the evaluation runs)
+
+Run by the human operator, NOT by the loop, and NOT hermetic. This live check is the
+authoritative confirmation of sudo matching on the actual install host. Do not authorize the
+run until every step behaves as stated.
+
+```
+sudo -l -U <runuser>     # must list EXACTLY three commands, nothing else:
+                         #   /usr/local/sbin/kronos-cybergym-egress apply
+                         #   /usr/local/sbin/kronos-cybergym-egress remove
+                         #   /usr/local/sbin/kronos-cybergym-egress status
+```
+
+Then, as `<runuser>`, real allow/deny probes (H = `/usr/local/sbin/kronos-cybergym-egress`):
+
+```
+sudo -n H status               # ALLOWED (bare verb)
+sudo -n H status extra         # DENIED by sudo (extra argument)
+sudo -n H apply 1.1.1.1        # DENIED (extra argument)
+sudo -n H status --help        # DENIED (option)
+sudo -n H status /etc/passwd   # DENIED (path)
+sudo -n H bogus                # DENIED by sudo (other verb)
+```
+
+Any allowed deny-probe, or a denied bare-verb probe, means the policy is not in force: STOP and
+fix the install. Do not probe `apply`/`remove` bare verbs here; they mutate the firewall.
 
 ## Rollback (remove the guard; leaves helper + sudoers in place)
 
@@ -117,7 +153,7 @@ with `&&` so a failed `remove`, or a `status` other than exactly `absent`, never
 
 - The helper is self-contained (stdlib only) and does not import the repo package, so a
   modified working tree cannot change what runs as root.
-- `apply` / `remove` / `status` are the only accepted verbs and take NO arguments; subnet,
+- `apply` / `remove` / `status` are the only accepted verbs, each exactly one bare verb with no further argument; subnet,
   gateway and network come only from the pinned config. The subnet must be a private,
   non-public IPv4 lab subnet (`ipaddress.is_private`; a Docker RFC1918 bridge range satisfies
   this), the gateway a host IPv4 strictly inside it (not the network or broadcast address), and
