@@ -1,4 +1,52 @@
 # KRONOS loop-state checkpoint
+seq: 462
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 461 planning deliverable (draft PR #73) -> validated this turn, no change.
+turn_462_action: VALIDATION-ONLY of PR #73 at exact head ffa1c2de3db7256adfb9f3677696ae0936aa5d84 at operator
+  request. NO edit, NO merge, NO container/firewall/network/target activity, NO §6/§8 execution.
+  Re-derive LIVE: PR #73 head==ffa1c2d (NO drift), state=OPEN, isDraft=TRUE, mergeable=MERGEABLE, mergeState=CLEAN;
+  main==dab9b24 protected ruleset void-rule-kronos 25333712 active; diff dab9b24..ffa1c2d == EXACTLY
+  {SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md, tests/test_commit_authority.py}.
+  Hashes on-disk == brief pins: scope_manifest.yaml 3961c433.., pubkey 769416bc.., docker-compose.yml f902808c.. ALL MATCH.
+  Seal verified: PRG sealed {PRG_BASE=14c567f}..{PRG_MERGE=dab9b24} (line 415), R10EVAL open dab9b24..HEAD (line 416);
+  no existing assertion weakened/reordered. Brief content verified: NO-execution clause, §0-§9, manifest binding,
+  containment/in-scope globs, rollback+teardown (teardown.all_ok==true), redaction (assert_redacted/X-Cybergym-Key),
+  evidence four-file set + schema, PASS + explicit FAIL/ABORT criteria, egress+preflight+90s timeout, hard boundaries.
+  Fresh INDEPENDENT kronos-reviewer @ffa1c2d (not given builder/prior report): PASS all 7 criteria; own canonical
+  suite 4231 passed/1 skipped/0 failed; test_B31_Q_scope_audit 1 passed.
+  Orchestrator OWN canonical suite @ffa1c2d: 4231 passed, 1 skipped, 0 failed (decided from SUMMARY line, bg run).
+ten_item_merge_gate_measured_live_at_ffa1c2d:
+  (1) main protected ruleset 25333712 active = PASS.
+  (2) PR not draft = NOT MET (PR #73 isDraft=TRUE) -> operator must `gh pr ready 73` before merge.
+  (3) open & unmerged = PASS.
+  (4) head == operator-authorized merge SHA = PENDING: head==ffa1c2d (the SHA operator named for VALIDATION);
+      NO merge authorization given yet -> operator must authorize ffa1c2d for merge.
+  (5) independent reviewer PASS on §8 acceptance by evidence = PASS (fresh reviewer @ffa1c2d).
+  (6) CI green or ci:none = ci:none (ruleset has NO required_status_checks; no checks on branch) = PASS.
+  (7) brief's own local test evidence re-measured = PASS (canonical 4231/1/0, measured twice independently).
+  (8) scope-guard/seal-tax scope audit green = PASS (test_B31_Q_scope_audit 1 passed; scope==2 files).
+  (9) orchestrator Gate-2 semantic review = PASS (planning-only, sealed, hard-boundaries respected, no run).
+  (10) no hard-boundary/out-of-scope file touched = PASS (diff==2 files, neither hard-boundary).
+  NET: 8/10 substantive gates GREEN; items (2) draft and (4) merge-auth-SHA are the operator's own
+  readying+authorization acts, NOT quality failures.
+report_type: SAFE-TO-APPROVE (planning PR #73 merge; the CyberGym RUN remains separately §6/§8-gated)
+decision_class: REVIEW-REQUIRED
+authorization_line: PR #73 head ffa1c2de3db7256adfb9f3677696ae0936aa5d84 (ready + merge auth needed; merging lands
+  brief+seal-tax only, performs NO run).
+opus_effort: MEDIUM
+awaiting_operator: (1) ready+merge-authorize PR #73 @ffa1c2d (protected-branch, mandatory pause); AND SEPARATELY
+  (2) GATE-1 execution auth + GATE-2 for the one manifest-bounded CyberGym run (§6/§8). Loop starts NO run without (2).
+forward_followups: after PR#73 merges, NEXT brief must seal R10EVAL window dab9b24..HEAD to PR#73 squash SHA.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 461
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
