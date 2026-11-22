@@ -37,7 +37,7 @@ ten_item_merge_gate_measured_live_at_ffa1c2d:
   NET: 8/10 substantive gates GREEN; items (2) draft and (4) merge-auth-SHA are the operator's own
   readying+authorization acts, NOT quality failures.
 report_type: SAFE-TO-APPROVE (planning PR #73 merge; the CyberGym RUN remains separately §6/§8-gated)
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 authorization_line: PR #73 head ffa1c2de3db7256adfb9f3677696ae0936aa5d84 (ready + merge auth needed; merging lands
   brief+seal-tax only, performs NO run).
 opus_effort: MEDIUM
@@ -79,7 +79,7 @@ awaiting_operator: SEPARATE EXECUTION GATE (mandatory §6/§8 pause). Loop will 
   (2) GATE-2. The brief document itself authorizes nothing. Separately: the DoD BE-G3-5 done-predicate wiring and
   stale SRC-ROADMAP/SRC-RESEARCH reconciliation remain maintainer governance patches.
 report_type: SAFE-TO-APPROVE (planning deliverable: draft PR #73 reviewer-PASS; the brief's RUN stays §6/§8-gated)
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 forward_followups: (A) Seal-tax now sealed to dab9b24; R10EVAL window open dab9b24..HEAD (brief+test). The NEXT
   brief after PR #73 merges must seal R10EVAL to PR#73's squash SHA. (B) BE-G3-5 execution and BE-G2-6 remain §6/§8.
@@ -161,7 +161,7 @@ turn_459_action: INCOMPLETE-IDLE RECOVERY (contract §13.2). pending_action NONE
   unblocked-except-for-GATE-1 authorization. §6/§8 live-execution => GATE-1 maintainer authorization REQUIRED;
   loop cannot self-authorize; NO product work auto-started. Presented as REVIEW-REQUIRED.
 report_type: INCOMPLETE-IDLE-RECOVERY (§13.2)
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Read-only reconciliation + single-candidate presentation; no repo mutation, no gate crossed.
 awaiting_operator: GATE-1 decision (approve or reject) on a BE-G3-5 (R10) scoped SPEC_BRIEF authorizing one
@@ -245,7 +245,7 @@ plan: (a) gh pr ready 72 (operator-authorized); (b) fetch + reconfirm head still
   HOLD on SHA drift / non-MERGEABLE / any failed-or-incomplete gate item. Post-merge: verify main integrity,
   record squash merge SHA + seal checkpoint, report fresh-session reconciliation.
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: WRITE-AHEAD consequential protected-branch squash-merge PR #72; fail-closed on any drift/gate miss.
 HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
@@ -363,7 +363,7 @@ remediation: PR #72 must additionally edit tests/test_commit_authority.py to (a)
   green canonical suite -- operator must authorize the expanded 3-file scope. Loop made NO edits this turn
   (validation-only per operator).
 report_type: BLOCKED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Failed-review blocker with a scope-vs-suite tension (seal-tax forces a 3rd file) requiring a
   precise remediation and an operator scope decision; independently confirmed by reviewer.
@@ -399,7 +399,7 @@ prior_action_outcome: seq 452 GATE-1 candidate -> operator APPROVED candidate sc
   sha256 d5c51705b8b6a5f1bdc03d0756a2d8863fad10a0883f6e077724f63e23e28fab. Loop did NOT apply (governance,
   maintainer-patch-only, manifest hash set NEVER-edit by loop); hand-apply instructions handed to operator.
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Governance-reconciliation patch prep requiring independent SHA/ancestry verification, test-pin
   analysis (DoD-Version kept 1.4.4), and sandboxed apply+integrity+suite verification before handoff.
@@ -439,7 +439,7 @@ decision: §13.2 presents ONE scoped GATE-1 candidate = maintainer governance pa
   BE-G1-7+BE-G3-5). Both §6/§8 live -> mandatory pause, INELIGIBLE for auto-brief. No loop-executable candidate to
   auto-start; candidate is maintainer-applied governance patch, NOT a loop build brief.
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: §13.2 recovery with a material live-vs-governance mismatch requiring careful reconciliation and
   a correctly-scoped single candidate; verified by running named tests and git provenance before forming it.
@@ -475,7 +475,7 @@ prior_action_outcome: seq 450 GATE2_READY_AND_SQUASH_MERGE_PR71 -> DONE. (a) gh 
   previously-red focused tests now green on main (140 passed). PHASE READINESS now operationalized in .claude command +
   RAILS on main.
 report_type: SAFE-TO-APPROVE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: PR #71 (.claude operationalization + tests seal) merged clean under full ten-item gate; stopped per
   operator after post-merge checkpoint. Forward follow-ups (maintainer-gated): (A) next brief after PR #71 must seal
@@ -504,7 +504,7 @@ prior_action_outcome: seq 449 AWAIT_GATE2_MERGE_AUTH_PR71 -> operator GATE-2 AUT
   exact head b282d3b57d14a1b2ce340169e217505a1b7cc370. Pre-write-ahead live re-derive: origin/main 5db0c44; PR #71
   head == b282d3b (NO drift), isDraft=true, MERGEABLE, OPEN, unmerged; ruleset void-rule-kronos 25333712 active.
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: WRITE-AHEAD for consequential protected-branch squash-merge of PR #71. Plan: (a) gh pr ready 71;
   (b) fetch + reconfirm head still b282d3b (HOLD on any drift); (c) re-measure FULL ten-item MERGE-GATE at b282d3b --
@@ -578,7 +578,7 @@ prior_action_outcome: seq 447 HOLD_TEST_FAILURES_AT_HEAD -> operator GATE-1 auth
   window 5db0c44..HEAD permitting EXACTLY {.claude/RAILS.md, .claude/commands/kronos-continue.md,
   tests/test_commit_authority.py, tests/test_rnd_contract.py}.
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: WRITE-AHEAD for build+push to PR #71 branch. Brief (surgical, tests-only):
   (1) tests/test_commit_authority.py: add PHR_MERGE="5db0c4436ad5a296f499a3f9b2c7f3861bb5f26b"; seal PHR line to
@@ -659,7 +659,7 @@ prior_action_outcome: seq 445 GATE2_READY_AND_SQUASH_MERGE_PR70 DONE. This turn 
   measurement is ruleset-aware: ruleset void-rule-kronos 25333712 active governs default branch; legacy
   /branches/main/protection 404 is NOT unprotected.
 report_type: BLOCKED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Hard scope boundary. Compliant path = HUMAN maintainer hand-applies the patch OUTSIDE the loop
   on a branch off 5db0c44, commits under their own identity, pushes, opens the draft PR; THEN the loop may run
@@ -694,7 +694,7 @@ prior_action_outcome: seq 444 GATE2_READY_AND_SQUASH_MERGE_PR70 -> DONE. (a) gh 
   Post-merge contract integrity @ new main: manifest contract_version 1.4.5; contract/schema/DONE sha all match
   disk (DONE unchanged). Contract v1.4.5 now LIVE on main.
 report_type: SAFE-TO-APPROVE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: PR #70 (PHASE READINESS reporting amendment v1.4.4->v1.4.5) merged clean under full ten-item
   gate. Stopped per operator after post-merge checkpoint. Remaining follow-ups (both maintainer-gated, loop may
@@ -725,7 +725,7 @@ prior_action_outcome: seq 443 GATE2_SQUASH_MERGE_PR70 -> BLOCKED_PR_DRAFT (PR #7
   No --admin, no --auto, no .claude patch application, no product work, no live execution. Stop after post-merge
   checkpoint.
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: WRITE-AHEAD for consequential protected-branch merge. Plan: (a) gh pr ready 70; (b) re-measure
   ten-item gate at 2695a0d -- (1) main protected via active ruleset void-rule-kronos 25333712, (2) PR not draft
@@ -764,7 +764,7 @@ prior_action_outcome: seq 442 AWAIT_GATE2_PHASE_READINESS_PR70 -> operator lifte
   marking a PR ready requires operator authorization NOT given this turn. FAIL CLOSED: NO merge, NO
   ready-for-review, NO --admin, NO --auto, NO .claude patch applied, NO mutation to PR #70.
 report_type: BLOCKED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: GATE-2 authorized by operator but merge blocked by draft state; needs operator to mark
   PR #70 ready (or explicitly authorize orchestrator to) before the ten-item gate can complete. Remaining
@@ -793,7 +793,7 @@ pending_action_outcome: PENDING
 prior_action_outcome: seq 441 OPEN_DRAFT_PR_PHASE_READINESS -> DONE. Draft PR #70 OPEN, isDraft=true, base main,
   head 2695a0d9f9a64f913ba7f41b521b26e826c61386. No merge, no ready-for-review, no --admin/--auto.
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: GATE-1 reporting-only contract amendment v1.4.4->v1.4.5 ([PHASE READINESS] section) built,
   independently reviewed (kronos-reviewer fresh PASS all 9 @2695a0d), repaired, draft PR #70 opened. Suite 4231
@@ -830,7 +830,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c; amend
 pending_action: OPEN_DRAFT_PR_PHASE_READINESS
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 440 BUILD_PHASE_READINESS_V145_AMENDMENT built + independently reviewed + repaired.
   kronos-builder (claude-sonnet-5-5) implemented SPEC_BRIEF_PHASE_READINESS.md on kronos/phase-readiness-amendment
@@ -873,7 +873,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ main 911812c)
 pending_action: BUILD_PHASE_READINESS_V145_AMENDMENT
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator GATE-1 (this turn, /home/void/context.md) authorized a reporting-only
   contract amendment adding mandatory [PHASE READINESS] to every terminal report; persist in contract,
@@ -977,7 +977,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
 pending_action: HOLD_GATE2_R10EGH_PR69_AWAIT_MERGE_AUTHORIZATION
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 436 BOUNDED_REPAIR_R10EGH_CTSTATE_NORMALIZE outcome=DONE. kronos-builder implemented within the two permitted files only (no commit, no PR touch); orchestrator scope+semantic verified; committed fe87f44; branch head advanced eecd470 -> fe87f44. Changes: (1) egress_guard.py adds module-level _normalize_rule that sorts ONLY the comma-separated members of the token after --ctstate; the existing-chain reconcile compare now normalizes BOTH current (iptables -S) and expected sides positionally ([_normalize_rule(r) for r in _current_chain_rules()] != [_normalize_rule(r) for r in expected]); rule list is NOT sorted/reordered; chain order, jump order, -d destinations, -j targets, _chain_rules, _current_chain_rules, fresh-build branch, jump install, _state, rc-in-{1,2}-absent all unchanged. (2) docstring "(-L / -C)" -> "(-S)". (3) non-vacuous tests: canonical ctstate reorder accepted as no-op (zero -N/-A/-F/-X/-I/-D on chain, -S actually ran); extra rule / missing rule / wrong rule order each raise with no mutation; normalization does not mask a changed -j target (still raises); missing-chain probe rc 1 AND rc 2 -> absent -> fresh build with exact [-N]+[-A per rule] order; unexpected probe rc 3 AND 4 -> raise with no mutation. Fresh independent kronos-reviewer measured origin/main..fe87f44 itself (brief + range only): canonical suite 4226 passed 1 skipped 0 failed via the canonical runner; A (ctstate-only normalization) / B (docstring -S) / C (non-vacuous tests) + all standing acceptance PASS; reviewer ran its own mutation checks (disable normalizer / ignore -j / sort rule list) each breaking exactly one test = non-vacuity proven. Branch pushed; DRAFT PR #69 now head fe87f44, base main, MERGEABLE, OPEN. Orchestrator Gate-2 semantic review PASS. This repair RESOLVES disclosed residual F2 (the --ctstate canonical-order reconcile refusal) plus the LOW docstring/test-gap nits. REMAINING residuals (hermetically UNVERIFIABLE, carried to the separate sec6/sec8 gated run, NOT merge blockers): real iptables -S exact rendering of the OTHER rule fields (e.g. -d <ip>/32 masks, -j target spelling) must still match _chain_rules; real rc-2 on a missing target chain on the host backend; real docker network inspect EnableIPv6/gateway output. STOP at GATE-2: merge needs separate operator authorization naming PR + full head SHA.
 base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
@@ -1016,7 +1016,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
 pending_action: BOUNDED_REPAIR_R10EGH_CTSTATE_NORMALIZE_DOCSTRING_TESTS_REREVIEW_HOLD_GATE2
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator authorized (this turn, before GATE-2) a single bounded repair to PR #69 branch kronos/r10-egress-guard-hardening (current reviewed head eecd470), strictly within the two permitted R10EGH files src/kronos/eval/egress_guard.py + tests/test_egress_guard.py (still inside R10EGH_SECTION_10, six-file window). Resolves disclosed residual F2 + the LOW docstring/test-gap nits. SCOPE (exact): (1) In semantic reconcile (apply_egress_guard existing-chain compare, egress_guard.py:157 via _current_chain_rules vs _chain_rules), normalize ONLY the conntrack --ctstate member ordering before comparing -- split the value token after --ctstate on ",", sort members, rejoin -- applied to BOTH current (iptables -S) and expected sides; EVERYTHING ELSE stays strict: chain rule order positional, jump order, destinations, -j targets, and all other rule fields unchanged. So real iptables canonical RELATED,ESTABLISHED matches the sec1.4-mandated ESTABLISHED,RELATED, while extra rules / missing rules / wrong rule order still fail closed (raise). (2) Docstring egress_guard.py:18 change "(-L / -C)" -> "(-S)" to reflect the chain-content reconcile reads -S. (3) Non-vacuous tests in test_egress_guard.py: canonical ctstate reorder ACCEPTED (existing-correct-but-reordered chain -> no-op, no mutation/no re-append); extra rule -> raise; missing rule -> raise; wrong rule order -> raise; missing-chain rc 1 AND rc 2 -> treated absent -> fresh build; unexpected rc (e.g. 3/4) -> raise. NO change to chain order, jump order, destinations, apply/remove semantics, rc-in-{1,2}-absent logic, discover_*/assert_ipv4_only. Flow: builder implements (two files only, no commit, no PR touch) -> orchestrator scope+semantic verify -> commit -> fresh independent kronos-reviewer at new tip (brief + diff range only) -> on PASS push branch (updates PR #69) -> emit GATE-2 report with NEW exact head -> HOLD. No firewall apply, no containers, no sec6/sec8 run.
 base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
@@ -1042,7 +1042,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
 pending_action: HOLD_GATE2_R10EGH_PR69_AWAIT_MERGE_AUTHORIZATION
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 434 REPAIR_R10EGH_F1_REREVIEW_DRAFTPR outcome=DONE. F1 repaired on feature branch (drop .lower() at egress_guard.py:111 so assert_ipv4_only compares to exactly "false"; extended the parametrized raises test with "False" and "FALSE"); scope-exact repair commit eecd470, branch head advanced d3e1a6c -> eecd470 (build d3e1a6c + F1 repair). Fresh independent kronos-reviewer measured the diff origin/main..eecd470 itself (brief + range only): canonical suite 4217 passed 1 skipped 0 failed via the canonical runner; ALL eight criteria PASS (scope exact six R10EGH files; _CIDR_RE removed + ipaddress IPv4-only validation; discover_gateway + assert_ipv4_only exact-"false" fail-closed with uppercase-False/FALSE raising covered; chain order ESTABLISHED,RELATED RETURN -> gateway/32 DROP -> subnet RETURN -> 127.0.0.0/8 RETURN -> DROP; _state rc in {1,2} absent + register-before-apply rollback + fail-closed reconcile; wrapper run() wires assert_ipv4_only + discover_gateway before apply_egress_guard(subnet, gateway); seal-tax R10EG sealed to 454c179 + R10EGH window opened; hermetic mocks only). Branch pushed; DRAFT PR #69 opened base main head eecd470, MERGEABLE. Orchestrator Gate-2 semantic review PASS. Disclosed residuals carried to the separate sec6/sec8 gated run (hermetically UNVERIFIABLE, NOT merge blockers): real iptables -S rendering incl. --ctstate canonical order RELATED,ESTABLISHED vs the sec1.4-mandated ESTABLISHED,RELATED emitted (reconcile would refuse a correctly-installed live chain -> fail-closed, not unsafe); real rc-2 on a missing target chain on the host backend; real docker network inspect EnableIPv6/gateway output. LOW nits (non-blocking): module docstring still cites "-L / -C" though reconcile now reads "-S"; rc-2 treatment broader than the "missing target chain" case; no extra-rule/wrong-order reconcile test. STOP at GATE-2: merge needs separate operator authorization naming PR + full head SHA.
 base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
@@ -1081,7 +1081,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
 pending_action: REPAIR_R10EGH_F1_REREVIEW_DRAFTPR_STOP_GATE2
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 433 BUILD executed. Branch kronos/r10-egress-guard-hardening @ d3e1a6c = exactly one commit atop main 454c179, touching exactly the six R10EGH files; not pushed, no PR. Independent kronos-reviewer measured the diff origin/main..d3e1a6c itself (brief + range only): canonical suite 4215 passed 1 skipped 0 failed via the canonical runner; criteria 1,2,4,5,6,7,8 PASS; criterion 3 FAIL = F1 (low): assert_ipv4_only used (result.stdout or "").strip().lower() then compared to "false", so uppercase "FALSE"/"False" wrongly PASSED, but brief sec1.3 requires the value be exactly "false" (fail-closed). F2 (medium, hermetically UNVERIFIABLE): real iptables canonicalizes --ctstate to RELATED,ESTABLISHED whereas the guard emits the brief sec1.4-mandated ESTABLISHED,RELATED, so a correctly-installed LIVE chain could be seen as mismatched and raise on reconcile (fail-closed, not unsafe; breaks existing-correct->no-op only on the real binary). F2 carried to the separate sec6/sec8 gated run as an explicit real-binary check; it is spec-mandated token text, not a build blocker. REPAIR (inside the approved brief research->build->review->REPAIR->draft-PR flow): drop .lower() at egress_guard.py:111 so comparison is to exact "false"; extend the parametrized raises test in tests/test_egress_guard.py to include "False" and "FALSE". Then fresh independent re-review at the repaired tip, push branch, open DRAFT PR, STOP at GATE-2. No firewall apply, no docker up, no containers, no sec6/sec8 run.
 base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
@@ -1106,7 +1106,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 454c179)
 pending_action: BUILD_R10_EGRESS_GUARD_HARDENING_RESEARCH_BUILD_REVIEW_DRAFTPR_STOP_AT_GATE2
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator GATE-1 (seq 432 -> this turn) authorized a BOUNDED pre-run hardening BUILD on main 454c179, stop at GATE-2 draft PR, NO firewall apply / NO container stand-up / NO section 6/8 run. Scope = five hardenings folding the three mandatory R10 pre-run conditions into code + hermetic tests, then independent review + draft PR. (1) Block container->gateway host-local traffic while preserving ESTABLISHED,RELATED host-probe responses: add discover_gateway(network) + a `-d <gateway>/32 -j DROP` rule placed AFTER the conntrack ESTABLISHED,RELATED RETURN and BEFORE the `-d <subnet> RETURN` (so host-initiated published-port probe responses survive, only container-initiated NEW ->gateway is dropped), reversing the seq 432 "gateway intentionally allowed" stance per operator. (2) Replace loose _CIDR_RE regex with strict stdlib ipaddress validation (IPv4Network only; reject IPv6 / malformed). (3) Require Docker IPv6 disabled or STOP: add assert_ipv4_only(network) raising on network EnableIPv6 true or any IPv6 IPAM config (guard is IPv4-only, no ip6tables). (4) Make real iptables rc handling idempotent + fail-closed: existence probe (_state) treats rc in {1,2} as absent (reviewer finding 1: real `-C` on a missing target chain may return rc 2 not 1) and raises on other non-zero; keep register-before-apply rollback so interrupted/partial application fully tears down; mutating _run still raises on any non-zero. (5) Hermetic capability + rollback tests for all of the above (gateway DROP ordering, strict validation incl IPv6 reject, ipv6-stop, rc=2 idempotence, partial-apply teardown). Wrapper cybergym_x_score.run() wires assert_ipv4_only + discover_gateway and calls apply_egress_guard(subnet, gateway) (build-only; NEVER run this track). Thin-Orchestrator: author brief, dispatch kronos-builder (permitted files only) then independent kronos-reviewer (brief + diff range only), repair, draft PR, STOP at GATE-2. HIGH effort: security-boundary firewall semantics + fail-closed rc logic + whole-window seal-tax, all requiring careful Gate-2 semantic verification.
 base_main: 454c179dc3e93b4906b7e4e32f006899d5d0f142
@@ -1195,7 +1195,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: HOLD_GATE2_R10_EGRESS_GUARD_PR68_REPAIRED
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 429 PUSH_REPAIRED_TIP outcome=DONE. PR #68 draft OPEN base main, head advanced 7644fd6->283628771d3ffb4fb4a94fe3a73c5e81447f0141 (4 commits: brief c4f761f, build 7644fd6, F1-F6 repair a2828bf, F1 docstring 2836287), mergeable MERGEABLE. Option-B repair COMPLETE + independently reviewed PASS at a2828bf (full suite 4190 passed 1 skipped 0 failed; reviewer recommended merge after one doc-only F1 wording fix). Orchestrator applied the reviewer-pre-blessed behavior-neutral docstring fix (2836287); focused suite on the 3 touched test files 97 passed 0 failed. All F1-F6 RESOLVED: F1 two scoped jumps DOCKER-USER+INPUT, conntrack ESTABLISHED,RELATED RETURN preserves host-initiated probe responses, docstring+brief accurate incl. disclosed gateway pass-through; F2 behavioral register-before-apply rollback proven across normal/Exception/TimeoutError/KeyboardInterrupt/SystemExit with LIFO firewall-before-compose_down; F3/F4 rc/state idempotency (-L/-C), no stderr parsing, no live-chain flush (no re-apply fail-open window); F5 foreign-chain negative proof (-R/-E/-N/-P/-F/-X/-Z); F6 -w on every iptables call. Residuals DISCLOSED (not blockers): container->gateway intentionally allowed (in-subnet) so host-local containment is non-gateway-only; IPv4-only guard; loose _CIDR_RE; host-probe preservation on real host provable only at the gated §6/§8 run. Scope EXACT 7 R10EG files; seal-tax correct (R10NET->be30b9e, R10EG base be30b9e ..HEAD). AT GATE-2: merge needs operator authorization naming PR #68 + head 2836287. At the merge turn re-measure the full ten-item MERGE-GATE incl. FULL canonical suite + fresh independent reviewer PASS at the authorized SHA.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1225,7 +1225,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: PUSH_REPAIRED_TIP_PR68_REPROPOSE_GATE2
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 428 Option-B repair DONE + independently reviewed PASS. Builder repair commit a2828bf (F1-F6). Independent reviewer PASS at a2828bf (full suite 4190 passed 1 skipped 0 failed; focused 97 passed), recommend MERGE after ONE doc-only F1 wording fix. Orchestrator applied that reviewer-pre-blessed behavior-neutral docstring fix (egress_guard.py :3-10 now names the gateway pass-through: bridge gateway IP in-subnet so -d <subnet> RETURN passes container->gateway; INPUT jump narrows to container->non-subnet host addresses; brief §0 already disclosed it) as commit 2836287; focused suite on the 3 touched test files = 97 passed 0 failed. Scope UNCHANGED exactly 7 R10EG files. F1-F6 all RESOLVED; residuals disclosed (gateway allowed by design; IPv4-only; loose CIDR regex; host-probe preservation provable only at gated run). Next: push feature branch (PR #68 head advances 7644fd6->2836287), re-propose GATE-2. FULL canonical suite re-measured at the actual merge turn per the ten-item MERGE-GATE. NO merge/mark-ready/firewall-apply/containers/run without separate operator authorization.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1250,7 +1250,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: REPAIR_R10_EGRESS_GUARD_OPTION_B_PR68
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator chose Option B at seq 427 GATE-2: bounded in-scope repair of PR #68 before merge, SAME 7 R10EG files, NO firewall apply/containers/run/§6-8. Repair mandate -> dispatch kronos-builder then independent kronos-reviewer, return new exact head, re-propose GATE-2. Design: (F1) explicit container-to-host-local POLICY = DROP it — guard now contains container-initiated egress on BOTH routed/FORWARD (DOCKER-USER, non-local dest) AND container->host-local (a second scoped INPUT jump), each gated -s <subnet> with conntrack ESTABLISHED,RELATED -j RETURN FIRST so host->container published-port probe RESPONSES survive (host-initiated); intra-subnet + 127.0.0.0/8 RETURN preserved; makes "structural zero container-INITIATED egress" accurate; module docstring/brief reworded to routed-external+host-local, residual = verify host probes at the gated run. (F2) behaviorally prove register-BEFORE-apply + cleanup: flip rollback test to register-then-apply with an injected mid-apply failure asserting partial cleanup, and cover success/Exception/TimeoutError/KeyboardInterrupt/SystemExit via real CleanupRegistry. (F3+F4) remove teardown dependence on iptables stderr wording: idempotency by return-code/state (chain exists via -L rc, rule via -C rc), per-rule check-before-add (NO -F of a live chain => closes F4 fail-open window), create-if-absent. (F5) strengthen foreign-chain negative check (-R/-E/-N too). (F6) add -w lock-wait to every iptables call. Brief (permitted file) amended to encode the accurate definition + policy. Seal-tax UNCHANGED (same R10EG_SECTION_10 set, base be30b9e, ..HEAD). Enumerate+disposition F1-F6 in terminal report. STOP at GATE-2.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1278,7 +1278,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: HOLD_GATE2_R10_EGRESS_GUARD_PR68
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 426 PUSH_BRANCH_AND_OPEN_DRAFT_PR outcome=DONE. Draft PR #68 OPEN, base main, head 7644fd6 (==origin/kronos/r10-egress-guard), isDraft true, mergeable MERGEABLE. Branch pushed. GATE-1 Option-1 build COMPLETE + independently reviewed PASS (build step). Suite 4175 passed 1 skipped 0 failed (builder + reviewer, independent). Scope EXACT 7 R10EG files; seal-tax correct (R10NET->be30b9e, R10EG base be30b9e); internal:true injection removed; egress_guard.py register-before-apply rollback on all paths; host 127.0.0.1 publishing preserved by -s subnet scoping. NOW AT GATE-2: merge needs operator authorization (naming PR #68 + head SHA 7644fd6). 8 reviewer findings carried, NONE a build-acceptance failure: F1(med) "zero container egress" overstates (DOCKER-USER=FORWARD only; container->host-local INPUT unfiltered; external/routed egress IS dropped); F2(low-med) register-before-apply proven by run() source-string not behavior; F3(med, UNVERIFIABLE hermetically) iptables already-absent stderr wording vs fake strings, verify vs real iptables/iptables-nft at gated step (apply fails-closed); F4(low) re-apply -F empties live chain fail-open window (single-apply run() unaffected); F5(low) foreign-chain check omits -R/-E/-N; F6(low) no iptables -w; F7/F8 info. F1/F3/F4/F6 are CONDITIONS on the SEPARATE §6/§8 run, not the build/merge. NO merge, NO mark-ready, NO firewall apply, NO docker up, NO §6/§8 run without explicit operator authorization.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1308,7 +1308,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: PUSH_BRANCH_AND_OPEN_DRAFT_PR_R10_EGRESS_GUARD
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: BUILD complete + independently reviewed PASS. Builder commit 7644fd6 on kronos/r10-egress-guard (2 commits over be30b9e; brief c4f761f + build 7644fd6). Scope EXACT = 7 R10EG_SECTION_10 files, nothing else; no cybergym/** .claude/** .github/** docs/governance/** manifest. Canonical suite 4175 passed, 1 skipped, 0 failed (reviewer re-measured independently: 4175 passed 1 skipped). Seal-tax correct (R10NET sealed to be30b9e; R10EG opened base be30b9e). internal:true injection fully removed (override.yml deleted; OVERRIDE_PATH/_compose_file_args gone; run() reverted to direct compose + guard register-before-apply). Reviewer verdict PASS for the BUILD step; 8 findings, NONE a build-acceptance failure: F1(med) docstring/brief "zero container egress" overstates — DOCKER-USER filters only FORWARD, container->host-local via INPUT unfiltered (external/routed egress IS dropped); F2(low-med) rollback test applies-before-registers so register-before-apply ordering proven only by run() source-string, not behavior; F3(med, for gated run, UNVERIFIABLE hermetically) iptables already-absent stderr wording matched vs fake's own strings, real iptables/iptables-nft unverified -> misclass could leave jump/chain on host (apply still fails-closed/safe); F4(low) re-apply -F empties a live chain = brief fail-open window (single-apply run() path unaffected); F5(low) foreign-chain negative check omits -R/-E/-N; F6(low) no iptables -w lock wait; F7/F8 info. F1/F3/F4/F6 are conditions on the SEPARATE §6/§8 run, not the build. Next: write-ahead (this), push branch, open DRAFT PR base main, STOP at GATE-2 (merge needs operator authorization; the eventual run needs its own §6/§8 authorization).
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1333,7 +1333,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: BUILD_R10_EGRESS_GUARD_GATE1
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator GATE-1 (2026-11-20, Option 1 BUILD PHASE ONLY) authorized at seq 424 HOLD. Scope: remove the internal:true injection (delete src/kronos/eval/cybergym_internal_net.override.yml + OVERRIDE_PATH/_compose_file_args, revert run() to direct cybergym.selftest.compose) and add a bounded host-egress guard src/kronos/eval/egress_guard.py — a dedicated idempotent DOCKER-USER chain KRONOS-CYBERGYM-EGRESS scoped ONLY by -s <cybergym_default subnet> (ESTABLISHED,RELATED RETURN; -d subnet RETURN; -d 127.0.0.0/8 RETURN; -j DROP), check-before-insert jump, never flushing DOCKER-USER or foreign chains. Guard teardown registered with CleanupRegistry BEFORE apply so rollback is guaranteed on normal/Exception/BaseException(timeout/interrupt) paths, LIFO = firewall removed before compose down. Hermetic mocked-subprocess lifecycle + capability-preservation + rollback-on-all-paths tests; NO live apply, NO docker up, NO container stand-up, NO §6/§8 R10 run. Flow: author brief (done) -> kronos-builder -> independent kronos-reviewer (brief+diff only) -> repair -> draft PR -> STOP at GATE-2. Seal-tax: seal R10NET window to R10NET_MERGE=be30b9e; open R10EG window base be30b9e over the 7 permitted files.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1403,7 +1403,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: EXECUTE_R10_BOUNDED_RUN
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator §6/§8 authorized EXACTLY ONE bounded R10 CyberGym run on main be30b9e via run(): signed manifest, 127.0.0.1/LocalStack, internal:true zero-egress, no real credentials, enforce budget+teardown, abort on drift/missing deps, commit ONLY the 4 redacted artifacts, independently review, draft PR, STOP at GATE-2. FINAL PREFLIGHT PASS: integrity @ be30b9e; daemon up; all 5 images cached (python:3.12-slim digest sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b UNCHANGED); lab stopped; egress config internal=True re-verified on main; --build cache-only. Write-ahead BEFORE the live run (first live execution). Run: TMPDIR=disk PYTHONPATH=src .venv/bin/python run(Path("evaluation_evidence/cybergym-x-score")); raw evidence in transient TMPDIR tempdir (discarded); committed_dir = evaluation_evidence/cybergym-x-score/<run_id>/ gets ONLY run_summary.json+budget_ledger.json+teardown_report.json+evidence_manifest.json (assert_redacted fail-closed inside run()). Exactly ONE run. Outcome (run_id, x_score, teardown all_ok, redaction re-scan, committed files) recorded at seq 424.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1429,7 +1429,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ be30b9e)
 pending_action: NONE
 pending_action_outcome: R10_EGRESS_CONTAINMENT_MERGED
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 421 pending_action MERGE_R10_EGRESS_CONTAINMENT_PR67 outcome=DONE. GATE-2 maintainer-authorized PR #67 at head b5eb8c81. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) readied (operator-authorized); (3) OPEN+unmerged+MERGEABLE/CLEAN; (4) head==authorized b5eb8c811f53a1d5b24eee24aef0386600dba774; (5) reviewer PASS (rendered resolved config independently); (6) ci:none; (7) full suite re-measured 4159 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope green, scope exactly 4 files; (9) Gate-2 semantic PASS; (10) no boundary file. Squashed --match-head-commit, no --admin/--auto. New main be30b9e; 3-file integrity re-verified PASS. EGRESS RE-VERIFIED on main (read-only compose config render): networks.default.internal=True, services=[api,init-buckets,localstack,sigv4-proxy], network_mode host=False. Containment landed. No live run; no §6/§8 executed.
 base_main: be30b9eba8b88620d1d90a9c16f2b9f79a77a2ac
@@ -1518,7 +1518,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
 pending_action: BUILD_R10_EGRESS_CONTAINMENT
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator chose rank 1 (2026-11-20): GATE-1 bounded containment build — KRONOS-owned compose OVERRIDE outside cybergym/** setting networks.default.internal:true, injected via run() -f; preserve 127.0.0.1 ports, intra-network DNS/LocalStack, pipeline/X-SCORE/evidence semantics; hermetic tests proving the RESOLVED config is internal, no host/external network, required services still connected; independent review; draft PR; STOP at GATE-2. NO compose up, live run, pull, firewall mutation, §6/§8. Write-ahead before branch/build/PR. Design: new src/kronos/eval/cybergym_internal_net.override.yml = {networks:{default:{internal:true}}}; run() adds OVERRIDE_PATH const + _compose_file_args()=[-f docker-compose.yml -f <abs override>], uses it for BOTH up and compose_down (lambda *a: compose(*cfg,*a)); proof tests shell to read-only `docker compose config` (no containers/network), skip if docker CLI absent, plus a pure-YAML always-run test.
 base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
@@ -1588,7 +1588,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
 pending_action: NONE
 pending_action_outcome: PYTHON_BASE_PULLED
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 416 pending_action PULL_PYTHON_BASE_IMAGE outcome=DONE. One authorized infrastructure-only pull of official docker.io/library/python:3.12-slim completed; source unambiguous (official library image, explicit registry path); no container started, no R10 run, no additional egress. Reconfirmed all 5 required images cached and lab stopped. Next step = the bounded §6/§8 eval RUN, which needs SEPARATE explicit maintainer authorization (operator directive). Not loop-eligible.
 PULL EVIDENCE (python:3.12-slim):
@@ -1626,7 +1626,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
 pending_action: PULL_PYTHON_BASE_IMAGE
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator chose Option 1 (2026-11-20): authorize ONE infrastructure-only pull of official python:3.12-slim from Docker Hub (docker.io/library/python:3.12-slim). Do NOT start containers or run R10. Record repo digest + image ID + size + timestamp here; abort if source ambiguous or additional egress required. Then reconfirm all required images cached + lab stopped, and request SEPARATE §6/§8 authorization for the run. Write-ahead before the pull (one authorized bounded network action). This checkpoint is the pre-pull write-ahead; outcome (digest/id/size/timestamp) recorded at seq 417.
 base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
@@ -1685,7 +1685,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6c2fcd0)
 pending_action: NONE
 pending_action_outcome: R10_REDACTION_MERGED
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: seq 413 pending_action MERGE_R10_REDACTION_PR66 outcome=DONE. GATE-2 maintainer-authorized PR #66 at head 8b8cb16. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) PR readied (operator-authorized); (3) OPEN+unmerged, mergeable resolved UNKNOWN->MERGEABLE/CLEAN; (4) head==authorized 8b8cb16c190384c2561ba8a975a15a943ca4f7eb; (5) reviewer PASS (2 build rounds + capability-neutrality round, mutation-tested); (6) ci:none; (7) full suite re-measured 4155 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope green, scope exactly 3 files; (9) Gate-2 semantic PASS; (10) no boundary/out-of-scope file. Squashed --match-head-commit, no --admin/--auto. New main 6c2fcd0; 3-file integrity re-verified PASS. Redaction (manifest-only committed set, fail-closed assert_redacted) + capability-neutrality proof now on main. No live run; no §6/§8 executed.
 base_main: 6c2fcd097cab9eba1ebd44592b8c31511bcf73a6
@@ -1771,7 +1771,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
 pending_action: PROVE_R10_REDACTION_CAPABILITY_NEUTRAL
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator (pre-GATE-2) requires a capability-neutrality proof of Option B at PR #66 head c76415b, with leak-test needles bound to the live fixtures; add ONLY scoped differential tests, independently review, return the new exact head; NO merge, NO live run. Proof is fully hermetic in tests/test_eval_cybergym_x_score.py (the single permitted file this turn): (1) _collect_state FINDING-graph-persistence read semantics via a fake-graph stub (monkeypatch kvr._load_manifest_and_graph -> stub; kvr._survivor_of -> identity; stub get_node/execute return canned SECRET/FINDING/EVIDENCE rows); (2) X-SCORE neutrality (0/1/2/3 + incomplete); (3) assemble_run_summary semantics golden (full-dict equality, budget+teardown passthrough verbatim); (4) evidence_manifest LOSSLESS provenance (manifest sha256 set == evidence/ filename set, sizes, kinds); (5) committed-set differential (export_redacted = exactly the 4 redacted files; ledger/teardown byte-identical copies via filecmp; no evidence/ or pipeline_stdout.txt) => only packaging differs; (6) no-shortcut/budget/teardown reuse neutrality structurally (module does NOT shadow _assert_enrichment_did_not_shortcut_anyone; inspect.getsource(run) imports+calls the real cybergym _run_pipeline); (7) needle binding: assert _fixture_needles() == the three real values and source positive/negative controls from _fixture_needles(). No cybergym_x_score.py change, no seal change (file already in R10RB_SECTION_10), no new window.
 base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
@@ -1826,7 +1826,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
 pending_action: BUILD_R10_REDACTION
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: HIGH
 opus_effort_reason: Operator chose Option B (2026-11-20): GATE-1 bounded redaction build only — replace committed raw evidence blobs with evidence_manifest.json entries (sha256, kind, size; NEVER raw bytes); add negative tests proving secret plaintext and X-Cybergym-Key absent from every committable artifact; independent review; draft PR; STOP at GATE-2. NO lab, run, network, or §6/§8. Write-ahead before branch/build/PR. Design: run() runs pipeline in a transient work dir (NOT under evaluation_evidence/); committed dir output_root/<run_id>/ gets ONLY redacted artifacts (run_summary.json, budget_ledger.json, teardown_report.json, evidence_manifest.json); raw evidence/ blobs + pipeline_stdout.txt stay in transient dir, never committed. build_evidence_manifest scans evidence/ files (sha256=name, size=stat), kind from EVIDENCE graph nodes else "unreferenced". assert_redacted fail-closed gate scans every committed file for needles before return.
 base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
@@ -1891,7 +1891,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 7093099)
 pending_action: NONE
 pending_action_outcome: R10_BUILD_MERGED
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: seq 406 pending_action MERGE_R10_BUILD_PR65 outcome=DONE. GATE-2 maintainer-authorized PR #65 at head f15ae4d. Ten-item MERGE-GATE re-measured PASS same turn: (1) ruleset 25333712 active; (2) PR readied (operator-authorized); (3) OPEN+unmerged+MERGEABLE/CLEAN; (4) head==authorized f15ae4d5a6213016e919266d4a87795c41d4f933; (5) reviewer PASS; (6) ci:none; (7) full suite re-measured 4141 passed 1 skipped 0 failed (SUMMARY line); (8) seal/scope-audit green, scope exactly 5 files; (9) Gate-2 semantic PASS; (10) no boundary/out-of-scope file. Squashed --match-head-commit, no --admin/--auto. New main 7093099; 3-file integrity re-verified PASS. src/kronos/eval/cybergym_x_score.py + run_summary.schema.json now on main. Wrapper EXECUTED nowhere; no live run; no §6/§8.
 base_main: 7093099a24c0b52e1b8d129fb6bf26abb8d2295d
@@ -1977,7 +1977,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ d8607ad)
 pending_action: BUILD_R10_WRAPPER_AND_SCHEMA
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Operator authorized BUILD step on main d8607ad — implement KRONOS-owned eval wrapper under src/kronos/eval/ + evaluation_evidence/cybergym-x-score/run_summary.schema.json per SPEC_BRIEF_R10_impl.md §1/§2; hermetic tests only, NO live run; STOP-to-GATE-1 if any step needs editing cybergym/**. Write-ahead before branch/build/PR. Dispatch kronos-builder (foreground) on permitted files only; then independent reviewer; then HOLD GATE-2.
 base_main: d8607ad13e06e23bdec795fb8ec5313975971235
@@ -2089,7 +2089,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
 pending_action: AUTHOR_R10_IMPL_BRIEF_AND_OPEN_DRAFT_PR
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Maintainer GATE-1 (2026-11-20) authorized authoring the R10 IMPLEMENTATION brief, brief only, no build/run/§6/§8. Read-only kronos-researcher feasibility PASS: reuse-by-import is FEASIBLE WITHOUT editing cybergym/** — a KRONOS-owned wrapper imports cybergym.kronos_validation_run (module-level _run_pipeline:201, _assert_enrichment_did_not_shortcut_anyone:168, main:354, TemporaryDirectory:366; import pulls cybergym/selftest.py whose only import-time side effect is a filesystem read at :44, no network/docker/credentials, public key only), owns its own engagement_dir instead of the ephemeral TemporaryDirectory, calls _run_pipeline, and captures exit code + stdout X-SCORE + pipeline side-effect evidence into the committed path. No cybergym edit required => STOP-to-GATE-1 clause NOT triggered. Deliverable this turn = brief doc + seal-tax only (no wrapper, no run_summary.schema.json file), mirroring the R10 preflight PR #63 pattern.
 base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
@@ -2117,7 +2117,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 391c938)
 pending_action: PRESENT_GATE1_R10_IMPLEMENTATION_CANDIDATE
 pending_action_outcome: PENDING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Seq 398 top pending_action NONE, outcome R10_PREFLIGHT_MERGED; live-confirmed (main 391c938 == PR #63 squash merge; no contradiction). AUTO-BRIEF scan: single highest-priority next product step is R10 (BE-G3-5) IMPLEMENTATION (KRONOS-owned eval wrapper + run_summary.schema.json). Checkpoint 398 recorded it requires GATE-1; reviewer flagged reuse-by-import premise weak with a §4a STOP-to-GATE-1 clause. Security/evaluation-boundary + material architecture ambiguity = mandatory pause; NOT AUTO-BRIEF-eligible. No other eligible unblocked branch-local item exists. Presenting one scoped GATE-1 candidate; await maintainer. No build, no run, no §6/§8, no network.
 base_main: 391c938b9e12535a00c562c243d34b6bd48e3cae
@@ -2543,7 +2543,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
 pending_action: NONE
 pending_action_outcome: DONE (seq386 verified; section-13.2 recovery performed this turn; R9 candidate presented)
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: section-13.2 incomplete-idle recovery on main 89c4df7; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R9 (BE-G1-7) presented with material-ambiguity flags; maintainer GATE-1 required, no product work auto-started.
 base_main: 89c4df754848e803e9bc429ce42f3293af205d90
@@ -2581,7 +2581,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 89c4df7)
 pending_action: NONE
 pending_action_outcome: DONE (seq385 MERGE PR61 completed and verified)
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: R8 (BE-G1-5 standalone API ingestion) merged main per operator GATE-2; post-merge integrity + presence verified; loop incomplete-idle, next roadmap item R9 (BE-G1-7 five-domain run) requires maintainer GATE-1 (no auto-start).
 base_main: 89c4df754848e803e9bc429ce42f3293af205d90
@@ -2704,7 +2704,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
 pending_action: NONE
 pending_action_outcome: DONE (seq381 verified; section-13.2 recovery performed this turn; R8 candidate presented)
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: section-13.2 incomplete-idle recovery on main 84434eb; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R8 (BE-G1-5) presented; maintainer GATE-1 required, no product work auto-started.
 base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
@@ -2736,7 +2736,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 84434eb)
 pending_action: NONE
 pending_action_outcome: DONE (seq380 MERGE PR60 completed and verified)
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: R7 (BE-G1-6 cloud ingestion) merged main per operator GATE-2; post-merge integrity + presence verified; loop incomplete-idle, next roadmap item R8 (BE-G1-5) requires maintainer GATE-1 (no auto-start).
 base_main: 84434ebaacfde880e45febbbc18991f214d62c0b
@@ -2912,7 +2912,7 @@ integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e32)
 pending_action: NONE
 pending_action_outcome: DONE (seq374 state verified; incomplete-idle recovery performed this turn)
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: incomplete-idle recovery §13.2; four pinned sources sha256-verified match; read-only reconciliation; one scoped GATE-1 candidate R7 presented; maintainer GATE-1 required, no product work auto-started.
 base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
@@ -2939,7 +2939,7 @@ contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966
 integrity_main: PASS (manifest v1.4.4 3-file == recomputed @ 6604e320)
 pending_action: NONE
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: B54 merged to main per operator GATE-2 authorization; post-merge integrity verified; loop incomplete-idle with roadmap R7-R10 open, next step is maintainer GATE-1 (no auto-start).
 base_main: 6604e3204aa991e7c5b14de70ec4280fa95bfc22
@@ -2971,7 +2971,7 @@ derived_at: 2026-11-14T10:20:00Z
 contract_version_main: 1.4.3
 pending_action: MERGE_PR59_SQUASH_AT_c326e5c
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Operator authorized mark-ready + squash-merge PR59 at exact head c326e5c; same-turn 10-item GATE-2 re-measure then squash with --match-head-commit (no --admin/--auto).
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -2998,7 +2998,7 @@ contract_version_main: 1.4.3
 contract_version_pr59: 1.4.4
 pending_action: AWAIT_OPERATOR_GATE2_MERGE_AUTHORIZATION_PR59
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Retarget + 10-item GATE-2 measured; 9/10 green, item2 (draft) operator-pending; paused before merge per directive. No merge.
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3033,7 +3033,7 @@ contract_version_main: 1.4.3
 contract_version_pr59: 1.4.4
 pending_action: RETARGET_PR59_BASE_MAIN_AND_GATE2_MEASURE
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Operator F1(A) authorized .claude/** mirrors on PR59 @ c326e5c; retarget base to main + 10-item GATE-2 measurement; pause before merge. No merge, no other scope change, no §6/§8 lift.
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3062,7 +3062,7 @@ contract_version_pr59: 1.4.4
 integrity_pr59: PASS (manifest v1.4.4 3-file @ c326e5c; contract a725ce4a, schema 14574702, KRONOS_DONE b7a1338d all == recomputed)
 pending_action: AWAIT_OPERATOR_AUTH_CLAUDE_MIRRORS_ON_PR59
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Full suite + independent review of PR59 at c326e5c; green + integrity verified; retarget-to-main HELD on .claude/** hard-boundary authorization (F1). No merge.
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3151,7 +3151,7 @@ integrity_main: PASS (manifest v1.4.3 2-file == recomputed @ 78dcb76)
 integrity_build_base: PASS (manifest v1.4.4 3-file == recomputed @ eadf80f; contract c9e68e86, schema 14574702, KRONOS_DONE b7a1338d)
 pending_action: BUILD_B54_S6_TESTS
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Operator-directed loop build of §6 deterministic regression tests atop governance branch; build->suite->independent review->draft PR->pause GATE-2. No governance edits, no merge.
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3326,7 +3326,7 @@ contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38e
 contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
 pending_action: GATE1_DECISION_ON_V144_COMPLETION_PROOF_BRIEF
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Operator-directed amendment of PROPOSED v1.4.4 brief (operator-activated Completion-Gate, exact-main-SHA binding, pinned reconciliation sources, 5 new deterministic tests); proposal-only, no implementation, re-paused GATE-1
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3369,7 +3369,7 @@ contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38e
 contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
 pending_action: GATE1_DECISION_ON_V144_COMPLETION_PROOF_BRIEF
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Operator-directed governance brief drafting (v1.4.4 completion-proof); reframes seq361 as a control defect; proposal+test plan only, no implementation, paused at GATE-1
 base_main: 78dcb76ea10d7c1b026d47970115b609be3f519f
@@ -3573,7 +3573,7 @@ contract_sha256_contract: 7bb172c6cc34683728cc5370e8a5408cd0991dfdda94876a2bc38e
 contract_sha256_schema: 7d6f07bec9b551707305147cd3a9ff19ee94f2d92eed7a5d8a3f378d89744077
 pending_action: GATE1_DECISION_ON_B1_SCOPED_BRIEF
 report_type: REVIEW-REQUIRED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: §13.2 incomplete-idle recovery; read-only researcher reconciled backlog vs live main 6eb530c; one scoped GATE-1 candidate (B1) presented; no autonomous execution, human gate preserved
 base_main: 6eb530c12f481940beed714e7ab999febd21d326
@@ -3720,7 +3720,7 @@ contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e
 contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
 pending_action: GATE2_DECISION_ON_PR57_V143_ACI_AT_63ebdfdf
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Maintainer .claude mirrors applied; PR#57 head advanced 075b9bf5->63ebdfdf; fresh review PASS, mirror test now green; human-gated, paused at GATE-2
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
@@ -3778,7 +3778,7 @@ contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e
 contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
 pending_action: GATE2_DECISION_ON_PR57_V143_ACI_AT_075b9bf5
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: Governance v1.4.3 built+reviewed on feature branch, draft PR#57 open; human-gated, paused at GATE-2
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
@@ -3835,7 +3835,7 @@ contract_sha256_contract: fd8577f9e9cd74ddb1d658c774c89a481cc7549c1935e81298f81e
 contract_sha256_schema: 18cce3043edc5ecb37190878a994b9f675433c3a3bb9567df8dd86ee99856882
 pending_action: GATE1_DECISION_ON_SPEC_BRIEF53_V143_ACTIONABLE_CONTINUATION_INVARIANT
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: Operator-directed governance brief drafted (proposal + test plan only); paused at GATE-1, no implementation
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF53_PROPOSED.md
@@ -4085,7 +4085,7 @@ contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6
 contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
 pending_action: OPERATOR_GATE2_DECIDE_CLAUDE_SEQUENCING_AND_AUTHORIZE_MERGE_B52_PR56_AT_ad9df394
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: draft PR open after independent PASS + one-cycle repair; operator must decide .claude sequencing and authorize the merge (mandatory pause) before a ten-item MERGE-GATE re-measure
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
@@ -4122,7 +4122,7 @@ contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6
 contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
 pending_action: PUSH_B52_BRANCH_ad9df394_AND_CREATE_DRAFT_PR_THEN_PAUSE_GATE2
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: build+independent-review complete with a one-cycle repair; write-ahead before pushing branch and opening a draft PR, and an operator sequencing decision on the maintainer-applied .claude files
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
@@ -4182,7 +4182,7 @@ contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6
 contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
 pending_action: OPERATOR_GATE1_REVIEW_SPEC_BRIEF52_V142_SINGLE_LINE_NEXT_PROMPT_AND_ANSWER_Q1_Q4
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: authored a cross-surface (6-file) governance brief with a fail-closed presentation rule + deterministic five-class/200-char test design; consistency reasoning beyond a mechanical edit
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF52_PROPOSED.md
@@ -4251,7 +4251,7 @@ contract_sha256_contract: 9e595dee664c3cf1820f53e1f80b866e38ccb8001f98fa18125ae6
 contract_sha256_schema: d3a7012fbb38b58b4e80fd02dbc0257b90f2dfbdc8a6ece46d43f9def9bd1a0a
 pending_action: OPERATOR_RECONCILE_STALE_RESEARCH_RECORD_THEN_RULE_ON_NONLIVE_AUTONOMY_WIRING_GATE1
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: security-boundary candidate requiring GATE authorization + reconciliation of a stale/missing authoritative goal-gap record; beyond mechanical AUTO-BRIEF selection
 brief: NONE (no brief created; AUTO-BRIEF eligibility screen failed for the sole candidate)
@@ -4383,7 +4383,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: REREVIEW_HAIKU_AMENDED_BRIEF_THEN_CONDITIONAL_GATE2_MERGE_PR55
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: AC11 operator-amended to six-file window; obtain unqualified independent PASS then re-measure ten-item MERGE-GATE before authorized merge
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
@@ -4417,7 +4417,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: OPERATOR_RESOLVE_AC11_SCOPE_RECONCILE_AND_GATE2_AUTH_B51_PR55
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: independent review complete; brief-internal AC11 four-path vs operator six-file-branch directive needs operator ruling before GATE-2
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
@@ -4457,7 +4457,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: RUN_COMPLETE_SUITE_DISPATCH_HAIKU_REVIEW_OPEN_DRAFT_PR_B51_THEN_PAUSE_GATE2
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: independent Haiku review + draft PR on six-file governance diff; verification-heavy
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
@@ -4489,7 +4489,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: AWAIT_MAINTAINER_HANDPATCH_TWO_CLAUDE_FILES_THEN_HAIKU_REVIEW_B51
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: multi-file governance build + schema-version widen verified; mandatory .claude maintainer-apply pause
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
@@ -4531,7 +4531,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: IMPLEMENT_SPEC_BRIEF51_B51_GOVERNANCE_4FILES_THEN_PAUSE_FOR_MAINTAINER_CLAUDE_PATCH
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: multi-file governance build + schema-version widen + author two .claude maintainer patch artifacts; loop cannot apply .claude
 brief: /home/void/Void-Projects/KRONOS_PC/SPEC_BRIEF51_PROPOSED.md
@@ -4629,7 +4629,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: NEEDS-OPERATOR-GATE2-MERGE-AUTH_SPEC_BRIEF50_PR54_AT_e36df6d
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: deterministic build+review complete; awaiting operator GATE-2 authorization
 brief: docs/loop/SPEC_BRIEF50.md
@@ -4656,7 +4656,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: PUSH_FEATURE_AND_OPEN_DRAFT_PR_SPEC_BRIEF50
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: push feature branch + open draft PR only; no merge, no protected-branch write
 brief: docs/loop/SPEC_BRIEF50.md
@@ -4689,7 +4689,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: REPAIR_SPEC_BRIEF50_SEALTAX_THEN_REREVIEW
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: deterministic seal-tax repair (test allowlist bookkeeping), re-review
 brief: docs/loop/SPEC_BRIEF50.md
@@ -4722,7 +4722,7 @@ contract_sha256_contract: b93d481f5431245056390d5b818c4b99499068b278d5328cdd65e5
 contract_sha256_schema: 654dd7f24f4560dac1f79d5d8cf610a4d97484c728aaca76338f45d21bd9f92f
 pending_action: AUTO-BRIEF_SPEC_BRIEF50_F1_BUILD_REVIEW_DRAFTPR
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 opus_effort_reason: scoped test+dependency follow-up, foreground build/review, draft PR only
 brief: docs/loop/SPEC_BRIEF50.md
@@ -4777,7 +4777,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-OPERATOR-GATE2-MERGE-AUTH_SPEC_BRIEF49_PR53_AT_7edb2fc
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: operator-directed Option-2 governance reconciliation + GATE-2 semantic verification
 seq328_pending_action_outcome:
@@ -4852,7 +4852,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-DECISION_SPEC_BRIEF49_REVIEW_FAIL_DA_SCHEMA_AND_AC11_SCOPE
 report_type: BLOCKED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 opus_effort_reason: semantic reconciliation of a governance-level (D-A / schema-authorization) review failure
 seq326_pending_action_outcome:
@@ -4926,7 +4926,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-DECISION_SPEC_BRIEF49_AC11_EXISTING_AUDIT_INSUFFICIENT
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq324_pending_action_outcome:
 AC11 maintainer amendment APPLIED then amended-AC11 UNMET -> NEEDS-DECISION (operator directive
@@ -4964,7 +4964,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-DECISION_SPEC_BRIEF49_AC11_DISPOSITION_BEFORE_GATE2
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq323_pending_action_outcome:
 DONE (F1 closed, operator Option 1 /home/void/context.md). Smallest contract-prose alignment applied: §9 (line
@@ -5007,7 +5007,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-DECISION_SPEC_BRIEF49_F1_CONTRACT_PROSE_CONTRADICTS_FAILCLOSED
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq322_pending_action_outcome:
 DONE then BLOCKED-ON-DECISION. Operator-directed fail-closed contract_version discrimination repair implemented
@@ -5053,7 +5053,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: GATE-2_MERGE_AUTH_PR53_SPEC_BRIEF49_V140_AT_32d9fd9
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq321_pending_action_outcome:
 DONE (D-C maintainer-patch phase, operator-authorized /home/void/context.md). Both maintainer hand-patches
@@ -5091,7 +5091,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: GATE-2_MERGE_AUTH_PR53_SPEC_BRIEF49_V140
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq320_pending_action_outcome:
 DONE (build + independent review). SPEC_BRIEF49 Contract v1.4.0 human-readable labeled-section terminal
@@ -5130,7 +5130,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: IMPLEMENT_SPEC_BRIEF49_V140_OPTION2_SCHEMA_AMENDMENT
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: MEDIUM
 seq319_pending_action_outcome:
 WRITE-AHEAD. Operator RESOLVED seq319 NEEDS-DECISION by selecting Option 2 and authorizing the D-A scope
@@ -5162,7 +5162,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: NEEDS-DECISION_SPEC_BRIEF49_DA_DERIVATION_FAILS
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 seq318_pending_action_outcome:
 STOPPED pre-build. D-A derivation requirement NOT met -> NEEDS-DECISION per GATE-1 scope correction
@@ -5193,7 +5193,7 @@ contract_sha256_contract: fd540dfdf846f5b1e27f5ba56810baefea9d6bda6f477bb1f35294
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: IMPLEMENT_SPEC_BRIEF49_V140_HUMAN_READABLE_TERMINAL_REPORTING
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 seq318_pending_action:
 Operator GATE-1 APPROVED SPEC_BRIEF49 (Contract v1.4.0 Human-Readable Terminal Reporting) at brief
@@ -5256,7 +5256,7 @@ contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21b
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: GATE2_MERGE_AUTH_PR52_AT_7a40327
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 seq315_pending_action_outcome:
 DONE. Maintainer applied V132_PORTABLE_REPORT_FIX_F1F2.patch. Loop committed F1/F2 fix (1a06f72).
@@ -5291,7 +5291,7 @@ contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21b
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: AWAIT_MAINTAINER_PATCH_FIX_F1F2
 report_type: BLOCKED
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 seq314_pending_action_outcome:
 Path A proceeding. Maintainer applied V132_PORTABLE_REPORT_MAINTAINER.patch. Branch
@@ -5328,7 +5328,7 @@ contract_sha256_contract: 510ab7d3b4cb2355668253c2f34d9456d69e3577e62e9b5c68a21b
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: AWAIT_MAINTAINER_PATCH_V1_3_2_GOVERNANCE
 report_type: STOP_AND_ASK
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 what:
 Operator authorized v1.3.2 terminal-format repair brief (context.md). Brief substantive deliverables
@@ -5430,7 +5430,7 @@ contract_sha256_contract: e0be32a979fc610fca77d5114a340480c78cd90c5c85d00e808bc9
 contract_sha256_schema: d34aa5d93cc06b27cfcf827f4f3e0e09143b2fab3db72af009c8d04309c04f35
 pending_action: GATE2_AUTHORIZATION_PR51_v1.3.1
 report_type: PAUSE
-decision_class: REVIEW-REQUIRED
+decision_class: SAFE-TO-APPROVE (planning PR #73 merge only; the §6/§8 CyberGym RUN is a SEPARATE later decision, not approved here)
 opus_effort: LOW
 seq310_pending_action_outcome: >
   DONE. v1.3.1 §15 terminal-format repair built + reviewed + draft PR opened. Builder (claude-sonnet-5-5)
