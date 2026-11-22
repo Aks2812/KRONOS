@@ -1,4 +1,50 @@
 # KRONOS loop-state checkpoint
+seq: 454
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 14c567f35e62290263b30f7b383771a59f94b91a)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 453 -> operator requested VALIDATION (no edits/merge/product/live) of the gov reconciliation
+  PR. NOTE: operator message carried UNFILLED placeholders <PR>/<FULL_SHA>; orchestrator bound to the sole live gov
+  reconciliation PR = #72 branch gov/dod-reconcile-be-g1-567 head f1744e45b09cb22190fd32e2cc10ef3c143d377f (base
+  14c567f, unmerged, isDraft=true; this working tree is checked out at that head, clean). VALIDATION RESULT = BLOCKED
+  (failed review). (1) SCOPE: git diff 14c567f..f1744e45 = EXACTLY docs/governance/KRONOS_DONE.md +
+  docs/governance/contract_manifest.json (+4/-4), nothing else. (2) EVIDENCE/ANCESTRY: PR #60 merge 84434eb (BE-G1-6),
+  #61 merge 89c4df7 (BE-G1-5), #62 merge 44d0771 (BE-G1-7) all MERGED + ancestor-of-f1744e45; named modules/tests
+  exist+tracked. (3) MANIFEST: 3 pins == on-disk @head; only KRONOS_DONE.md pin changed b7a1338d->37fe31ed ==
+  on-disk DoD; contract/schema pins unchanged; contract_version 1.4.5. PR #72 content byte-identical to the prepared
+  patch. (4) DoD-Version held 1.4.4. (5) FOCUSED suite 186 passed. (6) CANONICAL FULL SUITE RED: SUMMARY
+  "1 failed, 4230 passed, 1 skipped" -> tests/test_commit_authority.py::test_B31_Q_scope_audit line 401:
+  set(names("5db0c44..HEAD")) <= PHRC_SECTION_10 FAILS; extra = {docs/governance/KRONOS_DONE.md,
+  docs/governance/contract_manifest.json}. CAUSE = WHOLE-WINDOW SEAL-TAX (checkpoint 451 follow-up A): PHRC open
+  window 5db0c44..HEAD was never sealed to PR #71 merge 14c567f, so PR #72's 2 new files red the open window.
+  Independent kronos-reviewer (own full suite 1 failed/4230 passed/1 skipped) VERDICT FAIL / DO NOT MERGE,
+  criteria 1-5 PASS, criterion 6 FAIL -- confirms orchestrator measurement independently.
+  GATE-2 NOT PRESENTED: MERGE-GATE item (7) canonical suite RED and item (8) seal-tax scope-audit RED. The prepared
+  patch (seq 453) OMITTED the mandatory seal-tax amendment; PR #72 is INCOMPLETE as committed.
+remediation: PR #72 must additionally edit tests/test_commit_authority.py to (a) seal PHRC window: add
+  PHRC_MERGE="14c567f35e62290263b30f7b383771a59f94b91a" and change line 401 "{PHRC_BASE}..HEAD" ->
+  "{PHRC_BASE}..{PHRC_MERGE}"; (b) add a NEW open window PRG_BASE="14c567f..." with PRG_SECTION_10 =
+  {docs/governance/KRONOS_DONE.md, docs/governance/contract_manifest.json, tests/test_commit_authority.py} and a
+  new assertion "{PRG_BASE}..HEAD <= PRG_SECTION_10". This EXPANDS PR #72 scope from 2 files to 3 (adds
+  tests/test_commit_authority.py), so operator criterion "only the 2 governance files changed" is INCOMPATIBLE with a
+  green canonical suite -- operator must authorize the expanded 3-file scope. Loop made NO edits this turn
+  (validation-only per operator).
+report_type: BLOCKED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Failed-review blocker with a scope-vs-suite tension (seal-tax forces a 3rd file) requiring a
+  precise remediation and an operator scope decision; independently confirmed by reviewer.
+forward_followups: PR #72 held, unmerged, draft. After seal-tax amendment + operator scope authorization, re-run full
+  ten-item MERGE-GATE at the new head. BE-G3-5/BE-G2-6 remain §6/§8 HELD. R10==BE-G3-5 / R12==BE-G2-6; Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 453
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
