@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 452
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 14c567f35e62290263b30f7b383771a59f94b91a)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 451 pending NONE. §13.2 INCOMPLETE-IDLE RECOVERY ran (no active Completion Record;
+  BE-G3-5/BE-G2-6 open). (1) 4 pinned reconciliation sources sha256 ALL MATCH pins in KRONOS_DONE.md:
+  SRC-RESEARCH 7b003476.., SRC-LEDGER 6f2e0c6d.., SRC-GAPMAP a7602d33.., SRC-ROADMAP ad4256de.. -> no HOLD.
+  (2) read-only kronos-researcher reconciliation returned cited candidates. (3) MATERIAL LIVE-vs-DoD MISMATCH
+  (LIVE WINS): KRONOS_DONE.md labels BE-G1-5/BE-G1-6/BE-G1-7 "OPEN / (to created)", but all three test files +
+  source modules EXIST and are COMMITTED on main: tests/test_api_ingest.py + src/kronos/ingest/api/parser.py via
+  89c4df7 (R8/BE-G1-5, PR #61); tests/test_cloud_ingest.py + src/kronos/ingest/cloud/parser.py via 84434eb
+  (R7/BE-G1-6, PR #60); tests/test_five_domain_engagement.py via 44d0771 (R9/BE-G1-7, PR #62). Orchestrator ran
+  the 3 named tests via canonical runner (TMPDIR disk, .venv/bin/python): SUMMARY 27 passed in 11.10s (decided
+  from summary line, not $?). Predicates (TEST pass AND module present-committed) RE-DERIVE LIVE GREEN for
+  BE-G1-5/BE-G1-6/BE-G1-7. DoD text is stale governance (maintainer-patch-only; in manifest hash set; loop NEVER-edit).
+decision: §13.2 presents ONE scoped GATE-1 candidate = maintainer governance patch reconciling KRONOS_DONE.md to
+  mark BE-G1-5/BE-G1-6/BE-G1-7 DONE (and advance DoD phase accounting) -- highest-priority UNBLOCKED next step,
+  precondition to clean completion/GATE accounting, lower-risk than authorizing a live run. Loop-eligible PRODUCT
+  build backlog is EXHAUSTED (R7/R8/R9 merged+green). Remaining OPEN milestones are maintainer-gated:
+  BE-G3-5 (R10, §6/§8 authorized manifest-bounded CyberGym/lab run) and BE-G2-6 (R12, §6/§8 live LLM run, BLOCKED on
+  BE-G1-7+BE-G3-5). Both §6/§8 live -> mandatory pause, INELIGIBLE for auto-brief. No loop-executable candidate to
+  auto-start; candidate is maintainer-applied governance patch, NOT a loop build brief.
+report_type: REVIEW-REQUIRED
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: §13.2 recovery with a material live-vs-governance mismatch requiring careful reconciliation and
+  a correctly-scoped single candidate; verified by running named tests and git provenance before forming it.
+forward_followups: (A) whole-window seal-tax carried by the NEXT product brief (PHRC_BASE 5db0c44..HEAD merge SHA
+  14c567f; LOW, non-blocking) -- no next product brief currently (G1 build backlog exhausted). (B) BE-G3-5/BE-G2-6
+  remain §6/§8 HELD, need maintainer GATE. Milestone identity R10==BE-G3-5 / R12==BE-G2-6 preserved; Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 451
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
