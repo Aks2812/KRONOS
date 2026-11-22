@@ -1,4 +1,43 @@
 # KRONOS loop-state checkpoint
+seq: 461
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 460 DRAFT_BE-G3-5_R10_PLANNING_SPEC_BRIEF_AND_SEALTAX -> DONE.
+  (a) feature branch eval/be-g3-5-r10-planning-brief off main dab9b24.
+  (b) kronos-builder created SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md + seal-tax in tests/test_commit_authority.py;
+      commit 72a0a1e0e2df5a5293783432fdf75bd1b70bf647 (author/committer Aks2812, Co-Authored-By Claude Opus 4.8).
+  (c) orchestrator verified seal-tax diff: PRG window SEALED {PRG_BASE=14c567f}..{PRG_MERGE=dab9b24}; NEW R10EVAL
+      window dab9b24..HEAD permitting {brief .md, tests/test_commit_authority.py}; no existing assertion
+      weakened/reordered. scope git diff dab9b24..HEAD == EXACTLY those 2 files.
+  (d) pushed branch; opened DRAFT PR #73.
+  (e) INDEPENDENT kronos-reviewer (not given builder report): PASS. scope 2 files; no hard-boundary touched;
+      seal-tax correct; test_B31_Q_scope_audit 1 passed; CANONICAL FULL SUITE 4231 passed, 1 skipped, 0 failed
+      (decided from SUMMARY line); brief content criteria met. 2 LOW findings (no explicit FAIL criteria; cosmetic
+      line-ref drift).
+  (f) orchestrator closed both LOW: added explicit §6 FAIL/ABORT criteria + fixed line-ref in the brief .md ONLY
+      (markdown doc; no code/test change); amended commit -> ffa1c2de3db7256adfb9f3677696ae0936aa5d84; scope STILL
+      exactly 2 files; test_B31_Q_scope_audit RE-RUN 1 passed; canonical suite unaffected (doc-only edit).
+      force-push; PR #73 head == ffa1c2d (confirmed via git ls-remote + gh).
+deliverable: DRAFT PR #73 head ffa1c2de3db7256adfb9f3677696ae0936aa5d84, base main. Planning-only BE-G3-5/R10 brief
+  + seal-tax. NO execution performed (no container, no firewall/network, no tool-against-target, no §6/§8 action).
+awaiting_operator: SEPARATE EXECUTION GATE (mandatory §6/§8 pause). Loop will NOT start the CyberGym run or merge
+  PR #73 without (1) explicit maintainer GATE-1 EXECUTION authorization naming PR #73 + head SHA ffa1c2d, AND
+  (2) GATE-2. The brief document itself authorizes nothing. Separately: the DoD BE-G3-5 done-predicate wiring and
+  stale SRC-ROADMAP/SRC-RESEARCH reconciliation remain maintainer governance patches.
+report_type: SAFE-TO-APPROVE (planning deliverable: draft PR #73 reviewer-PASS; the brief's RUN stays §6/§8-gated)
+decision_class: REVIEW-REQUIRED
+opus_effort: LOW
+forward_followups: (A) Seal-tax now sealed to dab9b24; R10EVAL window open dab9b24..HEAD (brief+test). The NEXT
+  brief after PR #73 merges must seal R10EVAL to PR#73's squash SHA. (B) BE-G3-5 execution and BE-G2-6 remain §6/§8.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 460
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
