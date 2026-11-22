@@ -1,4 +1,35 @@
 # KRONOS loop-state checkpoint
+seq: 470
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: BUILD_R10_PIN_EGRESS_AMEND (continues seq 469) -> SCOPE DECISION recorded, builder resumed.
+pending_action_outcome: PENDING (build in progress)
+scope_decision_rc2 (orchestrator, Option A, refined apply-preserving):
+  Builder HALTED per D4: §8.4 rc=2 fix to shared egress_guard._state breaks 3 rc2 tests in
+  tests/test_egress_guard.py (NOT in LPEG_SECTION_10): test_rc2_remove_on_clean_host_is_already_gone,
+  test_rc2_apply_installs_full_chain, test_rc2_mid_apply_failure_leaves_nothing_after_teardown. Those model
+  FakeIptables(missing_chain_rc=2) = a host where an ABSENT chain returns rc 2. Blanket rc2->raise would also break
+  legitimate apply/remove on such a host (the R6 unverifiable-off-host risk).
+  DECISION: Option A with REFINED semantics (brief §8.4 updated): apply stays TOLERANT (rc1 or rc2 on -C probe ->
+  add, idempotent; apply unchanged); status never returns absent on rc2 (rc2 -> unknown/error); remove never claims
+  removed/already_gone on rc2 (rc2 -> error, guard treated as possibly-applied). Fixes false-absent everywhere
+  WITHOUT refusing a legitimate apply.
+  SCOPE EXPANSION (authorized by operator "fix rc=2 false-absent" + GATE-1 amend): add tests/test_egress_guard.py to
+  LPEG_SECTION_10 in tests/test_commit_authority.py (the in-scope scope-audit file); rewrite its 3 rc2 tests to the
+  new behavior; no other assertion weakened/reordered. New LPEG_SECTION_10 membership = prior 10 + test_egress_guard.py.
+scope_files (now 8 expected touched, <= LPEG_SECTION_10 after membership add): scripts/kronos-cybergym-egress,
+  src/kronos/eval/egress_executor.py, src/kronos/eval/egress_guard.py, deploy/sudoers.d/kronos-cybergym-egress,
+  docs/ops/R10_EGRESS_HELPER_INSTALL.md, SPEC_BRIEF_R10_least_privilege_egress_executor.md (orchestrator-amended),
+  tests/test_egress_helper.py, tests/test_egress_guard.py, tests/test_commit_authority.py (LPEG membership add).
+  cybergym_x_score.py + test_eval_cybergym_x_score.py UNCHANGED. LPEG window stays open 93e1743..HEAD.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop. No merge/install/
+  firewall/network/container/target/§6/§8 this turn.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 469
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
