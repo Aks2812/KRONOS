@@ -1,4 +1,31 @@
 # KRONOS loop-state checkpoint
+seq: 477
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 942769227d449148e90c27a971c6ccaa413437946ba59fde64a48a93030ddc2c (pre-section-10-amendment; will change after orchestrator commits section-10)
+pending_action: BUILD_R10_SECTION_10_SUDOERS_DOCS_AND_TESTS -> orchestrator commits brief section-10 amendment
+  (docs-accuracy + hermetic-test spec, no functional sudoers change); kronos-builder then implements within
+  LPEG_SECTION_10: (1) deploy/sudoers.d/kronos-cybergym-egress comment wording only (functional line UNCHANGED),
+  (2) docs/ops/R10_EGRESS_HELPER_INSTALL.md runbook wording + mandatory install-time `sudo -l -U <runuser>` +
+  real allow/deny probe human-gate, (3) tests/test_egress_helper.py hermetic tests (visudo parses; no arg wildcard;
+  only apply/remove/status entries; helper accepts one bare verb, rejects extra args/options/shell-tokens/paths/env).
+  No new file, no seal change. Then focused + canonical suites, push PR #74 new head, 3rd fresh independent security
+  review, present GATE-2. NO merge/install/sudoers-firewall-network mutation/container/target/section-6/section-8 run.
+pending_action_outcome: PENDING (build not yet executed at this checkpoint)
+prior_action_outcome: seq 476 AWAIT_OPERATOR_CONFIRM_R10_SUDOERS_FALSE_POSITIVE -> RESOLVED. Operator confirmed via
+  /home/void/context.md the corrected plan: keep functional sudoers entries unchanged (sudo 1.9.17p2 exact per-verb
+  arg match already denies trailing args); do NOT add the regressing apply-emptystring form; sharpen template+runbook
+  wording; add the hermetic tests above; document install-time sudo -l -U probe as a separate human gate; run suites,
+  push, 3rd review, present GATE-2.
+re-derived_live (seq 477): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=fbdcf87 base=main;
+  origin branch==fbdcf87; contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 476
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
