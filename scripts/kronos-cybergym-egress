@@ -1,0 +1,320 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""KRONOS R10 least-privilege egress-guard helper (root-owned, sudoers-whitelisted).
+
+INSTALLED root-owned at /usr/local/sbin/kronos-cybergym-egress (mode 0755, owner
+root:root). The unprivileged run invokes it only as:
+
+    sudo -n /usr/local/sbin/kronos-cybergym-egress <verb> [args]
+
+It accepts EXACTLY three fixed verbs, with NO positional arguments, on the FIXED chain
+KRONOS-CYBERGYM-EGRESS and nothing else:
+
+    apply
+    remove
+    status
+
+The subnet, gateway and Docker network name come ONLY from the pinned, root-owned,
+non-user-writable config /etc/kronos-cybergym/egress.conf (keys subnet=, gateway=,
+network=). A missing, unreadable or malformed config fails closed (non-zero exit, no
+iptables call). `remove` first runs a read-only `docker network inspect` on the pinned
+network and REFUSES (fail closed) unless the network is gone or has 0 attached
+containers.
+
+Self-contained (stdlib only): it never imports the writable repo package, so a
+tampered working tree cannot change what runs as root. It never accepts a chain
+name, a raw iptables flag, an option, an executable, or any argument; it
+never flushes DOCKER-USER, INPUT, or any foreign chain; it resolves iptables only
+at a fixed absolute path (no PATH lookup, no shell). subnet/gateway are strictly
+IPv4-validated. Idempotency is decided by iptables return codes and observed `-S`
+state, never by stderr wording. Every invocation carries `-w` (xtables lock wait).
+Fail-closed: any unexpected return code raises and exits non-zero.
+
+Keep the chain rule set in parity with src/kronos/eval/egress_guard.py
+(tests/test_egress_helper.py asserts equality).
+"""
+import ipaddress
+import os
+import re
+import stat
+import subprocess
+import sys
+
+CHAIN = "KRONOS-CYBERGYM-EGRESS"
+PARENTS = ("DOCKER-USER", "INPUT")
+_IPTABLES_CANDIDATES = ("/usr/sbin/iptables", "/sbin/iptables")
+_MAX_JUMP_DELETES = 16
+CONFIG_PATH = "/etc/kronos-cybergym/egress.conf"
+_REQUIRED_CONFIG_UID = 0  # root; tests override this attribute only, never the real default
+_DOCKER_CANDIDATES = ("/usr/bin/docker", "/usr/local/bin/docker")
+_CONFIG_KEYS = ("subnet", "gateway", "network")
+_NETWORK_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+
+
+def _docker_path():
+    for p in _DOCKER_CANDIDATES:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    raise RuntimeError("docker not found at a trusted absolute path")
+
+
+def _iptables_path():
+    for p in _IPTABLES_CANDIDATES:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    raise RuntimeError("iptables not found at a trusted absolute path")
+
+
+def _iptables(args):
+    return subprocess.run([_iptables_path(), "-w", *args], capture_output=True, text=True)
+
+
+def _state(args):
+    """Strict: rc 0 -> True, rc 1 -> False (positively absent); rc 2 and any other
+    non-zero raise (fail-closed). Used by status/remove."""
+    r = _iptables(args)
+    if r.returncode == 0:
+        return True
+    if r.returncode == 1:
+        return False
+    raise RuntimeError(f"iptables {' '.join(args)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+
+
+def _probe(args):
+    """Tolerant presence probe for apply only: rc 1 or 2 -> not confirmed present -> add
+    (idempotent and safe); any other non-zero raises."""
+    r = _iptables(args)
+    if r.returncode == 0:
+        return True
+    if r.returncode in (1, 2):
+        return False
+    raise RuntimeError(f"iptables {' '.join(args)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+
+
+def _run(args):
+    r = _iptables(args)
+    if r.returncode != 0:
+        raise RuntimeError(f"iptables {' '.join(args)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+
+
+def _chain_exists():
+    return _state(["-n", "-L", CHAIN])
+
+
+def _chain_exists_for_apply():
+    return _probe(["-n", "-L", CHAIN])
+
+
+def _chain_rules(subnet, gateway):
+    return [
+        ["-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED", "-j", "RETURN"],
+        ["-d", f"{gateway}/32", "-j", "DROP"],
+        ["-d", subnet, "-j", "RETURN"],
+        ["-d", "127.0.0.0/8", "-j", "RETURN"],
+        ["-j", "DROP"],
+    ]
+
+
+def _current_chain_rules():
+    r = _iptables(["-S", CHAIN])
+    if r.returncode != 0:
+        raise RuntimeError(f"iptables -S {CHAIN} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+    rules = []
+    for line in (r.stdout or "").splitlines():
+        t = line.split()
+        if t[:2] == ["-A", CHAIN]:
+            rules.append(t[2:])
+    return rules
+
+
+def _normalize_rule(rule):
+    out = list(rule)
+    for i, tok in enumerate(out):
+        if tok == "--ctstate" and i + 1 < len(out):
+            out[i + 1] = ",".join(sorted(out[i + 1].split(",")))
+    return out
+
+
+def _jump(parent, subnet):
+    return [parent, "-s", subnet, "-j", CHAIN]
+
+
+def _validate_subnet(value):
+    try:
+        net = ipaddress.ip_network(value, strict=False)
+    except ValueError:
+        raise RuntimeError(f"unparseable subnet: {value!r}") from None
+    if not isinstance(net, ipaddress.IPv4Network):
+        raise RuntimeError(f"non-IPv4 subnet: {value!r}")
+    # Containment boundary: only a private, non-public lab subnet is acceptable
+    # (ipaddress.is_private, which a Docker RFC1918 bridge range satisfies). This rejects
+    # 0.0.0.0/0 and any public-routable range, so the guard can never be made to RETURN
+    # (pass) all egress.
+    if not net.is_private:
+        raise RuntimeError(f"non-private or over-broad subnet: {value!r}")
+    return str(net)
+
+
+def _validate_gateway(value):
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        raise RuntimeError(f"unparseable gateway: {value!r}") from None
+    if not isinstance(addr, ipaddress.IPv4Address):
+        raise RuntimeError(f"non-IPv4 gateway: {value!r}")
+    return str(addr)
+
+
+def _validate_network(value):
+    if not _NETWORK_RE.match(value):
+        raise RuntimeError(f"invalid network name: {value!r}")
+    return value
+
+
+def _validate_gateway_in_subnet(subnet, gateway):
+    """Gateway must be a host address strictly inside subnet: not the network address,
+    not the broadcast address."""
+    net = ipaddress.ip_network(subnet)
+    addr = ipaddress.ip_address(gateway)
+    if net.prefixlen > 30 or addr not in net or addr == net.network_address or addr == net.broadcast_address:
+        raise RuntimeError(f"gateway {gateway} is not a host address strictly inside subnet {subnet}")
+
+
+def load_config():
+    """Read and validate the pinned config. Any problem raises (fail closed)."""
+    try:
+        st = os.lstat(CONFIG_PATH)
+    except OSError as e:
+        raise RuntimeError(f"cannot stat pinned config {CONFIG_PATH}: {e}") from None
+    if not stat.S_ISREG(st.st_mode):
+        raise RuntimeError(f"pinned config {CONFIG_PATH} is not a regular file (symlink/other refused)")
+    if st.st_uid != _REQUIRED_CONFIG_UID:
+        raise RuntimeError(f"pinned config {CONFIG_PATH} is not owned by uid {_REQUIRED_CONFIG_UID}")
+    if st.st_mode & 0o022:
+        raise RuntimeError(f"pinned config {CONFIG_PATH} is group/other writable")
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as fh:
+            text = fh.read()
+    except (OSError, UnicodeDecodeError) as e:
+        raise RuntimeError(f"cannot read pinned config {CONFIG_PATH}: {e}") from None
+    vals = {}
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, sep, val = line.partition("=")
+        key, val = key.strip(), val.strip()
+        if not sep or key not in _CONFIG_KEYS or key in vals or not val:
+            raise RuntimeError(f"malformed pinned config {CONFIG_PATH}")
+        vals[key] = val
+    if set(vals) != set(_CONFIG_KEYS):
+        raise RuntimeError(f"malformed pinned config {CONFIG_PATH}: need exactly subnet, gateway, network")
+    subnet = _validate_subnet(vals["subnet"])
+    gateway = _validate_gateway(vals["gateway"])
+    _validate_gateway_in_subnet(subnet, gateway)
+    return subnet, gateway, _validate_network(vals["network"])
+
+
+def lab_network_gone(network):
+    """Read-only fail-closed gate for remove. True -> network absent or 0 containers
+    (removal allowed). Raises (REFUSE) on >=1 container, docker absent, inspect error, or
+    unparseable output. Creates nothing."""
+    docker = _docker_path()
+    r = subprocess.run(
+        [docker, "network", "inspect", network, "--format", "{{len .Containers}}"],
+        capture_output=True,
+        text=True,
+    )
+    if r.returncode != 0:
+        err = (r.stderr or "").lower()
+        if "no such network" in err or f"network {network.lower()} not found" in err:
+            return True
+        raise RuntimeError(f"docker network inspect {network} failed (rc={r.returncode}); refusing remove")
+    out = (r.stdout or "").strip()
+    if not re.fullmatch(r"[0-9]+", out):
+        raise RuntimeError(f"unparseable docker network inspect output {out!r}; refusing remove")
+    if int(out) != 0:
+        raise RuntimeError(f"network {network} still has {out} attached container(s); refusing remove")
+    return True
+
+
+def apply_guard(subnet, gateway):
+    """Fail-closed reconcile, no flush. Fresh chain: create and append every rule in
+    order. Existing chain: must equal the expected rules exactly or raise. Then install
+    the two scoped jumps idempotently, only after the chain is complete."""
+    expected = _chain_rules(subnet, gateway)
+    if not _chain_exists_for_apply():
+        _run(["-N", CHAIN])
+        for rule in expected:
+            _run(["-A", CHAIN, *rule])
+    elif [_normalize_rule(r) for r in _current_chain_rules()] != [_normalize_rule(r) for r in expected]:
+        raise RuntimeError(f"existing chain {CHAIN} does not match expected rules; refusing to reconcile")
+    for parent in PARENTS:
+        jump = _jump(parent, subnet)
+        if not _probe(["-C", *jump]):
+            _run(["-I", *jump])
+
+
+def _delete_jumps(subnet):
+    """Drive jump deletion off `-D`'s own return code: rc 0 -> deleted, repeat (bounded);
+    rc 1 -> nothing left, done; rc 2 / anything else -> raise (fail closed)."""
+    removed = False
+    for parent in PARENTS:
+        jump = _jump(parent, subnet)
+        deletes = 0
+        while True:
+            r = _iptables(["-D", *jump])
+            if r.returncode == 1:
+                break
+            if r.returncode != 0:
+                raise RuntimeError(f"iptables -D {' '.join(jump)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+            deletes += 1
+            removed = True
+            if deletes >= _MAX_JUMP_DELETES:
+                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
+    return removed
+
+
+def remove_guard(subnet):
+    """Guaranteed teardown: delete the two scoped jumps (driven by -D's own rc, bounded),
+    then flush and delete the fixed chain. Never touches a foreign chain."""
+    removed = _delete_jumps(subnet)
+    if _chain_exists():
+        _run(["-F", CHAIN])
+        _run(["-X", CHAIN])
+        removed = True
+    return removed
+
+
+def status_guard():
+    return "present" if _chain_exists() else "absent"
+
+
+def main(argv):
+    if not argv:
+        sys.stderr.write("usage: kronos-cybergym-egress apply | remove | status (no arguments)\n")
+        return 2
+    verb = argv[0]
+    try:
+        if verb not in ("apply", "remove", "status"):
+            raise RuntimeError(f"unknown verb: {verb!r}")
+        if len(argv) != 1:
+            raise RuntimeError(f"{verb} takes no arguments")
+        subnet, gateway, network = load_config()
+        if verb == "apply":
+            apply_guard(subnet, gateway)
+            sys.stdout.write("applied\n")
+        elif verb == "remove":
+            lab_network_gone(network)
+            removed = remove_guard(subnet)
+            sys.stdout.write("removed\n" if removed else "already_gone\n")
+        else:
+            sys.stdout.write(status_guard() + "\n")
+        return 0
+    except RuntimeError as e:
+        sys.stderr.write(f"kronos-cybergym-egress: {e}\n")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

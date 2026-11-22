@@ -38,12 +38,24 @@ def _iptables(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def _state(args: list[str]) -> bool:
-    """Existence probe by return code: 0 -> True, 1 or 2 -> False, anything else raises."""
+    """Strict existence probe by return code: 0 -> True, 1 -> False (positively absent),
+    anything else (including rc 2) raises. Used by status/remove, which must never
+    report absent / already_gone on an ambiguous return code."""
     result = _iptables(args)
     if result.returncode == 0:
         return True
-    # real `iptables -C` on a missing target chain can return rc 2; rc 1 and rc 2 both mean
-    # "not present", so both are absent -> idempotent, fail-closed, no leftover rule on partial/interrupted apply.
+    if result.returncode == 1:
+        return False
+    raise RuntimeError(f"iptables {' '.join(args)} failed (rc={result.returncode}): {(result.stderr or '').strip()}")
+
+
+def _probe(args: list[str]) -> bool:
+    """Tolerant presence probe used only by apply (adding is idempotent and safe): 0 ->
+    present; rc 1 or rc 2 -> not confirmed present (real `iptables -C` on a missing target
+    chain can return rc 2); any other non-zero raises."""
+    result = _iptables(args)
+    if result.returncode == 0:
+        return True
     if result.returncode in (1, 2):
         return False
     raise RuntimeError(f"iptables {' '.join(args)} failed (rc={result.returncode}): {(result.stderr or '').strip()}")
@@ -56,7 +68,12 @@ def _run(args: list[str]) -> None:
 
 
 def _chain_exists() -> bool:
+    """Strict: only a clean rc 1 means absent; rc 2 raises (fail-closed)."""
     return _state(["-n", "-L", CHAIN])
+
+
+def _chain_exists_for_apply() -> bool:
+    return _probe(["-n", "-L", CHAIN])
 
 
 def discover_subnet(network_name: str) -> str:
@@ -160,7 +177,7 @@ def apply_egress_guard(subnet: str, gateway: str) -> None:
     registered before apply removes the chain on rollback). Then install the two scoped
     jumps idempotently, only after the chain is complete."""
     expected = _chain_rules(subnet, gateway)
-    if not _chain_exists():
+    if not _chain_exists_for_apply():
         _run(["-N", CHAIN])
         for rule in expected:
             _run(["-A", CHAIN, *rule])
@@ -168,26 +185,45 @@ def apply_egress_guard(subnet: str, gateway: str) -> None:
         raise RuntimeError(f"existing chain {CHAIN} does not match the expected rules; refusing to reconcile")
     for parent in PARENTS:
         jump = _jump(parent, subnet)
-        if not _state(["-C", *jump]):
+        if not _probe(["-C", *jump]):
             _run(["-I", *jump])
 
 
-def remove_egress_guard(subnet: str) -> Optional[str]:
+def _delete_jumps(subnet: str) -> bool:
+    """Drive jump deletion off `-D`'s own return code: rc 0 -> deleted, repeat (bounded);
+    rc 1 -> nothing left, done; rc 2 / anything else -> raise (fail closed)."""
     removed = False
     for parent in PARENTS:
         jump = _jump(parent, subnet)
         deletes = 0
-        while _state(["-C", *jump]):
-            if deletes >= _MAX_JUMP_DELETES:
-                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
-            _run(["-D", *jump])
+        while True:
+            result = _iptables(["-D", *jump])
+            if result.returncode == 1:
+                break
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"iptables -D {' '.join(jump)} failed (rc={result.returncode}): {(result.stderr or '').strip()}"
+                )
             deletes += 1
             removed = True
+            if deletes >= _MAX_JUMP_DELETES:
+                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
+    return removed
+
+
+def remove_egress_guard(subnet: str) -> Optional[str]:
+    removed = _delete_jumps(subnet)
     if _chain_exists():
         _run(["-F", CHAIN])
         _run(["-X", CHAIN])
         removed = True
     return None if removed else "already_gone"
+
+
+def status_egress_guard() -> str:
+    """Read-only: 'present' / 'absent'. 'absent' only on a positive rc 1; rc 2 or any other
+    non-zero raises RuntimeError (unknown, fail-closed), never 'absent'."""
+    return "present" if _chain_exists() else "absent"
 
 
 def egress_guard_teardown(subnet: str) -> Callable[[], Optional[str]]:

@@ -212,12 +212,11 @@ def run(output_root: Path) -> Path:
 
     from kronos.cleanup import CleanupRegistry, compose_down, write_teardown_report
     from kronos.eval.egress_guard import (
-        apply_egress_guard,
         assert_ipv4_only,
         discover_gateway,
         discover_subnet,
-        egress_guard_teardown,
     )
+    from kronos.eval.egress_executor import egress_op, egress_teardown
 
     started = datetime.now(timezone.utc)
     run_id = run_id_for(started)
@@ -232,23 +231,37 @@ def run(output_root: Path) -> Path:
             with registry:
                 print("standing up the lab (docker compose up -d --build)...")
                 compose("up", "-d", "--build")
+                try:
+                    assert_ipv4_only("cybergym_default")
+                    subnet = discover_subnet("cybergym_default")
+                    gateway = discover_gateway("cybergym_default")
+                except BaseException:
+                    # discovery failed after `up`: the stack must still be torn down
+                    registry.register(
+                        "docker",
+                        "cybergym-range-stack",
+                        compose_down(compose),
+                        detail="docker compose down -v (CyberGym range)",
+                    )
+                    raise
+                # Registration order is the REVERSE of teardown (LIFO). The egress guard is
+                # registered BEFORE compose_down so compose goes down first (containers and
+                # network gone) and the guard is removed LAST: the helper's `remove` refuses
+                # while the lab network still has attached containers (SPEC_BRIEF 8.3/9.1).
+                # Both are registered BEFORE apply so a partial apply is still rolled back.
+                registry.register(
+                    "firewall",
+                    "cybergym-egress",
+                    egress_teardown(subnet),
+                    detail=f"remove KRONOS-CYBERGYM-EGRESS guard for {subnet}",
+                )
                 registry.register(
                     "docker",
                     "cybergym-range-stack",
                     compose_down(compose),
                     detail="docker compose down -v (CyberGym range)",
                 )
-                assert_ipv4_only("cybergym_default")
-                subnet = discover_subnet("cybergym_default")
-                gateway = discover_gateway("cybergym_default")
-                # register BEFORE apply so a partial apply is still rolled back (LIFO: firewall first)
-                registry.register(
-                    "firewall",
-                    "cybergym-egress",
-                    egress_guard_teardown(subnet),
-                    detail=f"remove KRONOS-CYBERGYM-EGRESS guard for {subnet}",
-                )
-                apply_egress_guard(subnet, gateway)
+                egress_op("apply", subnet, gateway)
                 wait_for_services()
                 with contextlib.redirect_stdout(buf):
                     exit_code = _run_pipeline(work_dir)

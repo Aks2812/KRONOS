@@ -1,0 +1,22 @@
+# KRONOS R10 least-privilege egress-guard sudoers policy (TEMPLATE — NOT installed by this repo).
+#
+# A human installs this, root-owned, as /etc/sudoers.d/kronos-cybergym-egress (mode 0440),
+# AFTER replacing RUNUSER with the unprivileged account that runs the CyberGym evaluation,
+# AFTER installing the helper root-owned at /usr/local/sbin/kronos-cybergym-egress, and AFTER
+# writing the pinned config /etc/kronos-cybergym/egress.conf (see the install runbook).
+# Validate with: visudo -cf /etc/sudoers.d/kronos-cybergym-egress
+#
+# This grants RUNUSER password-less sudo for ONLY three fixed commands of the ONE fixed,
+# root-owned helper path. Each entry pins the helper path AND its single literal verb
+# (apply / remove / status) as a SPECIFIED ARGUMENT. Per sudoers(5): "If a Cmnd has associated
+# command line arguments, the arguments in the Cmnd must match those given by the user on the
+# command line." So sudo requires the user's argument vector to match exactly: one bare verb,
+# no trailing argument, option, or token. There is no argument wildcard anywhere in this file.
+# (Behaviour as documented for sudo 1.9.17p2; the install runbook's live `sudo -l` / allow-deny
+# probe is the authoritative confirmation on the real host.) It grants nothing else: no shell,
+# no editor, no other binary, no raw iptables. The helper takes subnet/gateway/network only from
+# the pinned root-owned /etc/kronos-cybergym/egress.conf and re-validates it. Never whitelist the
+# repo's writable scripts/kronos-cybergym-egress — only the installed, root-owned absolute path
+# below.
+
+RUNUSER ALL=(root) NOPASSWD: /usr/local/sbin/kronos-cybergym-egress apply, /usr/local/sbin/kronos-cybergym-egress remove, /usr/local/sbin/kronos-cybergym-egress status

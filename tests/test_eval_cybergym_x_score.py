@@ -315,17 +315,35 @@ def test_run_uses_direct_compose_and_egress_guard():
     assert 'compose("up", "-d", "--build")' in src
     assert "compose(*cfg" not in src
     assert "compose_down(compose)" in src
-    assert "apply_egress_guard" in src
-    assert "egress_guard_teardown" in src
+    assert 'egress_op("apply", subnet, gateway)' in src
+    assert "egress_teardown(subnet)" in src
     assert 'registry.register(\n                    "firewall"' in src or 'registry.register("firewall"' in src
     assert 'discover_subnet("cybergym_default")' in src
     assert 'assert_ipv4_only("cybergym_default")' in src
     assert 'discover_gateway("cybergym_default")' in src
     assert src.index('assert_ipv4_only("cybergym_default")') < src.index('discover_subnet("cybergym_default")')
-    assert src.index('discover_gateway("cybergym_default")') < src.index("apply_egress_guard(subnet, gateway)")
+    assert src.index('discover_gateway("cybergym_default")') < src.index('egress_op("apply", subnet, gateway)')
 
 
 def test_run_registers_firewall_before_apply_and_before_wait():
     src = inspect.getsource(m.run)
-    assert src.index('"firewall"') < src.index("apply_egress_guard(subnet, gateway)") < src.index("wait_for_services()")
-    assert src.index("compose_down(compose)") < src.index('"firewall"')
+    assert src.index('"firewall"') < src.index('egress_op("apply", subnet, gateway)') < src.index("wait_for_services()")
+    # F1: egress teardown registered BEFORE the success-path compose_down (LIFO => compose down first, guard last)
+    fw = src.index('registry.register(\n                    "firewall"')
+    assert fw < src.index("compose_down(compose)", fw) < src.index('egress_op("apply", subnet, gateway)')
+
+
+def test_run_teardown_disposes_compose_before_egress_removal():
+    from kronos.cleanup import CleanupRegistry
+
+    src = inspect.getsource(m.run)
+    fw = src.index('registry.register(\n                    "firewall"')
+    dk = src.index('registry.register(\n                    "docker"', fw)
+    assert fw < dk < src.index('egress_op("apply", subnet, gateway)')
+    # replay that registration order through the real registry: compose is disposed first
+    order = []
+    reg = CleanupRegistry()
+    reg.register("firewall", "egress", lambda: order.append("egress_remove"))
+    reg.register("docker", "stack", lambda: order.append("compose_down"))
+    reg.teardown_all()
+    assert order == ["compose_down", "egress_remove"]
