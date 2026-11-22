@@ -1,4 +1,72 @@
 # KRONOS loop-state checkpoint
+seq: 468
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 467 draft PR #74 (least-priv egress executor), stop GATE-2. DONE.
+turn_468_action: VALIDATION-ONLY of PR #74 at exact head 9152f15c612b9a591589ac69e92f4c65ed457e8d at operator
+  request (context.md). NO edit, NO merge, NO install, NO sudoers/firewall/network mutation, NO container, NO target,
+  NO §6/§8 run.
+  Re-derive LIVE: PR #74 head==9152f15 (NO drift), OPEN, isDraft=TRUE, mergeable=MERGEABLE, mergeState=CLEAN;
+  main==93e1743 protected ruleset void-rule-kronos 25333712 active; diff 93e1743..9152f15 == EXACTLY the 10 files;
+  seal: R10EVAL sealed {R10EVAL_BASE}..{R10EVAL_MERGE=93e1743} (line 430), LPEG open 93e1743..HEAD (line 431).
+  Orchestrator OWN canonical @9152f15: 4268 passed, 1 skipped, 0 failed (SUMMARY line). test_B31_Q_scope_audit green.
+  FRESH independent SECURITY kronos-reviewer @9152f15: PASS for code+doc (MERGE as code-only). Proved: sudoers
+  whitelists only the one absolute helper path + 3 verbs (no shell/binary/path/env); visudo -cf PARSES OK on
+  substituted scratch copies (root + current-user), exit 0 (live /etc/sudoers.d untouched); helper restricted to
+  fixed KRONOS chain + scoped DOCKER-USER/INPUT jumps, private-IPv4 + gateway-in-subnet, all bad inputs rejected
+  with NO mutating iptables call (0.0.0.0/0, public, gateway-outside, unknown verb, extra args, chain name, flag,
+  IPv6); rc=2 FAILS CLOSED on apply (false-absent -> -N/-I raise), residual false-status only on remove (guard left
+  APPLIED, NO egress escape); install/rollback/uninstall touch only the scoped chain/jumps, never flush
+  DOCKER-USER/INPUT/foreign; canonical 4268/1/0.
+ten_item_merge_gate_measured_live_at_9152f15:
+  (1) main protected ruleset 25333712 active = PASS.
+  (2) PR not draft = NOT MET (isDraft=TRUE) -> operator must `gh pr ready 74` before merge.
+  (3) open & unmerged = PASS.
+  (4) head == operator-authorized merge SHA = PENDING: head==9152f15 (named for VALIDATION); no merge auth yet.
+  (5) independent reviewer PASS on acceptance by evidence = PASS code-only (security reviewer) WITH medium residuals
+      R1/R2 noted (see residual_risk).
+  (6) CI green or ci:none = ci:none (ruleset no required_status_checks) = PASS.
+  (7) brief's own local test evidence re-measured = PASS (canonical 4268/1/0 this turn; focused test_egress_helper
+      37 passed; test_B31_Q_scope_audit 1 passed).
+  (8) scope-guard/seal-tax audit green = PASS (scope==10 files; seal correct).
+  (9) orchestrator Gate-2 semantic = PASS WITH RESERVATION: code correct/safe and mergeable, but the least-privilege
+      goal is only PARTIALLY met -> R1 (helper accepts ANY private subnet, not the manifest/lab-derived
+      cybergym_default; RUNUSER can add/remove host iptables jumps for any private range) and R2 (RUNUSER can
+      remove/tear down the shared containment chain at will). Required proof "restricted to private MANIFEST-DERIVED
+      subnet" is NOT fully satisfied (private: yes; manifest/lab-derived: NO). Not a root escalation, no egress
+      escape; bounded firewall-capability on private ranges.
+  (10) no hard-boundary/out-of-scope file touched = PASS (10 files, none hard-boundary).
+  NET: 8/10 substantive gates GREEN; (2) draft and (4) merge-auth-SHA are operator acts; (9) carries the R1/R2
+  least-privilege reservation.
+residual_risk (UNRESOLVED; no edits this turn):
+  R1 MEDIUM: any private subnet accepted (not lab/manifest-bound). Fix: bind subnet to root-discovered
+    cybergym_default or pin at install.
+  R2 MEDIUM: RUNUSER can remove the shared chain (containment teardown at will).
+  R3 LOW-MED: rc=2 false-absent on REMOVE -> false 'already_gone' while guard stays applied (no escape).
+  R4 LOW: doc visudo check passes on UNSUBSTITUTED template; add `sudo -l -U <runuser>` to verify.
+  R5 install-time UNVERIFIABLE: non-writable /usr/local/sbin, sudo env_reset/secure_path, root-owned iptables/python.
+  R6 run-time UNVERIFIABLE: real iptables rc semantics, -w support, host->container published-port probe survival.
+  R7 LOW: uninstall `rm -f` not gated on successful remove.
+  R8 cosmetic: gateway == network address accepted.
+report_type: VALIDATION (PR #74 ten-item MERGE-GATE + residuals; code-only PASS, least-privilege reservation R1/R2)
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+authorization_line: PR #74 head 9152f15c612b9a591589ac69e92f4c65ed457e8d — merge-ready as CODE-ONLY pending operator
+  ready+merge-auth AND an explicit accept-or-narrow decision on R1/R2; install + §6/§8 run remain separate gates.
+awaiting_operator: (1) weigh R1/R2 -> accept as bounded residuals OR commission a scoped follow-up binding the
+  subnet to root-discovered cybergym_default (removes R1/R2) before install; (2) if accepted, ready+merge-authorize
+  PR #74 @9152f15 (code-only); (3) SEPARATELY, human install + re-authorize the §6/§8 R10 run.
+forward_followups: after PR #74 merges, NEXT brief seals LPEG window 93e1743..HEAD to PR#74 squash SHA. BE-G3-5 OPEN;
+  BE-G2-6 BLOCKED behind it. Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 467
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
