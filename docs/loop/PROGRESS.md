@@ -1,4 +1,34 @@
 # KRONOS loop-state checkpoint
+seq: 481
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 1f689603dd1829b26fc875470b485ac8945b38b3 NEW main HEAD post-merge)
+brief_sha256: 8c88fb1cb404ceec5574118937e2cbbb38fdee268c5d489b758466041f928d2c (SPEC_BRIEF_R10 section-10, now merged)
+pending_action: NONE (R10 least-privilege egress-guard PR #74 merged; next product action is the human-gated
+  install + live sudo verification, then the human-gated section-6/section-8 run — neither loop-eligible)
+pending_action_outcome: N/A
+prior_action_outcome: seq 480 MERGE_PR74_SQUASH_AT_8a0e3b8 -> DONE. Pre-merge: marked PR #74 ready; reconfirmed head
+  8a0e3b8 UNCHANGED (no SHA drift), isDraft=false, mergeStateStatus=CLEAN, mergeable=MERGEABLE, state OPEN,
+  main protected=true, CI none. Re-measured all 10 MERGE-GATE items green. Squash-merged via
+  `gh pr merge 74 --squash --match-head-commit 8a0e3b83dbc51778dfa01bed67f3d0df45c81856` (no --admin/--auto; exit 0).
+  Post-merge LIVE: PR #74 state=MERGED mergedAt=2026-11-22T13:40:56Z; SQUASH MERGE COMMIT = 1f689603dd1829b26fc875
+  470b485ac8945b38b3; new origin/main HEAD = 1f6896 (protected=true). MAIN INTEGRITY PASS: contract_manifest.json
+  3-file hashes == on-disk at new main (contract 60dd0fef, schema bd56747b, done 37fe31ed) -> governance untouched.
+merged_change_summary: R10 least-privilege egress-guard executor (root-owned helper + scoped sudoers + pinned config
+  + fail-closed removal + rc2 handling + gateway validation + section-10 docs-accuracy & hermetic sudoers tests).
+  Functional sudoers entries deny trailing args via sudo exact per-verb argument match (sudo 1.9.17p2). No helper/
+  sudoers installed, no firewall/network mutation, no container, no target, no section-6/section-8 run performed.
+residual_risks (confirm at gated install + section-6/section-8 run): install-time live `sudo -l -U <runuser>` +
+  real allow/deny probes are the AUTHORITATIVE sudo-match confirmation (documented human-gate, not hermetic);
+  F8/F9/F10; lstat-then-open race (needs write to /etc/kronos-cybergym; runbook sets dir 0755 root); egress_guard
+  PATH-lookup for iptables/docker (in-process root path + run discovery only; recommend absolute-path follow-up).
+re-derived_live (seq 481): main=1f6896 protected=true; PR#74 MERGED; contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 480
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
