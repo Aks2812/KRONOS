@@ -201,6 +201,7 @@ LPEG_SECTION_10 = {
     "deploy/sudoers.d/kronos-cybergym-egress",
     "docs/ops/R10_EGRESS_HELPER_INSTALL.md",
     "tests/test_egress_helper.py",
+    "tests/test_egress_guard.py",
     "tests/test_eval_cybergym_x_score.py",
     "tests/test_commit_authority.py",
 }

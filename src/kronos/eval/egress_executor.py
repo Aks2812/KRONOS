@@ -4,8 +4,8 @@ Privileged iptables work runs either in-process (when the caller is already root
 through a single fixed, root-owned helper invoked via `sudo -n`. The unprivileged run
 never calls iptables directly and never passes arbitrary iptables arguments: it may ask
 the helper only for the three fixed verbs apply / remove / status on the fixed
-KRONOS-CYBERGYM-EGRESS boundary, with IPv4-validated subnet/gateway values, and never
-through a shell.
+KRONOS-CYBERGYM-EGRESS boundary, with NO arguments (the helper takes subnet/gateway/network
+only from its pinned root-owned config), and never through a shell.
 """
 import ipaddress
 import os
@@ -44,6 +44,14 @@ def _validate_gateway(gateway: str) -> str:
     return str(addr)
 
 
+def _validate_gateway_in_subnet(subnet: str, gateway: str) -> None:
+    """Gateway must be a host address strictly inside subnet (not network/broadcast)."""
+    net = ipaddress.ip_network(subnet)
+    addr = ipaddress.ip_address(gateway)
+    if net.prefixlen > 30 or addr not in net or addr == net.network_address or addr == net.broadcast_address:
+        raise ValueError(f"gateway {gateway} is not a host address strictly inside subnet {subnet}")
+
+
 def _sudo_path() -> str:
     for p in ("/usr/bin/sudo", "/bin/sudo"):
         if os.path.isfile(p) and os.access(p, os.X_OK):
@@ -53,7 +61,7 @@ def _sudo_path() -> str:
 
 def egress_op(op: str, subnet: Optional[str] = None, gateway: Optional[str] = None) -> Optional[str]:
     """Run one fixed egress verb. Already root -> in-process egress_guard; otherwise
-    `sudo -n <HELPER_PATH> <verb> [validated args]`. Validates the verb and IPv4 args
+    `sudo -n <HELPER_PATH> <verb>` (no subnet/gateway argument: the helper reads its pinned config). Validates the verb and IPv4 args
     before any dispatch; never uses a shell and never passes raw iptables arguments."""
     if op not in _VERBS:
         raise ValueError(f"unknown egress op: {op!r}")
@@ -62,14 +70,13 @@ def egress_op(op: str, subnet: Optional[str] = None, gateway: Optional[str] = No
             raise ValueError("apply requires subnet and gateway")
         subnet = _validate_subnet(subnet)
         gateway = _validate_gateway(gateway)
-        if ipaddress.ip_address(gateway) not in ipaddress.ip_network(subnet):
-            raise ValueError(f"gateway {gateway} not inside subnet {subnet}")
-        helper_args = ["apply", subnet, gateway]
+        _validate_gateway_in_subnet(subnet, gateway)
+        helper_args = ["apply"]
     elif op == "remove":
         if subnet is None:
             raise ValueError("remove requires subnet")
         subnet = _validate_subnet(subnet)
-        helper_args = ["remove", subnet]
+        helper_args = ["remove"]
     else:  # status
         helper_args = ["status"]
 
