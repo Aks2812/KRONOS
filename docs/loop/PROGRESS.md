@@ -1,4 +1,47 @@
 # KRONOS loop-state checkpoint
+seq: 472
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: REPAIR_R10_PIN_EGRESS_F1_F8 -> fix first-security-review findings on branch
+  eval/r10-leastpriv-egress-executor (head d5ecb99); re-review; present GATE-2. NO merge/install/firewall/network/
+  container/target/§6/§8 run.
+pending_action_outcome: PENDING (repair build not yet executed at this checkpoint)
+prior_action_outcome: seq 471 PUSH + FRESH SECURITY REVIEW -> DONE. Pushed branch to d5ecb99 (PR #74 updated,
+  draft). Independent security kronos-reviewer @d5ecb99 VERDICT: FAIL, DO NOT MERGE. Suites it ran: helper 94,
+  guard 70, CANONICAL 4327 passed/1 skipped/0 failed (642s), scope_audit 1 passed. Closes R1/R2/R3/R7/R8 in helper +
+  tests; sudoers PASS (visudo -cf parsed OK on scratch copy, no wildcard); scope/seal PASS. BUT findings:
+findings_first_review (repair this turn):
+  F1 HIGH (run-path regression): cybergym_x_score.py registers compose_down (:234) BEFORE egress_teardown (:244);
+    CleanupRegistry teardown_all is LIFO (registry.py:119 reversed) -> firewall removed BEFORE compose_down -> new
+    fail-closed remove refuses (containers attached) -> guard stuck applied, teardown 'failed', violates §8.3.
+  F2 MEDIUM (fail-open on drift): executor non-root validates caller subnet/gateway then DISCARDS (egress_executor
+    :74,:91-92); if discovered Docker subnet != pinned, helper applies pinned, real lab subnet uncontained.
+  F3 MEDIUM: root branch (:83-89) uses caller values, no pinned read, skips lab-live gate. Contradicts §8.1/§8.3.
+  F4 MEDIUM (unverified host): remove jump loop uses _state(-C) which raises on rc2; on a host where missing -C
+    returns rc2 the final loop check turns a successful teardown into FAILURE. §8.4 says legit remove must not refuse.
+  F5 MEDIUM: helper trusts CONFIG_PATH with no uid/mode/symlink check; a RUNUSER-writable config could set network=
+    to an empty net and defeat the R2 gate.
+  F6 LOW-MED: runbook uninstall rm -f block unconditional (not gated on remove/status).
+  F7 LOW: runbook installs sudoers before visudo -cf (bad file could lock out sudo).
+  F8 LOW: remove deletes jumps before chain check -> partial failure leaves chain present-but-unhooked (status
+    'present'); + lab-check stderr-wording match. F9 INFO: no sudoers Defaults (env_reset host default). F10 INFO:
+    is_private admits few non-RFC1918 (not attacker-reachable; config root-owned).
+repair_decisions (orchestrator, brief §9.1-§9.8 written):
+  F1 -> swap registration: egress_teardown BEFORE compose_down (LIFO: compose first, firewall last); + teardown-order
+    test. F2/F3 -> egress_op ALWAYS reads pinned config + requires caller subnet/gateway == pinned (fail closed) both
+    paths; root remove also runs the docker-inspect lab-live gate. F4 -> drive remove jump-deletion off `-D` rc (0
+    repeat, 1 done, 2/other raise) in helper + guard, removing -C rc2 ambiguity; status stays strict, apply tolerant.
+    F5 -> load_config lstat: regular file (not symlink), uid 0, no group/other write, else raise. F6/F7 -> runbook
+    gated uninstall + temp-validate-then-move sudoers. F8/F9/F10 -> documented residuals (confirm at gated run).
+scope (all <= LPEG_SECTION_10; adds cybergym_x_score.py + test_eval_cybergym_x_score.py, original LPEG members):
+  no new file, no seal change.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 471
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
