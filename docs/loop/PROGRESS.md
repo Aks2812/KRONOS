@@ -1,4 +1,37 @@
 # KRONOS loop-state checkpoint
+seq: 455
+derived_at: 2026-11-21T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: b7a1338d4c57f5dde095b507cbff4be5d47b6aa2cf993d43157c7fa966a1cdb0
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ main 14c567f35e62290263b30f7b383771a59f94b91a)
+pending_action: APPLY_SEALTAX_AMEND_PR72_THEN_VALIDATE_GATE2
+pending_action_outcome: PENDING
+prior_action_outcome: seq 454 BLOCKED -> operator GATE-1 AUTHORIZED PR #72 scope expansion to EXACTLY
+  tests/test_commit_authority.py at head f1744e45b09cb22190fd32e2cc10ef3c143d377f (re-derived live: PR #72 OPEN,
+  isDraft=true, head==authorized SHA, no drift; main 14c567f; integrity contract/schema MATCH).
+plan: (1) write-ahead this checkpoint (seq 455) + push (consequential: commit+push to PR #72 feature branch).
+  (2) dispatch kronos-builder to edit ONLY tests/test_commit_authority.py: seal PHRC — add
+  PHRC_MERGE="14c567f35e62290263b30f7b383771a59f94b91a"; change line 401 "{PHRC_BASE}..HEAD" ->
+  "{PHRC_BASE}..{PHRC_MERGE}"; then open PRG — add PRG_BASE="14c567f35e62290263b30f7b383771a59f94b91a" and
+  PRG_SECTION_10 = EXACTLY {docs/governance/KRONOS_DONE.md, docs/governance/contract_manifest.json,
+  tests/test_commit_authority.py} and a new assertion "{PRG_BASE}..HEAD <= PRG_SECTION_10" appended AFTER line 401.
+  DO NOT weaken/remove/reorder any existing scope assertion. No other file touched. (3) commit (author/committer =
+  operator identity on feature branch) + push to gov/dod-reconcile-be-g1-567 (PR #72). (4) re-derive new head.
+  (5) focused + CANONICAL suites (expect 0 failed), scope audit test_B31_Q_scope_audit green, manifest 3-pin
+  verify. (6) fresh independent kronos-reviewer at new exact head (brief+range only). (7) present GATE-2
+  (ten-item re-measure). NO MERGE / product / live. HOLD on any head drift.
+report_type: AUTO-CONTINUE
+decision_class: AUTO-CONTINUE
+opus_effort: MEDIUM
+opus_effort_reason: Operator-authorized bounded remediation inside approved scope; executing build->push->validate->review
+  ->GATE-2 without further authorization until the merge pause.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** (manifest hash set) NEVER-edit by loop.
+  Authorized writable this turn: tests/test_commit_authority.py ONLY (plus loop-state checkpoint).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+
+# KRONOS loop-state checkpoint
 seq: 454
 derived_at: 2026-11-21T00:00:00Z
 contract_version: 1.4.5
