@@ -1,4 +1,52 @@
 # KRONOS loop-state checkpoint
+seq: 465
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 464 PR #73 squash-merged @93e1743, integrity PASS, §6/§8 R10 exec GATE presented. DONE.
+authorization: Operator GATE-1 execution + in-turn GATE-2 AUTHORIZED (context.md /home/void/context.md) for exactly
+  ONE BE-G3-5/R10 manifest-bounded CyberGym run under SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md at main 93e1743.
+  Mandate: re-derive/verify manifest, pinned hashes, local-only 127.0.0.1 targets, Docker/host/FIREWALL
+  preconditions, cleanup readiness, disk, unchanged main; HARD STOP before mutation on ANY mismatch.
+turn_465_action: PREFLIGHT (read-only, NO mutation). Result: HARD STOP -> HOLD. Firewall precondition FAILED.
+preflight_results:
+  (a) main unchanged == 93e1743cc38f9004e8c751160e2c15ef9502342d => PASS.
+  (b) signed-manifest pins on-disk: scope_manifest.yaml 3961c4331133749d4464ba98e038728b5c2db5a12c92e5e207d9864ee1622947
+      MATCH; pubkey 769416bc28aa9dda57ea89cf1e8cf78b5fc89fdc58f0ce5ab7607bb1e2d3e804 MATCH;
+      docker-compose.yml f902808c43f5decf7d5ab061d13d8558b89ffa7cc127ff8b249c598a00834f3f MATCH => PASS.
+  (c) local-only targets: compose ports bind 127.0.0.1 ONLY (127.0.0.1:4566, :4567, :8091); no 0.0.0.0 => PASS.
+  (d) Docker: /usr/bin/docker present, daemon up ServerVersion 28.5.2, compose plugin 2.40.3 => PASS.
+  (g) disk: 134G available on / => PASS.
+  (h) .venv/bin/python present (-> python3) => PASS.
+  (e) HOST/FIREWALL PRECONDITION => FAIL (HARD STOP): iptables present (/usr/sbin/iptables v1.8.13 nf_tables) but
+      process is NON-ROOT: `iptables -S KRONOS-CYBERGYM-EGRESS` -> "Permission denied (you must be root)"; and
+      non-interactive sudo UNAVAILABLE (`sudo -n true` -> "a password is required"). The brief's MANDATORY
+      containment control apply_egress_guard (src/kronos/eval/egress_guard.py, _iptables shells `iptables -w ...`
+      WITHOUT sudo, ordered step 4 BEFORE `docker compose up`) cannot be applied without root. Standing up the
+      CyberGym stack without the bounded host-egress guard would be a security-boundary violation -> REFUSED.
+mutation_state: NONE. No container started, no firewall rule changed, no target accessed, no run() invoked. All
+  preflight checks were read-only; the denied `iptables -S` read changed nothing.
+decision_class: HOLD
+report_type: BLOCKED (preflight firewall precondition; §9 stop-report)
+opus_effort: HIGH
+remediation (operator / maintainer, pick one, then re-authorize the SAME single run at 93e1743):
+  (1) Run the loop/session with a user able to apply iptables non-interactively (root, or passwordless sudo scoped
+      to iptables), so apply_egress_guard/remove_egress_guard succeed; OR
+  (2) Grant the iptables capability to the run user (e.g. CAP_NET_ADMIN / an authorized sudoers entry for the
+      egress-guard commands only); OR
+  (3) Maintainer provides an equivalent authorized host-egress containment the brief recognizes, applied out-of-band
+      before the run, with the brief updated accordingly (governance/brief change = maintainer-gated).
+  Do NOT run the lab without the egress guard. Preserve the R10EVAL seal-tax for any future HEAD-advancing evidence PR.
+forward_followups: (A) STANDING SEAL-TAX unchanged: next HEAD-advancing brief seals R10EVAL window dab9b24..HEAD to
+  PR#73 squash 93e1743. (B) BE-G3-5 still OPEN (no run performed); BE-G2-6 still BLOCKED behind it. Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 464
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
