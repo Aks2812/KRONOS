@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 463
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb)
+pending_action: GATE2_READY_AND_SQUASH_MERGE_PR73
+pending_action_outcome: PENDING
+prior_action_outcome: seq 462 validated PR #73 @ffa1c2d, ten-item gate 8/10 (draft+merge-auth pending),
+  SAFE-TO-APPROVE. DONE.
+authorization: Operator GATE-2 AUTHORIZED squash-merge of PR #73 ONLY, at EXACT head
+  ffa1c2de3db7256adfb9f3677696ae0936aa5d84. Instruction: mark ready; fetch+reconfirm unchanged full head +
+  MERGEABLE/CLEAN; re-measure ALL TEN MERGE-GATE items; squash-merge with --match-head-commit; HOLD on SHA drift
+  or any failed/incomplete gate; NEVER --admin, NEVER --auto. Post-merge: verify main integrity, record squash SHA
+  + checkpoint, present the SEPARATE §6/§8 execution authorization. NO containers/firewall/network/target/run.
+plan_this_turn:
+  (1) gh pr ready 73.
+  (2) git fetch; reconfirm head==ffa1c2d (HOLD on drift), state OPEN+unmerged, mergeable=MERGEABLE/CLEAN
+      (HOLD if not MERGEABLE).
+  (3) re-measure FULL ten-item MERGE-GATE THIS TURN @ffa1c2d:
+      (1) main protected ruleset 25333712 active; (2) PR not draft (after ready); (3) open+unmerged;
+      (4) head==operator-authorized ffa1c2d; (5) fresh independent kronos-reviewer PASS @ffa1c2d (seq 462, same head);
+      (6) ci:none (ruleset no required checks); (7) RE-MEASURE canonical suite .venv/bin/python TMPDIR, 0 failed
+      from SUMMARY line; (8) test_B31_Q_scope_audit PASS + scope==2 files; (9) orchestrator Gate-2 semantic PASS;
+      (10) no hard-boundary/out-of-scope file (diff==2 files).
+  (4) ALL PASS -> gh pr merge 73 --squash --match-head-commit ffa1c2de3db7256adfb9f3677696ae0936aa5d84
+      (NO --admin, NO --auto). ANY fail/drift -> HOLD stop-report, no merge.
+  (5) post-merge: new main integrity 3-pin recompute; record squash SHA; checkpoint seq 464; present §6/§8 exec auth.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+decision_class (pre-merge write-ahead): REVIEW-REQUIRED pending gate re-measure.
+opus_effort: MEDIUM
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 462
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
