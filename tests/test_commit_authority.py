@@ -181,6 +181,13 @@ PHRC_SECTION_10 = {
     "tests/test_commit_authority.py",
     "tests/test_rnd_contract.py",
 }
+PHRC_MERGE = "14c567f35e62290263b30f7b383771a59f94b91a"
+PRG_BASE = "14c567f35e62290263b30f7b383771a59f94b91a"
+PRG_SECTION_10 = {
+    "docs/governance/KRONOS_DONE.md",
+    "docs/governance/contract_manifest.json",
+    "tests/test_commit_authority.py",
+}
 WRITE_VERB = re.compile(r"\b(CREATE|MERGE|SET|DELETE|DROP|ALTER|COPY|REMOVE|DETACH)\b", re.I)
 
 
@@ -398,7 +405,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{R10EG_BASE}..{R10EG_MERGE}")) <= R10EG_SECTION_10, set(names(f"{R10EG_BASE}..{R10EG_MERGE}")) - R10EG_SECTION_10
     assert set(names(f"{R10EGH_BASE}..{R10EGH_MERGE}")) <= R10EGH_SECTION_10, set(names(f"{R10EGH_BASE}..{R10EGH_MERGE}")) - R10EGH_SECTION_10
     assert set(names(f"{PHR_BASE}..{PHR_MERGE}")) <= PHR_SECTION_10, set(names(f"{PHR_BASE}..{PHR_MERGE}")) - PHR_SECTION_10
-    assert set(names(f"{PHRC_BASE}..HEAD")) <= PHRC_SECTION_10, set(names(f"{PHRC_BASE}..HEAD")) - PHRC_SECTION_10
+    assert set(names(f"{PHRC_BASE}..{PHRC_MERGE}")) <= PHRC_SECTION_10, set(names(f"{PHRC_BASE}..{PHRC_MERGE}")) - PHRC_SECTION_10
+    assert set(names(f"{PRG_BASE}..HEAD")) <= PRG_SECTION_10, set(names(f"{PRG_BASE}..HEAD")) - PRG_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet
