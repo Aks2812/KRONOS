@@ -1,4 +1,58 @@
 # KRONOS loop-state checkpoint
+seq: 467
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 466 BUILD_R10_LEASTPRIV_EGRESS_EXECUTOR -> DONE. Draft PR #74 opened, stopped at GATE-2.
+  (a) feature branch eval/r10-leastpriv-egress-executor off main 93e1743.
+  (b) kronos-builder wrote the executor + helper + wiring + sudoers template + runbook + hermetic tests + seal-tax
+      (commit 7a2dc34). Initial canonical run surfaced 2 pre-existing wiring-guard tests in
+      tests/test_eval_cybergym_x_score.py that assert the OLD egress symbols; they are a required consequence of
+      the authorized rewire, so that file was added to scope (10 files total).
+  (c) REPAIR (builder, amend 376c57c): updated the 4 wiring-guard literals to egress_op/egress_teardown (intent
+      preserved), added tests/test_eval_cybergym_x_score.py to LPEG_SECTION_10, fixed brief counts. Focused 125 passed.
+  (d) FIRST independent kronos-reviewer @7a2dc34: FAIL (the 2 canonical regressions, now repaired) + findings
+      F2 (0.0.0.0/0 accepted -> would pass all egress), F3 (rc2-as-absent), F4 (env python3 / shutil.which sudo),
+      F5 (doc count), F6 (test gaps).
+  (e) HARDENING (orchestrator direct edits, amend 3dc92bb): F2 require private subnet + gateway-in-subnet in BOTH
+      helper and executor; F4 absolute #!/usr/bin/python3 + /usr/bin/sudo|/bin/sudo (dropped shutil); F5 brief;
+      F6 added rejection tests (0.0.0.0/0, public, gateway-outside) + _iptables_path/_sudo_path resolution tests;
+      F3 documented as residual (inherited unchanged from merged egress_guard.py). Focused 132 passed.
+  (f) FRESH independent kronos-reviewer @3dc92bb (not given prior report): PASS. Own canonical 4268 passed/1
+      skipped/0 failed; scope 10 files; seal + hard-boundary + least-privilege design all PASS. 3 LOW findings
+      (LOW-1 'RFC1918' wording overclaim; LOW-2 rc2-as-absent; LOW-3 sudoers wildcard) — none blocking.
+  (g) LOW-1 fix + LOW-2/LOW-3 documentation (orchestrator, comment/markdown-only, amend 9152f15): corrected the
+      is_private wording in helper/executor/runbook; documented residuals in brief §6. Scope STILL 10 files.
+  (h) orchestrator OWN canonical @9152f15 (final head): 4268 passed, 1 skipped, 0 failed (decided from SUMMARY).
+      test_B31_Q_scope_audit green.
+  (i) pushed branch; opened DRAFT PR #74 head 9152f15c612b9a591589ac69e92f4c65ed457e8d; documented design +
+      residuals in the PR body. STOPPED at GATE-2.
+deliverable: DRAFT PR #74 head 9152f15c612b9a591589ac69e92f4c65ed457e8d, base main 93e1743. Least-privilege R10
+  egress-guard executor. NO install, NO sudoers change, NO firewall mutation, NO container, NO target, NO §6/§8 run,
+  NO R10 rerun performed.
+scope_10_files: SPEC_BRIEF_R10_least_privilege_egress_executor.md, scripts/kronos-cybergym-egress,
+  src/kronos/eval/egress_executor.py, src/kronos/eval/egress_guard.py, src/kronos/eval/cybergym_x_score.py,
+  deploy/sudoers.d/kronos-cybergym-egress, docs/ops/R10_EGRESS_HELPER_INSTALL.md, tests/test_egress_helper.py,
+  tests/test_eval_cybergym_x_score.py, tests/test_commit_authority.py.
+awaiting_operator: GATE-2 review of PR #74. Then, SEPARATELY and still maintainer-gated: (1) human install of the
+  helper (root-owned 0755) + sudoers (0440) per docs/ops/R10_EGRESS_HELPER_INSTALL.md; (2) re-authorize the single
+  BE-G3-5/R10 run (§6/§8) now that the non-root egress path exists. Loop installs/runs nothing without authorization.
+report_type: SAFE-TO-APPROVE (planning/build deliverable: draft PR #74 reviewer-PASS; install + run stay gated)
+decision_class: REVIEW-REQUIRED
+opus_effort: HIGH
+forward_followups: (A) STANDING SEAL-TAX: after PR #74 merges, the NEXT brief must seal the open LPEG window
+  93e1743..HEAD to PR#74's squash SHA in tests/test_commit_authority.py else test_B31_Q_scope_audit reds.
+  (B) After helper install + GATE-2, the R10 run preflight (seq 465) re-runs; the firewall precondition should now
+  pass via sudo -n helper. BE-G3-5 still OPEN; BE-G2-6 still BLOCKED behind it. Alpha/GA UNDEFINED.
+  (C) Residuals LOW-2 (rc2-as-absent) / LOW-3 (sudoers wildcard) to confirm at the gated run.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 466
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
