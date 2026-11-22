@@ -1,4 +1,38 @@
 # KRONOS loop-state checkpoint
+seq: 483
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 1f689603dd1829b26fc875470b485ac8945b38b3 main HEAD)
+pending_action: NONE (corrected read-only R10 install procedure presented; next is human-gated install + live verify,
+  then human-gated section-6/section-8 run -- neither loop-eligible)
+pending_action_outcome: N/A
+prior_action_outcome: seq 482 -> operator HOLD: the seq-482 procedure was FLAWED (used `docker compose up -d`, which
+  STARTS containers before egress containment exists, violating the merged runbook). Correction requested + delivered
+  read-only at main 1f68960 (no execution, no sudo, no container/network create, no install). CORRECTIONS:
+  - Identity: read-only `id void` / `getent passwd void` confirm the eval account is exactly `void` (uid=1000,
+    gid=1000), member of group `docker` (959) [so docker compose/inspect need no sudo] and group `sudo` (27) [so void
+    also holds general PASSWORD-protected sudo]. ACCEPTANCE therefore is specifically the three NOPASSWD helper
+    entries ($H apply|remove|status), NOT "exactly three total" in `sudo -l -U void`.
+  - Network materialization WITHOUT starting services: `cd cybergym && docker compose create` (Compose v2 2.40.3,
+    Docker 28.5.2) provisions the `cybergym_default` network + containers in Created state; procedure PROVES every
+    scoped container is non-running via `docker compose ps -a` (every State created/exited, none running) before
+    reading subnet/gateway read-only. Fallback if create cannot make the network without starting: STOP and propose
+    the signed static-IPAM maintainer-patch (human adds ipam subnet/gateway to cybergym/docker-compose.yml; cybergym/
+    is loop hard-boundary so loop never edits it).
+  - Added failed-install rollback that removes any stopped containers/network created during install
+    (`docker compose down --remove-orphans` + explicit `docker network rm cybergym_default` if orphaned) in addition
+    to removing any installed files.
+  - H defined explicitly H=/usr/local/sbin/kronos-cybergym-egress; allow/deny probes run as unprivileged void; all
+    extra-argument/option/path/verb probes must be non-zero; bare apply/remove never invoked.
+  Audit facts unchanged from seq 482 (manifest Ed25519 signature VERIFIED; sources helper sha=1d67d866...,
+  sudoers-template sha=628bb8c9...; destinations all ABSENT on host). No execution/sudo/create/install performed.
+re-derived_live (seq 483): main=1f6896 protected=true; PR#74 MERGED; contract 3-file hashes==on-disk. LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop (reads only).
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 482
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
