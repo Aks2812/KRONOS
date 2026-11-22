@@ -1,4 +1,48 @@
 # KRONOS loop-state checkpoint
+seq: 475
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+brief_sha256: 942769227d449148e90c27a971c6ccaa413437946ba59fde64a48a93030ddc2c (SPEC_BRIEF_R10_least_privilege_egress_executor.md)
+pending_action: AWAIT_OPERATOR_DECISION_R10_SUDOERS_PREMISE -> 2nd independent security review @fbdcf87 returned
+  FAIL on one blocker (sudoers arg-denial premise false). Next action requires operator authorization because it is
+  a security-boundary (sudoers template) change AND a finding outside the authorized §9 F1-F10 repair set. Recommended
+  §10 BUILD-only repair: tighten deploy/sudoers.d/kronos-cybergym-egress to empty-arg whitelist (`apply ""`,
+  `remove ""`, `status ""`); correct the false "denied by sudoers" claim in template comment + runbook; add a
+  hermetic sudoers-arg-denial test. All <= LPEG_SECTION_10, no seal change, no new file. Then 3rd fresh independent
+  security review, GATE-2. NO merge, install, sudoers/firewall/network mutation, container, target, §6/§8 run.
+pending_action_outcome: PENDING (awaiting operator decision; no edit made)
+prior_action_outcome: seq 474 DISPATCH_SECOND_SECURITY_REVIEW_PR74 -> DONE. Fresh independent security
+  kronos-reviewer @fbdcf87 measured diff 9152f15..fbdcf87. VERDICT: FAIL, DO NOT MERGE.
+  Scope: 11 changed files all <= LPEG_SECTION_10; no hard-boundary path touched; .venv/bin/python present.
+  Suites (verbatim SUMMARY): test_egress_helper 116 passed in 0.81s; test_egress_guard 73 passed in 0.10s;
+  test_eval_cybergym_x_score 27 passed in 1.23s; scope_audit test_B31_Q_scope_audit 1 passed, 38 deselected;
+  CANONICAL 4353 passed, 1 skipped in 366.51s.
+  CLOSED: §8.1 pinned config; §8.2 zero-arg helper (helper main rejects argv!=1 before load_config/iptables,
+  scripts:293-316); §9.1 F1 teardown order (egress_teardown before compose_down, LIFO registry:119, test passes);
+  §9.2 F2/F3 pin both paths (egress_executor:136,143-153,163); §8.3 fail-closed remove (abs docker path, lab-live
+  gate); §8.4/§9.3 rc2 (status strict _state, apply tolerant _probe, remove -D-driven bounded 16); §8.5 gateway
+  strictly-inside; §9.4 F5 config lstat/uid0/mode&0o022 (LOW lstat-then-open race residual, dir 0755 excludes run
+  user); §9.5 F6 uninstall gating; §9.6 F7 visudo-before-install; no cap-expansion (sudo -n argv list, no shell).
+  BLOCKER (MEDIUM, acceptance-premise defect, NOT a live bypass): §8.2 sudoers "no wildcard" NOT-CLOSED.
+  deploy/sudoers.d/kronos-cybergym-egress:16 whitelists the three commands with NO args; sudoers(5): "If no command
+  line arguments are specified, the user may run the command with any arguments they choose." So `sudo -n <helper>
+  apply 1.1.1.1` passes SUDO. The template comment (:9-10) and runbook verify-block ("denied by sudoers (no
+  wildcard)") are FALSE. The helper's own argv-length check still rejects -> no mutation path, no live escalation,
+  but the stated acceptance is false. Reviewer fix: template `apply ""`/`remove ""`/`status ""` + a sudoers-level
+  arg-denial test.
+  New residuals: LOW load_config lstat-then-open race (needs write to /etc/kronos-cybergym, runbook sets 0755 root);
+  LOW pre-existing NOT-in-diff egress_guard.py:37/81/102/122 + x-score discover_* use PATH not absolute docker/
+  iptables (only in-process root path + run's own discovery exposed; recommend absolute paths follow-up).
+re-derived_live (seq 475): main=93e1743 protected=true; PR#74 OPEN draft=true merged=null head=fbdcf87 base=main;
+  origin/eval/r10-leastpriv-egress-executor==fbdcf87; contract 3-file hashes==on-disk; brief on-disk sha=9427692.
+  LIVE==checkpoint.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 474
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
