@@ -1,0 +1,15 @@
+# KRONOS R10 least-privilege egress-guard sudoers policy (TEMPLATE — NOT installed by this repo).
+#
+# A human installs this, root-owned, as /etc/sudoers.d/kronos-cybergym-egress (mode 0440),
+# AFTER replacing RUNUSER with the unprivileged account that runs the CyberGym evaluation,
+# and AFTER installing the helper root-owned at /usr/local/sbin/kronos-cybergym-egress.
+# Validate with: visudo -cf /etc/sudoers.d/kronos-cybergym-egress
+#
+# This grants RUNUSER password-less sudo for ONLY the three fixed verbs of the ONE fixed,
+# root-owned helper path. It grants nothing else: no shell, no editor, no other binary, no
+# raw iptables. The helper itself re-validates every argument (strict IPv4 subnet/gateway,
+# fixed chain only, no flags, no foreign chains); sudoers argument wildcards are a coarse
+# first gate, the helper is the authoritative boundary. Never whitelist the repo's writable
+# scripts/kronos-cybergym-egress — only the installed, root-owned absolute path below.
+
+RUNUSER ALL=(root) NOPASSWD: /usr/local/sbin/kronos-cybergym-egress apply *, /usr/local/sbin/kronos-cybergym-egress remove *, /usr/local/sbin/kronos-cybergym-egress status

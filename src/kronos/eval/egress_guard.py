@@ -190,5 +190,10 @@ def remove_egress_guard(subnet: str) -> Optional[str]:
     return None if removed else "already_gone"
 
 
+def status_egress_guard() -> str:
+    """Read-only: report whether the fixed chain exists ('present'/'absent')."""
+    return "present" if _chain_exists() else "absent"
+
+
 def egress_guard_teardown(subnet: str) -> Callable[[], Optional[str]]:
     return lambda: remove_egress_guard(subnet)

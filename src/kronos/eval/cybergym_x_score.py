@@ -212,12 +212,11 @@ def run(output_root: Path) -> Path:
 
     from kronos.cleanup import CleanupRegistry, compose_down, write_teardown_report
     from kronos.eval.egress_guard import (
-        apply_egress_guard,
         assert_ipv4_only,
         discover_gateway,
         discover_subnet,
-        egress_guard_teardown,
     )
+    from kronos.eval.egress_executor import egress_op, egress_teardown
 
     started = datetime.now(timezone.utc)
     run_id = run_id_for(started)
@@ -245,10 +244,10 @@ def run(output_root: Path) -> Path:
                 registry.register(
                     "firewall",
                     "cybergym-egress",
-                    egress_guard_teardown(subnet),
+                    egress_teardown(subnet),
                     detail=f"remove KRONOS-CYBERGYM-EGRESS guard for {subnet}",
                 )
-                apply_egress_guard(subnet, gateway)
+                egress_op("apply", subnet, gateway)
                 wait_for_services()
                 with contextlib.redirect_stdout(buf):
                     exit_code = _run_pipeline(work_dir)

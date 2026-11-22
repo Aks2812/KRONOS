@@ -190,6 +190,20 @@ PRG_SECTION_10 = {
     "tests/test_commit_authority.py",
 }
 R10EVAL_BASE = "dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb"
+R10EVAL_MERGE = "93e1743cc38f9004e8c751160e2c15ef9502342d"
+LPEG_BASE = "93e1743cc38f9004e8c751160e2c15ef9502342d"
+LPEG_SECTION_10 = {
+    "SPEC_BRIEF_R10_least_privilege_egress_executor.md",
+    "scripts/kronos-cybergym-egress",
+    "src/kronos/eval/egress_executor.py",
+    "src/kronos/eval/egress_guard.py",
+    "src/kronos/eval/cybergym_x_score.py",
+    "deploy/sudoers.d/kronos-cybergym-egress",
+    "docs/ops/R10_EGRESS_HELPER_INSTALL.md",
+    "tests/test_egress_helper.py",
+    "tests/test_eval_cybergym_x_score.py",
+    "tests/test_commit_authority.py",
+}
 R10EVAL_SECTION_10 = {
     "SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md",
     "tests/test_commit_authority.py",
@@ -413,7 +427,8 @@ def test_B31_Q_scope_audit(nonet):
     assert set(names(f"{PHR_BASE}..{PHR_MERGE}")) <= PHR_SECTION_10, set(names(f"{PHR_BASE}..{PHR_MERGE}")) - PHR_SECTION_10
     assert set(names(f"{PHRC_BASE}..{PHRC_MERGE}")) <= PHRC_SECTION_10, set(names(f"{PHRC_BASE}..{PHRC_MERGE}")) - PHRC_SECTION_10
     assert set(names(f"{PRG_BASE}..{PRG_MERGE}")) <= PRG_SECTION_10, set(names(f"{PRG_BASE}..{PRG_MERGE}")) - PRG_SECTION_10
-    assert set(names(f"{R10EVAL_BASE}..HEAD")) <= R10EVAL_SECTION_10, set(names(f"{R10EVAL_BASE}..HEAD")) - R10EVAL_SECTION_10
+    assert set(names(f"{R10EVAL_BASE}..{R10EVAL_MERGE}")) <= R10EVAL_SECTION_10, set(names(f"{R10EVAL_BASE}..{R10EVAL_MERGE}")) - R10EVAL_SECTION_10
+    assert set(names(f"{LPEG_BASE}..HEAD")) <= LPEG_SECTION_10, set(names(f"{LPEG_BASE}..HEAD")) - LPEG_SECTION_10
     # BRIEF30 seal: its own window ends at its merge commit, not HEAD.
     assert "src/kronos/commit.py" not in names(f"{B30_SEAL[0]}..{B30_SEAL[1]}")
     assert not nonet

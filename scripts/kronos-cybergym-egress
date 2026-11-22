@@ -1,0 +1,209 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""KRONOS R10 least-privilege egress-guard helper (root-owned, sudoers-whitelisted).
+
+INSTALLED root-owned at /usr/local/sbin/kronos-cybergym-egress (mode 0755, owner
+root:root). The unprivileged run invokes it only as:
+
+    sudo -n /usr/local/sbin/kronos-cybergym-egress <verb> [args]
+
+It accepts EXACTLY three fixed verbs on the FIXED chain KRONOS-CYBERGYM-EGRESS and
+nothing else:
+
+    apply <subnet> <gateway>
+    remove <subnet>
+    status
+
+Self-contained (stdlib only): it never imports the writable repo package, so a
+tampered working tree cannot change what runs as root. It never accepts a chain
+name, a raw iptables flag, an option, an executable, or any extra argument; it
+never flushes DOCKER-USER, INPUT, or any foreign chain; it resolves iptables only
+at a fixed absolute path (no PATH lookup, no shell). subnet/gateway are strictly
+IPv4-validated. Idempotency is decided by iptables return codes and observed `-S`
+state, never by stderr wording. Every invocation carries `-w` (xtables lock wait).
+Fail-closed: any unexpected return code raises and exits non-zero.
+
+Keep the chain rule set in parity with src/kronos/eval/egress_guard.py
+(tests/test_egress_helper.py asserts equality).
+"""
+import ipaddress
+import os
+import subprocess
+import sys
+
+CHAIN = "KRONOS-CYBERGYM-EGRESS"
+PARENTS = ("DOCKER-USER", "INPUT")
+_IPTABLES_CANDIDATES = ("/usr/sbin/iptables", "/sbin/iptables")
+_MAX_JUMP_DELETES = 16
+
+
+def _iptables_path():
+    for p in _IPTABLES_CANDIDATES:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    raise RuntimeError("iptables not found at a trusted absolute path")
+
+
+def _iptables(args):
+    return subprocess.run([_iptables_path(), "-w", *args], capture_output=True, text=True)
+
+
+def _state(args):
+    r = _iptables(args)
+    if r.returncode == 0:
+        return True
+    if r.returncode in (1, 2):
+        return False
+    raise RuntimeError(f"iptables {' '.join(args)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+
+
+def _run(args):
+    r = _iptables(args)
+    if r.returncode != 0:
+        raise RuntimeError(f"iptables {' '.join(args)} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+
+
+def _chain_exists():
+    return _state(["-n", "-L", CHAIN])
+
+
+def _chain_rules(subnet, gateway):
+    return [
+        ["-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED", "-j", "RETURN"],
+        ["-d", f"{gateway}/32", "-j", "DROP"],
+        ["-d", subnet, "-j", "RETURN"],
+        ["-d", "127.0.0.0/8", "-j", "RETURN"],
+        ["-j", "DROP"],
+    ]
+
+
+def _current_chain_rules():
+    r = _iptables(["-S", CHAIN])
+    if r.returncode != 0:
+        raise RuntimeError(f"iptables -S {CHAIN} failed (rc={r.returncode}): {(r.stderr or '').strip()}")
+    rules = []
+    for line in (r.stdout or "").splitlines():
+        t = line.split()
+        if t[:2] == ["-A", CHAIN]:
+            rules.append(t[2:])
+    return rules
+
+
+def _normalize_rule(rule):
+    out = list(rule)
+    for i, tok in enumerate(out):
+        if tok == "--ctstate" and i + 1 < len(out):
+            out[i + 1] = ",".join(sorted(out[i + 1].split(",")))
+    return out
+
+
+def _jump(parent, subnet):
+    return [parent, "-s", subnet, "-j", CHAIN]
+
+
+def _validate_subnet(value):
+    try:
+        net = ipaddress.ip_network(value, strict=False)
+    except ValueError:
+        raise RuntimeError(f"unparseable subnet: {value!r}") from None
+    if not isinstance(net, ipaddress.IPv4Network):
+        raise RuntimeError(f"non-IPv4 subnet: {value!r}")
+    # Containment boundary: only a private, non-public lab subnet is acceptable
+    # (ipaddress.is_private, which a Docker RFC1918 bridge range satisfies). This rejects
+    # 0.0.0.0/0 and any public-routable range, so the guard can never be made to RETURN
+    # (pass) all egress.
+    if not net.is_private:
+        raise RuntimeError(f"non-private or over-broad subnet: {value!r}")
+    return str(net)
+
+
+def _validate_gateway(value):
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        raise RuntimeError(f"unparseable gateway: {value!r}") from None
+    if not isinstance(addr, ipaddress.IPv4Address):
+        raise RuntimeError(f"non-IPv4 gateway: {value!r}")
+    return str(addr)
+
+
+def apply_guard(subnet, gateway):
+    """Fail-closed reconcile, no flush. Fresh chain: create and append every rule in
+    order. Existing chain: must equal the expected rules exactly or raise. Then install
+    the two scoped jumps idempotently, only after the chain is complete."""
+    expected = _chain_rules(subnet, gateway)
+    if not _chain_exists():
+        _run(["-N", CHAIN])
+        for rule in expected:
+            _run(["-A", CHAIN, *rule])
+    elif [_normalize_rule(r) for r in _current_chain_rules()] != [_normalize_rule(r) for r in expected]:
+        raise RuntimeError(f"existing chain {CHAIN} does not match expected rules; refusing to reconcile")
+    for parent in PARENTS:
+        jump = _jump(parent, subnet)
+        if not _state(["-C", *jump]):
+            _run(["-I", *jump])
+
+
+def remove_guard(subnet):
+    """Guaranteed teardown: delete the two scoped jumps (idempotent, bounded), then
+    flush and delete the fixed chain. Never touches a foreign chain."""
+    removed = False
+    for parent in PARENTS:
+        jump = _jump(parent, subnet)
+        deletes = 0
+        while _state(["-C", *jump]):
+            if deletes >= _MAX_JUMP_DELETES:
+                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
+            _run(["-D", *jump])
+            deletes += 1
+            removed = True
+    if _chain_exists():
+        _run(["-F", CHAIN])
+        _run(["-X", CHAIN])
+        removed = True
+    return removed
+
+
+def status_guard():
+    return "present" if _chain_exists() else "absent"
+
+
+def main(argv):
+    if not argv:
+        sys.stderr.write(
+            "usage: kronos-cybergym-egress apply <subnet> <gateway> | remove <subnet> | status\n"
+        )
+        return 2
+    verb = argv[0]
+    rest = argv[1:]
+    try:
+        if verb == "apply":
+            if len(rest) != 2:
+                raise RuntimeError("apply requires exactly: <subnet> <gateway>")
+            subnet = _validate_subnet(rest[0])
+            gateway = _validate_gateway(rest[1])
+            if ipaddress.ip_address(gateway) not in ipaddress.ip_network(subnet):
+                raise RuntimeError(f"gateway {gateway} not inside subnet {subnet}")
+            apply_guard(subnet, gateway)
+            sys.stdout.write("applied\n")
+            return 0
+        if verb == "remove":
+            if len(rest) != 1:
+                raise RuntimeError("remove requires exactly: <subnet>")
+            subnet = _validate_subnet(rest[0])
+            removed = remove_guard(subnet)
+            sys.stdout.write("removed\n" if removed else "already_gone\n")
+            return 0
+        if verb == "status":
+            if rest:
+                raise RuntimeError("status takes no arguments")
+            sys.stdout.write(status_guard() + "\n")
+            return 0
+        raise RuntimeError(f"unknown verb: {verb!r}")
+    except RuntimeError as e:
+        sys.stderr.write(f"kronos-cybergym-egress: {e}\n")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
