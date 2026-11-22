@@ -41,3 +41,51 @@ PASS: all files in LPEG_SECTION_10 present as specified; `tests/test_egress_help
 
 ## §7 Non-goals
 Not this brief: installing the helper or sudoers; running or rerunning R10; mutating the firewall; the §6/§8 evaluation; reconciling stale `SRC-ROADMAP`/`SRC-RESEARCH`; editing the DoD done-predicate.
+
+## §8 AMENDMENT — pin to one lab subnet, fail-closed removal (GATE-1, Option (b), BUILD only)
+
+Authorization: operator decision Option (b) — residuals **R1 and R2 are REJECTED** as merge residuals. GATE-1 authorizes amending PR #74 (branch `eval/r10-leastpriv-egress-executor`, base main `93e1743`) before merge. Still BUILD-only: no merge, no helper install, no sudoers/firewall/network mutation, no container, no target access, no §6/§8 run. Carry the R10EVAL seal at `93e1743`; the LPEG window stays open `93e1743..HEAD` and the amended diff must remain within `LPEG_SECTION_10` (scope audit green).
+
+### §8.1 Pinned installed state (closes R1)
+The helper no longer accepts a caller-supplied subnet/gateway. It reads the single authorized boundary from **root-owned, non-user-writable installed state** `/etc/kronos-cybergym/egress.conf`, mode `0644` root:root, three keys:
+```
+subnet=<private IPv4 CIDR, from the signed scope_manifest.yaml / compose ipam>
+gateway=<IPv4 host address inside subnet>
+network=<the Docker network name the lab Compose pins (e.g. cybergym_default)>
+```
+The human operator writes this file at install time from the signed manifest / compose (the install runbook instructs exactly how). The run user is never granted write access to it. On a missing, unreadable, or malformed config the helper **fails closed**: non-zero exit, no `iptables` call. The helper rejects every other subnet, project, chain, hash, path, environment variable, and argument — nothing but the three pinned values can direct it.
+
+### §8.2 Zero-argument verbs (closes R1 + the sudoers wildcard)
+Helper verbs are exactly `apply`, `remove`, `status` with **no positional arguments**; `apply`/`remove`/`status` derive subnet/gateway/network solely from the pinned config. Any extra argument, unknown verb, flag, or chain name is rejected with no mutation. The sudoers template is tightened to whitelist the three fixed commands with **no wildcard**:
+```
+RUNUSER ALL=(root) NOPASSWD: /usr/local/sbin/kronos-cybergym-egress apply, /usr/local/sbin/kronos-cybergym-egress remove, /usr/local/sbin/kronos-cybergym-egress status
+```
+The executor's non-root path invokes `sudo -n <HELPER_PATH> <verb>` with no subnet argument; its existing `egress_op("apply", subnet, gateway)` / `egress_teardown(subnet)` call signatures are **unchanged** (the non-root branch simply does not forward subnet/gateway to the helper argv), so `cybergym_x_score.py` and `tests/test_eval_cybergym_x_score.py` are not touched.
+
+### §8.3 Fail-closed removal while the lab is live (closes R2)
+`remove` may run **only after Compose teardown**. Before touching iptables it performs a **read-only** `"<docker>" network inspect <pinned network> --format "{{len .Containers}}"` using an absolute docker binary resolved from a fixed candidate list (`/usr/bin/docker`, `/usr/local/bin/docker`), never via `PATH`, and **creates no container or network** (honors "no discovery provisioning"). Decision table, fail-closed by default:
+- network absent (inspect reports no such network) → lab torn down → removal of the exact recorded guard is allowed;
+- network present with `0` attached containers → allowed;
+- network present with `>=1` attached container/endpoint → **REFUSE** (fail closed);
+- docker binary absent, inspect errors, or output unparseable → **REFUSE** (fail closed).
+Removal only ever targets the exact recorded `KRONOS-CYBERGYM-EGRESS` guard for the pinned subnet; it never flushes `DOCKER-USER`, `INPUT`, or any foreign chain. The runbook documents a manual root `iptables` override for the (misconfigured-host) docker-absent edge.
+
+### §8.4 rc=2 fail-closed (closes R3) — refined, apply-preserving
+The false-absent risk is that `status`/`remove` report `absent`/`already_gone` while the chain actually persists (a transient rc `2` masking a present chain). The fix must close that **without** making a legitimate `apply`/`remove` refuse on a host where a genuinely-absent chain returns rc `2` (a real condition the existing `tests/test_egress_guard.py` models with `FakeIptables(missing_chain_rc=2)`, and R6 flags as unverifiable off-host). Therefore, in both the helper and `src/kronos/eval/egress_guard.py`:
+- **`apply` stays tolerant:** its presence-probe treats a non-zero `-C` (rc 1 **or** rc 2) as "not confirmed present → add", because adding is idempotent and safe. `apply` behavior is unchanged.
+- **`status` never returns `absent` on rc 2:** only a clean rc `1` is reported `absent`; rc `2` (and any other non-zero) is reported as an **error / `unknown`**, never `absent` — fail-closed for status truthfulness.
+- **`remove` never claims success on rc 2:** `removed`/`already_gone` is claimed only on a positive rc `1` confirmation that the chain is gone; an rc `2` yields an **error** (the guard is treated as possibly-still-applied), never `already_gone`.
+
+**Scope decision (orchestrator, Option A):** this changes the shared merged `egress_guard._state`/status/remove semantics, which breaks three rc 2 tests in `tests/test_egress_guard.py` (`test_rc2_remove_on_clean_host_is_already_gone`, `test_rc2_apply_installs_full_chain` — may survive since apply stays tolerant —, `test_rc2_mid_apply_failure_leaves_nothing_after_teardown`). That file is therefore **added to `LPEG_SECTION_10`** in `tests/test_commit_authority.py`, and its rc 2 tests are rewritten to assert the new behavior: `apply` still builds the chain on an rc 2 host; `status` returns `unknown`/error (not `absent`) on rc 2; `remove` returns an error (not `already_gone`) on rc 2. Update the `_state` comment (egress_guard.py ~lines 45-46) to match. No other assertion in that file is weakened or reordered.
+
+### §8.5 Gateway validation (closes R8)
+`apply` requires the pinned gateway to be a host address **strictly inside** the pinned subnet — not the network address, not the broadcast address — in both helper and `egress_executor.py`. A gateway equal to the network or broadcast address, or outside the subnet, is rejected with no mutation.
+
+### §8.6 Uninstall gating (closes R7)
+The install runbook's uninstall sequence gates `rm -f` of the helper/sudoers on a confirmed `status` = `absent` after a successful `remove`; it never removes the helper while the guard is still applied or after a failed `remove`. The pinned config is removed last, only once the guard is absent.
+
+### §8.7 Adversarial test obligations (`tests/test_egress_helper.py`, hermetic)
+No real iptables/docker/sudo/network. Add proofs that: a caller cannot supply or override subnet/gateway/network (positional args rejected); a config pointing at a different/foreign subnet is still confined to the pinned one (the helper uses the config, not caller input); missing/malformed/unreadable config fails closed with no iptables call; `remove` with the pinned network still showing `>=1` container **refuses** (fail closed), with docker-absent/inspect-error **refuses**, and only with network-gone/`0`-containers proceeds and removes the exact recorded guard; rc `2` yields error/fail-closed (never `absent`/`already_gone`) in helper and `egress_guard._state`; gateway equal to network or broadcast is rejected; the sudoers template carries no wildcard and `visudo -cf` parses it on a substituted scratch copy; `remove` never targets `DOCKER-USER`/`INPUT`/foreign. Mock the docker `network inspect` call (stateful) and iptables as in the existing hermetic harness.
+
+### §8.8 Acceptance
+All §8 behaviors implemented within `LPEG_SECTION_10`; `tests/test_egress_helper.py` and the full canonical suite green via `TMPDIR="${XDG_CACHE_HOME:-$HOME/.cache}/kronos/pytest-tmp" rtk test .venv/bin/python -m pytest -q` (0 failed, decided from the SUMMARY line); `test_B31_Q_scope_audit` green; diff scope ⊆ `LPEG_SECTION_10` and no hard-boundary file touched; fresh independent security review PASS at the new exact head; amended PR pushed; stop at GATE-2 with no merge/install/run.
