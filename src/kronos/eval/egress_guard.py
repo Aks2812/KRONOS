@@ -189,17 +189,30 @@ def apply_egress_guard(subnet: str, gateway: str) -> None:
             _run(["-I", *jump])
 
 
-def remove_egress_guard(subnet: str) -> Optional[str]:
+def _delete_jumps(subnet: str) -> bool:
+    """Drive jump deletion off `-D`'s own return code: rc 0 -> deleted, repeat (bounded);
+    rc 1 -> nothing left, done; rc 2 / anything else -> raise (fail closed)."""
     removed = False
     for parent in PARENTS:
         jump = _jump(parent, subnet)
         deletes = 0
-        while _state(["-C", *jump]):
-            if deletes >= _MAX_JUMP_DELETES:
-                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
-            _run(["-D", *jump])
+        while True:
+            result = _iptables(["-D", *jump])
+            if result.returncode == 1:
+                break
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"iptables -D {' '.join(jump)} failed (rc={result.returncode}): {(result.stderr or '').strip()}"
+                )
             deletes += 1
             removed = True
+            if deletes >= _MAX_JUMP_DELETES:
+                raise RuntimeError(f"iptables jump {' '.join(jump)} still present after {deletes} deletes")
+    return removed
+
+
+def remove_egress_guard(subnet: str) -> Optional[str]:
+    removed = _delete_jumps(subnet)
     if _chain_exists():
         _run(["-F", CHAIN])
         _run(["-X", CHAIN])

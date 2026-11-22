@@ -9,6 +9,7 @@ Proves, per the GATE-1 remediation mandate: argument rejection, foreign-chain
 protection, no capability expansion, apply/remove idempotency, and failure cleanup.
 """
 import importlib.util
+import os
 import subprocess
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
@@ -130,6 +131,9 @@ def _install_fakes(mod, monkeypatch, tmp_path, conf=CONF, docker_mode="zero", do
     cfg = tmp_path / "egress.conf"
     if conf is not None:
         cfg.write_text(conf)
+        cfg.chmod(0o644)
+    # hermetic: tmp files are owned by the test user, not root; the real default stays 0
+    monkeypatch.setattr(mod, "_REQUIRED_CONFIG_UID", os.getuid())
     monkeypatch.setattr(mod, "CONFIG_PATH", str(cfg))
     monkeypatch.setattr(mod, "_iptables_path", lambda: "/usr/sbin/iptables")
     if docker_present:
@@ -138,6 +142,15 @@ def _install_fakes(mod, monkeypatch, tmp_path, conf=CONF, docker_mode="zero", do
     mod._fake = fake
     mod._docker = docker
     return mod
+
+
+@pytest.fixture(autouse=True)
+def _pinned_executor_config(monkeypatch, tmp_path_factory):
+    """Point the executor's pinned-config reader at a hermetic tmp copy (never /etc)."""
+    cfg = tmp_path_factory.mktemp("execpin") / "egress.conf"
+    cfg.write_text(CONF)
+    monkeypatch.setattr(egress_executor, "PINNED_CONFIG_PATH", str(cfg))
+    return cfg
 
 
 @pytest.fixture
@@ -347,7 +360,9 @@ def test_helper_rc2_probe_is_fail_closed_not_absent(monkeypatch, tmp_path, verb,
     assert mod.main([verb]) == 1
     out = capsys.readouterr().out
     assert "absent" not in out and "already_gone" not in out
-    _no_mutation(mod)
+    # only -D (return-code driven jump deletion) may run; never chain flush/delete/create
+    for args in mod._fake.calls:
+        assert args[:1] not in (["-N"], ["-A"], ["-I"], ["-F"], ["-X"]), args
 
 
 def test_helper_rc1_status_is_absent(helper, capsys):
@@ -571,3 +586,162 @@ def test_executor_sudo_path_absolute(monkeypatch):
     monkeypatch.setattr(egress_executor.os.path, "isfile", lambda p: False)
     with pytest.raises(RuntimeError):
         egress_executor._sudo_path()
+
+
+# --- F2/F3: executor binds caller values to the pinned config ------------------
+
+@pytest.mark.parametrize("subnet,gateway", [
+    ("172.19.0.0/16", "172.19.0.1"),   # different (still private) subnet
+    (SUBNET, "172.18.0.2"),            # same subnet, different gateway
+])
+def test_executor_apply_rejects_mismatch_with_pinned_config(monkeypatch, subnet, gateway):
+    called = []
+    monkeypatch.setattr(egress_executor.subprocess, "run", lambda *a, **k: called.append(a))
+    for uid in (0, 1000):
+        monkeypatch.setattr(egress_executor.os, "geteuid", lambda uid=uid: uid)
+        monkeypatch.setattr(egress_executor.egress_guard, "apply_egress_guard", lambda *a: called.append(a))
+        with pytest.raises(ValueError):
+            egress_executor.egress_op("apply", subnet, gateway)
+    assert called == []
+
+
+def test_executor_remove_rejects_subnet_mismatch(monkeypatch):
+    called = []
+    monkeypatch.setattr(egress_executor.subprocess, "run", lambda *a, **k: called.append(a))
+    for uid in (0, 1000):
+        monkeypatch.setattr(egress_executor.os, "geteuid", lambda uid=uid: uid)
+        with pytest.raises(ValueError):
+            egress_executor.egress_op("remove", "172.19.0.0/16")
+    assert called == []
+
+
+def test_executor_missing_pinned_config_fails_closed(monkeypatch, tmp_path):
+    monkeypatch.setattr(egress_executor, "PINNED_CONFIG_PATH", str(tmp_path / "absent.conf"))
+    monkeypatch.setattr(egress_executor.os, "geteuid", lambda: 1000)
+    called = []
+    monkeypatch.setattr(egress_executor.subprocess, "run", lambda *a, **k: called.append(a))
+    with pytest.raises(RuntimeError):
+        egress_executor.egress_op("apply", SUBNET, GATEWAY)
+    assert called == []
+
+
+def _root_remove_env(monkeypatch, docker):
+    monkeypatch.setattr(egress_executor.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(egress_executor, "_docker_path", lambda: "/usr/bin/docker")
+    monkeypatch.setattr(egress_executor.subprocess, "run", lambda argv, **k: docker(argv))
+    removed = []
+    monkeypatch.setattr(egress_executor.egress_guard, "remove_egress_guard", lambda s: removed.append(s) or "removed")
+    return removed
+
+
+@pytest.mark.parametrize("mode", ["active", "error", "garbage"])
+def test_executor_root_remove_refuses_while_lab_live(monkeypatch, mode):
+    removed = _root_remove_env(monkeypatch, FakeDocker(mode))
+    with pytest.raises(RuntimeError):
+        egress_executor.egress_op("remove", SUBNET)
+    assert removed == []
+
+
+def test_executor_root_remove_refuses_docker_absent(monkeypatch):
+    real_docker_path = egress_executor._docker_path
+    removed = _root_remove_env(monkeypatch, FakeDocker("zero"))
+    monkeypatch.setattr(egress_executor, "_docker_path", real_docker_path)
+    monkeypatch.setattr(egress_executor, "_DOCKER_CANDIDATES", ("/nonexistent/a", "/nonexistent/b"))
+    with pytest.raises(RuntimeError):
+        egress_executor.egress_op("remove", SUBNET)
+    assert removed == []
+
+
+@pytest.mark.parametrize("mode", ["zero", "absent"])
+def test_executor_root_remove_proceeds_when_lab_down(monkeypatch, mode):
+    removed = _root_remove_env(monkeypatch, FakeDocker(mode))
+    assert egress_executor.egress_op("remove", SUBNET) == "removed"
+    assert removed == [SUBNET]
+
+
+def test_executor_non_root_remove_passes_no_subnet(monkeypatch):
+    monkeypatch.setattr(egress_executor.os, "geteuid", lambda: 1000)
+    monkeypatch.setattr(egress_executor, "_sudo_path", lambda: "/usr/bin/sudo")
+    seen = {}
+
+    def fake_run(argv, **k):
+        seen["argv"] = argv
+        return subprocess.CompletedProcess(argv, 0, "removed\n", "")
+
+    monkeypatch.setattr(egress_executor.subprocess, "run", fake_run)
+    egress_executor.egress_op("remove", SUBNET)
+    assert seen["argv"][2:] == [egress_executor.HELPER_PATH, "remove"]
+
+
+# --- F4: helper remove drives jump deletion off -D's rc ----------------------------
+
+def test_helper_remove_jump_delete_sequence_rc_driven(helper):
+    assert helper.main(["apply"]) == 0
+    helper._fake.calls.clear()
+    assert helper.main(["remove"]) == 0
+    assert not [c for c in helper._fake.calls if c[:1] == ["-C"]]
+    assert helper._fake.calls[:4] == [
+        ["-D", "DOCKER-USER", "-s", SUBNET, "-j", CHAIN],
+        ["-D", "DOCKER-USER", "-s", SUBNET, "-j", CHAIN],
+        ["-D", "INPUT", "-s", SUBNET, "-j", CHAIN],
+        ["-D", "INPUT", "-s", SUBNET, "-j", CHAIN],
+    ]
+
+
+def test_helper_remove_duplicate_jumps_two_deletes_then_rc1(helper):
+    helper.main(["apply"])
+    jump = ["DOCKER-USER", "-s", SUBNET, "-j", CHAIN]
+    helper._fake.parent_jumps["DOCKER-USER"].append(list(jump))  # duplicate
+    helper._fake.calls.clear()
+    assert helper.main(["remove"]) == 0
+    dels = [c for c in helper._fake.calls if c[:2] == ["-D", "DOCKER-USER"]]
+    assert len(dels) == 3  # rc0, rc0, rc1
+    assert helper._fake.parent_jumps["DOCKER-USER"] == []
+
+
+def test_helper_remove_rc2_on_delete_raises(monkeypatch, tmp_path, capsys):
+    mod = _install_fakes(load_helper(), monkeypatch, tmp_path)
+    mod.main(["apply"])
+    real = mod._iptables
+    mod._iptables = lambda args: FakeIptables._res(2) if args[:1] == ["-D"] else real(args)
+    assert mod.main(["remove"]) == 1
+    out = capsys.readouterr().out
+    assert "removed" not in out and "already_gone" not in out
+    assert mod._fake.chain_rules is not None  # chain not flushed/deleted
+
+
+# --- F5: config trust (lstat) ------------------------------------------------------
+
+def test_helper_config_real_default_requires_root_owner():
+    assert load_helper()._REQUIRED_CONFIG_UID == 0
+
+
+def test_helper_config_wrong_owner_refused(monkeypatch, tmp_path):
+    mod = _install_fakes(load_helper(), monkeypatch, tmp_path)
+    monkeypatch.setattr(mod, "_REQUIRED_CONFIG_UID", os.getuid() + 12345)
+    assert mod.main(["status"]) == 1
+    assert mod._fake.calls == []
+
+
+@pytest.mark.parametrize("mode", [0o664, 0o646, 0o666, 0o622])
+def test_helper_config_group_or_other_writable_refused(monkeypatch, tmp_path, mode):
+    mod = _install_fakes(load_helper(), monkeypatch, tmp_path)
+    (tmp_path / "egress.conf").chmod(mode)
+    assert mod.main(["status"]) == 1
+    assert mod._fake.calls == []
+
+
+def test_helper_config_symlink_refused(monkeypatch, tmp_path):
+    mod = _install_fakes(load_helper(), monkeypatch, tmp_path)
+    real = tmp_path / "real.conf"
+    real.write_text(CONF)
+    real.chmod(0o644)
+    link = tmp_path / "link.conf"
+    link.symlink_to(real)
+    monkeypatch.setattr(mod, "CONFIG_PATH", str(link))
+    assert mod.main(["status"]) == 1
+    assert mod._fake.calls == []
+
+
+def test_helper_config_good_mode_accepted(helper, capsys):
+    assert helper.main(["status"]) == 0

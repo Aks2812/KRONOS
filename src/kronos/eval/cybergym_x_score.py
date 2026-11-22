@@ -231,21 +231,35 @@ def run(output_root: Path) -> Path:
             with registry:
                 print("standing up the lab (docker compose up -d --build)...")
                 compose("up", "-d", "--build")
-                registry.register(
-                    "docker",
-                    "cybergym-range-stack",
-                    compose_down(compose),
-                    detail="docker compose down -v (CyberGym range)",
-                )
-                assert_ipv4_only("cybergym_default")
-                subnet = discover_subnet("cybergym_default")
-                gateway = discover_gateway("cybergym_default")
-                # register BEFORE apply so a partial apply is still rolled back (LIFO: firewall first)
+                try:
+                    assert_ipv4_only("cybergym_default")
+                    subnet = discover_subnet("cybergym_default")
+                    gateway = discover_gateway("cybergym_default")
+                except BaseException:
+                    # discovery failed after `up`: the stack must still be torn down
+                    registry.register(
+                        "docker",
+                        "cybergym-range-stack",
+                        compose_down(compose),
+                        detail="docker compose down -v (CyberGym range)",
+                    )
+                    raise
+                # Registration order is the REVERSE of teardown (LIFO). The egress guard is
+                # registered BEFORE compose_down so compose goes down first (containers and
+                # network gone) and the guard is removed LAST: the helper's `remove` refuses
+                # while the lab network still has attached containers (SPEC_BRIEF 8.3/9.1).
+                # Both are registered BEFORE apply so a partial apply is still rolled back.
                 registry.register(
                     "firewall",
                     "cybergym-egress",
                     egress_teardown(subnet),
                     detail=f"remove KRONOS-CYBERGYM-EGRESS guard for {subnet}",
+                )
+                registry.register(
+                    "docker",
+                    "cybergym-range-stack",
+                    compose_down(compose),
+                    detail="docker compose down -v (CyberGym range)",
                 )
                 egress_op("apply", subnet, gateway)
                 wait_for_services()

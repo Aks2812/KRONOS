@@ -153,13 +153,12 @@ def test_remove_and_idempotence(fake):
     g.apply_egress_guard(SUBNET, GATEWAY)
     fake.calls.clear()
     assert g.remove_egress_guard(SUBNET) is None
+    # F4: jump deletion is driven by -D's own return code (rc 0 -> repeat, rc 1 -> done); no -C
     assert fake.calls == [
-        ["-C", *JUMP],
         ["-D", *JUMP],
-        ["-C", *JUMP],
-        ["-C", *JUMP_INPUT],
+        ["-D", *JUMP],
         ["-D", *JUMP_INPUT],
-        ["-C", *JUMP_INPUT],
+        ["-D", *JUMP_INPUT],
         ["-n", "-L", CHAIN],
         ["-F", CHAIN],
         ["-X", CHAIN],
@@ -428,7 +427,8 @@ def test_rc2_remove_is_fail_closed_never_already_gone(monkeypatch):
     monkeypatch.setattr(g.subprocess, "run", f)
     with pytest.raises(RuntimeError):
         g.remove_egress_guard(SUBNET)
-    assert not [c for c in f.calls if c[0] in ("-D", "-F", "-X", "-N", "-A", "-I")]
+    assert not [c for c in f.calls if c[0] in ("-F", "-X", "-N", "-A", "-I")]
+    assert not [c for c in f.calls if c[0] == "-D" and c[1:] not in (JUMP, JUMP_INPUT)]
 
 
 def test_rc2_status_is_unknown_never_absent(monkeypatch):
@@ -543,3 +543,36 @@ def test_unexpected_probe_rc_raises(monkeypatch, rc):
     with pytest.raises(RuntimeError):
         g.apply_egress_guard(SUBNET, GATEWAY)
     assert not [c for c in f.calls if c[0] in MUTATING]
+
+
+# ---- F4: remove drives jump deletion off -D's own rc ----
+
+def test_remove_duplicate_jump_rules_two_deletes_then_rc1(fake):
+    fake.chains[CHAIN] = list(RULES)
+    fake.chains["DOCKER-USER"] = [JUMP[1:], JUMP[1:], ["-j", "RETURN"]]
+    assert g.remove_egress_guard(SUBNET) is None
+    deletes = [c for c in fake.calls if c[0] == "-D" and c[1] == "DOCKER-USER"]
+    assert len(deletes) == 3  # rc0, rc0, rc1
+    assert fake.chains["DOCKER-USER"] == [["-j", "RETURN"]]
+    assert not [c for c in fake.calls if c[0] == "-C"]
+
+
+def test_remove_rc2_on_delete_raises_and_never_already_gone(monkeypatch):
+    f = FakeIptables(missing_chain_rc=2)
+    f.chains["DOCKER-USER"] = [JUMP[1:]]
+    real = f.__call__
+
+    def rc2_on_delete(argv, **kw):
+        if argv[2] == "-D":
+            return subprocess.CompletedProcess(argv, 2, "", "")
+        return real(argv, **kw)
+
+    monkeypatch.setattr(g.subprocess, "run", rc2_on_delete)
+    with pytest.raises(RuntimeError):
+        g.remove_egress_guard(SUBNET)
+    assert not [c for c in f.calls if c[0] in ("-F", "-X")]
+
+
+def test_remove_rc2_chain_missing_clean_host_is_already_gone_via_rc1(fake):
+    assert g.remove_egress_guard(SUBNET) == "already_gone"
+    assert not [c for c in fake.calls if c[0] == "-C"]

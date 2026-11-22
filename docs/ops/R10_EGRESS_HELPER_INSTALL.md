@@ -31,7 +31,11 @@ chown root:root /etc/kronos-cybergym/egress.conf
 chmod 0644 /etc/kronos-cybergym/egress.conf
 ```
 
-A missing, unreadable or malformed config makes the helper fail closed (non-zero exit, no
+The helper also `lstat`s the file and refuses it unless it is a regular file (not a symlink),
+owned by uid 0, with no group/other write bit. The in-process (root) executor path and the
+non-root executor path additionally require the caller's subnet/gateway to equal these pinned values.
+
+A missing, unreadable, untrusted or malformed config makes the helper fail closed (non-zero exit, no
 iptables call).
 
 ## Install (run as root)
@@ -39,10 +43,19 @@ iptables call).
 ```
 install -o root -g root -m 0755 scripts/kronos-cybergym-egress /usr/local/sbin/kronos-cybergym-egress
 
-# edit RUNUSER -> the unprivileged account that runs the evaluation, then:
-install -o root -g root -m 0440 deploy/sudoers.d/kronos-cybergym-egress /etc/sudoers.d/kronos-cybergym-egress
-visudo -cf /etc/sudoers.d/kronos-cybergym-egress        # must print: parsed OK
+# edit RUNUSER -> the unprivileged account that runs the evaluation, into a TEMP copy;
+# validate it BEFORE it can become active, and only then move it into /etc/sudoers.d:
+tmp=$(mktemp)
+cp deploy/sudoers.d/kronos-cybergym-egress "$tmp"
+# (edit RUNUSER in "$tmp")
+visudo -cf "$tmp" \
+  && install -o root -g root -m 0440 "$tmp" /etc/sudoers.d/kronos-cybergym-egress \
+  && visudo -cf /etc/sudoers.d/kronos-cybergym-egress        # must print: parsed OK
+rm -f "$tmp"
 ```
+
+A bad sudoers file never lands in `/etc/sudoers.d`: the `install` runs only if `visudo -cf` of the
+temp copy succeeded.
 
 ## Verify (as the run user, non-interactive)
 
@@ -91,14 +104,13 @@ iptables -w -X KRONOS-CYBERGYM-EGRESS
 ## Uninstall (remove helper + policy entirely, as root)
 
 Remove the helper only after `remove` succeeded AND `status` confirms `absent`; otherwise STOP
-(use the manual override above if needed, then re-check `status`).
+(use the manual override above if needed, then re-check `status`). The `rm` commands are chained
+with `&&` so a failed `remove`, or a `status` other than exactly `absent`, never leads to `rm`:
 
 ```
-sudo -n /usr/local/sbin/kronos-cybergym-egress remove     # if still applied; must succeed
-sudo -n /usr/local/sbin/kronos-cybergym-egress status     # must print: absent  -- else STOP, do NOT rm
-rm -f /usr/local/sbin/kronos-cybergym-egress
-rm -f /etc/sudoers.d/kronos-cybergym-egress
-rm -f /etc/kronos-cybergym/egress.conf
+/usr/local/sbin/kronos-cybergym-egress remove \
+  && [ "$(/usr/local/sbin/kronos-cybergym-egress status)" = "absent" ] \
+  && rm -f /usr/local/sbin/kronos-cybergym-egress /etc/sudoers.d/kronos-cybergym-egress /etc/kronos-cybergym/egress.conf
 ```
 
 ## Notes

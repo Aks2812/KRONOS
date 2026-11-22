@@ -328,4 +328,22 @@ def test_run_uses_direct_compose_and_egress_guard():
 def test_run_registers_firewall_before_apply_and_before_wait():
     src = inspect.getsource(m.run)
     assert src.index('"firewall"') < src.index('egress_op("apply", subnet, gateway)') < src.index("wait_for_services()")
-    assert src.index("compose_down(compose)") < src.index('"firewall"')
+    # F1: egress teardown registered BEFORE the success-path compose_down (LIFO => compose down first, guard last)
+    fw = src.index('registry.register(\n                    "firewall"')
+    assert fw < src.index("compose_down(compose)", fw) < src.index('egress_op("apply", subnet, gateway)')
+
+
+def test_run_teardown_disposes_compose_before_egress_removal():
+    from kronos.cleanup import CleanupRegistry
+
+    src = inspect.getsource(m.run)
+    fw = src.index('registry.register(\n                    "firewall"')
+    dk = src.index('registry.register(\n                    "docker"', fw)
+    assert fw < dk < src.index('egress_op("apply", subnet, gateway)')
+    # replay that registration order through the real registry: compose is disposed first
+    order = []
+    reg = CleanupRegistry()
+    reg.register("firewall", "egress", lambda: order.append("egress_remove"))
+    reg.register("docker", "stack", lambda: order.append("compose_down"))
+    reg.teardown_all()
+    assert order == ["compose_down", "egress_remove"]
