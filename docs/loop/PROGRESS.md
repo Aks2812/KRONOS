@@ -1,4 +1,48 @@
 # KRONOS loop-state checkpoint
+seq: 469
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: BUILD_R10_PIN_EGRESS_AMEND -> amend PR #74 (branch eval/r10-leastpriv-egress-executor) per operator
+  GATE-1 (context.md, Option (b)): REJECT R1/R2 as residuals; bind helper to ONE signed-manifest/compose-pinned R10
+  lab subnet+gateway+network in root-owned non-user-writable installed state; reject every other subnet/project/
+  chain/hash/path/env/arg; remove FAIL-CLOSED while any scoped CyberGym container/endpoint active, allow removal
+  only for the exact recorded guard AFTER Compose teardown; fix rc=2 false-absent (R3), unsafe gateway (R8),
+  uninstall-after-failed-removal (R7). Adversarial tests + focused + canonical; push amended PR; FRESH independent
+  security review at new head; present GATE-2. NO merge, install, sudoers/firewall/network mutation, container,
+  target, §6/§8 run.
+pending_action_outcome: PENDING (write-ahead; build not yet executed at this checkpoint)
+design_decisions (orchestrator, binding on build):
+  D1 PINNED STATE: helper reads root-owned, mode-0644 (non-user-writable) /etc/kronos-cybergym/egress.conf
+     (keys subnet=, gateway=, network=), populated by human at install from the signed scope_manifest.yaml / compose
+     ipam. Missing/unreadable/malformed -> FAIL CLOSED (non-zero, NO iptables mutation).
+  D2 ZERO POSITIONAL ARGS: verbs apply|remove|status only, NO user-supplied subnet/gateway/network; any extra arg or
+     unknown verb -> reject. This also removes the sudoers wildcard (old LOW-3): sudoers whitelists the three fixed
+     commands exactly.
+  D3 REMOVE ACTIVE-CHECK: remove runs READ-ONLY `<docker> network inspect <pinned network> --format '{{len
+     .Containers}}'` via absolute docker path (candidate list, NO PATH; creates nothing -> honors "no containers/
+     networks for discovery"). >=1 endpoint, docker error/absent, or inspect ambiguous -> REFUSE (fail closed).
+     Only network-gone or zero-endpoints (Compose torn down) -> allow removing the EXACT recorded guard. Manual root
+     iptables override documented in runbook for the docker-absent edge.
+  D4 rc=2 FIX (R3): helper + egress_guard _state map ONLY rc 1 -> absent; rc 2 -> error/FAIL CLOSED (never absent/
+     already_gone). If egress_guard rc2 change breaks any test OUTSIDE LPEG_SECTION_10, builder STOPS and reports;
+     no out-of-scope edit without orchestrator scope decision.
+  D5 GATEWAY (R8): gateway must equal pinned gateway AND be a host addr strictly inside subnet (not network, not
+     broadcast). Else reject, NO mutation.
+  D6 UNINSTALL (R7): runbook gates `rm` on a confirmed status=absent after a successful remove; never rm while guard
+     applied or remove failed.
+scope_files (<= existing 10-file LPEG window; expect 7 touched): scripts/kronos-cybergym-egress,
+  src/kronos/eval/egress_executor.py, src/kronos/eval/egress_guard.py, deploy/sudoers.d/kronos-cybergym-egress,
+  docs/ops/R10_EGRESS_HELPER_INSTALL.md, SPEC_BRIEF_R10_least_privilege_egress_executor.md (amend in place),
+  tests/test_egress_helper.py. cybergym_x_score.py call signatures UNCHANGED -> tests/test_eval_cybergym_x_score.py
+  untouched; tests/test_commit_authority.py seal UNCHANGED unless scope expands. LPEG window stays open 93e1743..HEAD.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop. No merge/install/
+  firewall/network/container/target/§6/§8 this turn.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 468
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
