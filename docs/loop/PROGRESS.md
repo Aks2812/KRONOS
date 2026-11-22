@@ -1,4 +1,40 @@
 # KRONOS loop-state checkpoint
+seq: 460
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb)
+pending_action: DRAFT_BE-G3-5_R10_PLANNING_SPEC_BRIEF_AND_SEALTAX
+pending_action_outcome: PENDING
+prior_action_outcome: seq 459 §13.2 recovery -> presented BE-G3-5 (R10) GATE-1 candidate, REVIEW-REQUIRED. DONE.
+authorization: Operator granted GATE-1 PLANNING authorization (turn 2026-11-22) for a scoped BE-G3-5/R10
+  SPEC_BRIEF from main dab9b24, PLANNING ONLY. Explicit prohibitions carried into brief + this turn:
+  NO container start, NO firewall/network state change, NO tool invocation against targets, NO §6/§8 execution.
+  Deliverable = brief document + seal-tax, independent review, present SEPARATE execution GATE with NO run.
+planned_action: kronos-builder (permitted files EXACTLY two, branch-local, reversible, non-live, non-governance):
+  (1) NEW SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md (repo root) — planning doc only.
+  (2) tests/test_commit_authority.py — seal-tax ONLY: seal PRG window {PRG_BASE=14c567f}..HEAD by adding
+      PRG_MERGE="dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb" and changing line-409 assertion
+      {PRG_BASE}..HEAD -> {PRG_BASE}..{PRG_MERGE}; append NEW window R10EVAL_BASE=dab9b24,
+      R10EVAL_SECTION_10={brief .md, tests/test_commit_authority.py}, open assertion {R10EVAL_BASE}..HEAD.
+  NO src/ change (run-code already merged #68/#69; execution is a later §6/§8 GATE, not this brief).
+planning_pins (for brief, all read-only verified this turn):
+  main=dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb
+  cybergym/scope_manifest.yaml raw sha256=3961c4331133749d4464ba98e038728b5c2db5a12c92e5e207d9864ee1622947
+  cybergym/scope_manifest_pubkey.pem raw sha256=769416bc28aa9dda57ea89cf1e8cf78b5fc89fdc58f0ce5ab7607bb1e2d3e804
+  cybergym/docker-compose.yml raw sha256=f902808c43f5decf7d5ab061d13d8558b89ffa7cc127ff8b249c598a00834f3f
+  engagement.id=cybergym-x-instrument-v1; in_scope globs localhost*/127.0.0.1*/kronos-cybergym-*; destructive_allowed=false.
+  runtime manifest_id = compute_manifest_id (sha256 of canonical_content) via load_and_verify (src/kronos/manifest.py:199-258).
+  evidence schema: evaluation_evidence/cybergym-x-score/run_summary.schema.json; committed redacted set =
+  {run_summary.json, budget_ledger.json, teardown_report.json, evidence_manifest.json}; assert_redacted gate +
+  export_redacted (src/kronos/eval/cybergym_x_score.py:106-131,281-282).
+HARD BOUNDARY (brief marks read-only): .claude/** .github/** cybergym/** docs/governance/** manifest.py / signed manifest.
+decision_class: AUTO-CONTINUE (planning build within operator GATE-1 planning authorization; no gate crossed, no run).
+opus_effort: LOW
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 459
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
