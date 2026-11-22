@@ -1,4 +1,36 @@
 # KRONOS loop-state checkpoint
+seq: 471
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (3-file manifest == on-disk @ 93e1743cc38f9004e8c751160e2c15ef9502342d)
+pending_action: PUSH_AMENDED_PR74_AND_SECURITY_REVIEW -> push branch eval/r10-leastpriv-egress-executor to update
+  draft PR #74 to new head, then dispatch FRESH independent security kronos-reviewer at the pushed head; present
+  GATE-2. NO merge, install, sudoers/firewall/network mutation, container, target, §6/§8 run.
+pending_action_outcome: PENDING (push + review not yet done at this checkpoint)
+prior_action_outcome: seq 469/470 BUILD_R10_PIN_EGRESS_AMEND -> DONE. kronos-builder commit 9e58acc implemented all
+  §8 items; orchestrator committed the §8 brief amendment (d5ecb99). Builder suites: test_egress_helper 94 passed;
+  test_egress_guard 70 passed; CANONICAL 4327 passed, 1 skipped, 0 failed (580s); test_B31_Q_scope_audit 1 passed.
+  Orchestrator re-ran scope audit after brief commit: 1 passed. Diff 9152f15..d5ecb99 == 9 files, all in
+  LPEG_SECTION_10 (prior 10 members + test_egress_guard.py added this window): SPEC_BRIEF..., sudoers template,
+  runbook, scripts/kronos-cybergym-egress, egress_executor.py, egress_guard.py, test_commit_authority.py (LPEG
+  membership add only), test_egress_guard.py, test_egress_helper.py. cybergym_x_score.py + test_eval_cybergym_x_score
+  UNCHANGED.
+build_summary (closes R1/R2/R3/R7/R8 by design; to validate by fresh review + at gated run):
+  R1: helper reads pinned root-owned /etc/kronos-cybergym/egress.conf (subnet/gateway/network); zero-arg verbs;
+      rejects any other subnet/arg. R2: remove fail-closed while pinned docker network has >=1 endpoint (read-only
+      `docker network inspect ... {{len .Containers}}`, absolute path, creates nothing); only network-gone/0 ->
+      remove exact recorded guard. R3: _state rc1->absent, rc2/other->raise (status/remove fail closed); apply uses
+      separate tolerant _probe (rc1|rc2 -> add) so apply unbroken. R8: gateway strictly inside subnet (not network/
+      broadcast). sudoers: three fixed commands, NO wildcard. R7: runbook uninstall gates rm on status=absent.
+builder_residual_flags (carry to GATE-2): (i) docker "network absent" detection matches stderr `no such network` /
+  `network <name> not found` only; any other inspect error REFUSES (fail closed). Builder's reading of docker msgs;
+  confirm at real-host run. (ii) install/run-time properties remain UNVERIFIABLE off-host (R5/R6).
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 470
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
