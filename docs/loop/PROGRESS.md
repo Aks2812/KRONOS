@@ -1,4 +1,51 @@
 # KRONOS loop-state checkpoint
+seq: 464
+derived_at: 2026-11-22T00:00:00Z
+contract_version: 1.4.5
+contract_sha256_contract: 60dd0fef27882352e4d418d08650c3b219ae597a0eabaa2a8bef1b3a75208518
+contract_sha256_schema: bd56747b1e3b13e5930287c2bd3a3bcd2970b57934f23f97dcd615e95ed3d62c
+contract_sha256_done: 37fe31edfaf8d2ceb725ccb24ef626b01b4c903f5acca7429cc24ddab70d2a8f
+integrity_main: PASS (manifest v1.4.5 3-file == recomputed @ NEW main 93e1743cc38f9004e8c751160e2c15ef9502342d;
+  contract 60dd0fef.., schema bd56747b.., KRONOS_DONE.md 37fe31ed.. all MATCH)
+pending_action: NONE
+pending_action_outcome: N/A
+prior_action_outcome: seq 463 GATE2_READY_AND_SQUASH_MERGE_PR73 -> DONE.
+  (a) gh pr ready 73 => isDraft=false, head unchanged ffa1c2de3db7256adfb9f3677696ae0936aa5d84.
+  (b) fetch + reconfirm: head==ffa1c2d (NO drift), state=OPEN unmerged, mergeable=MERGEABLE, mergeState=CLEAN.
+  (c) FULL ten-item MERGE-GATE re-measured LIVE @ffa1c2d THIS TURN, ALL PASS:
+    (1) main protected ruleset void-rule-kronos 25333712 active; (2) PR not draft (readied); (3) open & unmerged;
+    (4) head==operator-authorized ffa1c2d; (5) independent kronos-reviewer PASS @ffa1c2d (fresh, seq 462, same head);
+    (6) ci:none (ruleset no required_status_checks); (7) canonical suite RE-MEASURED THIS TURN: SUMMARY 4231 passed,
+    1 skipped, 0 failed (decided from summary line, not $?); (8) scope/seal-tax audit green: test_B31_Q_scope_audit
+    1 passed, git diff dab9b24..ffa1c2d == EXACTLY 2 files {SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md,
+    tests/test_commit_authority.py}; (9) orchestrator Gate-2 semantic PASS (planning-only, NO-execution clause,
+    manifest hashes match, hard-boundaries read-only); (10) no hard-boundary/out-of-scope file touched.
+  (d) gh pr merge 73 --squash --match-head-commit ffa1c2de3db7256adfb9f3677696ae0936aa5d84 (NO --admin, NO --auto).
+    PR #73 MERGED 2026-11-22T08:07:26Z, squash merge SHA 93e1743cc38f9004e8c751160e2c15ef9502342d.
+post_merge_verify: NEW main 93e1743. Integrity PASS (3 pins == on-disk @93e1743; contract_version 1.4.5).
+  Squash scope dab9b24..93e1743 == EXACTLY the 2 files. Brief SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md present
+  on main. Seal-tax now on main: PRG sealed 14c567f..dab9b24; R10EVAL window OPEN dab9b24..HEAD permitting
+  {brief .md, tests/test_commit_authority.py}; test_B31_Q_scope_audit green @ new main.
+base_main: 93e1743cc38f9004e8c751160e2c15ef9502342d
+prev_main: dab9b24d4c838c642b4a2e366b22fc3b0ee45fdb
+merged_pr: 73
+pr73_squash_merge: 93e1743cc38f9004e8c751160e2c15ef9502342d
+report_type: SAFE-TO-APPROVE
+decision_class: REVIEW-REQUIRED
+opus_effort: MEDIUM
+opus_effort_reason: Post-merge seal/verify after protected-branch squash-merge + presenting §6/§8 execution GATE.
+awaiting_operator: SEPARATE §6/§8 EXECUTION authorization for the single manifest-bounded R10 CyberGym run per
+  SPEC_BRIEF_R10_BE-G3-5_cybergym_eval_run.md (now on main @93e1743). The brief authorizes NO run; loop starts NO
+  container/firewall/network/target/run without explicit maintainer GATE-1 execution auth (+ in-turn GATE-2).
+  Required to satisfy BE-G3-5 (DoD KRONOS_DONE.md:50, OPEN). BE-G2-6 (R12) remains BLOCKED behind BE-G3-5.
+forward_followups: (A) STANDING SEAL-TAX: the NEXT brief must seal the open R10EVAL window dab9b24..HEAD to PR#73
+  squash SHA 93e1743 in tests/test_commit_authority.py (add R10EVAL_MERGE=93e1743, change {R10EVAL_BASE}..HEAD ->
+  {R10EVAL_BASE}..{R10EVAL_MERGE}, open a NEW window from 93e1743) else test_B31_Q_scope_audit reds.
+  (B) BE-G3-5 execution and BE-G2-6 remain §6/§8 maintainer-gated. DoD BE-G3-5 done-predicate wiring + stale
+  SRC-ROADMAP/SRC-RESEARCH reconciliation remain maintainer governance patches. Alpha/GA UNDEFINED.
+HARD BOUNDARY: .claude/** .github/** cybergym/** manifest.py docs/governance/** NEVER-edit by loop.
+loop-state committer: kronos-loop <kronos-loop@users.noreply.github.com>.
+# KRONOS loop-state checkpoint
 seq: 463
 derived_at: 2026-11-22T00:00:00Z
 contract_version: 1.4.5
